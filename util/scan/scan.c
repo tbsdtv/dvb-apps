@@ -1527,7 +1527,11 @@ static int tune_initial (int frontend_fd, const char *initial)
 			t->param.inversion = spectral_inversion;
 			t->param.u.ofdm.bandwidth = str2bandwidth(bw);
 			t->param.u.ofdm.code_rate_HP = str2fec(fec);
+			if (t->param.u.ofdm.code_rate_HP == FEC_NONE)
+				t->param.u.ofdm.code_rate_HP = FEC_AUTO;
 			t->param.u.ofdm.code_rate_LP = str2fec(fec2);
+			if (t->param.u.ofdm.code_rate_LP == FEC_NONE)
+				t->param.u.ofdm.code_rate_LP = FEC_AUTO;
 			t->param.u.ofdm.constellation = str2qam(qam);
 			t->param.u.ofdm.transmission_mode = str2mode(mode);
 			t->param.u.ofdm.guard_interval = str2guard(guard);
