@@ -361,6 +361,10 @@ static const fe_modulation_t qam_tab [6] = {
 static void parse_cable_delivery_system_descriptor (const unsigned char *buf,
 					     struct transponder *t)
 {
+	if (!t) {
+		warning("cable_delivery_system_descriptor outside transport stream definition (ignored)\n");
+		return;
+	}
 	t->type = FE_QAM;
 
 	t->param.frequency = bcd32_to_cpu (buf[2], buf[3], buf[4], buf[5]);
@@ -390,6 +394,10 @@ static void parse_cable_delivery_system_descriptor (const unsigned char *buf,
 static void parse_satellite_delivery_system_descriptor (const unsigned char *buf,
 						 struct transponder *t)
 {
+	if (!t) {
+		warning("satellite_delivery_system_descriptor outside transport stream definition (ignored)\n");
+		return;
+	}
 	t->type = FE_QPSK;
 	t->param.frequency = 10 * bcd32_to_cpu (buf[2], buf[3], buf[4], buf[5]);
 	t->param.u.qpsk.fec_inner = fec_tab[buf[12] & 0x07];
@@ -422,8 +430,13 @@ static void parse_terrestrial_delivery_system_descriptor (const unsigned char *b
 	static const fe_modulation_t m_tab [] = { QPSK, QAM_16, QAM_64, QAM_AUTO };
 	static const fe_code_rate_t ofec_tab [8] = { FEC_1_2, FEC_2_3, FEC_3_4,
 					       FEC_5_6, FEC_7_8 };
-	struct dvb_ofdm_parameters *o = &t->param.u.ofdm;
+	struct dvb_ofdm_parameters *o;
 
+	if (!t) {
+		warning("terrestrial_delivery_system_descriptor outside transport stream definition (ignored)\n");
+		return;
+	}
+	o = &t->param.u.ofdm;
 	t->type = FE_OFDM;
 
 	t->param.frequency = (buf[2] << 24) | (buf[3] << 16);
@@ -470,6 +483,10 @@ static void parse_frequency_list_descriptor (const unsigned char *buf,
 	int n, i;
 	typeof(*t->other_f) f;
 
+	if (!t) {
+		warning("frequency_list_descriptor outside transport stream definition (ignored)\n");
+		return;
+	}
 	if (t->other_f)
 		return;
 
