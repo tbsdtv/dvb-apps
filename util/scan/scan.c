@@ -1805,7 +1805,7 @@ static const char *usage = "\n"
 	"	-p	for vdr output format: dump provider name\n"
 	"	-e N	VDR version, default 2 for VDR-1.2.x\n"
 	"		ANYTHING ELSE GIVES NONZERO NIT and TID\n"
-	"		Vdr version 1.3.x and up implies -p."
+	"		Vdr version 1.3.x and up implies -p.\n"
 	"	-l lnb-type (DVB-S Only) (use -l help to print types) or \n"
 	"	-l low[,high[,switch]] in Mhz\n"
 	"	-u      UK DVB-T Freeview channel numbering for VDR\n";
