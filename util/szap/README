@@ -5,21 +5,21 @@ and demux API. They are also pretty useful to test your hardware.
 
 For DVB-S, Astra Channel config file:
 
-$ ./szap -c channels.conf-dvbs-astra n24
+$ ./szap -c channels-conf/dvb-s/Astra-19.2E n24
 
 will tune to N24. For DVB-C, Berlin Cable channel config:
 
-$ ./czap -c channels.conf-dvbc-berlin Arte
+$ ./czap -c channels-conf/dvb-c/de-Berlin Arte
 
 For DVB-T, Berlin Config:
 
-$ ./czap -c channels.conf-dvbt-berlin phoenix
+$ ./czap -c channels-conf/dvb-t/de-Berlin phoenix
 
 By default the MPEG stream is routed to a hardware decoder. If you want to 
 record the stream to disk you will route it to the DVR device by using the 
 '-r' option:
 
-$ ./czap -c channels.conf-dvbt-berlin phoenix -r
+$ ./czap -c channels-conf/dvb-c/de-Berlin phoenix -r
 [keep it running in one console]
 $ cat /dev/dvr/adapter0/dvr0 > /tmp/recording.ts
 [in a second console, will dump the MPEG transport stream to /tmp/recording.ts]
@@ -44,4 +44,3 @@ If everything is alright and all frontend circuits are working stable
 Good luck,
 
 Holger
-
