@@ -3,9 +3,8 @@ CC      = gcc
 CFLAGS  = -g -O2 -Wall $(ARCH)
 CPPFLAGS= -MD -I. -I../../include $(DEFS)
 LFLAGS  =
-DEFS = '-DSYSCONFDIR="$(sysconfdir)"'
 bindir = /usr/local/bin
-libdir = /usr/local/etc
+libdir = /usr/local/lib
 
 OBJS    = dvbnet.o
 TARGET  = dvbnet
