@@ -313,7 +313,7 @@ static void parse_terrestrial_uk_channel_number (const unsigned char *buf, void 
 	struct list_head *p1, *p2;
 	struct transponder *t;
 	struct service *s;
-	
+
 	// 32 bits per record
 	n = buf[1] / 4;
 	if (n < 1)
@@ -633,9 +633,12 @@ static void parse_descriptors(enum table_type t, const unsigned char *buf,
 			if (t == NIT)
 				parse_frequency_list_descriptor (buf, data);
 			break;
-		
+
 		case 0x83:
-			if (t == NIT)
+			/* 0x83 is in the privately defined range of descriptor tags,
+			 * so we parse this only if the user says so to avoid
+			 * problems when 0x83 is something entirely different... */
+			if (t == NIT && vdr_dump_channum)
 				parse_terrestrial_uk_channel_number (buf, data);
 			break;
 
