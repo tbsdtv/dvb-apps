@@ -1,5 +1,6 @@
 CC = gcc
-CFLAGS = -MD -Wall -g -O2 -I../../include -I../lib
+CFLAGS = -Wall -g -O2
+CPPFLAGS = -MD -I../../include -I../lib
 LFLAGS = -Wall -g -O2
 RM = rm -f
 
@@ -23,7 +24,7 @@ szap: szap.o ../lib/lnb.o
 	$(CC) $(LFLAGS) -o szap szap.o ../lib/lnb.o
 
 .c.o:
-	$(CC) $(CFLAGS) -o $@ -c $<
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ -c $<
 
 .o:
 	$(CC) $(LFLAGS) -o $@ $<

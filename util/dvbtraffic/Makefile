@@ -1,6 +1,8 @@
+CFLAGS   = -g -O2 -Wall
+CPPFLAGS = -MD -I../../include
 
 dvbtraffic: dvbtraffic.c
-	gcc -MD -g -O2 -Wall -I../../include $< -o $@
+	$(CC) $(CPPFLAGS) $(CFLAGS) $< -o $@
 
 clean:
 	rm -f *.o *.d dvbtraffic

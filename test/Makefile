@@ -1,7 +1,8 @@
 # Makefile for Linux DVB API Version 3 test programs
 
 CC = gcc
-CFLAGS = -g -O2 -W -Wall -I../include
+CFLAGS = -g -O2 -W -Wall
+CPPFLAGS = -I../include
 
 TARGETS = \
 	diseqc		\
@@ -34,4 +35,3 @@ test_sections test_sec_ne test_pes test_tt: hex_dump.o
 
 clean:
 	rm -f $(TARGETS) *.o
-
