@@ -13,15 +13,15 @@ $ ./czap -c channels-conf/dvb-c/de-Berlin Arte
 
 For DVB-T, Berlin Config:
 
-$ ./czap -c channels-conf/dvb-t/de-Berlin phoenix
+$ ./tzap -c channels-conf/dvb-t/de-Berlin phoenix
 
 By default the MPEG stream is routed to a hardware decoder. If you want to 
 record the stream to disk you will route it to the DVR device by using the 
 '-r' option:
 
-$ ./czap -c channels-conf/dvb-c/de-Berlin phoenix -r
+$ ./tzap -c channels-conf/dvb-t/de-Berlin phoenix -r
 [keep it running in one console]
-$ cat /dev/dvr/adapter0/dvr0 > /tmp/recording.ts
+$ cat /dev/dvb/adapter0/dvr0 > /tmp/recording.ts
 [in a second console, will dump the MPEG transport stream to /tmp/recording.ts]
 
 The status messages have the following meaning:
