@@ -17,7 +17,7 @@
 static char FRONTEND_DEV [80];
 static char DEMUX_DEV [80];
 
-#define CHANNEL_FILE "/.czap/channels.conf"
+#define CHANNEL_FILE "channels.conf"
 
 #define ERROR(x...)							\
 	do {								\
@@ -319,13 +319,18 @@ int main(int argc, char **argv)
 
 	if (!confname)
 	{
+		int len = strlen(homedir) + strlen(CHANNEL_FILE) + 18;
 		if (!homedir)
 			ERROR("$HOME not set");
-		confname = malloc(strlen(homedir) + strlen(CHANNEL_FILE) + 1);
-		memcpy(confname, homedir, strlen(homedir));
-		memcpy(confname + strlen(homedir), CHANNEL_FILE,
-		       strlen(CHANNEL_FILE) + 1);
+		confname = malloc(len);
+		snprintf(confname, len, "%s/.czap/%i/%s",
+			 homedir, adapter, CHANNEL_FILE);
+		if (access(confname, R_OK))
+			snprintf(confname, len, "%s/.czap/%s",
+				 homedir, CHANNEL_FILE);
 	}
+	printf("reading channels from file '%s'\n", confname);
+
 	memset(&frontend_param, 0, sizeof(struct dvb_frontend_parameters));
 
 	if (parse(confname, list_channels, chan_no, channel, &frontend_param, &vpid, &apid))

@@ -545,8 +545,11 @@ int main(int argc, char *argv[])
           fprintf(stderr, "error: $HOME not set\n");
           return TRUE;
        }
-       strncpy(chanfile, home, sizeof(chanfile));
-       strcat(chanfile, "/.szap/" CHANNEL_FILE);
+       snprintf(chanfile, sizeof(chanfile),
+		"%s/.szap/%i/%s", home, adapter, CHANNEL_FILE);
+       if (access(chanfile, R_OK))
+		snprintf(chanfile, sizeof(chanfile),
+			 "%s/.szap/%s", home, CHANNEL_FILE);
    }
 
    printf("reading channels from file '%s'\n", chanfile);
