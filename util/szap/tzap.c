@@ -246,6 +246,7 @@ static int check_fec(fe_code_rate_t *fec)
 	{
 	case FEC_NONE:
 		*fec = FEC_AUTO;
+	case FEC_AUTO:
 	case FEC_1_2:
 	case FEC_2_3:
 	case FEC_3_4:
