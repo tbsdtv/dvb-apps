@@ -7,19 +7,20 @@ DEFS = '-DDATADIR="$(datadir)"'
 bindir = /usr/local/bin
 datadir = /usr/local/share
 
-TARGETS = szap tzap czap femon
-OBJS = szap.o tzap.o czap.o femon.o
+TARGETS = azap szap tzap czap femon
+OBJS = azap.o szap.o tzap.o czap.o femon.o
 
 all: $(OBJS) $(TARGETS)
 	@echo
 	@echo "--------------------------------------------------------------------------------"
-	@echo " please copy an appropriate channels-conf/*/XXX channel list for DVB-S/C/T"
+	@echo " please copy an appropriate channels-conf/*/XXX channel list for DVB-S/C/T or ATSC"
 	@echo
 	@echo "   to ~/.szap/channels.conf"
 	@echo "      ~/.czap/channels.conf"
 	@echo "      ~/.tzap/channels.conf"
+	@echo "      ~/.azap/channels.conf"
 	@echo
-	@echo " and then call ./szap for DVB-S, ./czap for DVB-C or ./tzap for DVB-T"
+	@echo " and then call ./szap for DVB-S, ./czap for DVB-C or ./tzap for DVB-T or ./azap for ATSC"
 	@echo "--------------------------------------------------------------------------------"
 	@echo
 

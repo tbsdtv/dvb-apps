@@ -15,6 +15,12 @@ For DVB-T, Berlin Config:
 
 $ ./tzap -c channels-conf/dvb-t/de-Berlin phoenix
 
+For ATSC, Raleigh Durham Config:
+
+$ ./azap -c channels-conf/atsc/us-Raleigh-Durham WRAL
+
+will tune to WRAL's Digital Channel 5-1.
+
 By default the MPEG stream is routed to a hardware decoder. If you want to 
 record the stream to disk you will route it to the DVR device by using the 
 '-r' option:
