@@ -46,6 +46,7 @@ static int long_timeout;
 static int current_tp_only;
 static int get_other_nits;
 static int vdr_dump_provider;
+static int vdr_dump_channum;
 static int ca_select = 1;
 static int serv_select = 7;
 static int vdr_version = 2;
@@ -106,6 +107,7 @@ struct service {
 	unsigned int scrambled	  : 1;
 	enum running_mode running;
 	void *priv;
+	int channel_num;
 };
 
 struct transponder {
@@ -303,6 +305,36 @@ static void parse_network_name_descriptor (const unsigned char *buf, void *dummy
 	unsigned char len = buf [1];
 
 	info("Network Name '%.*s'\n", len, buf + 2);
+}
+
+static void parse_terrestrial_uk_channel_number (const unsigned char *buf, void *dummy)
+{
+	int i, n, channel_num, service_id;
+	struct list_head *p1, *p2;
+	struct transponder *t;
+	struct service *s;
+	
+	// 32 bits per record
+	n = buf[1] / 4;
+	if (n < 1)
+		return;
+
+	// desc id, desc len, (service id, service number)
+	buf += 2;
+	for (i = 0; i < n; i++) {
+		service_id = (buf[0]<<8)|(buf[1]&0xff);
+		channel_num = (buf[2]&0x03<<8)|(buf[3]&0xff);
+		debug("Service ID 0x%x has channel number %d ", service_id, channel_num);
+		list_for_each(p1, &scanned_transponders) {
+			t = list_entry(p1, struct transponder, list);
+			list_for_each(p2, &t->services) {
+				s = list_entry(p2, struct service, list);
+				if (s->service_id == service_id)
+					s->channel_num = channel_num;
+			}
+		}
+		buf += 4;
+	}
 }
 
 
@@ -600,6 +632,11 @@ static void parse_descriptors(enum table_type t, const unsigned char *buf,
 		case 0x62:
 			if (t == NIT)
 				parse_frequency_list_descriptor (buf, data);
+			break;
+		
+		case 0x83:
+			if (t == NIT)
+				parse_terrestrial_uk_channel_number (buf, data);
 			break;
 
 		default:
@@ -1633,7 +1670,9 @@ static void dump_lists (void)
 						    t->we_flag,
 						    vdr_dump_provider,
 						    ca_select,
-						    vdr_version);
+						    vdr_version,
+						    vdr_dump_channum,
+						    s->channel_num);
 				break;
 			  case OUTPUT_ZAP:
 				zap_dump_service_parameter_set (stdout,
@@ -1685,7 +1724,8 @@ static const char *usage = "\n"
 	"	-e N	VDR version, default 2 for VDR-1.2.x\n"
 	"		ANYTHING ELSE GIVES NONZERO NIT and TID\n"
 	"	-l lnb-type (DVB-S Only) (use -l help to print types) or \n"
-	"	-l low[,high[,switch]] in Mhz\n";
+	"	-l low[,high[,switch]] in Mhz\n"
+	"	-u      UK DVB-T Freeview channel numbering for VDR\n";
 
 void
 bad_usage(char *pname, int prlnb)
@@ -1720,7 +1760,7 @@ int main (int argc, char **argv)
 
 	/* start with default lnb type */
 	lnb_type = *lnb_enum(0);
-	while ((opt = getopt(argc, argv, "5cnpa:f:d:s:o:x:e:t:i:l:vq")) != -1) {
+	while ((opt = getopt(argc, argv, "5cnpa:f:d:s:o:x:e:t:i:l:vq:u")) != -1) {
 		switch (opt) {
 		case 'a':
 			adapter = strtoul(optarg, NULL, 0);
@@ -1780,6 +1820,9 @@ int main (int argc, char **argv)
 		case 'q':
 			if (--verbosity < 0)
 				verbosity = 0;
+			break;
+		case 'u':
+			vdr_dump_channum = 1;
 			break;
 		default:
 			bad_usage(argv[0], 0);

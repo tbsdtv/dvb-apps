@@ -126,11 +126,15 @@ void vdr_dump_service_parameter_set (FILE *f,
 				 int we_flag,
 				 int dump_provider,
 				 int ca_select,
-				 int vdr_version)
+				 int vdr_version,
+				 int dump_channum,
+				 int channel_num)
 {
         int i;
 
 	if ((video_pid || audio_pid[0]) && ((ca_select > 0) || ((ca_select == 0) && (scrambled == 0)))) {
+		if ((dump_channum == 1) && (channel_num > 0))
+			fprintf(f, ":@%i\n", channel_num);
 		if (dump_provider == 1)
 			fprintf (f, "%s - ", provider_name);
 		fprintf (f, "%s:", service_name);

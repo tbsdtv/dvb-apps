@@ -30,7 +30,9 @@ void vdr_dump_service_parameter_set (FILE *f,
 				 int we_flag,
 				 int dump_provider,
 				 int ca_select,
-				 int vdr_version);
+				 int vdr_version,
+				 int dump_channum,
+				 int channel_num);
 
 #endif
 
