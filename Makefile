@@ -3,8 +3,7 @@
 VERSION := 1.1.0
 PACKAGE := linuxtv-dvb-apps-$(VERSION)
 CVSROOT := $(shell cat CVS/Root)
-#RELEASE_TAG := LINUXTV-DVB-$(subst .,_,$(subst -,_,$(VERSION)))
-RELEASE_TAG := HEAD
+RELEASE_TAG := LINUXTV-DVB-$(subst .,_,$(subst -,_,$(VERSION)))
 
 all:
 
