@@ -158,7 +158,8 @@ static struct transponder *current_tp;
 static void dump_dvb_parameters (FILE *f, struct transponder *p);
 
 static void setup_filter (struct section_buf* s, const char *dmx_devname,
-		          int pid, int tid, int run_once, int segmented, int timeout);
+		          int pid, int tid, int tid_ext,
+			  int run_once, int segmented, int timeout);
 static void add_filter (struct section_buf *s);
 
 
@@ -692,7 +693,7 @@ static void parse_pat(const unsigned char *buf, int section_length,
 		if (!s->priv && s->pmt_pid) {
 			s->priv = malloc(sizeof(struct section_buf));
 			setup_filter(s->priv, demux_devname,
-				     s->pmt_pid, 0x02, 1, 0, 5);
+				     s->pmt_pid, 0x02, s->service_id, 1, 0, 5);
 
 			add_filter (s->priv);
 		}
@@ -1063,7 +1064,8 @@ static struct section_buf* poll_section_bufs[MAX_RUNNING];
 
 
 static void setup_filter (struct section_buf* s, const char *dmx_devname,
-			  int pid, int tid, int run_once, int segmented, int timeout)
+			  int pid, int tid, int tid_ext,
+			  int run_once, int segmented, int timeout)
 {
 	memset (s, 0, sizeof(struct section_buf));
 
@@ -1080,7 +1082,7 @@ static void setup_filter (struct section_buf* s, const char *dmx_devname,
 	else
 		s->timeout = timeout;
 
-	s->table_id_ext = -1;
+	s->table_id_ext = tid_ext;
 	s->section_version_number = -1;
 
 	INIT_LIST_HEAD (&s->list);
@@ -1131,6 +1133,12 @@ static int start_filter (struct section_buf* s)
 	if (s->table_id < 0x100 && s->table_id > 0) {
 		f.filter.filter[0] = (uint8_t) s->table_id;
 		f.filter.mask[0]   = 0xff;
+	}
+	if (s->table_id_ext < 0x10000 && s->table_id_ext > 0) {
+		f.filter.filter[1] = (uint8_t) ((s->table_id_ext >> 8) & 0xff);
+		f.filter.filter[2] = (uint8_t) (s->table_id_ext & 0xff);
+		f.filter.mask[1] = 0xff;
+		f.filter.mask[2] = 0xff;
 	}
 
 	f.timeout = 0;
@@ -1539,21 +1547,21 @@ static void scan_tp (void)
 	/**
 	 *  filter timeouts > min repetition rates specified in ETR211
 	 */
-	setup_filter (&s0, demux_devname, 0x00, 0x00, 1, 0, 5); /* PAT */
-	setup_filter (&s1, demux_devname, 0x11, 0x42, 1, 0, 5); /* SDT */
+	setup_filter (&s0, demux_devname, 0x00, 0x00, -1, 1, 0, 5); /* PAT */
+	setup_filter (&s1, demux_devname, 0x11, 0x42, -1, 1, 0, 5); /* SDT */
 
 	add_filter (&s0);
 	add_filter (&s1);
 
 	if (!current_tp_only || output_format != OUTPUT_PIDS) {
-		setup_filter (&s2, demux_devname, 0x10, 0x40, 1, 0, 15); /* NIT */
+		setup_filter (&s2, demux_devname, 0x10, 0x40, -1, 1, 0, 15); /* NIT */
 		add_filter (&s2);
 		if (get_other_nits) {
 			/* get NIT-others
 			 * Note: There is more than one NIT-other: one per
 			 * network, separated by the network_id.
 			 */
-			setup_filter (&s3, demux_devname, 0x10, 0x41, 1, 1, 15);
+			setup_filter (&s3, demux_devname, 0x10, 0x41, -1, 1, 1, 15);
 			add_filter (&s3);
 		}
 	}
