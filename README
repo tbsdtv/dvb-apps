@@ -1,15 +1,21 @@
-This tree contains Linux DVB API test/demo applications and utilities.
+linuxtv-dvb-apps-1.1.0
+======================
 
-These have been copied from the "DVB" CVS tree, which means that
-the stuff in "DVB" is now unmaintained and out of date.
-
-For convenience, dvb-apps contains a copy of the DVB API include
-files as they are contained in dvb-kernel and the 2.6.x Linux
-kernel. However, since the DVB API hasn't changed, the apps
-will still work with the old "DVB" drivers, should you decide not
-to use dvb-kernel.
+Linux DVB API test/demo applications and utilities.
 
 You find a README in each subdirectory explaining what the code there does.
-For beginners the utils/szap and utils/scan directory are probably most useful.
+For beginners utils/szap/ and utils/scan/ are probably most useful.
+
+For convenience, dvb-apps contains a copy of the DVB API include
+files as they are contained in the linuxtv-dvb-1.1.0 realease
+and the 2.6.x Linux kernel. However, since the DVB API hasn't changed,
+the apps will still work with the old "DVB" drivers, should you decide not
+to use linuxtv-dvb-1.1.0 (or the dvb-kernel CVS).
+
+
+Historical note:
+The apps have been copied from the "DVB" CVS tree, which means that
+the stuff in "DVB" is now unmaintained and out of date.
+
 
 Johannes Stezenbach <js@convergence.de>
