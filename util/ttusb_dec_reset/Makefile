@@ -1,0 +1,17 @@
+CC	= gcc
+RM	= rm -f
+CFLAGS	= -g -Wall -O2
+LFLAGS	= -g -Wall
+LDFLAGS = -lusb
+
+OBJS	= ttusb_dec_reset.o
+TARGET	= ttusb_dec_reset
+
+$(TARGET): $(OBJS)
+	$(CC) $(LFLAGS) $(LDFLAGS) -o $(TARGET) $(OBJS)
+
+.c.o:
+	$(CC) $(CFLAGS) -c $< -o $@
+
+clean:
+	$(RM) *.o $(TARGET)

@@ -1,0 +1,22 @@
+Hello,
+
+This is a small utility for resetting a ttusb-dec device after use.  It
+requires libusb, which can be found here:
+
+http://libusb.sourceforge.net/
+
+There is probably a package for it included with your linux distribution
+though.
+
+For the utility to reset a device, it must have permission to access the usb
+device, and the device must not be claimed by anything else.  That means that
+the ttusb-dec module must be rmmoded before using this utility.  You probably
+want to have turned off any hotplug mechanisms before running the utility
+or the device will likely get taken over again once it comes back up.  Or you
+could just yank the usb cable out.
+
+The utility takes no arguments, you just run it:
+./ttusb_dec_reset
+
+Cheers,
+Alex
