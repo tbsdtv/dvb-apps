@@ -457,9 +457,14 @@ void copy_to_file(int in_fd, int out_fd)
 	while(timeout_flag==0)
 	{
 		r=read(in_fd,buf,BUFLEN);
-		if(r<0)
+		if(r<0) {
 			PERROR("Read failed");
-		write(out_fd,buf,r);
+			break;
+		}
+		if (write(out_fd,buf,r) < 0) {
+			PERROR("Write failed");
+			break;
+		}
 		rc+=r;
 	}
 	if(silent<2)
