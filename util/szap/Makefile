@@ -1,8 +1,9 @@
 CC = gcc
-CFLAGS = -Wall -g -O2
-CPPFLAGS = -MD -I../../include -I../lib
+CFLAGS = -Wall -g -O2 $(ARCH)
+CPPFLAGS = -MD -I../../include -I../lib $(DEFS)
 LFLAGS = -Wall -g -O2
 RM = rm -f
+DEFS = '-DDATADIR="$(datadir)"'
 bindir = /usr/local/bin
 datadir = /usr/local/share
 

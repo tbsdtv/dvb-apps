@@ -22,6 +22,7 @@
 #include <errno.h>
 #include <signal.h>
 #include <assert.h>
+#include <glob.h>
 
 #include <linux/dvb/frontend.h>
 #include <linux/dvb/dmx.h>
@@ -1714,6 +1715,29 @@ static void dump_lists (void)
 	info("Done.\n");
 }
 
+static void show_existing_tuning_data_files(void)
+{
+#ifndef DATADIR
+#define DATADIR "/usr/local/share"
+#endif
+	static const char* prefixlist[] = { DATADIR "/dvb", "/etc/dvb", 
+					    DATADIR "/doc/packages/dvb", 0 };
+	int i;
+	const char **prefix;
+	fprintf(stderr, "initial tuning data files:\n");
+	for (prefix = prefixlist; *prefix; prefix++) {
+		glob_t globbuf = {0};
+		char* globspec = malloc (strlen(*prefix)+9);
+		strcpy (globspec, *prefix); strcat (globspec, "/dvb-?/*");
+		if (! glob (globspec, 0, 0, &globbuf)) {
+			for (i=0; i < globbuf.gl_pathc; i++) 
+				fprintf(stderr, " file: %s\n", globbuf.gl_pathv[i]);
+		}
+		free (globspec);
+		globfree (&globbuf);
+	}
+}
+
 static void handle_sigint(int sig)
 {
 	error("interrupted by SIGINT, dumping partial result...\n");
@@ -1750,17 +1774,21 @@ static const char *usage = "\n"
 	"	-u      UK DVB-T Freeview channel numbering for VDR\n";
 
 void
-bad_usage(char *pname, int prlnb)
+bad_usage(char *pname, int problem)
 {
-int i;
-struct lnb_types_st *lnbp;
-char **cp;
+	int i;
+	struct lnb_types_st *lnbp;
+	char **cp;
 
-	if (!prlnb) {
+	switch (problem) {
+	default:
+	case 0:
 		fprintf (stderr, usage, pname);
-	} else {
+		break;
+	case 1:
 		i = 0;
-		fprintf(stderr, "-l <lnb-type> or -l low[,high[,switch]] in Mhz\nwhere <lnb-type> is:\n");
+		fprintf(stderr, "-l <lnb-type> or -l low[,high[,switch]] in Mhz\n"
+			"where <lnb-type> is:\n");
 		while(NULL != (lnbp = lnb_enum(i))) {
 			fprintf (stderr, "%s\n", lnbp->name);
 			for (cp = lnbp->desc; *cp ; cp++) {
@@ -1768,6 +1796,10 @@ char **cp;
 			}
 			i++;
 		}
+		break;
+	case 2:
+		show_existing_tuning_data_files();
+		fprintf (stderr, usage, pname);
 	}
 }
 
@@ -1779,6 +1811,11 @@ int main (int argc, char **argv)
 	int frontend_fd;
 	int fe_open_mode;
 	const char *initial = NULL;
+
+	if (argc <= 1) {
+	    bad_usage(argv[0], 2);
+	    return -1;
+	}
 
 	/* start with default lnb type */
 	lnb_type = *lnb_enum(0);

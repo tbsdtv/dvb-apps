@@ -1,5 +1,5 @@
-CFLAGS   = -g -O2 -Wall
-CPPFLAGS = -MD -I../../include
+CFLAGS   = -g -O2 -Wall $(ARCH)
+CPPFLAGS = -MD -I../../include $(DEFS)
 bindir = /usr/local/bin
 
 dvbtraffic: dvbtraffic.c

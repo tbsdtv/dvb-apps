@@ -1,8 +1,9 @@
 
 CC = gcc
-CFLAGS = -g -Wall -O2
-CPPFLAGS = -MD -I../../include -I../lib
+CFLAGS = -g -Wall -O2 $(ARCH)
+CPPFLAGS = -MD -I../../include -I../lib $(DEFS)
 LFLAGS = -g -Wall
+DEFS = '-DDATADIR="$(datadir)"'
 bindir = /usr/local/bin
 datadir = /usr/local/share
 
@@ -24,7 +25,7 @@ install: install-bin install-data
 install-bin:
 	test "$(bindir)/" != "/"
 	mkdir -p $(DESTDIR)$(bindir)/
-	for i in $(TARGETS) ; do cp $$i $(DESTDIR)$(bindir)/ ; done
+	for i in $(TARGET) ; do cp $$i $(DESTDIR)$(bindir)/ ; done
 install-data:
 	test "$(datadir)/" != "/"
 	mkdir -p $(DESTDIR)$(datadir)/dvb

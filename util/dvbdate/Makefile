@@ -1,7 +1,7 @@
 
 CC      = gcc
-CFLAGS  = -g -O2 -Wall
-CPPFLAGS= -MD -I../../include
+CFLAGS  = -g -O2 -Wall $(ARCH)
+CPPFLAGS= -MD -I../../include $(DEFS)
 LFLAGS  =
 
 OBJS    = dvbdate.o
