@@ -40,6 +40,7 @@ static char DEMUX_DEV [80];
 static char DVR_DEV [80];
 static int timeout_flag=0;
 static int silent=0,timeout=0;
+static int exit_after_tuning;
 
 #define CHANNEL_FILE "channels.conf"
 
@@ -435,14 +436,16 @@ print_frontend_stats (int fe_fd)
 static
 int check_frontend (int fe_fd)
 {
-	do
-	{
-		if(silent==0)
-			print_frontend_stats (fe_fd);
+	fe_status_t status;
+	do {
+	        ioctl(fe_fd, FE_READ_STATUS, &status);
+		if (!silent)
+			print_frontend_stats(fe_fd);
+		if (exit_after_tuning && (status & FE_HAS_LOCK))
+			break;
 		usleep(1000000);
-	}
-	while (timeout_flag==0);
-	if(silent<2)
+	} while (!timeout_flag);
+	if (silent < 2)
 		print_frontend_stats (fe_fd);
 
 	return 0;
@@ -474,7 +477,7 @@ void copy_to_file(int in_fd, int out_fd)
 }
 
 static const char *usage = "\nusage: %s [-a adapter_num] [-f frontend_id] [-d demux_id] \\\n"
-	"\t[-c conf_file] [-t timeout_secs] [-r] [-o mpeg_file] [-s] [-S] <channel name>\n\n";
+	"\t[-c conf_file] [-t timeout_secs] [-r] [-o mpeg_file] [-x] [-s] [-S] <channel name>\n\n";
 
 
 int main(int argc, char **argv)
@@ -490,7 +493,7 @@ int main(int argc, char **argv)
 	int record=0;
 	char *filename = NULL;
 
-	while ((opt = getopt(argc, argv, "hrRsSn:a:f:d:c:t:o:")) != -1) {
+	while ((opt = getopt(argc, argv, "hrxRsSn:a:f:d:c:t:o:")) != -1) {
 		switch (opt) {
 		case 'a':
 			adapter = strtoul(optarg, NULL, 0);
@@ -511,6 +514,9 @@ int main(int argc, char **argv)
 		case 'r':
 			dvr = 1;
 			break;
+		case 'x':
+            		exit_after_tuning = 1;
+            		break;
 		case 'c':
 			confname = optarg;
 			break;
