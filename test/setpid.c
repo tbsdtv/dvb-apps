@@ -1,9 +1,10 @@
-/*
- * Set video and audio PIDs in the demux; useful only if you have
- * a hardware MPEG decoder and you're tuned to a transport stream.
- *
- * usage: DEMUX=/dev/dvb/adapterX/demuxX setpid video_pid audio_pid
- */
+#define USAGE \
+"\n" \
+"\nSet video and audio PIDs in the demux; useful only if you have" \
+"\na hardware MPEG decoder and you're tuned to a transport stream." \
+"\n" \
+"\nusage: DEMUX=/dev/dvb/adapterX/demuxX setpid video_pid audio_pid" \
+"\n"
 
 #include <unistd.h>
 #include <stdlib.h>
@@ -69,7 +70,7 @@ int main (int argc, char **argv)
    int video_pid, audio_pid;
 
    if (argc != 3) {
-      printf ("\nusage: %s <video pid> <audio pid>\n\n", argv[0]);
+      printf ("\nusage: %s <video pid> <audio pid>\n\n" USAGE, argv[0]);
       exit (1);
    }
    if (getenv("DEMUX"))

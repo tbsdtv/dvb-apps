@@ -1,11 +1,13 @@
-/*
- * Test sending DiSEqC commands on a SAT frontend.
- *
- * usage: FRONTEND=/dev/dvb/adapterX/frontendX diseqc [test_seq_no]
- */
+#define USAGE \
+"\n" \
+"\nTest sending DiSEqC commands on a SAT frontend." \
+"\n" \
+"\nusage: FRONTEND=/dev/dvb/adapterX/frontendX diseqc [test_seq_no|'all']" \
+"\n"
 
 #include <pthread.h>
 #include <time.h>
+#include <string.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -109,7 +111,10 @@ int main(int argc, char **argv)
 		return -1;
 	}
 
-	if (argc > 1) {
+	if (argc != 2) {
+	    fprintf (stderr, "usage: %s [number|'all']\n" USAGE, argv[0]);
+	    return 1;
+	} else if (strcmp(argv[1], "all")) {
 		int i = atol(argv[1]);
 		cmd[0] = &switch_cmds[i];
 		diseqc_send_msg(fd,

@@ -1,13 +1,14 @@
- /**
- *  A tiny video watching application, just starts capturing /dev/video
- *  into /dev/fb0.
- *  Be shure to have >8Bit/pixel color resolution and r/w access for 
- *  /dev/video0, /dev/fb0 and /dev/tty0 to let this work...
- *
- *   compile with
- *
- *   $ gcc -g -Wall -O2 -o video video.c -I../../ost/include
- */
+#define USAGE \
+"\n" \
+"\n A tiny video watching application, just starts capturing /dev/video" \
+"\n into /dev/fb0." \
+"\n Be shure to have >8Bit/pixel color resolution and r/w access for " \
+"\n /dev/video0, /dev/fb0 and /dev/tty0 to let this work..." \
+"\n" \
+"\n  compile with" \
+"\n" \
+"\n  $ gcc -g -Wall -O2 -o video video.c -I../../ost/include" \
+"\n"
 
 #include <sys/mman.h>
 #include <sys/ioctl.h>
@@ -173,7 +174,7 @@ int main (int argc, char **argv)
 		video_devname = argv[1];
 
 	if (argc != 1 && argc != 2 && !(argc == 3 && stop)) {
-		fprintf (stderr, "usage: %s <devname> <stop>\n", argv[0]);
+		fprintf(stderr, "usage: %s <devname> <stop>\n" USAGE, argv[0]);
 		exit (-1);
 	}
 

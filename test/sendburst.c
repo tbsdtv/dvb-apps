@@ -1,8 +1,9 @@
-/*
- * Test sending the burst mini command A/B on a SAT frontend.
- *
- * usage: FRONTEND=/dev/dvb/adapterX/frontendX sendburst {a|b}
- */
+#define USAGE \
+"\n" \
+"\nTest sending the burst mini command A/B on a SAT frontend." \
+"\n" \
+"\nusage: FRONTEND=/dev/dvb/adapterX/frontendX sendburst {a|b}" \
+"\n"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -22,7 +23,7 @@ int main (int argc, char **argv)
    int fd, r;
 
    if (argc != 2 || (strcmp(argv[1], "a") && strcmp(argv[1], "b"))) {
-      fprintf (stderr, "usage: %s <a|b>\n", argv[0]);
+      fprintf (stderr, "usage: %s <a|b>\n" USAGE, argv[0]);
       return 1;
    }
 

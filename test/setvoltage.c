@@ -1,10 +1,11 @@
-/*
- * Test switching the voltage signal high and low on a SAT frontend.
- * (Note: DiSEqC equipment ignores this after it has once seen a diseqc
- *  sequence; reload the driver or unplug/replug the SAT cable to reset.)
- *
- * usage: FRONTEND=/dev/dvb/adapterX/frontendX setvoltage {13|18}
- */
+#define USAGE \
+"\n" \
+"\nTest switching the voltage signal high and low on a SAT frontend." \
+"\n(Note: DiSEqC equipment ignores this after it has once seen a diseqc" \
+"\n sequence; reload the driver or unplug/replug the SAT cable to reset.)" \
+"\n" \
+"\nusage: FRONTEND=/dev/dvb/adapterX/frontendX setvoltage {13|18}" \
+"\n"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -23,7 +24,7 @@ int main (int argc, char **argv)
    int fd, r;
 
    if (argc != 2 || (strcmp(argv[1], "13") && strcmp(argv[1], "18"))) {
-      fprintf (stderr, "usage: %s <13|18>\n", argv[0]);
+      fprintf (stderr, "usage: %s <13|18>\n" USAGE, argv[0]);
       return -1;
    }
    if (getenv("FRONTEND"))

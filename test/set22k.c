@@ -1,10 +1,11 @@
-/*
- * Test switching the 22kHz tone signal on and off on a SAT frontend.
- * (Note: DiSEqC equipment ignores this after it has once seen a diseqc
- *  sequence; reload the driver or unplug/replug the SAT cable to reset.)
- *
- * usage: FRONTEND=/dev/dvb/adapterX/frontendX set22k {on|off}
- */
+#define USAGE \
+"\n" \
+"\nTest switching the 22kHz tone signal on and off on a SAT frontend." \
+"\n(Note: DiSEqC equipment ignores this after it has once seen a diseqc" \
+"\n sequence; reload the driver or unplug/replug the SAT cable to reset.)" \
+"\n" \
+"\nusage: FRONTEND=/dev/dvb/adapterX/frontendX set22k {on|off}" \
+"\n"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -24,7 +25,7 @@ int main (int argc, char **argv)
    int fd, r;
 
    if (argc != 2 || (strcmp(argv[1], "on") && strcmp(argv[1], "off"))) {
-      fprintf (stderr, "usage: %s <on|off>\n", argv[0]);
+      fprintf (stderr, "usage: %s <on|off>\n" USAGE, argv[0]);
       return 1;
    }
    if (getenv("FRONTEND"))
