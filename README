@@ -9,4 +9,7 @@ kernel. However, since the DVB API hasn't changed, the apps
 will still work with the old "DVB" drivers, should you decide not
 to use dvb-kernel.
 
+You find a README in each subdirectory explaining what the code there does.
+For beginners the utils/szap and utils/scan directory are probably most useful.
+
 Johannes Stezenbach <js@convergence.de>
