@@ -1,5 +1,6 @@
 CC = gcc
 CFLAGS = -g -Wall -O2
+bindir  = /usr/local/bin
 
 all: av7110_loadkeys evtest
 
@@ -46,3 +47,5 @@ input_keynames.h: /usr/include/linux/input.h input_fake.h
 clean:
 	$(RM) core* *.o input_keynames.h av7110_loadkeys evtest
 
+install: av7110_loadkeys
+	install -m 755 av7110_loadkeys $(DESTDIR)$(bindir)

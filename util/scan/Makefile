@@ -3,6 +3,8 @@ CC = gcc
 CFLAGS = -g -Wall -O2
 CPPFLAGS = -MD -I../../include -I../lib
 LFLAGS = -g -Wall
+bindir = /usr/local/bin
+sysconfdir = /usr/local/etc
 
 OBJS = diseqc.o dump-zap.o dump-vdr.o scan.o ../lib/lnb.o
 SRCS = $(OBJS:.o=.c)
@@ -17,6 +19,18 @@ $(TARGET): $(OBJS)
 
 clean:
 	$(RM) *.o *.d $(TARGET)
+
+install: install-bin install-etc
+install-bin:
+	test "$(bindir)/" != "/"
+	mkdir -p $(DESTDIR)$(bindir)/
+	for i in $(TARGETS) ; do cp $$i $(DESTDIR)$(bindir)/ ; done
+install-etc:
+	test "$(sysconfdir)/" != "/"
+	mkdir -p $(DESTDIR)$(sysconfdir)/dvb
+	for d in dvb-* ; do test -d $$d || continue ; echo ..... $$d ..... \
+	; mkdir -p $(DESTDIR)$(sysconfdir)/dvb/$$d/ \
+	; cp `find $$d -type f` $(DESTDIR)$(sysconfdir)/dvb/$$d/ ; done
 
 -include $(wildcard *.d) dummy
 

@@ -6,7 +6,7 @@ LFLAGS  =
 
 OBJS    = dvbdate.o
 TARGET  = dvbdate
-DESTDIR = /usr/local/bin/
+bindir  = /usr/local/bin
 
 all: $(TARGET)
 
@@ -17,7 +17,7 @@ $(TARGET): $(OBJS)
 	$(CC) -o $@ $(OBJS) $(LFLAGS)
 
 install: all
-	install -m 755 $(TARGET) $(DESTDIR) 
+	install -m 755 $(TARGET) $(DESTDIR)$(bindir)
 
 clean:
 	rm -f $(TARGET) $(OBJS) core* *~ *.d

@@ -3,6 +3,7 @@ RM	= rm -f
 CFLAGS	= -g -Wall -O2
 LFLAGS	= -g -Wall
 LDFLAGS = -lusb
+bindir  = /usr/local/bin
 
 OBJS	= ttusb_dec_reset.o
 TARGET	= ttusb_dec_reset
@@ -15,3 +16,6 @@ $(TARGET): $(OBJS)
 
 clean:
 	$(RM) *.o $(TARGET)
+
+install: $(TARGET)
+	install -m 755 $(TARGET) $(DESTDIR)$(bindir)

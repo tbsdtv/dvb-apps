@@ -2,6 +2,7 @@
 CC = gcc
 CFLAGS = -g -Wall -O2
 CPPFLAGS = -MD -I../../include -I.
+bindir = /usr/local/bin
 
 OBJS = lnb.o
 SRCS = $(OBJS:.o=.c)
@@ -15,6 +16,8 @@ $(TARGET): $(SRCS)
 
 clean:
 	$(RM) *.o *.d $(TARGET)
+
+install:
 
 -include $(wildcard *.d) dummy
 

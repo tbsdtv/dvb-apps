@@ -8,5 +8,6 @@
 	$(MAKE) -C dvbdate $(MAKECMDGOALS)
 	$(MAKE) -C dvbtraffic $(MAKECMDGOALS)
 	$(MAKE) -C av7110_loadkeys $(MAKECMDGOALS)
+	$(MAKE) -C ttusb_dec_reset $(MAKECMDGOALS)
 
 FORCE:
