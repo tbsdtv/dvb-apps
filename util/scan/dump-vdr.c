@@ -135,9 +135,14 @@ void vdr_dump_service_parameter_set (FILE *f,
 	if ((video_pid || audio_pid[0]) && ((ca_select > 0) || ((ca_select == 0) && (scrambled == 0)))) {
 		if ((dump_channum == 1) && (channel_num > 0))
 			fprintf(f, ":@%i\n", channel_num);
-		if (dump_provider == 1)
-			fprintf (f, "%s - ", provider_name);
-		fprintf (f, "%s:", service_name);
+		if (vdr_version >= 3)
+			fprintf (f, "%s;%s:", service_name, provider_name);		  
+		else 
+		  {
+		    if (dump_provider == 1)
+		      fprintf (f, "%s - ", provider_name);
+		    fprintf (f, "%s:", service_name);
+		  }
 		vdr_dump_dvb_parameters (f, type, p, polarity, orbital_pos, we_flag);
 		if ((pcr_pid != video_pid) && (video_pid > 0))
 			fprintf (f, "%i+%i:", video_pid, pcr_pid);
