@@ -7,12 +7,12 @@ A number of initial-tuning-data files are provided for various dvb-c, dvb-s
 and dvb-t networks around the world. If you make a new one feel free to
 submit it to the linux-dvb mailing list http://linuxtv.org/mailinglists.xml.
 
-Basic usage: ./scan dvb-s/Astra-19.2E | tee mychannels.conf
+Basic usage: ./dvbscan dvb-s/Astra-19.2E | tee mychannels.conf
 
 If you want it to check a specific frequency, tune to that frequency 
 (e.g. using szap/tzap/czap) and then use './scan -c'.
 
-For more scan options see ./scan -h.
+For more scan options see ./dvbscan -h.
 
 Good luck,
 Holger + Johannes
