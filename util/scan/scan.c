@@ -1347,15 +1347,21 @@ static int tune_to_next_transponder (int frontend_fd)
 {
 	struct list_head *pos, *tmp;
 	struct transponder *t, *to;
+	uint32_t freq;
 
 	list_for_each_safe(pos, tmp, &new_transponders) {
 		t = list_entry (pos, struct transponder, list);
 retry:
 		if (tune_to_transponder (frontend_fd, t) == 0)
 			return 0;
-		if (t->other_frequency_flag &&
-				t->other_f &&
-				t->n_other_f) {
+next:
+		if (t->other_frequency_flag && t->other_f && t->n_other_f) {
+			/* check if the alternate freqeuncy is really new to us */
+			freq = t->other_f[t->n_other_f - 1];
+			t->n_other_f--;
+			if (find_transponder(freq))
+				goto next;
+
 			/* remember tuning to the old frequency failed */
 			to = calloc(1, sizeof(*to));
 			to->param.frequency = t->param.frequency;
@@ -1365,8 +1371,7 @@ retry:
 			list_add_tail(&to->list, &scanned_transponders);
 			copy_transponder(to, t);
 
-			t->param.frequency = t->other_f[t->n_other_f - 1];
-			t->n_other_f--;
+			t->param.frequency = freq;
 			info("retrying with f=%d\n", t->param.frequency);
 			goto retry;
 		}
