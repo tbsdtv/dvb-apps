@@ -30,6 +30,9 @@
 struct dvb_net_if {
 	__u16 pid;
 	__u16 if_num;
+	__u8 feedtype;
+#define FEEDTYPE_SEC	0
+#define FEEDTYPE_TS		1
 };
 
 

@@ -152,7 +152,8 @@ void parse_args(int argc, char **argv)
 {
 	char c, *s;
 	op_mode = UNKNOWN;
-	while ((c = getopt(argc, argv, "a:n:p:d:lvh")) != EOF) {
+	net_data.feedtype = FEEDTYPE_SEC;
+	while ((c = getopt(argc, argv, "a:n:p:d:lUvh")) != EOF) {
 		switch (c) {
 		case 'a':
 			adapter = strtol(optarg, NULL, 0);
@@ -170,6 +171,9 @@ void parse_args(int argc, char **argv)
 			break;
 		case 'l':
 			op_mode = LST_INTERFACE;
+			break;
+		case 'U':
+			net_data.feedtype = FEEDTYPE_TS;
 			break;
 		case 'v':
 			exit(OK);
@@ -193,6 +197,7 @@ void usage(char *prog_name)
 	fprintf(stderr, "\t-d NUM : Remove interface dvbAD_NUM\n");
 	fprintf(stderr,
 		"\t-l     : List currently available interfaces\n");
+	fprintf(stderr, "\t-U     : use ULE framing (defualt: MPE)\n" );
 	fprintf(stderr, "\t-v     : Print current version\n\n");
 }
 
