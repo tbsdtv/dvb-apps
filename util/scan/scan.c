@@ -680,11 +680,9 @@ static void parse_pat(const unsigned char *buf, int section_length,
 		struct service *s;
 		int service_id = (buf[0] << 8) | buf[1];
 
-		if (service_id == 0) {
-			buf += 4;		/*  skip nit pid entry... */
-			section_length -= 4;
-			continue;
-		}
+		if (service_id == 0)
+			goto skip;	/* nit pid entry */
+
 		/* SDT might have been parsed first... */
 		s = find_service(current_tp, service_id);
 		if (!s)
@@ -698,6 +696,7 @@ static void parse_pat(const unsigned char *buf, int section_length,
 			add_filter (s->priv);
 		}
 
+skip:
 		buf += 4;
 		section_length -= 4;
 	};
@@ -725,7 +724,7 @@ static void parse_pmt (const unsigned char *buf, int section_length, int service
 	buf += program_info_len + 4;
 	section_length -= program_info_len + 4;
 
-	while (section_length > 0) {
+	while (section_length >= 5) {
 		int ES_info_len = ((buf[3] & 0x0f) << 8) | buf[4];
 		int elementary_pid = ((buf[1] & 0x1f) << 8) | buf[2];
 
@@ -859,7 +858,7 @@ static void parse_sdt (const unsigned char *buf, int section_length,
 {
 	buf += 3;	       /*  skip original network id + reserved field */
 
-	while (section_length > 4) {
+	while (section_length >= 5) {
 		int service_id = (buf[0] << 8) | buf[1];
 		int descriptors_loop_len = ((buf[3] & 0x0f) << 8) | buf[4];
 		struct service *s;
@@ -921,7 +920,7 @@ static int parse_section (struct section_buf *s)
 	if (s->table_id != table_id)
 		return -1;
 
-	section_length = (((buf[1] & 0x0f) << 8) | buf[2]) - 11;
+	section_length = ((buf[1] & 0x0f) << 8) | buf[2];
 
 	table_id_ext = (buf[3] << 8) | buf[4];
 	section_version_number = (buf[5] >> 1) & 0x1f;
@@ -964,7 +963,13 @@ static int parse_section (struct section_buf *s)
 		s->next_seg = next_seg;
 	}
 
-	buf += 8;
+	buf += 8;			/* past generic table header */
+	section_length -= 5 + 4;	/* header + crc */
+	if (section_length < 0) {
+		warning("truncated section (PID 0x%04x, lenght %d)",
+			s->pid, section_length + 9);
+		return 0;
+	}
 
 	if (!get_bit(s->section_done, section_number)) {
 		set_bit (s->section_done, section_number);
