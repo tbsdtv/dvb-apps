@@ -164,7 +164,7 @@ static void add_filter (struct section_buf *s);
 /* According to the DVB standards, the combination of network_id and
  * transport_stream_id should be unique, but in real life the satellite
  * operators and broadcasters don't care enough to coordinate
- * the numbering. Thus we identify TPs by frequency (scan handles only
+ * the numbering. Thus we identify TPs by frequency (dvbscan handles only
  * one satellite at a time). Further complication: Different NITs on
  * one satellite sometimes list the same TP with slightly different
  * frequencies, so we have to search within some bandwidth.
@@ -1723,7 +1723,7 @@ static void handle_sigint(int sig)
 
 static const char *usage = "\n"
 	"usage: %s [options...] [-c | initial-tuning-data-file]\n"
-	"	scan doesn't do frequency scans, hence it needs initial\n"
+	"	dvbscan doesn't do frequency scans, hence it needs initial\n"
 	"	tuning data for at least one transponder/channel.\n"
 	"	-c	scan on currently tuned transponder only\n"
 	"	-v 	verbose (repeat for more)\n"
