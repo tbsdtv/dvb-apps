@@ -124,6 +124,7 @@ struct transponder {
 	unsigned int scan_done		  : 1;
 	unsigned int last_tuning_failed	  : 1;
 	unsigned int other_frequency_flag : 1;	/* DVB-T */
+	unsigned int wrong_frequency	  : 1;	/* DVB-T with other_frequency_flag */
 	int n_other_f;
 	uint32_t *other_f;			/* DVB-T freqeuency-list descriptor */
 };
@@ -1345,7 +1346,7 @@ static int tune_to_transponder (int frontend_fd, struct transponder *t)
 static int tune_to_next_transponder (int frontend_fd)
 {
 	struct list_head *pos, *tmp;
-	struct transponder *t;
+	struct transponder *t, *to;
 
 	list_for_each_safe(pos, tmp, &new_transponders) {
 		t = list_entry (pos, struct transponder, list);
@@ -1355,6 +1356,15 @@ retry:
 		if (t->other_frequency_flag &&
 				t->other_f &&
 				t->n_other_f) {
+			/* remember tuning to the old frequency failed */
+			to = calloc(1, sizeof(*to));
+			to->param.frequency = t->param.frequency;
+			to->wrong_frequency = 1;
+			INIT_LIST_HEAD(&to->list);
+			INIT_LIST_HEAD(&to->services);
+			list_add_tail(&to->list, &scanned_transponders);
+			copy_transponder(to, t);
+
 			t->param.frequency = t->other_f[t->n_other_f - 1];
 			t->n_other_f--;
 			info("retrying with f=%d\n", t->param.frequency);
@@ -1645,6 +1655,8 @@ static void dump_lists (void)
 
 	list_for_each(p1, &scanned_transponders) {
 		t = list_entry(p1, struct transponder, list);
+		if (t->wrong_frequency)
+			continue;
 		list_for_each(p2, &t->services) {
 			n++;
 		}
@@ -1653,6 +1665,8 @@ static void dump_lists (void)
 
 	list_for_each(p1, &scanned_transponders) {
 		t = list_entry(p1, struct transponder, list);
+		if (t->wrong_frequency)
+			continue;
 		list_for_each(p2, &t->services) {
 			s = list_entry(p2, struct service, list);
 
