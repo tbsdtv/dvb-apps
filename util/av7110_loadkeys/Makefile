@@ -1,6 +1,7 @@
 CC = gcc
 CFLAGS = -g -Wall -O2
 bindir  = /usr/local/bin
+datadir = /usr/local/share
 
 all: av7110_loadkeys evtest
 
@@ -47,5 +48,9 @@ input_keynames.h: /usr/include/linux/input.h input_fake.h
 clean:
 	$(RM) core* *.o input_keynames.h av7110_loadkeys evtest
 
-install: av7110_loadkeys
+install: install-bin install-data
+install-bin: av7110_loadkeys
 	install -m 755 av7110_loadkeys $(DESTDIR)$(bindir)
+install-data:
+	mkdir -p $(DESTDIR)$(datadir)/dvb/av7110_loadkeys
+	cp *.rc5 *.rcmm $(DESTDIR)$(datadir)/dvb/av7110_loadkeys/

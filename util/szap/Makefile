@@ -4,7 +4,7 @@ CPPFLAGS = -MD -I../../include -I../lib
 LFLAGS = -Wall -g -O2
 RM = rm -f
 bindir = /usr/local/bin
-sysconfdir = /usr/local/etc
+datadir = /usr/local/share
 
 TARGETS = szap tzap czap femon
 OBJS = szap.o tzap.o czap.o femon.o
@@ -34,15 +34,15 @@ szap: szap.o ../lib/lnb.o
 clean:
 	$(RM) $(TARGETS) core* *.o *.d .depend
 
-install: install-bin install-etc
+install: install-bin install-data
 install-bin:
 	test "$(bindir)/" != "/"
 	mkdir -p $(DESTDIR)$(bindir)/
 	for i in $(TARGETS) ; do cp $$i $(DESTDIR)$(bindir)/ ; done
-install-etc:
-	test "$(sysconfdir)/" != "/"
-	mkdir -p $(DESTDIR)$(sysconfdir)/dvb
-	for i in channels.conf-* ; do cp $$i $(DESTDIR)$(sysconfdir)/dvb ; done
+install-data:
+	test "$(datadir)/" != "/"
+	mkdir -p $(DESTDIR)$(datadir)/dvb
+	for i in channels.conf-* ; do cp $$i $(DESTDIR)$(datadir)/dvb ; done
 
 -include $(wildcard *.d) dummy
 
