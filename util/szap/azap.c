@@ -41,6 +41,8 @@ typedef struct {
 static const Param modulation_list [] = {
 	{ "8VSB", VSB_8 },
 	{ "16VSB", VSB_16 },
+	{ "QAM_64", QAM_64 },
+	{ "QAM_256", QAM_256 },
 };
 
 #define LIST_SIZE(x) sizeof(x)/sizeof(Param)
