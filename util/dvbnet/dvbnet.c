@@ -152,7 +152,7 @@ void parse_args(int argc, char **argv)
 {
 	char c, *s;
 	op_mode = UNKNOWN;
-	net_data.feedtype = FEEDTYPE_SEC;
+	net_data.feedtype = DVB_NET_FEEDTYPE_MPE;
 	while ((c = getopt(argc, argv, "a:n:p:d:lUvh")) != EOF) {
 		switch (c) {
 		case 'a':
@@ -173,7 +173,7 @@ void parse_args(int argc, char **argv)
 			op_mode = LST_INTERFACE;
 			break;
 		case 'U':
-			net_data.feedtype = FEEDTYPE_TS;
+			net_data.feedtype = DVB_NET_FEEDTYPE_ULE;
 			break;
 		case 'v':
 			exit(OK);
