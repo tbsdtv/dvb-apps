@@ -191,13 +191,18 @@ int find_channel(int fd, const char *channel)
 		if (read(fd, &c, 1) < 1)
 			return -1;	/*  EOF! */
 
-		if (c == ':' && channel[character] == '\0')
-			break;
-
-		if (toupper(c) == toupper(channel[character]))
-			character++;
-		else
+		if ( '\n' == c ) /* start of line */
 			character = 0;
+		else if ( character >= 0 ) { /* we are in the namefield */
+
+			if (c == ':' && channel[character] == '\0')
+				break;
+
+			if (toupper(c) == toupper(channel[character]))
+				character++;
+			else
+				character = -1;
+		}
 	};
 
 	return 0;
