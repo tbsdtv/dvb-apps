@@ -26,13 +26,7 @@ install-bin: all
 	test "$(bindir)/" != "/"
 	mkdir -p $(DESTDIR)$(bindir)/
 	install -m 755 $(TARGET) $(DESTDIR)$(bindir)/
-NETSTART_SCRIPTS = net_start.pl net_start.sh
-install-scripts: 
-	test "$(libdir)/" != "/"
-	mkdir -p $(DESTDIR)$(libdir)/dvb/
-	for i in $(NETSTART_SCRIPTS) ; do cat $$i | sed -e \
-	's|[.]/dvbnet |$(bindir)/dvbnet|' > $(DESTDIR)/$(libdir)/dvb/$$i \
-	; chmod +x $(DESTDIR)/$(libdir)/dvb/$$i ; done
+install-scripts:
 
 clean:
 	rm -f $(TARGET) $(OBJS) version.h core* *~ *.d
