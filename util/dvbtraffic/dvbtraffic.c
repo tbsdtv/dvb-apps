@@ -11,8 +11,6 @@
 #include <string.h>
 
 #include <linux/dvb/dmx.h>
-#include <linux/dvb/frontend.h>
-#include <linux/dvb/video.h>
 
 #define BSIZE 188
 
