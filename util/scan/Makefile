@@ -7,7 +7,7 @@ LFLAGS = -g -Wall
 OBJS = diseqc.o dump-zap.o dump-vdr.o scan.o ../lib/lnb.o
 SRCS = $(OBJS:.o=.c)
 
-TARGET = scan
+TARGET = dvbscan
 
 $(TARGET): $(OBJS)
 	$(CC) $(LFLAGS) -o $(TARGET) $(OBJS)
