@@ -1,3 +1,24 @@
+/* tzap -- DVB-T zapping utility
+ */
+
+/*
+ * Added recording to a file
+ * arguments:
+ *
+ * -t	timeout (seconds)
+ * -o filename		output filename (use -o - for stdout)
+ * -s	only print summary
+ * -S	run silently (no output)
+ *
+ * Bernard Hatt 24/2/04
+ */
+
+
+
+#define _FILE_OFFSET_BITS 64
+#define _LARGEFILE_SOURCE 1
+#define _LARGEFILE64_SOURCE 1
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/ioctl.h>
@@ -9,13 +30,16 @@
 #include <fcntl.h>
 #include <ctype.h>
 #include <errno.h>
+#include <signal.h>
 
 #include <linux/dvb/frontend.h>
 #include <linux/dvb/dmx.h>
 
-
 static char FRONTEND_DEV [80];
 static char DEMUX_DEV [80];
+static char DVR_DEV [80];
+static int timeout_flag=0;
+static int silent=0,timeout=0;
 
 #define CHANNEL_FILE "channels.conf"
 
@@ -330,7 +354,8 @@ int setup_frontend (int fe_fd, struct dvb_frontend_parameters *frontend)
 		return -1;
 	}
 
-	printf ("tuning to %i Hz\n", frontend->frequency);
+	if(silent<2)
+		fprintf (stderr,"tuning to %i Hz\n", frontend->frequency);
 
 	if (ioctl(fe_fd, FE_SET_FRONTEND, frontend) < 0) {
 		PERROR("ioctl FE_SET_FRONTEND failed");
@@ -340,38 +365,83 @@ int setup_frontend (int fe_fd, struct dvb_frontend_parameters *frontend)
 	return 0;
 }
 
+static void
+do_timeout(int x)
+{
+	if(timeout_flag==0)
+	{
+		timeout_flag=1;
+		alarm(2);
+		signal(SIGALRM, do_timeout);
+	}
+	else
+	{
+		/* something has gone wrong ... exit */
+		exit(1);
+	}
+}
 
-static
-int check_frontend (int fe_fd)
+static void
+print_frontend_stats (int fe_fd)
 {
 	fe_status_t status;
 	uint16_t snr, signal;
 	uint32_t ber, uncorrected_blocks;
 
-	do {
-		ioctl(fe_fd, FE_READ_STATUS, &status);
-		ioctl(fe_fd, FE_READ_SIGNAL_STRENGTH, &signal);
-		ioctl(fe_fd, FE_READ_SNR, &snr);
-		ioctl(fe_fd, FE_READ_BER, &ber);
-		ioctl(fe_fd, FE_READ_UNCORRECTED_BLOCKS, &uncorrected_blocks);
+	ioctl(fe_fd, FE_READ_STATUS, &status);
+	ioctl(fe_fd, FE_READ_SIGNAL_STRENGTH, &signal);
+	ioctl(fe_fd, FE_READ_SNR, &snr);
+	ioctl(fe_fd, FE_READ_BER, &ber);
+	ioctl(fe_fd, FE_READ_UNCORRECTED_BLOCKS, &uncorrected_blocks);
 
-		printf ("status %02x | signal %04x | snr %04x | "
-			"ber %08x | unc %08x | ",
-			status, signal, snr, ber, uncorrected_blocks);
+	fprintf (stderr,"status %02x | signal %04x | snr %04x | "
+		"ber %08x | unc %08x | ",
+		status, signal, snr, ber, uncorrected_blocks);
 
-		if (status & FE_HAS_LOCK)
-			printf("FE_HAS_LOCK");
+	if (status & FE_HAS_LOCK)
+		fprintf(stderr,"FE_HAS_LOCK");
 
+	fprintf(stderr,"\n");
+}
+
+static
+int check_frontend (int fe_fd)
+{
+	do
+	{
+		if(silent==0)
+			print_frontend_stats (fe_fd);
 		usleep(1000000);
-
-		printf("\n");
-	} while (1);
+	}
+	while (timeout_flag==0);
+	if(silent<2)
+		print_frontend_stats (fe_fd);
 
 	return 0;
 }
 
+#define BUFLEN (188*256)
+static
+void copy_to_file(int in_fd, int out_fd)
+{
+	char buf[BUFLEN];
+	int r,rc=0;
+	while(timeout_flag==0)
+	{
+		r=read(in_fd,buf,BUFLEN);
+		if(r<0)
+			PERROR("Read failed");
+		write(out_fd,buf,r);
+		rc+=r;
+	}
+	if(silent<2)
+	{
+		fprintf(stderr, "copied %d bytes (%d Kbytes/sec)\n",rc,rc/(1024*timeout));
+	}
+}
 
-static const char *usage = "\nusage: %s [-a adapter_num] [-f frontend_id] [-d demux_id] [-c conf_file] [-r] <channel name>\n\n";
+static const char *usage = "\nusage: %s [-a adapter_num] [-f frontend_id] [-d demux_id] \\\n"
+	"\t[-c conf_file] [-t timeout_secs] [-r] [-o mpeg_file] [-s] [-S] <channel name>\n\n";
 
 
 int main(int argc, char **argv)
@@ -382,10 +452,12 @@ int main(int argc, char **argv)
 	char *channel = NULL;
 	int adapter = 0, frontend = 0, demux = 0, dvr = 0;
 	int vpid, apid;
-	int frontend_fd, audio_fd, video_fd;
+	int frontend_fd, audio_fd, video_fd, dvr_fd,file_fd;
 	int opt;
+	int record=0;
+	char *filename = NULL;
 
-	while ((opt = getopt(argc, argv, "hrn:a:f:d:c:")) != -1) {
+	while ((opt = getopt(argc, argv, "hrRsSn:a:f:d:c:t:o:")) != -1) {
 		switch (opt) {
 		case 'a':
 			adapter = strtoul(optarg, NULL, 0);
@@ -396,11 +468,24 @@ int main(int argc, char **argv)
 		case 'd':
 			demux = strtoul(optarg, NULL, 0);
 			break;
+		case 't':
+			timeout = strtoul(optarg, NULL, 0);
+			break;
+		case 'o':
+			filename = strdup(optarg);
+			record=1;
+			/* fall through */
 		case 'r':
 			dvr = 1;
 			break;
 		case 'c':
 			confname = optarg;
+			break;
+		case 's':
+			silent=1;
+			break;
+		case 'S':
+			silent=2;
 			break;
 		case '?':
 		case 'h':
@@ -424,7 +509,11 @@ int main(int argc, char **argv)
 	snprintf (DEMUX_DEV, sizeof(DEMUX_DEV),
 		  "/dev/dvb/adapter%i/demux%i", adapter, demux);
 
-	printf ("using '%s' and '%s'\n", FRONTEND_DEV, DEMUX_DEV);
+	snprintf (DVR_DEV, sizeof(DVR_DEV),
+		  "/dev/dvb/adapter%i/dvr%i", adapter, demux);
+
+	if(silent<2)
+		fprintf (stderr,"using '%s' and '%s'\n", FRONTEND_DEV, DEMUX_DEV);
 
 	if (!confname)
 	{
@@ -458,7 +547,9 @@ int main(int argc, char **argv)
                 return -1;
         }
 
-	printf ("video pid 0x%04x, audio pid 0x%04x\n", vpid, apid);
+	if(silent<2)
+		fprintf (stderr,"video pid 0x%04x, audio pid 0x%04x\n", vpid, apid);
+
 	if (set_pesfilter (video_fd, vpid, DMX_PES_VIDEO, dvr) < 0)
 		return -1;
 
@@ -470,7 +561,54 @@ int main(int argc, char **argv)
 	if (set_pesfilter (audio_fd, apid, DMX_PES_AUDIO, dvr) < 0)
 		return -1;
 
-	check_frontend (frontend_fd);
+	signal(SIGALRM,do_timeout);
+	if(timeout>0)
+		alarm(timeout);
+
+
+	if(record)
+	{
+		if(filename!=NULL)
+		{
+			if(strcmp(filename,"-")!=0)
+			{
+				file_fd = open (filename,O_WRONLY|O_LARGEFILE|O_CREAT,0644);
+				if(file_fd<0)
+				{
+					PERROR("open of '%s' failed",filename);
+					return -1;
+				}
+			}
+			else
+			{
+				file_fd=1;
+			}
+		}
+		else
+		{
+			PERROR("Record mode but no filename!");
+			return -1;
+		}
+
+		if ((dvr_fd = open(DVR_DEV, O_RDONLY)) < 0) {
+	                PERROR("failed opening '%s'", DVR_DEV);
+	                return -1;
+	        }
+		if(ioctl(dvr_fd, DMX_SET_BUFFER_SIZE, 1024 * 1024)<0)
+		{
+			PERROR("DMX_SET_BUFFER_SIZE failed");
+			return -1;
+		}
+		if(silent<2)
+			print_frontend_stats (frontend_fd);
+
+		copy_to_file(dvr_fd,file_fd);
+
+		if(silent<2)
+			print_frontend_stats (frontend_fd);
+	}
+	else
+		check_frontend (frontend_fd);
 
 	close (audio_fd);
 	close (video_fd);
@@ -478,4 +616,3 @@ int main(int argc, char **argv)
 
 	return 0;
 }
-
