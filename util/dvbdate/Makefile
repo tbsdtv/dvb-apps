@@ -1,6 +1,7 @@
 
 CC      = gcc
-CFLAGS  = -g -O2 -MD -Wall -I. -I../../include
+CFLAGS  = -g -O2 -Wall
+CPPFLAGS= -MD -I../../include
 LFLAGS  =
 
 OBJS    = dvbdate.o
@@ -10,7 +11,7 @@ DESTDIR = /usr/local/bin/
 all: $(TARGET)
 
 .c.o:
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
 $(TARGET): $(OBJS)
 	$(CC) -o $@ $(OBJS) $(LFLAGS)
