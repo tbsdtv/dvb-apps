@@ -1,7 +1,12 @@
-This tree will contain DVB test/demo applications and utilities
-formerly located in the "DVB" tree. The stuff in "DVB" will be
-deprecated soon.  dvb-apps will contain a copy of the Linux DVB API
-include files, and is supposed to work with the dvb-kernel
-drivers for now.
+This tree contains Linux DVB API test/demo applications and utilities.
+
+These have been copied from the "DVB" CVS tree, which means that
+the stuff in "DVB" is now unmaintained and out of date.
+
+For convenience, dvb-apps contains a copy of the DVB API include
+files as they are contained in dvb-kernel and the 2.6.x Linux
+kernel. However, since the DVB API hasn't changed, the apps
+will still work with the old "DVB" drivers, should you decide not
+to use dvb-kernel.
 
 Johannes Stezenbach <js@convergence.de>

@@ -1,0 +1,3 @@
+- what to do with the docs frm "DVB"?
+  move here or into dvb-kernel?
+- create libdvb2, possibly merging util/lib/*
