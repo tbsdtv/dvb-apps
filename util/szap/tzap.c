@@ -476,8 +476,21 @@ void copy_to_file(int in_fd, int out_fd)
 	}
 }
 
-static const char *usage = "\nusage: %s [-a adapter_num] [-f frontend_id] [-d demux_id] \\\n"
-	"\t[-c conf_file] [-t timeout_secs] [-r] [-o mpeg_file] [-x] [-s] [-S] <channel name>\n\n";
+static char *usage =
+    "usage:\n"
+    "       tzap [options] <channel_name>\n"
+    "         zap to channel channel_name (case insensitive)\n"
+    "     -a number : use given adapter (default 0)\n"
+    "     -f number : use given frontend (default 0)\n"
+    "     -d number : use given demux (default 0)\n"
+    "     -c file   : read channels list from 'file'\n"
+    "     -x        : exit after tuning\n"
+    "     -r        : set up /dev/dvb/adapterX/dvr0 for TS recording\n"
+    "     -s        : only print summary\n"
+    "     -S        : run silently (no output)\n"
+    "     -t number : timeout (seconds)\n"
+    "     -o file   : output filename (use -o - for stdout)\n"
+    "     -h -?     : display this help and exit\n";
 
 
 int main(int argc, char **argv)
@@ -493,7 +506,7 @@ int main(int argc, char **argv)
 	int record=0;
 	char *filename = NULL;
 
-	while ((opt = getopt(argc, argv, "hrxRsSn:a:f:d:c:t:o:")) != -1) {
+	while ((opt = getopt(argc, argv, "?hrxRsSn:a:f:d:c:t:o:")) != -1) {
 		switch (opt) {
 		case 'a':
 			adapter = strtoul(optarg, NULL, 0);
@@ -515,8 +528,8 @@ int main(int argc, char **argv)
 			dvr = 1;
 			break;
 		case 'x':
-            		exit_after_tuning = 1;
-            		break;
+			exit_after_tuning = 1;
+			break;
 		case 'c':
 			confname = optarg;
 			break;
