@@ -201,6 +201,8 @@ static struct transponder *find_transponder(uint32_t frequency)
 
 	list_for_each(pos, &scanned_transponders) {
 		tp = list_entry(pos, struct transponder, list);
+		if (current_tp_only)
+			return tp;
 		if (is_same_transponder(tp->param.frequency, frequency))
 			return tp;
 	}
