@@ -12,12 +12,12 @@ release dist:
 	mkdir release-tmp
 	( cd release-tmp; cvs -d$(CVSROOT) export -r$(RELEASE_TAG) -d$(PACKAGE) dvb-apps )
 	find release-tmp -name .cvsignore | xargs rm -v
-	( cd release-tmp; tar czf ../$(PACKAGE).tar.gz $(PACKAGE) )
+	( cd release-tmp; tar cjf ../$(PACKAGE).tar.bz2 $(PACKAGE) )
 	rm -rf release-tmp
 	@echo
 	@echo --------------------------------------------------------------------------------
 	@echo
-	@echo "dist package: ./$(PACKAGE).tar.gz"
+	@echo "dist package: ./$(PACKAGE).tar.bz2"
 	@echo
 	@echo --------------------------------------------------------------------------------
 	@echo
