@@ -240,6 +240,24 @@ int try_parse_param(int fd, const Param * plist, int list_size, int *param,
 	return err;
 }
 
+static int check_fec(fe_code_rate_t *fec)
+{
+	switch (*fec)
+	{
+	case FEC_NONE:
+		*fec = FEC_AUTO;
+	case FEC_1_2:
+	case FEC_2_3:
+	case FEC_3_4:
+	case FEC_5_6:
+	case FEC_7_8:
+		return 0;
+	default:
+		;
+	}
+	return 1;
+}
+
 
 int parse(const char *fname, const char *channel,
 	  struct dvb_frontend_parameters *frontend, int *vpid, int *apid)
@@ -276,10 +294,14 @@ int parse(const char *fname, const char *channel,
 				   (int *) &frontend->u.ofdm.code_rate_HP,
 				   "code_rate_HP")))
 		return -6;
+	if (check_fec(&frontend->u.ofdm.code_rate_HP))
+		return -6;
 
 	if ((err = try_parse_param(fd, fec_list, LIST_SIZE(fec_list),
 				   (int *) &frontend->u.ofdm.code_rate_LP,
 				   "code_rate_LP")))
+		return -7;
+	if (check_fec(&frontend->u.ofdm.code_rate_LP))
 		return -7;
 
 	if ((err = try_parse_param(fd, constellation_list,
