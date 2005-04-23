@@ -35,7 +35,8 @@ int parse_keyname (char *pos, char **nend, int limit)
 {
 	int cmp, index;
 	int l = 1;
-	int r = sizeof (key_name) / sizeof (key_name[0]);
+	const struct input_key_name *kn;
+	int r;
 
 	if (limit < 5)
 		return -1;
@@ -46,7 +47,18 @@ int parse_keyname (char *pos, char **nend, int limit)
 		limit--;
 	}
 
-	if (pos [0] != 'K' || pos[1] != 'E' || pos[2] != 'Y' || pos[3] != '_')
+	if (pos[3] != '_')
+		return -2;
+
+	if (pos[0] == 'K' && pos[1] == 'E' && pos[2] == 'Y') {
+		kn = key_name;
+		r = sizeof (key_name) / sizeof (key_name[0]);
+	}
+	else if (pos[0] == 'B' && pos[1] == 'T' && pos[2] == 'N') {
+		kn = btn_name;
+		r = sizeof (btn_name) / sizeof (btn_name[0]);
+	}
+	else
 		return -2;
 
 	(*nend) += 4;
@@ -58,19 +70,19 @@ int parse_keyname (char *pos, char **nend, int limit)
 
 		index = (l + r) / 2;
 		
-		len0 = strlen(key_name[index-1].name);
+		len0 = strlen(kn[index-1].name);
 
 		while (len1 < limit && isgraph(pos[len1]))
 			len1++;
 
-		cmp = strncmp (key_name[index-1].name, pos,
-			       strlen(key_name[index-1].name));
+		cmp = strncmp (kn[index-1].name, pos,
+			       strlen(kn[index-1].name));
 	
 		if (len0 < len1 && cmp == 0)
 			cmp = -1;
 
 		if (cmp == 0) {
-			*nend = pos + strlen (key_name[index-1].name);
+			*nend = pos + strlen (kn[index-1].name);
 
 			if (**nend != '\n' &&
 			    **nend != '\t' &&
@@ -78,7 +90,7 @@ int parse_keyname (char *pos, char **nend, int limit)
 			    *nend != pos)
 				return -3;
 
-			return key_name[index-1].key;
+			return kn[index-1].key;
 		}
 
 		if (cmp < 0)
