@@ -460,7 +460,11 @@ void copy_to_file(int in_fd, int out_fd)
 	while(timeout_flag==0)
 	{
 		r=read(in_fd,buf,BUFLEN);
-		if(r<0) {
+		if (r < 0) {
+			if (errno == EOVERFLOW) {
+				printf("buffer overrun\n");
+				continue;
+			}
 			PERROR("Read failed");
 			break;
 		}
