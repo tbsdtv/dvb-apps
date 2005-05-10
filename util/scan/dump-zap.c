@@ -29,7 +29,9 @@ static const char *qam_name [] = {
 	"QAM_64",
 	"QAM_128",
 	"QAM_256",
-	"QAM_AUTO"
+	"QAM_AUTO",
+	"8VSB",
+	"16VSB",
 };
 
 
@@ -96,12 +98,17 @@ void zap_dump_dvb_parameters (FILE *f, fe_type_t type, struct dvb_frontend_param
 		fprintf (f, "%s", hierarchy_name[p->u.ofdm.hierarchy_information]);
 		break;
 
+	case FE_ATSC:
+		fprintf (f, "%i:", p->frequency);
+		fprintf (f, "%s", qam_name[p->u.vsb.modulation]);
+		break;
+
 	default:
 		;
 	};
 }
 
-void zap_dump_service_parameter_set (FILE *f, 
+void zap_dump_service_parameter_set (FILE *f,
 				 const char *service_name,
 				 fe_type_t type,
 				 struct dvb_frontend_parameters *p,

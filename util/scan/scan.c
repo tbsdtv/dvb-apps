@@ -1,4 +1,4 @@
-/**
+/*
  *  Simple MPEG parser to achieve network/service information.
  *
  *  refered standards:
@@ -7,6 +7,15 @@
  *    ETSI TR 101 211
  *    ETSI ETR 211
  *    ITU-T H.222.0
+ *
+ * 2005-05-10 - Basic ATSC PSIP parsing support added
+ *    ATSC Standard Revision B (A65/B)
+ *
+ * Thanks to Sean Device from Triveni for providing access to ATSC signals
+ *    and to Kevin Fowlks for his first independent ATSC scanning.
+ *
+ * Please contribute: It is possible that some descriptors for ATSC are
+ *        not parsed yet and thus the result won't be complete.
  */
 
 #include <stdlib.h>
@@ -23,6 +32,7 @@
 #include <signal.h>
 #include <assert.h>
 #include <glob.h>
+#include <ctype.h>
 
 #include <linux/dvb/frontend.h>
 #include <linux/dvb/dmx.h>
@@ -34,6 +44,7 @@
 #include "scan.h"
 #include "lnb.h"
 
+#include "atsc_psip_section.h"
 
 static char demux_devname[80];
 
@@ -48,6 +59,8 @@ static int current_tp_only;
 static int get_other_nits;
 static int vdr_dump_provider;
 static int vdr_dump_channum;
+static int no_ATSC_PSIP;
+static int ATSC_type=1;
 static int ca_select = 1;
 static int serv_select = 7;
 static int vdr_version = 2;
@@ -163,6 +176,7 @@ static void setup_filter (struct section_buf* s, const char *dmx_devname,
 			  int run_once, int segmented, int timeout);
 static void add_filter (struct section_buf *s);
 
+static const char * fe_type2str(fe_type_t t);
 
 /* According to the DVB standards, the combination of network_id and
  * transport_stream_id should be unique, but in real life the satellite
@@ -737,6 +751,7 @@ static void parse_pmt (const unsigned char *buf, int section_length, int service
 				s->video_pid = elementary_pid;
 			break;
 		case 0x03:
+		case 0x81: /* Audio per ATSC A/53B [2] Annex B */
 		case 0x04:
 			moreverbose("  AUDIO     : PID 0x%04x\n", elementary_pid);
 			if (s->audio_num < AUDIO_CHAN_MAX) {
@@ -779,8 +794,8 @@ static void parse_pmt (const unsigned char *buf, int section_length, int service
 	};
 
 
-        tmp = msg_buf;
-        tmp += sprintf(tmp, "0x%04x (%.4s)", s->audio_pid[0], s->audio_lang[0]);
+	tmp = msg_buf;
+	tmp += sprintf(tmp, "0x%04x (%.4s)", s->audio_pid[0], s->audio_lang[0]);
 
 	if (s->audio_num > AUDIO_CHAN_MAX) {
 		warning("more than %i audio channels: %i, truncating to %i\n",
@@ -850,7 +865,7 @@ static void parse_nit (const unsigned char *buf, int section_length, int network
 
 		section_length -= descriptors_loop_len + 6;
 		buf += descriptors_loop_len + 6;
-	};
+	}
 }
 
 
@@ -888,6 +903,155 @@ static void parse_sdt (const unsigned char *buf, int section_length,
 	};
 }
 
+/* ATSC PSIP VCT */
+static void parse_atsc_service_loc_desc(struct service *s,const unsigned char *buf)
+{
+	struct ATSC_service_location_descriptor d = read_ATSC_service_location_descriptor(buf);
+	int i;
+	unsigned char *b = (unsigned char *) buf+5;
+
+	s->pcr_pid = d.PCR_PID;
+	for (i=0; i < d.number_elements; i++) {
+		struct ATSC_service_location_element e = read_ATSC_service_location_element(b);
+		switch (e.stream_type) {
+			case 0x02: /* video */
+				s->video_pid = e.elementary_PID;
+				moreverbose("  VIDEO     : PID 0x%04x\n", e.elementary_PID);
+				break;
+			case 0x81: /* ATSC audio */
+				if (s->audio_num < AUDIO_CHAN_MAX) {
+					s->audio_pid[s->audio_num] = e.elementary_PID;
+					s->audio_lang[s->audio_num][0] = (e.ISO_639_language_code >> 16) & 0xff;
+					s->audio_lang[s->audio_num][1] = (e.ISO_639_language_code >> 8)  & 0xff;
+					s->audio_lang[s->audio_num][2] =  e.ISO_639_language_code        & 0xff;
+					s->audio_num++;
+				}
+				moreverbose("  AUDIO     : PID 0x%04x lang: %s\n",e.elementary_PID,s->audio_lang[s->audio_num-1]);
+
+				break;
+			default:
+				warning("unhandled stream_type: %x\n",e.stream_type);
+				break;
+		};
+		b += 6;
+	}
+}
+
+static void parse_atsc_ext_chan_name_desc(struct service *s,const unsigned char *buf)
+{
+	unsigned char *b = (unsigned char *) buf+2;
+	int i,j;
+	int num_str = b[0];
+
+	b++;
+	for (i = 0; i < num_str; i++) {
+		int num_seg = b[3];
+		b += 4; /* skip lang code */
+		for (j = 0; j < num_seg; j++) {
+			int comp_type = b[0],/* mode = b[1],*/ num_bytes = b[2];
+
+			switch (comp_type) {
+				case 0x00:
+					if (s->service_name)
+						free(s->service_name);
+					s->service_name = malloc(num_bytes * sizeof(char) + 1);
+					memcpy(s->service_name,&b[3],num_bytes);
+					s->service_name[num_bytes] = '\0';
+					break;
+				default:
+					warning("compressed strings are not supported yet\n");
+					break;
+			}
+			b += 3 + num_bytes;
+		}
+	}
+}
+
+static void parse_psip_descriptors(struct service *s,const unsigned char *buf,int len)
+{
+	unsigned char *b = (unsigned char *) buf;
+	int desc_len;
+	while (len > 0) {
+		desc_len = b[1];
+		switch (b[0]) {
+			case ATSC_SERVICE_LOCATION_DESCRIPTOR_ID:
+				parse_atsc_service_loc_desc(s,b);
+				break;
+			case ATSC_EXTENDED_CHANNEL_NAME_DESCRIPTOR_ID:
+				parse_atsc_ext_chan_name_desc(s,b);
+				break;
+			default:
+				warning("unhandled psip descriptor: %02x\n",b[0]);
+				break;
+		}
+		b += 2 + desc_len;
+		len -= 2 + desc_len;
+	}
+}
+
+static void parse_psip_vct (const unsigned char *buf, int section_length,
+		int table_id, int transport_stream_id)
+{
+/*	int protocol_version = buf[0];*/
+	int num_channels_in_section = buf[1];
+	int i;
+	int pseudo_id = 0xffff;
+	unsigned char *b = (unsigned char *) buf + 2;
+
+	for (i = 0; i < num_channels_in_section; i++) {
+		struct service *s;
+		struct tvct_channel ch = read_tvct_channel(b);
+
+		switch (ch.service_type) {
+			case 0x01:
+				info("analog channels won't be put info channels.conf\n");
+				break;
+			case 0x02: /* ATSC TV */
+			case 0x03: /* ATSC Radio */
+				break;
+			case 0x04: /* ATSC Data */
+			default:
+				continue;
+		}
+
+		if (ch.program_number == 0)
+			ch.program_number = --pseudo_id;
+
+		s = find_service(current_tp, ch.program_number);
+		if (!s)
+			s = alloc_service(current_tp, ch.program_number);
+
+		if (s->service_name)
+			free(s->service_name);
+
+		s->service_name = malloc(7*sizeof(unsigned char));
+		/* TODO find a better solution to convert UTF-16 */
+		s->service_name[0] = ch.short_name0;
+		s->service_name[1] = ch.short_name1;
+		s->service_name[2] = ch.short_name2;
+		s->service_name[3] = ch.short_name3;
+		s->service_name[4] = ch.short_name4;
+		s->service_name[5] = ch.short_name5;
+		s->service_name[6] = ch.short_name6;
+
+		parse_psip_descriptors(s,&b[32],ch.descriptors_length);
+
+		s->channel_num = ch.major_channel_number << 10 | ch.minor_channel_number;
+
+		if (ch.hidden) {
+			s->running = RM_NOT_RUNNING;
+			info("service is not running, pseudo program_number.");
+		} else {
+			s->running = RM_RUNNING;
+			info("service is running.");
+		}
+
+		info(" Channel number: %d:%d. Name: '%s'\n",
+			ch.major_channel_number, ch.minor_channel_number,s->service_name);
+
+		b += 32 + ch.descriptors_length;
+	}
+}
 
 static int get_bit (uint8_t *bitfield, int bit)
 {
@@ -1004,6 +1168,11 @@ static int parse_section (struct section_buf *s)
 			parse_sdt (buf, section_length, table_id_ext);
 			break;
 
+		case 0xc8:
+		case 0xc9:
+			verbose("ATSC VCT\n");
+			parse_psip_vct(buf, section_length, table_id, table_id_ext);
+			break;
 		default:
 			;
 		};
@@ -1331,6 +1500,8 @@ static int tune_to_transponder (int frontend_fd, struct transponder *t)
 	t->scan_done = 1;
 
 	if (t->type != fe_info.type) {
+		warning("frontend type (%s) is not compatible with requested tuning type (%s)\n",
+				fe_type2str(fe_info.type),fe_type2str(t->type));
 		/* ignore cable descriptors in sat NIT and vice versa */
 		t->last_tuning_failed = 1;
 		return -1;
@@ -1394,6 +1565,17 @@ static int str2enum(const char *str, const struct strtab *tab, int deflt)
 	return deflt;
 }
 
+static const char * enum2str(int v, const struct strtab *tab, const char *deflt)
+{
+	while (tab->str) {
+		if (v == tab->val)
+			return tab->str;
+		tab++;
+	}
+	error("invalid enum value '%d'\n", v);
+	return deflt;
+}
+
 static enum fe_code_rate str2fec(const char *fec)
 {
 	struct strtab fectab[] = {
@@ -1422,6 +1604,8 @@ static enum fe_modulation str2qam(const char *qam)
 		{ "QAM128", QAM_128 },
 		{ "QAM256", QAM_256 },
 		{ "AUTO",   QAM_AUTO },
+		{ "8VSB",   VSB_8 },
+		{ "16VSB",  VSB_16 },
 		{ NULL, 0 }
 	};
 	return str2enum(qam, qamtab, QAM_AUTO);
@@ -1474,6 +1658,19 @@ static enum fe_hierarchy str2hier(const char *hier)
 		{ NULL, 0 }
 	};
 	return str2enum(hier, hiertab, HIERARCHY_AUTO);
+}
+
+static const char * fe_type2str(fe_type_t t)
+{
+	struct strtab typetab[] = {
+		{ "QPSK", FE_QPSK,},
+		{ "QAM",  FE_QAM, },
+		{ "OFDM", FE_OFDM,},
+		{ "ATSC", FE_ATSC,},
+		{ NULL, 0 }
+	};
+
+	return enum2str(t, typetab, "UNK");
 }
 
 static int tune_initial (int frontend_fd, const char *initial)
@@ -1551,7 +1748,12 @@ static int tune_initial (int frontend_fd, const char *initial)
 					t->param.u.ofdm.guard_interval,
 					t->param.u.ofdm.hierarchy_information);
 		}
-		else
+		else if (sscanf(buf, "A %u %7s\n",
+					&f,qam) == 2) {
+			t = alloc_transponder(f);
+			t->type = FE_ATSC;
+			t->param.u.vsb.modulation = str2qam(qam);
+		} else
 			error("cannot parse'%s'\n", buf);
 	}
 
@@ -1561,7 +1763,33 @@ static int tune_initial (int frontend_fd, const char *initial)
 }
 
 
-static void scan_tp (void)
+static void scan_tp_atsc(void)
+{
+	struct section_buf s0,s1,s2;
+
+	if (no_ATSC_PSIP) {
+		setup_filter(&s0, demux_devname, 0x00, 0x00, -1, 1, 0, 5); /* PAT */
+		add_filter(&s0);
+	} else {
+		if (ATSC_type & 0x1) {
+			setup_filter(&s0, demux_devname, 0x1ffb, 0xc8, -1, 1, 0, 5); /* terrestrial VCT */
+			add_filter(&s0);
+		}
+		if (ATSC_type & 0x2) {
+			setup_filter(&s1, demux_devname, 0x1ffb, 0xc9, -1, 1, 0, 5); /* cable VCT */
+			add_filter(&s1);
+		}
+		setup_filter(&s2, demux_devname, 0x00, 0x00, -1, 1, 0, 5); /* PAT */
+		add_filter(&s2);
+	}
+
+	do {
+		read_filters ();
+	} while (!(list_empty(&running_filters) &&
+		   list_empty(&waiting_filters)));
+}
+
+static void scan_tp_dvb (void)
 {
 	struct section_buf s0;
 	struct section_buf s1;
@@ -1594,6 +1822,22 @@ static void scan_tp (void)
 		read_filters ();
 	} while (!(list_empty(&running_filters) &&
 		   list_empty(&waiting_filters)));
+}
+
+static void scan_tp(void)
+{
+	switch(fe_info.type) {
+		case FE_QPSK:
+		case FE_QAM:
+		case FE_OFDM:
+			scan_tp_dvb();
+			break;
+		case FE_ATSC:
+			scan_tp_atsc();
+			break;
+		default:
+			break;
+	}
 }
 
 static void scan_network (int frontend_fd, const char *initial)
@@ -1756,7 +2000,7 @@ static void show_existing_tuning_data_files(void)
 #ifndef DATADIR
 #define DATADIR "/usr/local/share"
 #endif
-	static const char* prefixlist[] = { DATADIR "/dvb", "/etc/dvb", 
+	static const char* prefixlist[] = { DATADIR "/dvb", "/etc/dvb",
 					    DATADIR "/doc/packages/dvb", 0 };
 	int i;
 	const char **prefix;
@@ -1766,7 +2010,7 @@ static void show_existing_tuning_data_files(void)
 		char* globspec = malloc (strlen(*prefix)+9);
 		strcpy (globspec, *prefix); strcat (globspec, "/dvb-?/*");
 		if (! glob (globspec, 0, 0, &globbuf)) {
-			for (i=0; i < globbuf.gl_pathc; i++) 
+			for (i=0; i < globbuf.gl_pathc; i++)
 				fprintf(stderr, " file: %s\n", globbuf.gl_pathv[i]);
 		}
 		free (globspec);
@@ -1783,7 +2027,7 @@ static void handle_sigint(int sig)
 
 static const char *usage = "\n"
 	"usage: %s [options...] [-c | initial-tuning-data-file]\n"
-	"	dvbscan doesn't do frequency scans, hence it needs initial\n"
+	"	atsc/dvbscan doesn't do frequency scans, hence it needs initial\n"
 	"	tuning data for at least one transponder/channel.\n"
 	"	-c	scan on currently tuned transponder only\n"
 	"	-v 	verbose (repeat for more)\n"
@@ -1808,7 +2052,10 @@ static const char *usage = "\n"
 	"		Vdr version 1.3.x and up implies -p.\n"
 	"	-l lnb-type (DVB-S Only) (use -l help to print types) or \n"
 	"	-l low[,high[,switch]] in Mhz\n"
-	"	-u      UK DVB-T Freeview channel numbering for VDR\n";
+	"	-u      UK DVB-T Freeview channel numbering for VDR\n\n"
+	"	-P do not use ATSC PSIP tables for scanning\n"
+	"	    (but only PAT and PMT) (applies for ATSC only)\n"
+	"	-A N	check for ATSC 1=Terrestrial [default], 2=Cable or 3=both\n";
 
 void
 bad_usage(char *pname, int problem)
@@ -1856,7 +2103,7 @@ int main (int argc, char **argv)
 
 	/* start with default lnb type */
 	lnb_type = *lnb_enum(0);
-	while ((opt = getopt(argc, argv, "5cnpa:f:d:s:o:x:e:t:i:l:vqu")) != -1) {
+	while ((opt = getopt(argc, argv, "5cnpa:f:d:s:o:x:e:t:i:l:vquPA:")) != -1) {
 		switch (opt) {
 		case 'a':
 			adapter = strtoul(optarg, NULL, 0);
@@ -1919,6 +2166,17 @@ int main (int argc, char **argv)
 			break;
 		case 'u':
 			vdr_dump_channum = 1;
+			break;
+		case 'P':
+			no_ATSC_PSIP = 1;
+			break;
+		case 'A':
+			ATSC_type = strtoul(optarg,NULL,0);
+			if (ATSC_type == 0 || ATSC_type > 3) {
+				bad_usage(argv[0], 1);
+				return -1;
+			}
+
 			break;
 		default:
 			bad_usage(argv[0], 0);

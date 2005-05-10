@@ -101,6 +101,11 @@ void vdr_dump_dvb_parameters (FILE *f, fe_type_t type,
 		fprintf (f, ":T:27500:");
 		break;
 
+	case FE_ATSC:
+		fprintf (f, "%i:", p->frequency / 1000);
+		fprintf (f, "VDR does not support ATSC at this time");
+		break;
+
 	default:
 		;
 	};
@@ -136,8 +141,8 @@ void vdr_dump_service_parameter_set (FILE *f,
 		if ((dump_channum == 1) && (channel_num > 0))
 			fprintf(f, ":@%i\n", channel_num);
 		if (vdr_version >= 3)
-			fprintf (f, "%s;%s:", service_name, provider_name);		  
-		else 
+			fprintf (f, "%s;%s:", service_name, provider_name);
+		else
 		  {
 		    if (dump_provider == 1)
 		      fprintf (f, "%s - ", provider_name);
@@ -157,7 +162,7 @@ void vdr_dump_service_parameter_set (FILE *f,
 		if (vdr_version == 2) {
 			network_id = 0;
 			transport_stream_id = 0;
-		} 
+		}
 		fprintf (f, ":%d:%d:%d:%d:%d:0", teletext_pid, scrambled,
 				service_id, network_id, transport_stream_id);
 		fprintf (f, "\n");
