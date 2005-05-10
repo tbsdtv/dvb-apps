@@ -12,7 +12,7 @@
  *    ATSC Standard Revision B (A65/B)
  *
  * Thanks to Sean Device from Triveni for providing access to ATSC signals
- *    and to Kevin Fowlks for his first independent ATSC scanning.
+ *    and to Kevin Fowlks for his independent ATSC scanning tool.
  *
  * Please contribute: It is possible that some descriptors for ATSC are
  *        not parsed yet and thus the result won't be complete.
