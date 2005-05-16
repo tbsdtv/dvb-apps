@@ -456,7 +456,8 @@ static
 void copy_to_file(int in_fd, int out_fd)
 {
 	char buf[BUFLEN];
-	int r,rc=0;
+	int r;
+	long long int rc = 0LL;
 	while(timeout_flag==0)
 	{
 		r=read(in_fd,buf,BUFLEN);
@@ -476,7 +477,7 @@ void copy_to_file(int in_fd, int out_fd)
 	}
 	if(silent<2)
 	{
-		fprintf(stderr, "copied %d bytes (%d Kbytes/sec)\n",rc,rc/(1024*timeout));
+		fprintf(stderr, "copied %lld bytes (%lld Kbytes/sec)\n",rc,rc/(1024*timeout));
 	}
 }
 
