@@ -493,6 +493,7 @@ static char *usage =
     "     -r        : set up /dev/dvb/adapterX/dvr0 for TS recording\n"
     "     -s        : only print summary\n"
     "     -S        : run silently (no output)\n"
+    "     -F        : set up frontend only, don't touch demux\n"
     "     -t number : timeout (seconds)\n"
     "     -o file   : output filename (use -o - for stdout)\n"
     "     -h -?     : display this help and exit\n";
@@ -506,12 +507,13 @@ int main(int argc, char **argv)
 	char *channel = NULL;
 	int adapter = 0, frontend = 0, demux = 0, dvr = 0;
 	int vpid, apid;
-	int frontend_fd, audio_fd, video_fd, dvr_fd,file_fd;
+	int frontend_fd, audio_fd = 0, video_fd = 0, dvr_fd, file_fd;
 	int opt;
-	int record=0;
+	int record = 0;
+	int frontend_only = 0;
 	char *filename = NULL;
 
-	while ((opt = getopt(argc, argv, "?hrxRsSn:a:f:d:c:t:o:")) != -1) {
+	while ((opt = getopt(argc, argv, "?hrxRsFSn:a:f:d:c:t:o:")) != -1) {
 		switch (opt) {
 		case 'a':
 			adapter = strtoul(optarg, NULL, 0);
@@ -539,10 +541,13 @@ int main(int argc, char **argv)
 			confname = optarg;
 			break;
 		case 's':
-			silent=1;
+			silent = 1;
 			break;
 		case 'S':
-			silent=2;
+			silent = 2;
+			break;
+		case 'F':
+			frontend_only = 1;
 			break;
 		case '?':
 		case 'h':
@@ -598,6 +603,9 @@ int main(int argc, char **argv)
 
 	if (setup_frontend (frontend_fd, &frontend_param) < 0)
 		return -1;
+
+	if (frontend_only)
+		goto just_the_frontend_dude;
 
         if ((video_fd = open(DEMUX_DEV, O_RDWR)) < 0) {
                 PERROR("failed opening '%s'", DEMUX_DEV);
@@ -664,8 +672,10 @@ int main(int argc, char **argv)
 		if(silent<2)
 			print_frontend_stats (frontend_fd);
 	}
-	else
+	else {
+just_the_frontend_dude:
 		check_frontend (frontend_fd);
+	}
 
 	close (audio_fd);
 	close (video_fd);
