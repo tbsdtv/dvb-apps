@@ -85,13 +85,14 @@ static char *usage_str =
     "     -l lnb-type (DVB-S Only) (use -l help to print types) or \n"
     "     -l low[,high[,switch]] in Mhz\n"
     "     -i        : run interactively, allowing you to type in channel names\n"
+    "     -p        : add pat and pmt to TS recording (implies -r)\n"
     "                 or -n numbers for zapping\n";
 
-static int set_demux(int dmxfd, int pid, int audio, int dvr)
+static int set_demux(int dmxfd, int pid, int pes_type, int dvr)
 {
    struct dmx_pes_filter_params pesfilter;
 
-   if (pid <= 0 || pid >= 0x1fff) /* ignore this pid to allow radio services */
+   if (pid < 0 || pid >= 0x1fff) /* ignore this pid to allow radio services */
 	   return TRUE;
 
    if (dvr) {
@@ -103,7 +104,7 @@ static int set_demux(int dmxfd, int pid, int audio, int dvr)
    pesfilter.pid = pid;
    pesfilter.input = DMX_IN_FRONTEND;
    pesfilter.output = dvr ? DMX_OUT_TS_TAP : DMX_OUT_DECODER;
-   pesfilter.pes_type = audio ? DMX_PES_AUDIO : DMX_PES_VIDEO;
+   pesfilter.pes_type = pes_type;
    pesfilter.flags = DMX_IMMEDIATE_START;
 
    if (ioctl(dmxfd, DMX_SET_PES_FILTER, &pesfilter) == -1) {
@@ -115,6 +116,65 @@ static int set_demux(int dmxfd, int pid, int audio, int dvr)
    return TRUE;
 }
 
+int get_pmt_pid(char *dmxdev, int sid)
+{
+   int patfd, count;
+   int pmt_pid = 0;
+   int patread = 0;
+   int section_length;
+   unsigned char buft[4096];
+   unsigned char *buf = buft;
+   struct dmx_sct_filter_params f;
+
+   memset(&f, 0, sizeof(f));
+   f.pid = 0;
+   f.filter.filter[0] = 0x00;
+   f.filter.mask[0] = 0xff;
+   f.timeout = 0;
+   f.flags = DMX_IMMEDIATE_START | DMX_CHECK_CRC;
+
+   if ((patfd = open(dmxdev, O_RDWR)) < 0) {
+      perror("openening pat demux failed");
+      return -1;
+   }
+
+   if (ioctl(patfd, DMX_SET_FILTER, &f) == -1) {
+      perror("ioctl DMX_SET_FILTER failed");
+      close(patfd);
+      return -1;
+   }
+
+   while (!patread){
+      if (((count = read(patfd, buf, sizeof(buft))) < 0) && errno == EOVERFLOW)
+         count = read(patfd, buf, sizeof(buft));
+      if (count < 0) {
+         perror("read_sections: read error");
+         close(patfd);
+         return -1;
+      }
+
+      section_length = ((buf[1] & 0x0f) << 8) | buf[2];
+      if (count != section_length + 3)
+         continue;
+
+      buf += 8;
+      section_length -= 8;
+
+      patread = 1; /* assumes one section contains the whole pat */
+      while (section_length > 0) {
+         int service_id = (buf[0] << 8) | buf[1];
+         if (service_id == sid) {
+            pmt_pid = ((buf[2] & 0x1f) << 8) | buf[3];
+            section_length = 0;
+         }
+         buf += 4;
+         section_length -= 4;
+     }
+   }
+
+   close(patfd);
+   return pmt_pid;
+}
 
 struct diseqc_cmd {
    struct dvb_diseqc_master_cmd cmd;
@@ -231,10 +291,12 @@ int check_frontend (int fe_fd, int dvr)
 static
 int zap_to(unsigned int adapter, unsigned int frontend, unsigned int demux,
       unsigned int sat_no, unsigned int freq, unsigned int pol,
-      unsigned int sr, unsigned int vpid, unsigned int apid, int dvr)
+      unsigned int sr, unsigned int vpid, unsigned int apid, int sid,
+      int dvr, int rec_psi)
 {
    char fedev[128], dmxdev[128];
-   static int fefd, videofd, audiofd;
+   static int fefd, videofd, audiofd, patfd, pmtfd;
+   int pmtpid;
    uint32_t ifreq;
    int hiband, result;
    static struct dvb_frontend_info fe_info;
@@ -275,6 +337,25 @@ int zap_to(unsigned int adapter, unsigned int frontend, unsigned int demux,
 	 close(fefd);
 	 return FALSE;
       }
+
+      if (rec_psi){
+         if ((patfd = open(dmxdev, O_RDWR)) < 0) {
+	    perror("opening audio demux failed");
+	    close(audiofd);
+	    close(videofd);
+	    close(fefd);
+	    return FALSE;
+         }
+
+         if ((pmtfd = open(dmxdev, O_RDWR)) < 0) {
+	    perror("opening audio demux failed");
+	    close(patfd);
+	    close(audiofd);
+	    close(videofd);
+	    close(fefd);
+	    return FALSE;
+         }
+      }
    }
 
    hiband = 0;
@@ -294,13 +375,30 @@ int zap_to(unsigned int adapter, unsigned int frontend, unsigned int demux,
 
    if (diseqc(fefd, sat_no, pol, hiband))
       if (do_tune(fefd, ifreq, sr))
-	 if (set_demux(videofd, vpid, 0, dvr))
-	    if (set_demux(audiofd, apid, 1, dvr))
-	       result = TRUE;
+	 if (set_demux(videofd, vpid, DMX_PES_VIDEO, dvr))
+	    if (set_demux(audiofd, apid, DMX_PES_AUDIO, dvr)) {
+	       if (rec_psi) {
+	          pmtpid = get_pmt_pid(dmxdev, sid);
+		  if (pmtpid < 0) {
+		     result = FALSE;
+		  }
+		  if (pmtpid == 0) {
+		     fprintf(stderr,"couldn't find pmt-pid for sid %04x\n",sid);
+		     result = FALSE;
+		  }
+		  if (set_demux(patfd, 0, DMX_PES_OTHER, dvr))
+	             if (set_demux(pmtfd, pmtpid, DMX_PES_OTHER, dvr))
+	                result = TRUE;
+	          } else {
+		    result = TRUE;
+		  }
+	       }
 
    check_frontend (fefd, dvr);
 
    if (!interactive) {
+      close(patfd);
+      close(pmtfd);
       close(audiofd);
       close(videofd);
       close(fefd);
@@ -313,14 +411,14 @@ int zap_to(unsigned int adapter, unsigned int frontend, unsigned int demux,
 static int read_channels(const char *filename, int list_channels,
 			 uint32_t chan_no, const char *chan_name,
 			 unsigned int adapter, unsigned int frontend,
-			 unsigned int demux, int dvr)
+			 unsigned int demux, int dvr, int rec_psi)
 {
    FILE *cfp;
    char buf[4096];
    char inp[256];
    char *field, *tmp, *p;
    unsigned int line;
-   unsigned int freq, pol, sat_no, sr, vpid, apid;
+   unsigned int freq, pol, sat_no, sr, vpid, apid, sid;
    int ret;
 
 again:
@@ -400,20 +498,29 @@ again:
 	    goto syntax_err;
 
 	 vpid = strtoul(field, NULL, 0);
+	 if (!vpid)
+            vpid = 0x1fff;
 
 	 if (!(field = strsep(&tmp, ":")))
 	    goto syntax_err;
 
 	 apid = strtoul(field, NULL, 0);
+	 if (!apid)
+            apid = 0x1fff;
+
+	 if (!(field = strsep(&tmp, ":")))
+	    goto syntax_err;
+
+	 sid = strtoul(field, NULL, 0);
 
 	 printf("sat %u, frequency = %u MHz %c, symbolrate %u, "
-		"vpid = 0x%04x, apid = 0x%04x\n",
-		sat_no, freq, pol ? 'V' : 'H', sr, vpid, apid);
+		"vpid = 0x%04x, apid = 0x%04x sid = 0x%04x\n",
+		sat_no, freq, pol ? 'V' : 'H', sr, vpid, apid, sid);
 
 	 fclose(cfp);
 
 	 ret = zap_to(adapter, frontend, demux,
-		      sat_no, freq * 1000, pol, sr, vpid, apid, dvr);
+		      sat_no, freq * 1000, pol, sr, vpid, apid, sid, dvr, rec_psi);
 	 if (interactive)
 	    goto again;
 
@@ -476,11 +583,11 @@ int main(int argc, char *argv[])
    int list_channels = 0;
    unsigned int chan_no = 0;
    const char *chan_name = NULL;
-   unsigned int adapter = 0, frontend = 0, demux = 0, dvr = 0;
+   unsigned int adapter = 0, frontend = 0, demux = 0, dvr = 0, rec_psi = 0;
    int opt, copt = 0;
 
    lnb_type = *lnb_enum(0);
-   while ((opt = getopt(argc, argv, "hqrn:a:f:d:c:l:xi")) != -1) {
+   while ((opt = getopt(argc, argv, "hqrpn:a:f:d:c:l:xi")) != -1) {
       switch (opt)
       {
 	 case '?':
@@ -501,6 +608,9 @@ int main(int argc, char *argv[])
 	    break;
 	 case 'f':
 	    frontend = strtoul(optarg, NULL, 0);
+	    break;
+	 case 'p':
+	    rec_psi = 1;
 	    break;
 	 case 'd':
 	    demux = strtoul(optarg, NULL, 0);
@@ -555,8 +665,11 @@ int main(int argc, char *argv[])
 
    printf("reading channels from file '%s'\n", chanfile);
 
+   if (rec_psi)
+      dvr=1;
+
    if (!read_channels(chanfile, list_channels, chan_no, chan_name,
-	    adapter, frontend, demux, dvr))
+	    adapter, frontend, demux, dvr, rec_psi))
       return TRUE;
 
    return FALSE;
