@@ -33,8 +33,7 @@ install-bin:
 install-data:
 	test "$(datadir)/" != "/"
 	mkdir -p $(DESTDIR)$(datadir)/dvb
-	for d in dvb-* ; do test -d $$d || continue ; echo ..... $$d ..... \
-	for d in atsc ; do test -d $$d || continue ; echo ..... $$d ..... \
+	for d in dvb-* atsc ; do test -d $$d || continue ; echo ..... $$d ..... \
 	; mkdir -p $(DESTDIR)$(datadir)/dvb/$$d/ \
 	; cp `find $$d -type f` $(DESTDIR)$(datadir)/dvb/$$d/ ; done
 
