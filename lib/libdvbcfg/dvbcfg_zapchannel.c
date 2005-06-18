@@ -171,8 +171,9 @@ int dvbcfg_zapchannel_load(char *config_file, struct dvbcfg_zapchannel **zapchan
                 linepos = dvbcfg_nexttoken(linepos);
 
                 /* the frequency */
-                if (sscanf(linepos, "%i", &tmpzapchannel.fe_params.frequency) != 1)
+                if (sscanf(linepos, "%i", &val) != 1)
                         continue;
+                tmpzapchannel.fe_params.frequency = val;
                 linepos = dvbcfg_nexttoken(linepos);
 
                 /* the frontend settings */
@@ -246,8 +247,9 @@ int dvbcfg_zapchannel_load(char *config_file, struct dvbcfg_zapchannel **zapchan
                         linepos = dvbcfg_nexttoken(linepos);
 
                         /* symrate */
-                        if (sscanf(linepos, "%i", &tmpzapchannel.fe_params.u.qam.symbol_rate) != 1)
+                        if (sscanf(linepos, "%i", &val) != 1)
                                 continue;
+                        tmpzapchannel.fe_params.u.qam.symbol_rate = val;
                         linepos = dvbcfg_nexttoken(linepos);
 
                         /* FEC */
@@ -289,13 +291,15 @@ int dvbcfg_zapchannel_load(char *config_file, struct dvbcfg_zapchannel **zapchan
                         linepos = dvbcfg_nexttoken(linepos);
 
                         /* satellite switch position */
-                        if (sscanf(linepos, "%i", &tmpzapchannel.satellite_switch) != 1)
+                        if (sscanf(linepos, "%i", &val) != 1)
                                 continue;
+                        tmpzapchannel.satellite_switch = val;
                         linepos = dvbcfg_nexttoken(linepos);
 
                         /* symrate */
-                        if (sscanf(linepos, "%i", &tmpzapchannel.fe_params.u.qpsk.symbol_rate) != 1)
+                        if (sscanf(linepos, "%i", &val) != 1)
                                 continue;
+                        tmpzapchannel.fe_params.u.qpsk.symbol_rate = val;
                         tmpzapchannel.fe_params.u.qpsk.symbol_rate *= 1000;
                         linepos = dvbcfg_nexttoken(linepos);
 
@@ -320,17 +324,20 @@ int dvbcfg_zapchannel_load(char *config_file, struct dvbcfg_zapchannel **zapchan
                 }
 
                 /* finally, read in the PIDs */
-                if (sscanf(linepos, "%i", &tmpzapchannel.video_pid) != 1)
+                if (sscanf(linepos, "%i", &val) != 1)
                         continue;
+                tmpzapchannel.video_pid = val;
                 linepos = dvbcfg_nexttoken(linepos);
-                if (sscanf(linepos, "%i", &tmpzapchannel.audio_pid) != 1)
+                if (sscanf(linepos, "%i", &val) != 1)
                         continue;
+                tmpzapchannel.audio_pid = val;
                 linepos = dvbcfg_nexttoken(linepos);
 
                 /* this one may not be present in all config files */
                 if (has_channel_number) {
-                        if (sscanf(linepos, "%i", &tmpzapchannel.channel_number) != 1)
+                        if (sscanf(linepos, "%i", &val) != 1)
                                 continue;
+                        tmpzapchannel.channel_number = val;
                 }
 
 
