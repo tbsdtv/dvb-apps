@@ -22,20 +22,20 @@
 #define DVBCFG_ADAPTER_H
 
 struct dvbcfg_adapter_entry {
-	char *source_id;
+        char *source_id;
 
-	struct dvbcfg_adapter_entry *next;
+        struct dvbcfg_adapter_entry *next;
 };
 
 /**
  * In-memory representation of a single adapter.
  */
 struct dvbcfg_adapter {
-	char *adapter_id;
-	struct dvbcfg_adapter_entry *source_ids;
+        char *adapter_id;
+        struct dvbcfg_adapter_entry *source_ids;
 
-	struct dvbcfg_adapter *prev;	/* NULL=> this is the first entry */
-	struct dvbcfg_adapter *next;	/* NULL=> this is the last entry */
+        struct dvbcfg_adapter *prev;    /* NULL=> this is the first entry */
+        struct dvbcfg_adapter *next;    /* NULL=> this is the last entry */
 };
 
 
@@ -49,7 +49,7 @@ struct dvbcfg_adapter {
  * @return 0 on success, or nonzero error code on failure.
  */
 extern int dvbcfg_adapter_load(char *config_file,
-			       struct dvbcfg_adapter **adapters);
+                               struct dvbcfg_adapter **adapters);
 
 /**
  * Save adapters to a config file.
@@ -59,7 +59,7 @@ extern int dvbcfg_adapter_load(char *config_file,
  * @return 0 on success, or nonzero error code on failure.
  */
 extern int dvbcfg_adapter_save(char *config_file,
-			       struct dvbcfg_adapter *adapters);
+                               struct dvbcfg_adapter *adapters);
 
 /**
  * Find the entry for a particular adapter_id.
@@ -69,8 +69,8 @@ extern int dvbcfg_adapter_save(char *config_file,
  * @return A dvbcfg_adapter structure if found, or NULL if not.
  */
 extern struct dvbcfg_adapter *dvbcfg_adapter_find(struct dvbcfg_adapter
-						  *adapters,
-						  char *adapter_id);
+                                                  *adapters,
+                                                  char *adapter_id);
 
 /**
  * Find an adapter supporting a source_id.
@@ -80,10 +80,9 @@ extern struct dvbcfg_adapter *dvbcfg_adapter_find(struct dvbcfg_adapter
  * @return A dvbcfg_adapter structure if found, or NULL if not.
  */
 extern struct dvbcfg_adapter *dvbcfg_adapter_find_source_id(struct
-							    dvbcfg_adapter
-							    *adapters,
-							    char
-							    *source_id);
+                                                            dvbcfg_adapter
+                                                            *adapters, char
+                                                            *source_id);
 
 /**
  * Does the supplied adapter support the supplied source_id?
@@ -93,7 +92,7 @@ extern struct dvbcfg_adapter *dvbcfg_adapter_find_source_id(struct
  * @return 1 if it does, 0 if not.
  */
 extern int dvbcfg_adapter_supports_source_id(struct dvbcfg_adapter
-					     *adapter, char *source_id);
+                                             *adapter, char *source_id);
 
 /**
  * Unlink a single adapter from a list, and free its memory.
@@ -102,7 +101,7 @@ extern int dvbcfg_adapter_supports_source_id(struct dvbcfg_adapter
  * @param tofree The adapter to free.
  */
 extern void dvbcfg_adapter_free(struct dvbcfg_adapter **adapters,
-				struct dvbcfg_adapter *tofree);
+                                struct dvbcfg_adapter *tofree);
 
 /**
  * Free memory for all adapters in a list.
@@ -111,4 +110,4 @@ extern void dvbcfg_adapter_free(struct dvbcfg_adapter **adapters,
  */
 extern void dvbcfg_adapter_free_all(struct dvbcfg_adapter *adapters);
 
-#endif				// DVBCFG_ADAPTER_H
+#endif                          // DVBCFG_ADAPTER_H

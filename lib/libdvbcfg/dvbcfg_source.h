@@ -48,11 +48,11 @@
  * In-memory representation of a single source.
  */
 struct dvbcfg_source {
-	char *source_id;
-	char *description;
+        char *source_id;
+        char *description;
 
-	struct dvbcfg_source *prev;	/* NULL=> this is the first entry */
-	struct dvbcfg_source *next;	/* NULL=> this is the last entry */
+        struct dvbcfg_source *prev;     /* NULL=> this is the first entry */
+        struct dvbcfg_source *next;     /* NULL=> this is the last entry */
 };
 
 
@@ -66,7 +66,7 @@ struct dvbcfg_source {
  * @return 0 on success, or nonzero error code on failure.
  */
 extern int dvbcfg_source_load(char *config_file,
-			      struct dvbcfg_source **sources);
+                              struct dvbcfg_source **sources);
 
 /**
  * Save sources to a config file.
@@ -76,7 +76,7 @@ extern int dvbcfg_source_load(char *config_file,
  * @return 0 on success, or nonzero error code on failure.
  */
 extern int dvbcfg_source_save(char *config_file,
-			      struct dvbcfg_source *sources);
+                              struct dvbcfg_source *sources);
 
 /**
  * Find the entry for a particular source_id.
@@ -86,7 +86,7 @@ extern int dvbcfg_source_save(char *config_file,
  * @return A dvbcfg_source structure if found, or NULL if not.
  */
 extern struct dvbcfg_source *dvbcfg_source_find(struct dvbcfg_source
-						*sources, char *source_id);
+                                                *sources, char *source_id);
 
 /**
  * Unlink a single source from a list, and free its memory.
@@ -95,7 +95,7 @@ extern struct dvbcfg_source *dvbcfg_source_find(struct dvbcfg_source
  * @param tofree The source to free.
  */
 extern void dvbcfg_source_free(struct dvbcfg_source **sources,
-			       struct dvbcfg_source *tofree);
+                               struct dvbcfg_source *tofree);
 
 /**
  * Free memory for all sources in a list.
@@ -104,4 +104,4 @@ extern void dvbcfg_source_free(struct dvbcfg_source **sources,
  */
 extern void dvbcfg_source_free_all(struct dvbcfg_source *sources);
 
-#endif				// DVBCFG_SOURCE_H
+#endif                          // DVBCFG_SOURCE_H

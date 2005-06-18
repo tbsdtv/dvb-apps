@@ -29,36 +29,36 @@
 #define DVBCFG_VDRCHANNEL_AUDIO_DD_AC3 1
 
 struct dvbcfg_vdrchannel_audio {
-	uint16_t pid;
-	char lang[4];
-	char type:1;
+        uint16_t pid;
+        char lang[4];
+        char type:1;
 
-	struct dvbcfg_vdrchannel_audio *next;
+        struct dvbcfg_vdrchannel_audio *next;
 };
 
 #define DVBCFG_VDRCHANNEL_MAXCAIDS 8
 
 struct dvbcfg_vdrchannel {
-	char *channel_name;
-	char *provider_name;
-	char *source_name;
-	char *short_name;
-	fe_type_t fe_type;
-	uint16_t video_pid;
-	uint16_t pcr_pid;
-	struct dvbcfg_vdrchannel_audio *audio_streams;
-	uint16_t teletext_pid;
-	uint16_t service_id;
-	uint16_t original_network_id;
-	uint16_t transport_stream_id;
-	uint16_t radio_id;
-	uint16_t caids[DVBCFG_VDRCHANNEL_MAXCAIDS];
-	int num_caids;
-	struct dvb_frontend_parameters fe_params;
-	uint8_t polarization;
+        char *channel_name;
+        char *provider_name;
+        char *source_name;
+        char *short_name;
+        fe_type_t fe_type;
+        uint16_t video_pid;
+        uint16_t pcr_pid;
+        struct dvbcfg_vdrchannel_audio *audio_streams;
+        uint16_t teletext_pid;
+        uint16_t service_id;
+        uint16_t original_network_id;
+        uint16_t transport_stream_id;
+        uint16_t radio_id;
+        uint16_t caids[DVBCFG_VDRCHANNEL_MAXCAIDS];
+        int num_caids;
+        struct dvb_frontend_parameters fe_params;
+        uint8_t polarization;
 
-	struct dvbcfg_vdrchannel *prev;	/* NULL=> first entry */
-	struct dvbcfg_vdrchannel *next;	/* NULL=> last entry */
+        struct dvbcfg_vdrchannel *prev; /* NULL=> first entry */
+        struct dvbcfg_vdrchannel *next; /* NULL=> last entry */
 };
 
 /**
@@ -71,7 +71,7 @@ struct dvbcfg_vdrchannel {
  * @return 0 on success, or nonzero error code on failure.
  */
 extern int dvbcfg_vdrchanel_load(char *config_file,
-				 struct dvbcfg_vdrchannel **channels);
+                                 struct dvbcfg_vdrchannel **channels);
 
 /**
  * Unlink a single dvbcfg_vdrchannel from a list, and free its memory.
@@ -80,7 +80,7 @@ extern int dvbcfg_vdrchanel_load(char *config_file,
  * @param tofree The source to free.
  */
 extern void dvbcfg_vdrchannel_free(struct dvbcfg_vdrchannel **channels,
-				   struct dvbcfg_vdrchannel *tofree);
+                                   struct dvbcfg_vdrchannel *tofree);
 
 /**
  * Free memory for all dvbcfg_vdrchannels in a list.

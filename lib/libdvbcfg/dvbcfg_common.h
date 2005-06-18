@@ -32,4 +32,4 @@
 #define DVBCFG_POLARIZATION_L 2
 #define DVBCFG_POLARIZATION_R 3
 
-#endif				// DVBCFG_COMMON_H
+#endif                          // DVBCFG_COMMON_H

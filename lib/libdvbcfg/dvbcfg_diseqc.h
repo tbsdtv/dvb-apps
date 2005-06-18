@@ -66,25 +66,25 @@
  * source_id/slof/polarization combination.
  */
 struct dvbcfg_diseqc_entry {
-	uint32_t slof;
-	uint8_t polarization:2;
+        uint32_t slof;
+        uint8_t polarization:2;
 
-	uint32_t lof;
-	char *command;
+        uint32_t lof;
+        char *command;
 
-	struct dvbcfg_diseqc_entry *next;	/* NULL=> last entry */
-	struct dvbcfg_diseqc_entry *prev;	/* NULL=> first entry */
+        struct dvbcfg_diseqc_entry *next;       /* NULL=> last entry */
+        struct dvbcfg_diseqc_entry *prev;       /* NULL=> first entry */
 };
 
 /**
  * In-memory representation of diseqc information for a single source_id.
  */
 struct dvbcfg_diseqc {
-	char *source_id;
-	struct dvbcfg_diseqc_entry *entries;
+        char *source_id;
+        struct dvbcfg_diseqc_entry *entries;
 
-	struct dvbcfg_diseqc *next;	/* NULL=> last entry */
-	struct dvbcfg_diseqc *prev;	/* NULL=> first entry */
+        struct dvbcfg_diseqc *next;     /* NULL=> last entry */
+        struct dvbcfg_diseqc *prev;     /* NULL=> first entry */
 };
 
 
@@ -98,7 +98,7 @@ struct dvbcfg_diseqc {
  * @return 0 on success, or nonzero error code on failure.
  */
 extern int dvbcfg_diseqc_load(char *config_file,
-			      struct dvbcfg_diseqc **diseqcs);
+                              struct dvbcfg_diseqc **diseqcs);
 
 /**
  * Save diseqcs to a config file.
@@ -108,7 +108,7 @@ extern int dvbcfg_diseqc_load(char *config_file,
  * @return 0 on success, or nonzero error code on failure.
  */
 extern int dvbcfg_diseqc_save(char *config_file,
-			      struct dvbcfg_diseqc *diseqcs);
+                              struct dvbcfg_diseqc *diseqcs);
 
 /**
  * Find the matching dvcfg_diseqc for a particular source_id.
@@ -118,7 +118,7 @@ extern int dvbcfg_diseqc_save(char *config_file,
  * @return A dvbcfg_diseqc structure if found, or NULL if not.
  */
 extern struct dvbcfg_diseqc *dvbcfg_diseqc_find(struct dvbcfg_diseqc
-						*diseqcs, char *source_id);
+                                                *diseqcs, char *source_id);
 
 /**
  * Find the matching dvcfg_diseqc_entry within a source for a particular frequency/polarization.
@@ -129,12 +129,12 @@ extern struct dvbcfg_diseqc *dvbcfg_diseqc_find(struct dvbcfg_diseqc
  * @return A dvbcfg_diseqc_entry structure if found, or NULL if not.
  */
 extern struct dvbcfg_diseqc_entry *dvbcfg_diseqc_find_entry(struct
-							    dvbcfg_diseqc
-							    *diseqc,
-							    uint32_t
-							    frequency,
-							    int
-							    polarization);
+                                                            dvbcfg_diseqc
+                                                            *diseqc,
+                                                            uint32_t
+                                                            frequency,
+                                                            int
+                                                            polarization);
 
 /**
  * Unlink a single diseqc from a list, and free its memory.
@@ -143,7 +143,7 @@ extern struct dvbcfg_diseqc_entry *dvbcfg_diseqc_find_entry(struct
  * @param tofree The diseqc to free.
  */
 extern void dvbcfg_diseqc_free(struct dvbcfg_diseqc **diseqcs,
-			       struct dvbcfg_diseqc *tofree);
+                               struct dvbcfg_diseqc *tofree);
 
 /**
  * Unlink a single dvbcfg_diseqc_entry from a dvbcfg_diseqc, and free its memory.
@@ -152,7 +152,7 @@ extern void dvbcfg_diseqc_free(struct dvbcfg_diseqc **diseqcs,
  * @param tofree The dvbcfg_diseqc_entry to free.
  */
 extern void dvbcfg_diseqc_free_entry(struct dvbcfg_diseqc *diseqc,
-				     struct dvbcfg_diseqc_entry *tofree);
+                                     struct dvbcfg_diseqc_entry *tofree);
 
 /**
  * Free memory for all diseqcs in a list.
@@ -161,4 +161,4 @@ extern void dvbcfg_diseqc_free_entry(struct dvbcfg_diseqc *diseqc,
  */
 extern void dvbcfg_diseqc_free_all(struct dvbcfg_diseqc *diseqcs);
 
-#endif				// DVBCFG_DISEQC_H
+#endif                          // DVBCFG_DISEQC_H

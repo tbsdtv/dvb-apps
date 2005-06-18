@@ -40,7 +40,7 @@ extern int dvbcfg_cleanline(char *line);
  * @return Number of tokens found.
  */
 extern int dvbcfg_tokenise(char *line, char *delim, int maxtoken,
-			   int concatdelim);
+                           int concatdelim);
 
 /**
  * Retrieve the next token from a line.
@@ -67,4 +67,4 @@ extern char *dvbcfg_strdupandtrim(char *line);
  */
 extern void dvbcfg_replacechar(char *line, char replace, char with);
 
-#endif				// DVBCFG_UTIL
+#endif                          // DVBCFG_UTIL

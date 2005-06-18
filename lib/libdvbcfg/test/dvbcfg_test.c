@@ -28,48 +28,49 @@
 void syntax();
 
 
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
-  if (argc != 4) {
-    syntax();
-  }
+        if (argc != 4) {
+                syntax();
+        }
 
-  if (!strcmp(argv[1], "-source")) {
-    struct dvbcfg_source* sources = NULL;
+        if (!strcmp(argv[1], "-source")) {
+                struct dvbcfg_source *sources = NULL;
 
-    dvbcfg_source_load(argv[2], &sources);
-    dvbcfg_source_save(argv[3], sources);
-    dvbcfg_source_free_all(sources);
+                dvbcfg_source_load(argv[2], &sources);
+                dvbcfg_source_save(argv[3], sources);
+                dvbcfg_source_free_all(sources);
 
-  } else if (!strcmp(argv[1], "-diseqc")) {
-    struct dvbcfg_diseqc* diseqcs = NULL;
+        } else if (!strcmp(argv[1], "-diseqc")) {
+                struct dvbcfg_diseqc *diseqcs = NULL;
 
-    dvbcfg_diseqc_load(argv[2], &diseqcs);
-    dvbcfg_diseqc_save(argv[3], diseqcs);
-    dvbcfg_diseqc_free_all(diseqcs);
+                dvbcfg_diseqc_load(argv[2], &diseqcs);
+                dvbcfg_diseqc_save(argv[3], diseqcs);
+                dvbcfg_diseqc_free_all(diseqcs);
 
-  } else if (!strcmp(argv[1], "-vdrchannel")) {
-    struct dvbcfg_vdrchannel* vdrchannels = NULL;
+        } else if (!strcmp(argv[1], "-vdrchannel")) {
+                struct dvbcfg_vdrchannel *vdrchannels = NULL;
 
-    dvbcfg_vdrchannel_load(argv[2], &vdrchannels);
-    dvbcfg_vdrchannel_free_all(vdrchannels);
+                dvbcfg_vdrchannel_load(argv[2], &vdrchannels);
+                dvbcfg_vdrchannel_free_all(vdrchannels);
 
-  } else if (!strcmp(argv[1], "-adapter")) {
-    struct dvbcfg_adapter* adapters = NULL;
+        } else if (!strcmp(argv[1], "-adapter")) {
+                struct dvbcfg_adapter *adapters = NULL;
 
-    dvbcfg_adapter_load(argv[2], &adapters);
-    dvbcfg_adapter_save(argv[3], adapters);
-    dvbcfg_adapter_free_all(adapters);
+                dvbcfg_adapter_load(argv[2], &adapters);
+                dvbcfg_adapter_save(argv[3], adapters);
+                dvbcfg_adapter_free_all(adapters);
 
-  } else {
-    syntax();
-  }
+        } else {
+                syntax();
+        }
 
-  exit(0);
+        exit(0);
 }
 
 void syntax()
 {
-  fprintf(stderr, "Syntax: dvcfg_test <-source|-diseqc|-vdrchannel|-adapter> <input filename> <output filename>\n");
-  exit(1);
+        fprintf(stderr,
+                "Syntax: dvcfg_test <-source|-diseqc|-vdrchannel|-adapter> <input filename> <output filename>\n");
+        exit(1);
 }

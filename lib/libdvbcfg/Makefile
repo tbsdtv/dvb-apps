@@ -21,6 +21,9 @@ libdvbcfg.a: $(OBJS)
 	$(AR) rc $(LIB) $(OBJS)
 	$(RANLIB) $(LIB)
 
+test: $(LIB)
+	make -C test
+
 install: $(LIB) $(INCLUDES)
 	mkdir -p $(INSTDIR)/lib
 	mkdir -p $(INSTDIR)/include
@@ -29,5 +32,6 @@ install: $(LIB) $(INCLUDES)
 
 clean:
 	rm -f *~ *# *.o *.a
+	make -C test clean
 
 .PHONY: clean
