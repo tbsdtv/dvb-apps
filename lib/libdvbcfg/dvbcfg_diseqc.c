@@ -38,6 +38,7 @@ int dvbcfg_diseqc_load(char *config_file, struct dvbcfg_diseqc **diseqcs)
         struct dvbcfg_diseqc_entry *curentry;
         int numtokens;
         int error = 0;
+        int val;
 
         /* open the file */
         in = fopen(config_file, "r");
@@ -89,9 +90,9 @@ int dvbcfg_diseqc_load(char *config_file, struct dvbcfg_diseqc **diseqcs)
                 }
 
                 /* the SLOF */
-                if (sscanf(linepos, "%d", &tmpentry.slof) != 1)
+                if (sscanf(linepos, "%d", &val) != 1)
                         continue;
-                tmpentry.slof *= 1000;  // want it in kHz
+                tmpentry.slof = val * 1000;  // want it in kHz
                 linepos = dvbcfg_nexttoken(linepos);
 
                 /* the polarization */
@@ -108,9 +109,9 @@ int dvbcfg_diseqc_load(char *config_file, struct dvbcfg_diseqc **diseqcs)
                 linepos = dvbcfg_nexttoken(linepos);
 
                 /* LOF */
-                if (sscanf(linepos, "%d", &tmpentry.lof) != 1)
+                if (sscanf(linepos, "%d", &val) != 1)
                         continue;
-                tmpentry.lof *= 1000;   // want it in kHz
+                tmpentry.lof = val * 1000;   // want it in kHz
                 linepos = dvbcfg_nexttoken(linepos);
 
                 /* command */

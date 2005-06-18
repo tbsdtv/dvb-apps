@@ -1,5 +1,5 @@
 /**
- * dvbcfg_zapchannel configuration file support.
+ * dvbcfg_zapchannel (i.e. linuxtv *zap format) configuration file support.
  *
  * Copyright (c) 2005 by Andrew de Quincey <adq_dvb@lidskialf.net>
  *
@@ -282,9 +282,9 @@ int dvbcfg_zapchannel_load(char *config_file, struct dvbcfg_zapchannel **zapchan
                         tmpzapchannel.fe_params.u.qpsk.fec_inner = FEC_AUTO;
 
                         /* polarization */
-                        if ((linepos[0] == 'H') || (linepos[0] == 'h'))
+                        if (toupper(linepos[0]) == 'H')
                                 tmpzapchannel.polarization = DVBCFG_POLARIZATION_H;
-                        else if ((linepos[0] == 'V') || (linepos[0] == 'v'))
+                        else if (toupper(linepos[0]) == 'V')
                                 tmpzapchannel.polarization = DVBCFG_POLARIZATION_V;
                         else
                                 continue;

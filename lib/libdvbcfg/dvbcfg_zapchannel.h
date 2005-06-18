@@ -24,8 +24,8 @@
 #include <stdint.h>
 #include <linux/dvb/frontend.h>
 
-struct dvbcfg_zapchannel {
-
+struct dvbcfg_zapchannel
+{
         char* name;
         fe_type_t fe_type;
         struct dvb_frontend_parameters fe_params;
@@ -50,6 +50,7 @@ struct dvbcfg_zapchannel {
  */
 extern int dvbcfg_zapchannel_load(char *config_file,
                                   struct dvbcfg_zapchannel **channels);
+
 /**
  * Save *zap format channels to a config file.
  *
