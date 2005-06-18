@@ -21,6 +21,35 @@
 #ifndef DVBCFG_ADAPTER_H
 #define DVBCFG_ADAPTER_H
 
+/**
+ * The adapters file describes each DVB adapter in a system, and indicates what source_ids
+ * are receivable by each adapter. It consists of multiple lines as follows:
+ *
+ * <adapter_id> <source_id> ...
+ *
+ * <adapter_id> identifies a DVB adapter in the system. The following adapter_ids are supported:
+ *
+ *   DVB<dvb_type><adapter_number>.<frontend_number>
+ *   ATSC<adapter_number>.<frontend_number>
+ *
+ *   <dvb_type> is one of 'S', 'T', or 'C'(DVBS, DVBT, and DVBC respectively)
+ *   <adapter_number> is the number allocated to the DVB device by the OS (i.e. /dev/dvb/adapterX)
+ *   <frontend_number> is the frontend ID on a particular DVB device (i.e. /dev/dvb/adapterX/frontendY)
+ *
+ * <source_id> corresponds to an entry in the dvbcfg_sources file. Multiple source_ids can
+ * be specified for an adapter, indicating it can be automatically switched between them in
+ * some manner (e.g. by using DISEQC for DVBS adapters).
+ *
+ * Comments begin with '#' - any characters after this will be ignored
+ * to the end of the line.
+ *
+ * Examples:
+ * DVBS0.0 S5E S7E
+ * DVBC1.0
+ * DVBT2.0 Tuk-BlackHill
+ */
+
+
 struct dvbcfg_adapter_entry {
         char *source_id;
 

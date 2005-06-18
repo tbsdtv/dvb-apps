@@ -25,7 +25,8 @@
 #define DVBCFG_SOURCE_H
 
 /**
- * The sources file consists of multiple lines as follows:
+ * The sources file defines standardised unique IDs for all DVB transmitters (as there is no
+ * other real standard). It consists of multiple lines as follows:
  *
  * <source_id> <human readable description>
  *
@@ -33,6 +34,7 @@
  * DVBS: "S"<orbital position>
  * DVBT: "T"<country code and or network>-<physical location>
  * DVBC: "C"<country code and or network>-<physical location>
+ * ATSC: "A"<country code and or network>-<physical location>
  *
  * Comments begin with '#' - any characters after this will be ignored
  * to the end of the line.

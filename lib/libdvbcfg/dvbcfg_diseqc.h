@@ -27,7 +27,12 @@
 #include <stdint.h>
 
 /**
- * The dvbcfg_diseqc file consists of multiple lines as follows:
+ * The dvbcfg_diseqc file defines DISEQC command sequences to use for DVBS channels.
+ * A channel is matched to a command sequence by matching its source_id, polarization, and if its
+ * frequency is less than the SLOF for the command (if more than one command is a candidate because
+ * the frequency is less than several SLOFs, the one with the lowest SLOF is chosen).
+ *
+ * The file consists of a set of lines as follows:
  *
  * <source_id> <slof> <polarization> <lof> <diseqc command>
  *
@@ -35,7 +40,7 @@
  * "*" is used to allow a set of default diseqc entries to be specified.
  * <slof> Is the switching frequency for this entry (the maximum frequency this entry allows). It should be in MHz.
  * <polarization> Is the polarization for this entry - one of 'H','V','L', or 'R'.
- * <lof> The frequency (in MHz) to subtract from the requested frequency if this entry matches.
+ * <lof> The frequency (in MHz) to subtract from the channel frequency if this entry matches.
  * <diseqc command> The diseqc command to execute if this entry matches.
  *
  * A diseqc command consists of a sequence of the following codes, separated by whitespace:
