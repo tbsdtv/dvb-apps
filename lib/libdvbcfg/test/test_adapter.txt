@@ -1,0 +1,6 @@
+# Test file for adapters configuration
+
+
+DVB0.0 S5E S7E
+DVB1.0
+DVB2.0 Tuk-BlackHill # a comment
