@@ -23,6 +23,7 @@
 #include "dvbcfg_source.h"
 #include "dvbcfg_diseqc.h"
 #include "dvbcfg_vdrchannel.h"
+#include "dvbcfg_zapchannel.h"
 #include "dvbcfg_adapter.h"
 
 void syntax();
@@ -54,6 +55,13 @@ int main(int argc, char *argv[])
                 dvbcfg_vdrchannel_load(argv[2], &vdrchannels);
                 dvbcfg_vdrchannel_free_all(vdrchannels);
 
+        } else if (!strcmp(argv[1], "-zapchannel")) {
+                struct dvbcfg_zapchannel *zapchannels = NULL;
+
+                dvbcfg_zapchannel_load(argv[2], &zapchannels);
+                dvbcfg_zapchannel_save(argv[3], zapchannels);
+                dvbcfg_zapchannel_free_all(zapchannels);
+
         } else if (!strcmp(argv[1], "-adapter")) {
                 struct dvbcfg_adapter *adapters = NULL;
 
@@ -71,6 +79,6 @@ int main(int argc, char *argv[])
 void syntax()
 {
         fprintf(stderr,
-                "Syntax: dvcfg_test <-source|-diseqc|-vdrchannel|-adapter> <input filename> <output filename>\n");
+                "Syntax: dvcfg_test <-source|-diseqc|-vdrchannel|-zapchannel|-adapter> <input filename> <output filename>\n");
         exit(1);
 }
