@@ -44,8 +44,8 @@
  *
  * All other DVB types have a slight complication. Unlike DVBS, these consist of multiple
  * locales spaced over a wide area (e.g. a country). Between each locale, _roughly_ the same
- * services/multiplexes are available, but can be on different frequencies in different locales.
- * Also, some networks provide localised programming, so the exact service lineup can and does
+ * services/multiplexes are available, but can be on different frequencies. Also, some
+ * networks provide localised programming, so the exact service lineup can and does
  * vary from locale to locale.
  *
  * Therefore, for DVBT, DVBC, and ATSC, the <source_id> is split into two components as follows:
@@ -58,7 +58,7 @@
  *
  * <source_locale> is an description of the physical location of the source. For example, in the
  * UK, the <source_locale> for a DVBT source is the name of the DVBT transmitter (e.g. BlackHill).
- * <source_locale> May contain any character except whitespace.
+ * <source_locale> may contain any character except whitespace.
  *
  * Comments begin with '#' - any characters after this will be ignored to the end of the line.
  *
