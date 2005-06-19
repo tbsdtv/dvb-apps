@@ -33,6 +33,63 @@
 #define DVBCFG_POLARIZATION_R 3
 
 
+/**
+ * Possible types of source_id.
+ */
+#define DVBCFG_SOURCETYPE_DVBS 'S'
+#define DVBCFG_SOURCETYPE_DVBC 'C'
+#define DVBCFG_SOURCETYPE_DVBT 'T'
+#define DVBCFG_SOURCETYPE_ATSC 'A'
+
+
+/**
+ * A <source_id> defines a unique standardised ID for all DVB networks. It is divided into
+ * components as follows:
+ *
+ * <source_type>-<source_network>-<source_region>-<source_locale>
+ *
+ * <source_type> is a single character giving the type of DVB source:
+ *   DVBS: "S"
+ *   DVBT: "T"
+ *   DVBC: "C"
+ *   ATSC: "A"
+ *
+ * For DVBS, <source_network> is a unique identifier for a satellite cluster. It is defined to
+ * be "S"<longitude><"E"|"W"> - i.e. the orbital position of the cluster. <source_region> and
+ * <source_node> have no meaning for a DVBS source, and are omitted from the string representation,
+ * and will be set to NULL in the below structure.
+ *
+ * All other DVB types have a complication. Unlike DVBS, these consist of multiple <source_locale>s
+ * (e.g. DVBT transmitters) spaced over a geographical <source_region>. Finally, all the
+ * <source_region>s together consitute a <source_network> (typically a country).
+ *
+ * Between each <source_locale>, the same services/multiplexes are available, but can be on
+ * different frequencies.
+ *
+ * Between each <source_region>, the exact service lineup varies, providing regional programming.
+ *
+ * <source_network> is the name of the DVB network. Currently we are simply using the country
+ * code for this (e.g "Tuk"). However if necessary, this can easily be extended to allow multiple
+ * networks, for example "Tuk:network1", "Tuk:network2". Note that <source_network> may not
+ * contain '-' or whitespace characters.
+ *
+ * <source_region> is the name of the broadcast region the source is a member of. For example,
+ * in Scotland, the "borders" region has slightly programmes to the "grampian" region.
+ *
+ * Finally, <source_locale> desribes the physical location of where the source may be received. For
+ * example, in the UK, the <source_locale> for a DVBT source is the name of the DVBT transmitter
+ * (e.g. BlackHill).
+ *
+ * Note that <source_network>,<source_region>, and <source_locale> may not contain '-' or
+ * whitespace characters.
+ */
+struct dvbcfg_source_id {
+        char source_type;
+        char *source_network;
+        char *source_region;
+        char *source_locale;
+};
+
 
 /**
  * A Unique Multiplex ID uniquely identifies a multiplex across the global space of all multiplexes
@@ -41,19 +98,20 @@
  * The externalised string version of this value is as follows:
  * <source_id>:<original_network_id>:<transport_stream_id>:<multiplex_differentiator>
  *
- * <source_id> corresponds to one of the entries in the dvbcfg_sources file.
  * <original_network_id> Is the ID of the original broadcaster of the multiplex.
  * <transport_stream_id> Is the ID of the multiplex as allocated by the broadcaster.
  * <multiplex_differentiator> Inevitably there are clashes with the above values. This final value permits these
  * clashes to be resolved. The exact definition depends on the DVB type:
  *   DVBS: ((frequency / (symbolrate/1000)) << 2) | polarisation
- *   DVBT: (frequency / bandwidth)
+ *   DVBT: (frequency / bandwidth_in_Hz)
  *   DVBC: (frequency / symbolrate)
  *   ATSC: (frequency / 6000000)
+ *
+ *   Note: if there are no clashes, the <multiplex_differentiator> should be set to 0.
  */
-struct umid
+struct dvbcfg_umid
 {
-        char* source_id;
+        struct dvbcfg_source_id source_id;
         uint32_t original_network_id;
         uint32_t transport_stream_id;
         uint32_t multiplex_differentiator;
@@ -71,7 +129,7 @@ struct umid
  *   The value will be the index of the service in the PAT table transmitted in its multiplex.
  *   Note: this should be set to 0 there are no clashes.
  */
-struct usid
+struct dvbcfg_usid
 {
         uint32_t program_number;
         uint32_t service_differentiator;
@@ -80,19 +138,40 @@ struct usid
 
 /**
  * A Global Service ID uniquely identifies a service across the global space of all multiplexes
- * in all DVB transmission types. It is _almost_ simply the concatenation of UMID and USID, but not quite.
+ * in all DVB transmission types. It is basically just the concatenation of the UMID and the USID. The externalised
+ * string version is as follows:
  *
- * FIXME: info about DVB-T horribleness
+ * <source_id>:<original_network_id>:<transport_stream_id>:<multiplex_differentiator>:<program_number>:<service_differentiator>
+ *
+ * The following only applies to GSIDs. It does not apply to UMIDs on their own: DVBT, DVBC, ATSC give more complications
+ * as usual. If the service represented by a GSID is receiveable across the entire <source_network>, <source_region>
+ * and <source_locale> should be omitted/NULL.
+ *
+ * If the service is only receivable in a particular <source_region>, only <source_locale> should be omitted/NULL.
  */
-struct gsid
+struct dvbcfg_gsid
 {
-        char* source_id;
-        uint32_t original_network_id;
-        uint32_t transport_stream_id;
-        uint32_t multiplex_differentiator;
-
-        struct usid usid;
+        struct dvbcfg_umid umid;
+        struct dvbcfg_usid usid;
 };
+
+/**
+ * Convert a source_id structure into a string.
+ *
+ * @param umid The source_id structure.
+ * @return Pointer to a malloc()ed buffer containing the string, or NULL on failure.
+ */
+extern char* dvbcfg_source_id_to_string(struct dvbcfg_source_id* source_id);
+
+/**
+ * Parse a string into a source_id.
+ *
+ * @param string The string to parse.
+ * @param umid Pointer to a source_id structure to fill out.
+ *
+ * @return 0 on success, nonzero on failure.
+ */
+extern int dvbcfg_source_id_from_string(char* string, struct dvbcfg_source_id* source_id);
 
 /**
  * Convert a UMID structure into a string.
@@ -100,7 +179,7 @@ struct gsid
  * @param umid The UMID structure.
  * @return Pointer to a malloc()ed buffer containing the string, or NULL on failure.
  */
-extern char* umid_to_string(struct umid* umid);
+extern char* dvbcfg_umid_to_string(struct dvbcfg_umid* umid);
 
 /**
  * Parse a string into a UMID.
@@ -110,7 +189,7 @@ extern char* umid_to_string(struct umid* umid);
  *
  * @return 0 on success, nonzero on failure.
  */
-extern int umid_from_string(char* string, struct umid* umid);
+extern int dvbcfg_umid_from_string(char* string, struct dvbcfg_umid* umid);
 
 /**
  * Convert a USID structure into a string.
@@ -118,7 +197,7 @@ extern int umid_from_string(char* string, struct umid* umid);
  * @param umid The USID structure.
  * @return Pointer to a malloc()ed buffer containing the string, or NULL on failure.
  */
-extern char* usid_to_string(struct umid* usid);
+extern char* dvbcfg_usid_to_string(struct dvbcfg_umid* usid);
 
 /**
  * Parse a string into a USID.
@@ -128,7 +207,7 @@ extern char* usid_to_string(struct umid* usid);
  *
  * @return 0 on success, nonzero on failure.
  */
-extern int usid_from_string(char* string, struct umid* usid);
+extern int dvbcfg_usid_from_string(char* string, struct dvbcfg_umid* usid);
 
 /**
  * Convert a GSID structure into a string.
@@ -136,7 +215,7 @@ extern int usid_from_string(char* string, struct umid* usid);
  * @param umid The GSID structure.
  * @return Pointer to a malloc()ed buffer containing the string, or NULL on failure.
  */
-extern char* gsid_to_string(struct umid* gsid);
+extern char* dvbcfg_gsid_to_string(struct dvbcfg_umid* gsid);
 
 /**
  * Parse a string into a GSID.
@@ -146,6 +225,6 @@ extern char* gsid_to_string(struct umid* gsid);
  *
  * @return 0 on success, nonzero on failure.
  */
-extern int gsid_from_string(char* string, struct umid* gsid);
+extern int dvbcfg_gsid_from_string(char* string, struct dvbcfg_umid* gsid);
 
 #endif                          // DVBCFG_COMMON_H
