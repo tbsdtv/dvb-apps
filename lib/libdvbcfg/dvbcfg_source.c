@@ -61,9 +61,19 @@ int dvbcfg_source_load(char *config_file, struct dvbcfg_source **sources)
                         continue;
                 }
 
-                /* the source code */
-                tmpsource.source_id = linepos;
+                /* the source_network/ source_locale */
+                tmpsource.source_network = linepos;
                 linepos = dvbcfg_nexttoken(linepos);
+                if ((tmpsource.source_network[0] == 'T') ||
+                    (tmpsource.source_network[0] == 'C') ||
+                    (tmpsource.source_network[0] == 'A')) {
+                        tmpsource.source_locale = strchr(tmpsource.source_network, '-');
+                        if (tmpsource.source_locale == NULL)
+                                continue;
+
+                        *tmpsource.source_locale = 0;
+                        tmpsource.source_locale++;
+                }
 
                 /* the description */
                 tmpsource.description = linepos;
@@ -77,13 +87,18 @@ int dvbcfg_source_load(char *config_file, struct dvbcfg_source **sources)
                 }
                 memcpy(newsource, &tmpsource,
                        sizeof(struct dvbcfg_source));
-                newsource->source_id =
-                    dvbcfg_strdupandtrim(tmpsource.source_id);
+                newsource->source_network =
+                    dvbcfg_strdupandtrim(tmpsource.source_network);
+                if (newsource->source_locale)
+                        newsource->source_locale =
+                            dvbcfg_strdupandtrim(tmpsource.source_locale);
                 newsource->description =
                     dvbcfg_strdupandtrim(tmpsource.description);
-                if ((!newsource->source_id) || (!newsource->description)) {
-                        if (newsource->source_id)
-                                free(newsource->source_id);
+                if ((!newsource->source_network) || (!newsource->description)) {
+                        if (newsource->source_network)
+                                free(newsource->source_network);
+                        if (newsource->source_locale)
+                                free(newsource->source_locale);
                         if (newsource->description)
                                 free(newsource->description);
                         free(newsource);
@@ -120,8 +135,10 @@ int dvbcfg_source_save(char *config_file, struct dvbcfg_source *sources)
                 return errno;
 
         while (sources) {
-                fprintf(out, "%s %s\n", sources->source_id,
-                        sources->description);
+                fprintf(out, "%s", sources->source_network);
+                if (sources->source_locale)
+                        fprintf(out, "-%s", sources->source_locale);
+                fprintf(out, " %s\n", sources->description);
 
                 sources = sources->next;
         }
@@ -131,11 +148,18 @@ int dvbcfg_source_save(char *config_file, struct dvbcfg_source *sources)
 }
 
 struct dvbcfg_source *dvbcfg_source_find(struct dvbcfg_source *sources,
-                                         char *source_id)
+                                         char *source_network, char* source_locale)
 {
         while (sources) {
-                if (!strcmp(source_id, sources->source_id))
-                        return sources;
+                if (!strcmp(source_network, sources->source_network)) {
+                        if (source_locale && sources->source_locale) {
+                                if (!strcmp(source_locale, sources->source_locale)) {
+                                        return sources;
+                                }
+                        } else if (!source_locale) {
+                                return sources;
+                        }
+                }
 
                 sources = sources->next;
         }
@@ -153,8 +177,10 @@ void dvbcfg_source_free(struct dvbcfg_source **sources,
         next = tofree->next;
 
         /* free internal structures */
-        if (tofree->source_id)
-                free(tofree->source_id);
+        if (tofree->source_network)
+                free(tofree->source_network);
+        if (tofree->source_locale)
+                free(tofree->source_locale);
         if (tofree->description)
                 free(tofree->description);
         free(tofree);

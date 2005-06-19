@@ -30,14 +30,37 @@
  *
  * <source_id> <human readable description>
  *
- * The format of <source_id> depends on the DVB type.
- * DVBS: "S"<orbital position>
- * DVBT: "T"<country code and or network>-<physical location>
- * DVBC: "C"<country code and or network>-<physical location>
- * ATSC: "A"<country code and or network>-<physical location>
+ * The first character of <source_id> gives the type of DVB source:
  *
- * Comments begin with '#' - any characters after this will be ignored
- * to the end of the line.
+ *   DVBS: "S"
+ *   DVBT: "T"
+ *   DVBC: "C"
+ *   ATSC: "A"
+ *
+ * For DVBS, <source_id> is a unique identifier for a satellite cluster. It is defined to
+ * be "S"<longitude><"E"|"W"> - i.e. the orbital position of the cluster. For convenience,
+ * the <source_id> of a DVBS source is defined to be the same as the <source_network>
+ * (see below). <source_locale> has no meaning for a DVBS source.
+ *
+ * All other DVB types have a slight complication. Unlike DVBS, these consist of multiple
+ * locales spaced over a wide area (e.g. a country). Between each locale, _roughly_ the same
+ * services/multiplexes are available, but can be on different frequencies in different locales.
+ * Also, some networks provide localised programming, so the exact service lineup can and does
+ * vary from locale to locale.
+ *
+ * Therefore, for DVBT, DVBC, and ATSC, the <source_id> is split into two components as follows:
+ * <source_id> == <source_network>-<source_locale>
+ *
+ * <source_network> is the name of the DVB network. Currently we are simply using the country
+ * code for this (e.g "Tuk"). However if necessary, this can easily be extended to allow multiple
+ * networks, for example "Tuk:network1", "Tuk:network2". Note that <source_network> may not
+ * contain '-' or whitespace characters.
+ *
+ * <source_locale> is an description of the physical location of the source. For example, in the
+ * UK, the <source_locale> for a DVBT source is the name of the DVBT transmitter (e.g. BlackHill).
+ * <source_locale> May contain any character except whitespace.
+ *
+ * Comments begin with '#' - any characters after this will be ignored to the end of the line.
  *
  * Examples:
  * S5E     Sirius 2/3
@@ -50,7 +73,8 @@
  * In-memory representation of a single source.
  */
 struct dvbcfg_source {
-        char *source_id;
+        char *source_network;
+        char *source_locale;            /* NULL for DVBS */
         char *description;
 
         struct dvbcfg_source *prev;     /* NULL=> this is the first entry */
@@ -84,11 +108,11 @@ extern int dvbcfg_source_save(char *config_file,
  * Find the entry for a particular source_id.
  *
  * @param sources Pointer to the list to search.
- * @param source_id source_id to find.
+ * @param source_network source_network to find.
+ * @param source_locale source_local to find (pass NULL for DVBS, or to simply match by source_locale).
  * @return A dvbcfg_source structure if found, or NULL if not.
  */
-extern struct dvbcfg_source *dvbcfg_source_find(struct dvbcfg_source
-                                                *sources, char *source_id);
+extern struct dvbcfg_source *dvbcfg_source_find(struct dvbcfg_source *sources, char *source_network, char* source_locale);
 
 /**
  * Unlink a single source from a list, and free its memory.
