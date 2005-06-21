@@ -21,6 +21,8 @@
 #ifndef DVBCFG_ADAPTER_H
 #define DVBCFG_ADAPTER_H
 
+#include <dvbcfg_common.h>
+
 /**
  * The adapters file describes each DVB adapter in a system, and indicates what source_ids
  * are receivable by each adapter. It consists of multiple lines as follows:
@@ -51,7 +53,7 @@
 
 
 struct dvbcfg_adapter_entry {
-        char *source_id;
+        struct dvbcfg_source_id source_id;
 
         struct dvbcfg_adapter_entry *next;
 };
@@ -108,10 +110,8 @@ extern struct dvbcfg_adapter *dvbcfg_adapter_find(struct dvbcfg_adapter
  * @param source_id source_id to find.
  * @return A dvbcfg_adapter structure if found, or NULL if not.
  */
-extern struct dvbcfg_adapter *dvbcfg_adapter_find_source_id(struct
-                                                            dvbcfg_adapter
-                                                            *adapters, char
-                                                            *source_id);
+extern struct dvbcfg_adapter *dvbcfg_adapter_find_source_id(struct dvbcfg_adapter* adapters,
+                                                            struct dvbcfg_source_id* source_id);
 
 /**
  * Does the supplied adapter support the supplied source_id?
@@ -120,8 +120,8 @@ extern struct dvbcfg_adapter *dvbcfg_adapter_find_source_id(struct
  * @param source_id sourec_id to check for.
  * @return 1 if it does, 0 if not.
  */
-extern int dvbcfg_adapter_supports_source_id(struct dvbcfg_adapter
-                                             *adapter, char *source_id);
+extern int dvbcfg_adapter_supports_source_id(struct dvbcfg_adapter* adapter,
+                                             struct dvbcfg_source_id* source_id);
 
 /**
  * Unlink a single adapter from a list, and free its memory.

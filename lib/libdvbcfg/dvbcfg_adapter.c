@@ -79,8 +79,11 @@ int dvbcfg_adapter_load(char *config_file,
                                 error = -ENOMEM;
                                 break;
                         }
-                        newentry->source_id =
-                            dvbcfg_strdupandtrim(linepos, -1);
+                        if (dvbcfg_source_id_from_string(linepos, &newentry->source_id)) {
+                                free(newentry);
+                                error = -ENOMEM;
+                                break;
+                        }
 
                         /* hook it into the list */
                         if (!tmpadapter.source_ids) {
@@ -174,14 +177,13 @@ struct dvbcfg_adapter *dvbcfg_adapter_find(struct dvbcfg_adapter *adapters,
         return NULL;
 }
 
-int dvbcfg_adapter_supports_source_id(struct dvbcfg_adapter *adapter,
-                                      char *source_id)
+int dvbcfg_adapter_supports_source_id(struct dvbcfg_adapter *adapter, struct dvbcfg_source_id* source_id)
 {
         struct dvbcfg_adapter_entry *entry;
 
         entry = adapter->source_ids;
         while (entry) {
-                if (!strcmp(entry->source_id, source_id))
+                if (dvbcfg_source_id_equal(source_id, &entry->source_id))
                         return 1;
 
                 entry = entry->next;
@@ -190,9 +192,8 @@ int dvbcfg_adapter_supports_source_id(struct dvbcfg_adapter *adapter,
         return 0;
 }
 
-struct dvbcfg_adapter *dvbcfg_adapter_find_source_id(struct dvbcfg_adapter
-                                                     *adapters,
-                                                     char *source_id)
+struct dvbcfg_adapter *dvbcfg_adapter_find_source_id(struct dvbcfg_adapter *adapters,
+                                                     struct dvbcfg_source_id* source_id)
 {
         while (adapters) {
                 if (dvbcfg_adapter_supports_source_id(adapters, source_id))
@@ -244,7 +245,7 @@ static void freeentries(struct dvbcfg_adapter *adapter)
         entry = adapter->source_ids;
         while (entry) {
                 next_entry = entry->next;
-                free(entry->source_id);
+                dvbcfg_source_id_free(&entry->source_id);
                 free(entry);
                 entry = next_entry;
         }

@@ -82,7 +82,7 @@
  * example, in the UK, the <source_locale> for a DVBT source is the name of the DVBT transmitter
  * (e.g. BlackHill).
  *
- * Note that <source_network>,<source_region>, and <source_locale> may not contain '-', ':', or
+ * Note that <source_network>, <source_region>, and <source_locale> may not contain '-', ':', or
  * whitespace characters.
  */
 struct dvbcfg_source_id {
@@ -174,6 +174,14 @@ extern char* dvbcfg_source_id_to_string(struct dvbcfg_source_id* source_id);
  * @return 0 on success, nonzero on failure.
  */
 extern int dvbcfg_source_id_from_string(char* string, struct dvbcfg_source_id* source_id);
+
+/**
+ * Check if two source_ids are equal.
+ *
+ * @param source_id1 First source_id;
+ * @param source_id2 Second source_id;
+ */
+extern int dvbcfg_source_id_equal(struct dvbcfg_source_id* source_id1, struct dvbcfg_source_id* source_id2);
 
 /**
  * Free() the components of a source_id structure. The structure itself will not be free()d -

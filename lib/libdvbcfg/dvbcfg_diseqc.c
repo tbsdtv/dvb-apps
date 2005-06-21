@@ -30,7 +30,7 @@ int dvbcfg_diseqc_load(char *config_file, struct dvbcfg_diseqc **diseqcs)
         FILE *in;
         char curline[256];
         char *linepos;
-        char *source_id;
+        struct dvbcfg_source_id source_id;
         struct dvbcfg_diseqc *curdiseqc;
         struct dvbcfg_diseqc *tail;
         struct dvbcfg_diseqc_entry tmpentry;
@@ -65,20 +65,21 @@ int dvbcfg_diseqc_load(char *config_file, struct dvbcfg_diseqc **diseqcs)
                         continue;
 
                 /* the source id */
-                source_id = linepos;
+
+                if (dvbcfg_source_id_from_string(linepos, &source_id))
+                        continue;
                 linepos = dvbcfg_nexttoken(linepos);
 
                 /* find/create the diseqc */
-                curdiseqc = dvbcfg_diseqc_find(*diseqcs, source_id);
+                curdiseqc = dvbcfg_diseqc_find(*diseqcs, &source_id);
                 if (curdiseqc == NULL) {
-                        curdiseqc = (struct dvbcfg_diseqc *)
-                            malloc(sizeof(struct dvbcfg_diseqc));
+                        curdiseqc = (struct dvbcfg_diseqc *) malloc(sizeof(struct dvbcfg_diseqc));
                         if (curdiseqc == NULL) {
                                 error = -ENOMEM;
                                 break;
                         }
                         memset(curdiseqc, 0, sizeof(struct dvbcfg_diseqc));
-                        curdiseqc->source_id = dvbcfg_strdupandtrim(source_id, -1);
+                        memcpy(&curdiseqc->source_id, &source_id, sizeof(struct dvbcfg_source_id));
                         if (tail)
                                 tail->next = curdiseqc;
                         if (!*diseqcs)
@@ -86,6 +87,8 @@ int dvbcfg_diseqc_load(char *config_file, struct dvbcfg_diseqc **diseqcs)
                         curdiseqc->prev = tail;
                         tail = curdiseqc;
 
+                } else {
+                        dvbcfg_source_id_free(&source_id);
                 }
 
                 /* the SLOF */
@@ -164,6 +167,7 @@ int dvbcfg_diseqc_save(char *config_file, struct dvbcfg_diseqc *diseqcs)
         FILE *out;
         char polarization;
         struct dvbcfg_diseqc_entry *entry;
+        char* source_id;
 
         /* open the file */
         out = fopen(config_file, "w");
@@ -171,6 +175,10 @@ int dvbcfg_diseqc_save(char *config_file, struct dvbcfg_diseqc *diseqcs)
                 return errno;
 
         while (diseqcs) {
+
+                source_id = dvbcfg_source_id_to_string(&diseqcs->source_id);
+                if (source_id == NULL)
+                        break;
 
                 entry = diseqcs->entries;
                 while (entry) {
@@ -193,13 +201,14 @@ int dvbcfg_diseqc_save(char *config_file, struct dvbcfg_diseqc *diseqcs)
                         }
 
                         fprintf(out, "%s %d %c %d %s\n",
-                                diseqcs->source_id, entry->slof / 1000,
+                                source_id, entry->slof / 1000,
                                 polarization, entry->lof / 1000,
                                 entry->command);
 
                         entry = entry->next;
                 }
 
+                free(source_id);
                 diseqcs = diseqcs->next;
         }
 
@@ -208,10 +217,10 @@ int dvbcfg_diseqc_save(char *config_file, struct dvbcfg_diseqc *diseqcs)
 }
 
 struct dvbcfg_diseqc *dvbcfg_diseqc_find(struct dvbcfg_diseqc *diseqcs,
-                                         char *source_id)
+                                         struct dvbcfg_source_id* source_id)
 {
         while (diseqcs) {
-                if (!strcmp(source_id, diseqcs->source_id))
+                if (dvbcfg_source_id_equal(source_id, &diseqcs->source_id))
                         return diseqcs;
 
                 diseqcs = diseqcs->next;
@@ -220,8 +229,7 @@ struct dvbcfg_diseqc *dvbcfg_diseqc_find(struct dvbcfg_diseqc *diseqcs,
         return NULL;
 }
 
-struct dvbcfg_diseqc_entry *dvbcfg_diseqc_find_entry(struct dvbcfg_diseqc
-                                                     *diseqc,
+struct dvbcfg_diseqc_entry *dvbcfg_diseqc_find_entry(struct dvbcfg_diseqc* diseqc,
                                                      uint32_t frequency,
                                                      int polarization)
 {
@@ -230,8 +238,7 @@ struct dvbcfg_diseqc_entry *dvbcfg_diseqc_find_entry(struct dvbcfg_diseqc
 
         entry = diseqc->entries;
         while (entry) {
-                if ((polarization == entry->polarization)
-                    && (frequency < entry->slof)) {
+                if ((polarization == entry->polarization) && (frequency < entry->slof)) {
                         if (candidate) {
                                 if (entry->slof < candidate->slof)
                                         candidate = entry;
@@ -258,8 +265,7 @@ void dvbcfg_diseqc_free(struct dvbcfg_diseqc **diseqcs,
         next = tofree->next;
 
         /* free internal structures */
-        if (tofree->source_id)
-                free(tofree->source_id);
+        dvbcfg_source_id_free(&tofree->source_id);
         entry = tofree->entries;
         while (entry) {
                 next_entry = entry->next;

@@ -25,6 +25,7 @@
 #define DVBCFG_DISEQC_H
 
 #include <stdint.h>
+#include <dvbcfg_common.h>
 
 /**
  * The dvbcfg_diseqc file defines DISEQC command sequences to use for DVBS channels.
@@ -85,7 +86,7 @@ struct dvbcfg_diseqc_entry {
  * In-memory representation of diseqc information for a single source_id.
  */
 struct dvbcfg_diseqc {
-        char *source_id;
+        struct dvbcfg_source_id source_id;
         struct dvbcfg_diseqc_entry *entries;
 
         struct dvbcfg_diseqc *next;     /* NULL=> last entry */
@@ -122,8 +123,7 @@ extern int dvbcfg_diseqc_save(char *config_file,
  * @param source_id source_id concerned.
  * @return A dvbcfg_diseqc structure if found, or NULL if not.
  */
-extern struct dvbcfg_diseqc *dvbcfg_diseqc_find(struct dvbcfg_diseqc
-                                                *diseqcs, char *source_id);
+extern struct dvbcfg_diseqc *dvbcfg_diseqc_find(struct dvbcfg_diseqc*diseqcs, struct dvbcfg_source_id* source_id);
 
 /**
  * Find the matching dvcfg_diseqc_entry within a source for a particular frequency/polarization.
@@ -133,13 +133,9 @@ extern struct dvbcfg_diseqc *dvbcfg_diseqc_find(struct dvbcfg_diseqc
  * @param polarization Polarization concerned.
  * @return A dvbcfg_diseqc_entry structure if found, or NULL if not.
  */
-extern struct dvbcfg_diseqc_entry *dvbcfg_diseqc_find_entry(struct
-                                                            dvbcfg_diseqc
-                                                            *diseqc,
-                                                            uint32_t
-                                                            frequency,
-                                                            int
-                                                            polarization);
+extern struct dvbcfg_diseqc_entry *dvbcfg_diseqc_find_entry(struct dvbcfg_diseqc* diseqc,
+                                                            uint32_t frequency,
+                                                            int polarization);
 
 /**
  * Unlink a single diseqc from a list, and free its memory.
