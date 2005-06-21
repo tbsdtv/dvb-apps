@@ -104,8 +104,6 @@ int dvbcfg_source_id_from_string(char* string, struct dvbcfg_source_id* source_i
                         free(source_id->source_region);
                         return -ENOMEM;
                 }
-        } else {
-                region_start = string + strlen(string);
         }
 
         source_id->source_network = dvbcfg_strdupandtrim(string, network_len);
