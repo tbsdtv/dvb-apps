@@ -178,10 +178,12 @@ extern int dvbcfg_source_id_from_string(char* string, struct dvbcfg_source_id* s
 /**
  * Check if two source_ids are equal.
  *
- * @param source_id1 First source_id;
- * @param source_id2 Second source_id;
+ * @param source_id1 First source_id.
+ * @param source_id2 Second source_id.
+ * @param fuzzy FIXME: describe
+ * @return FIXME: describe
  */
-extern int dvbcfg_source_id_equal(struct dvbcfg_source_id* source_id1, struct dvbcfg_source_id* source_id2);
+extern int dvbcfg_source_id_equal(struct dvbcfg_source_id* source_id1, struct dvbcfg_source_id* source_id2, int fuzzy);
 
 /**
  * Free() the components of a source_id structure. The structure itself will not be free()d -

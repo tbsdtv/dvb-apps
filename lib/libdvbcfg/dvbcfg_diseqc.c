@@ -220,7 +220,7 @@ struct dvbcfg_diseqc *dvbcfg_diseqc_find(struct dvbcfg_diseqc *diseqcs,
                                          struct dvbcfg_source_id* source_id)
 {
         while (diseqcs) {
-                if (dvbcfg_source_id_equal(source_id, &diseqcs->source_id))
+                if (dvbcfg_source_id_equal(source_id, &diseqcs->source_id, 0))
                         return diseqcs;
 
                 diseqcs = diseqcs->next;

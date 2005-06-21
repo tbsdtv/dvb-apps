@@ -30,7 +30,7 @@
  * The sources file defines standardised unique IDs for all DVB transmitters (as there is no
  * other real standard). It consists of multiple lines as follows:
  *
- * <source> <human readable description>
+ * <source_id> <human readable description>
  *
  * Comments begin with '#' - any characters after this will be ignored to the end of the line.
  *

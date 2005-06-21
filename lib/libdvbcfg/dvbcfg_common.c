@@ -118,21 +118,25 @@ int dvbcfg_source_id_from_string(char* string, struct dvbcfg_source_id* source_i
         return 0;
 }
 
-int dvbcfg_source_id_equal(struct dvbcfg_source_id* source_id1, struct dvbcfg_source_id* source_id2)
+int dvbcfg_source_id_equal(struct dvbcfg_source_id* source_id1, struct dvbcfg_source_id* source_id2, int fuzzy)
 {
         if (source_id1->source_type != source_id2->source_type)
                 return 0;
-        if ((source_id1->source_network == NULL) != (source_id2->source_network == NULL))
+
+        if (!fuzzy) {
+                if ((source_id1->source_network == NULL) != (source_id2->source_network == NULL))
+                        return 0;
+                if ((source_id1->source_region == NULL) != (source_id2->source_region == NULL))
+                        return 0;
+                if ((source_id1->source_locale == NULL) != (source_id2->source_locale == NULL))
+                        return 0;
+        }
+
+        if (source_id1->source_network && source_id2->source_network && strcmp(source_id1->source_network, source_id2->source_network))
                 return 0;
-        if (source_id1->source_network && strcmp(source_id1->source_network, source_id2->source_network))
+        if (source_id1->source_region && source_id2->source_region && strcmp(source_id1->source_region, source_id2->source_region))
                 return 0;
-        if ((source_id1->source_region == NULL) != (source_id2->source_region == NULL))
-                return 0;
-        if (source_id1->source_region && strcmp(source_id1->source_region, source_id2->source_region))
-                return 0;
-        if ((source_id1->source_locale == NULL) != (source_id2->source_locale == NULL))
-                return 0;
-        if (source_id1->source_locale && strcmp(source_id1->source_locale, source_id2->source_locale))
+        if (source_id1->source_locale && source_id2->source_locale && strcmp(source_id1->source_locale, source_id2->source_locale))
                 return 0;
 
         return 1;

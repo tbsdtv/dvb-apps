@@ -188,7 +188,7 @@ int dvbcfg_adapter_supports_source_id(struct dvbcfg_adapter *adapter, struct dvb
 
         entry = adapter->source_ids;
         while (entry) {
-                if (dvbcfg_source_id_equal(source_id, &entry->source_id))
+                if (dvbcfg_source_id_equal(source_id, &entry->source_id, 0))
                         return 1;
 
                 entry = entry->next;
