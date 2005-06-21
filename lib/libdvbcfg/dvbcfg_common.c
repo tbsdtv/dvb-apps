@@ -239,10 +239,19 @@ char* dvbcfg_gsid_to_string(struct dvbcfg_gsid* gsid)
         char* tmp;
 
         umids = dvbcfg_umid_to_string(&gsid->umid);
-        usids = dvbcfg_usid_to_string(&gsid->usid);
-        tmp = malloc(strlen(umids) + strlen(usids) + 2);
-        if (tmp == NULL)
+        if (umids == NULL)
                 return NULL;
+        usids = dvbcfg_usid_to_string(&gsid->usid);
+        if (usids == NULL) {
+                free(umids);
+                return NULL;
+        }
+        tmp = malloc(strlen(umids) + strlen(usids) + 2);
+        if (tmp == NULL) {
+                free(umids);
+                free(usids);
+                return NULL;
+        }
 
         sprintf(tmp, "%s:%s", umids, usids);
 

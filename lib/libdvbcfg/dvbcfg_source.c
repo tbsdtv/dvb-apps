@@ -122,7 +122,7 @@ int dvbcfg_source_save(char *config_file, struct dvbcfg_source *sources)
         while (sources) {
                 tmp = dvbcfg_source_id_to_string(&sources->source_id);
                 if (tmp == NULL)
-                        return -ENOMEM;
+                        break;
 
                 fprintf(out, "%s", tmp);
                 free(tmp);
