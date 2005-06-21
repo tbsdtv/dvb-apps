@@ -136,20 +136,22 @@ int dvbcfg_source_save(char *config_file, struct dvbcfg_source *sources)
 }
 
 struct dvbcfg_source *dvbcfg_source_find(struct dvbcfg_source *sources,
-                                         char *source_network, char* source_region, char* source_locale)
+                                         char source_type, char *source_network, char* source_region, char* source_locale)
 {
         while (sources) {
-                if (!strcmp(source_network, sources->source_id.source_network)) {
-                        if (source_region && sources->source_id.source_region &&
-                            (!strcmp(source_region, sources->source_id.source_region))) {
-                                if (source_locale && sources->source_id.source_locale &&
-                                    (!strcmp(source_locale, sources->source_id.source_locale))) {
-                                          return sources;
-                                } else if (!source_locale) {
+                if (source_type == sources->source_id.source_type) {
+                        if (!strcmp(source_network, sources->source_id.source_network)) {
+                                if (source_region && sources->source_id.source_region &&
+                                    (!strcmp(source_region, sources->source_id.source_region))) {
+                                        if (source_locale && sources->source_id.source_locale &&
+                                            (!strcmp(source_locale, sources->source_id.source_locale))) {
+                                                  return sources;
+                                        } else if (!source_locale) {
+                                                return sources;
+                                        }
+                                } else if (!source_region) {
                                         return sources;
                                 }
-                        } else if (!source_region) {
-                                return sources;
                         }
                 }
 

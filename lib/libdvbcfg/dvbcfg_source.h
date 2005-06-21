@@ -80,13 +80,14 @@ extern int dvbcfg_source_save(char *config_file,
  * Find the entry for a particular source_id.
  *
  * @param sources Pointer to the list to search.
+ * @param source_type Type of source.
  * @param source_network source_network to find.
  * @param source_region source_region to find (pass NULL for DVBS, or to simply match by source_network).
  * @param source_locale source_locale to find (pass NULL for DVBS, or to simply match by source_network+source_region).
  * @return A dvbcfg_source structure if found, or NULL if not.
  */
 extern struct dvbcfg_source *dvbcfg_source_find(struct dvbcfg_source *sources,
-                                                char *source_network, char* source_region, char* source_locale);
+                                                char source_type, char *source_network, char* source_region, char* source_locale);
 
 /**
  * Unlink a single source from a list, and free its memory.
