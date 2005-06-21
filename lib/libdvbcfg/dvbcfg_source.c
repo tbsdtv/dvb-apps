@@ -147,7 +147,7 @@ struct dvbcfg_source *dvbcfg_source_find(struct dvbcfg_source *sources,
 
 
         while (sources) {
-          if (dvbcfg_source_id_equal(&source_id, sources, 1))
+                if (dvbcfg_source_id_equal(&source_id, &sources->source_id, 1))
                         return sources;
 
                 sources = sources->next;

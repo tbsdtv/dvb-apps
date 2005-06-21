@@ -180,8 +180,8 @@ extern int dvbcfg_source_id_from_string(char* string, struct dvbcfg_source_id* s
  *
  * @param source_id1 First source_id.
  * @param source_id2 Second source_id.
- * @param fuzzy FIXME: describe
- * @return FIXME: describe
+ * @param fuzzy If 0, the two sourceids must match exactly. If 1, NULL is permitted as a wildcard in either sourceid.
+ * @return 1 if they match, 0 if not.
  */
 extern int dvbcfg_source_id_equal(struct dvbcfg_source_id* source_id1, struct dvbcfg_source_id* source_id2, int fuzzy);
 
