@@ -141,6 +141,7 @@ int dvbcfg_adapter_save(char *config_file, struct dvbcfg_adapter *adapters)
 {
         FILE *out;
         struct dvbcfg_adapter_entry *entry;
+        char* source_id;
 
         /* open the file */
         out = fopen(config_file, "w");
@@ -152,7 +153,11 @@ int dvbcfg_adapter_save(char *config_file, struct dvbcfg_adapter *adapters)
 
                 entry = adapters->source_ids;
                 while (entry) {
-                        fprintf(out, "%s ", entry->source_id);
+                        source_id = dvbcfg_source_id_to_string(&entry->source_id);
+                        if (source_id) {
+                                fprintf(out, "%s ", source_id);
+                                free(source_id);
+                        }
                         entry = entry->next;
                 }
                 fprintf(out, "\n");
