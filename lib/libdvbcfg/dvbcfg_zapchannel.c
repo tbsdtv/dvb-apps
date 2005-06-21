@@ -349,7 +349,7 @@ int dvbcfg_zapchannel_load(char *config_file, struct dvbcfg_zapchannel **zapchan
                 }
                 memcpy(newzapchannel, &tmpzapchannel, sizeof(struct dvbcfg_zapchannel));
                 newzapchannel->name =
-                        dvbcfg_strdupandtrim(tmpzapchannel.name);
+                        dvbcfg_strdupandtrim(tmpzapchannel.name, -1);
                 if (!newzapchannel->name) {
                         if (newzapchannel->name)
                                 free(newzapchannel->name);

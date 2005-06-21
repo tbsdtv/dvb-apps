@@ -108,3 +108,4 @@ Csomewhere-someplace       Cable
 # Terrestrial
 
 Tuk-BlackHill       Terrestrial
+Tuk-scottish-BlackHill       Terrestrial2

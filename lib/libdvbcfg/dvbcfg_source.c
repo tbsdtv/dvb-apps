@@ -61,19 +61,12 @@ int dvbcfg_source_load(char *config_file, struct dvbcfg_source **sources)
                         continue;
                 }
 
-                /* the source_network/ source_locale */
-                tmpsource.source_network = linepos;
+                /* the source_id */
+                if (strchr(linepos, ':'))
+                        return;
+                if (dvbcfg_source_id_from_string(linepos, &tmpsource.source_id))
+                        continue;
                 linepos = dvbcfg_nexttoken(linepos);
-                if ((tmpsource.source_network[0] == 'T') ||
-                    (tmpsource.source_network[0] == 'C') ||
-                    (tmpsource.source_network[0] == 'A')) {
-                        tmpsource.source_locale = strchr(tmpsource.source_network, '-');
-                        if (tmpsource.source_locale == NULL)
-                                continue;
-
-                        *tmpsource.source_locale = 0;
-                        tmpsource.source_locale++;
-                }
 
                 /* the description */
                 tmpsource.description = linepos;
@@ -85,20 +78,11 @@ int dvbcfg_source_load(char *config_file, struct dvbcfg_source **sources)
                         error = -ENOMEM;
                         break;
                 }
-                memcpy(newsource, &tmpsource,
-                       sizeof(struct dvbcfg_source));
-                newsource->source_network =
-                    dvbcfg_strdupandtrim(tmpsource.source_network);
-                if (newsource->source_locale)
-                        newsource->source_locale =
-                            dvbcfg_strdupandtrim(tmpsource.source_locale);
-                newsource->description =
-                    dvbcfg_strdupandtrim(tmpsource.description);
-                if ((!newsource->source_network) || (!newsource->description)) {
-                        if (newsource->source_network)
-                                free(newsource->source_network);
-                        if (newsource->source_locale)
-                                free(newsource->source_locale);
+                memcpy(newsource, &tmpsource, sizeof(struct dvbcfg_source));
+                newsource->description = dvbcfg_strdupandtrim(tmpsource.description, -1);
+
+                if (!newsource->description) {
+                        dvbcfg_source_id_free(&tmpsource.source_id);
                         if (newsource->description)
                                 free(newsource->description);
                         free(newsource);
@@ -128,6 +112,7 @@ int dvbcfg_source_load(char *config_file, struct dvbcfg_source **sources)
 int dvbcfg_source_save(char *config_file, struct dvbcfg_source *sources)
 {
         FILE *out;
+        char* tmp;
 
         /* open the file */
         out = fopen(config_file, "w");
@@ -135,9 +120,12 @@ int dvbcfg_source_save(char *config_file, struct dvbcfg_source *sources)
                 return errno;
 
         while (sources) {
-                fprintf(out, "%s", sources->source_network);
-                if (sources->source_locale)
-                        fprintf(out, "-%s", sources->source_locale);
+                tmp = dvbcfg_source_id_to_string(&sources->source_id);
+                if (tmp == NULL)
+                        return -ENOMEM;
+
+                fprintf(out, "%s", tmp);
+                free(tmp);
                 fprintf(out, " %s\n", sources->description);
 
                 sources = sources->next;
@@ -148,15 +136,19 @@ int dvbcfg_source_save(char *config_file, struct dvbcfg_source *sources)
 }
 
 struct dvbcfg_source *dvbcfg_source_find(struct dvbcfg_source *sources,
-                                         char *source_network, char* source_locale)
+                                         char *source_network, char* source_region, char* source_locale)
 {
         while (sources) {
-                if (!strcmp(source_network, sources->source_network)) {
-                        if (source_locale && sources->source_locale) {
-                                if (!strcmp(source_locale, sources->source_locale)) {
+                if (!strcmp(source_network, sources->source_id.source_network)) {
+                        if (source_region && sources->source_id.source_region &&
+                            (!strcmp(source_region, sources->source_id.source_region))) {
+                                if (source_locale && sources->source_id.source_locale &&
+                                    (!strcmp(source_locale, sources->source_id.source_locale))) {
+                                          return sources;
+                                } else if (!source_locale) {
                                         return sources;
                                 }
-                        } else if (!source_locale) {
+                        } else if (!source_region) {
                                 return sources;
                         }
                 }
@@ -177,10 +169,7 @@ void dvbcfg_source_free(struct dvbcfg_source **sources,
         next = tofree->next;
 
         /* free internal structures */
-        if (tofree->source_network)
-                free(tofree->source_network);
-        if (tofree->source_locale)
-                free(tofree->source_locale);
+        dvbcfg_source_id_free(&tofree->source_id);
         if (tofree->description)
                 free(tofree->description);
         free(tofree);

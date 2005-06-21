@@ -99,20 +99,34 @@ char *dvbcfg_nexttoken(char *line)
         return line;
 }
 
-char *dvbcfg_strdupandtrim(char *line)
+char *dvbcfg_strdupandtrim(char *line, int maxchars)
 {
-        int length;
+        int length = 0;
+        int count = 0;
         char *result;
 
+        if (maxchars == 0) {
+                result = malloc(1);
+                *result = 0;
+                return result;
+        }
+
+        if (maxchars < 0)
+                maxchars = strlen(line);
+
         /* trim whitespace from the start */
-        while (*line && isspace(*line))
+        while (*line && isspace(*line) && maxchars) {
+                maxchars--;
                 line++;
+        }
         length = strlen(line);
+        if (length > maxchars)
+                length = maxchars;
 
         /* trim whitespace from the end */
-        while (*(line + length - 1) && (isspace(*(line + length - 1)))
-               && length)
+        while (*(line + length - 1) && (isspace(*(line + length - 1))) && length) {
                 length--;
+        }
 
         /* allocate new memory for it */
         result = malloc(length + 1);

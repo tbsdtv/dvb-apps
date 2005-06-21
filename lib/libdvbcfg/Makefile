@@ -4,7 +4,8 @@ OBJS =  dvbcfg_util.o \
 	dvbcfg_diseqc.o \
 	dvbcfg_vdrchannel.o \
 	dvbcfg_zapchannel.o \
-	dvbcfg_adapter.o
+	dvbcfg_adapter.o \
+	dvbcfg_common.o
 
 INCLUDES = 	dvbcfg_source.h \
 		dvbcfg_diseqc.h \
@@ -36,4 +37,4 @@ clean:
 	rm -f *~ *# *.o *.a
 	make -C test clean
 
-.PHONY: clean
+.PHONY: clean test

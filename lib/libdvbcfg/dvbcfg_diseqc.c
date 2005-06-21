@@ -78,8 +78,7 @@ int dvbcfg_diseqc_load(char *config_file, struct dvbcfg_diseqc **diseqcs)
                                 break;
                         }
                         memset(curdiseqc, 0, sizeof(struct dvbcfg_diseqc));
-                        curdiseqc->source_id =
-                            dvbcfg_strdupandtrim(source_id);
+                        curdiseqc->source_id = dvbcfg_strdupandtrim(source_id, -1);
                         if (tail)
                                 tail->next = curdiseqc;
                         if (!*diseqcs)
@@ -129,7 +128,7 @@ int dvbcfg_diseqc_load(char *config_file, struct dvbcfg_diseqc **diseqcs)
                 }
                 memcpy(newentry, &tmpentry,
                        sizeof(struct dvbcfg_diseqc_entry));
-                newentry->command = dvbcfg_strdupandtrim(tmpentry.command);
+                newentry->command = dvbcfg_strdupandtrim(tmpentry.command, -1);
                 if (!newentry->command) {
                         if (newentry->command)
                                 free(newentry->command);

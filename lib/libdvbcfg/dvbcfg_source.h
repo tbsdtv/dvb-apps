@@ -24,6 +24,8 @@
 #ifndef DVBCFG_SOURCE_H
 #define DVBCFG_SOURCE_H
 
+#include <dvbcfg_common.h>
+
 /**
  * The sources file defines standardised unique IDs for all DVB transmitters (as there is no
  * other real standard). It consists of multiple lines as follows:
@@ -44,7 +46,7 @@
  * In-memory representation of a single source.
  */
 struct dvbcfg_source {
-        struct source_id source_id;
+        struct dvbcfg_source_id source_id;
         char *description;
 
         struct dvbcfg_source *prev;     /* NULL=> this is the first entry */

@@ -1,5 +1,5 @@
 /**
- * DVBCFG common definitions.
+ * dvbcfg common definitions.
  *
  * Copyright (c) 2005 by Andrew de Quincey <adq_dvb@lidskialf.net>
  *
@@ -23,6 +23,8 @@
 
 #ifndef DVBCFG_COMMON_H
 #define DVBCFG_COMMON_H
+
+#include <stdint.h>
 
 /**
  * Possible polarization values.
@@ -70,7 +72,7 @@
  *
  * <source_network> is the name of the DVB network. Currently we are simply using the country
  * code for this (e.g "Tuk"). However if necessary, this can easily be extended to allow multiple
- * networks, for example "Tuk:network1", "Tuk:network2". Note that <source_network> may not
+ * networks, for example "Tuknetwork1", "Tuknetwork2". Note that <source_network> may not
  * contain '-' or whitespace characters.
  *
  * <source_region> is the name of the broadcast region the source is a member of. For example,
@@ -80,7 +82,7 @@
  * example, in the UK, the <source_locale> for a DVBT source is the name of the DVBT transmitter
  * (e.g. BlackHill).
  *
- * Note that <source_network>,<source_region>, and <source_locale> may not contain '-' or
+ * Note that <source_network>,<source_region>, and <source_locale> may not contain '-', ':', or
  * whitespace characters.
  */
 struct dvbcfg_source_id {
@@ -164,7 +166,7 @@ struct dvbcfg_gsid
 extern char* dvbcfg_source_id_to_string(struct dvbcfg_source_id* source_id);
 
 /**
- * Parse a string into a source_id.
+ * Parse a string into a source_id. (Note: the strings will be malloc()ed)
  *
  * @param string The string to parse.
  * @param umid Pointer to a source_id structure to fill out.
@@ -172,6 +174,14 @@ extern char* dvbcfg_source_id_to_string(struct dvbcfg_source_id* source_id);
  * @return 0 on success, nonzero on failure.
  */
 extern int dvbcfg_source_id_from_string(char* string, struct dvbcfg_source_id* source_id);
+
+/**
+ * Free() the components of a source_id structure. The structure itself will not be free()d -
+ * just the char* pointers. It will also be zeroed.
+ *
+ * @param source_id The source_id to free.
+ */
+extern void dvbcfg_source_id_free(struct dvbcfg_source_id* source_id);
 
 /**
  * Convert a UMID structure into a string.
@@ -194,10 +204,10 @@ extern int dvbcfg_umid_from_string(char* string, struct dvbcfg_umid* umid);
 /**
  * Convert a USID structure into a string.
  *
- * @param umid The USID structure.
+ * @param usid The USID structure.
  * @return Pointer to a malloc()ed buffer containing the string, or NULL on failure.
  */
-extern char* dvbcfg_usid_to_string(struct dvbcfg_umid* usid);
+extern char* dvbcfg_usid_to_string(struct dvbcfg_usid* usid);
 
 /**
  * Parse a string into a USID.
@@ -207,7 +217,7 @@ extern char* dvbcfg_usid_to_string(struct dvbcfg_umid* usid);
  *
  * @return 0 on success, nonzero on failure.
  */
-extern int dvbcfg_usid_from_string(char* string, struct dvbcfg_umid* usid);
+extern int dvbcfg_usid_from_string(char* string, struct dvbcfg_usid* usid);
 
 /**
  * Convert a GSID structure into a string.
@@ -215,7 +225,7 @@ extern int dvbcfg_usid_from_string(char* string, struct dvbcfg_umid* usid);
  * @param umid The GSID structure.
  * @return Pointer to a malloc()ed buffer containing the string, or NULL on failure.
  */
-extern char* dvbcfg_gsid_to_string(struct dvbcfg_umid* gsid);
+extern char* dvbcfg_gsid_to_string(struct dvbcfg_gsid* gsid);
 
 /**
  * Parse a string into a GSID.
@@ -225,6 +235,6 @@ extern char* dvbcfg_gsid_to_string(struct dvbcfg_umid* gsid);
  *
  * @return 0 on success, nonzero on failure.
  */
-extern int dvbcfg_gsid_from_string(char* string, struct dvbcfg_umid* gsid);
+extern int dvbcfg_gsid_from_string(char* string, struct dvbcfg_gsid* gsid);
 
 #endif                          // DVBCFG_COMMON_H

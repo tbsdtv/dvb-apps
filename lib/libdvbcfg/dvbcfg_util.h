@@ -53,10 +53,11 @@ extern char *dvbcfg_nexttoken(char *line);
 /**
  * Trim a string, and duplicate(malloc) it.
  *
- * @param The line.
+ * @param line The line.
+ * @param maxchars Maximum number of characters to consider in the source string (set to -1 for unlimited).
  * @return The new string.
  */
-extern char *dvbcfg_strdupandtrim(char *line);
+extern char *dvbcfg_strdupandtrim(char *line, int maxchars);
 
 /**
  * Replace all occurrences of character 'replace' with 'with'.

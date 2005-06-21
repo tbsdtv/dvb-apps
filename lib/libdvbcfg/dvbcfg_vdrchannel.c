@@ -299,15 +299,15 @@ int dvbcfg_vdrchannel_load(char *config_file,
                 memcpy(newchannel, &tmpchannel,
                        sizeof(struct dvbcfg_vdrchannel));
                 newchannel->channel_name =
-                    dvbcfg_strdupandtrim(tmpchannel.channel_name);
+                    dvbcfg_strdupandtrim(tmpchannel.channel_name, -1);
                 if (newchannel->provider_name)
                         newchannel->provider_name =
-                            dvbcfg_strdupandtrim(tmpchannel.provider_name);
+                            dvbcfg_strdupandtrim(tmpchannel.provider_name, -1);
                 if (newchannel->short_name)
                         newchannel->short_name =
-                            dvbcfg_strdupandtrim(tmpchannel.short_name);
+                            dvbcfg_strdupandtrim(tmpchannel.short_name, -1);
                 newchannel->source_name =
-                    dvbcfg_strdupandtrim(tmpchannel.source_name);
+                    dvbcfg_strdupandtrim(tmpchannel.source_name, -1);
                 if ((!newchannel->channel_name)
                     || (!newchannel->source_name)) {
                         if (newchannel->channel_name)

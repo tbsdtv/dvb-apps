@@ -80,7 +80,7 @@ int dvbcfg_adapter_load(char *config_file,
                                 break;
                         }
                         newentry->source_id =
-                            dvbcfg_strdupandtrim(linepos);
+                            dvbcfg_strdupandtrim(linepos, -1);
 
                         /* hook it into the list */
                         if (!tmpadapter.source_ids) {
@@ -104,7 +104,7 @@ int dvbcfg_adapter_load(char *config_file,
                 memcpy(newadapter, &tmpadapter,
                        sizeof(struct dvbcfg_adapter));
                 newadapter->adapter_id =
-                    dvbcfg_strdupandtrim(tmpadapter.adapter_id);
+                    dvbcfg_strdupandtrim(tmpadapter.adapter_id, -1);
                 newadapter->source_ids = tmpadapter.source_ids;
                 if (!newadapter->adapter_id) {
                         if (newadapter->adapter_id)
