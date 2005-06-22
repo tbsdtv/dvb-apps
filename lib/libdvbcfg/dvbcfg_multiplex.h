@@ -143,7 +143,7 @@ extern struct dvbcfg_multiplex* dvbcfg_multiplex_new(struct dvbcfg_multiplex** m
  * @param service_flags DVBCFG_SERVICE_FLAG_* values ORed together.
  * @return The new struct dvbcfg_service structure, or NULL on error.
  */
-extern struct dvbcfg_service* dvbcfg_mulitplex_add_service(struct dvbcfg_multiplex* multiplex,
+extern struct dvbcfg_service* dvbcfg_multiplex_add_service(struct dvbcfg_multiplex* multiplex,
                                                            struct dvbcfg_usid usid,
                                                            char* name,
                                                            uint32_t service_flags);
@@ -165,7 +165,7 @@ extern int dvbcfg_multiplex_remove_service(struct dvbcfg_multiplex* multiplex,
  * @param ca_system_id The ID to add.
  * @return 0 on success, nonzero on error.
  */
-extern int dvbcfg_mulitplex_add_ca_system(struct dvbcfg_service* service,
+extern int dvbcfg_multiplex_add_ca_system(struct dvbcfg_service* service,
                                           uint16_t ca_system_id);
 
 /**
@@ -175,7 +175,7 @@ extern int dvbcfg_mulitplex_add_ca_system(struct dvbcfg_service* service,
  * @param ca_system_id The ID to remove.
  * @return 0 on success, nonzero on error.
  */
-extern int dvbcfg_mulitplex_remove_ca_system(struct dvbcfg_service* service,
+extern int dvbcfg_multiplex_remove_ca_system(struct dvbcfg_service* service,
                                              uint16_t ca_system_id);
 
 /**
@@ -186,7 +186,7 @@ extern int dvbcfg_mulitplex_remove_ca_system(struct dvbcfg_service* service,
  * @param type Type of the PID (ISO13818 or DVBCFG_PIDTYPE_*)
  * @return 0 on success, nonzero on error.
  */
-extern int dvbcfg_mulitplex_add_zap_pid(struct dvbcfg_service* service,
+extern int dvbcfg_multiplex_add_zap_pid(struct dvbcfg_service* service,
                                         uint16_t pid,
                                         uint16_t type);
 
@@ -198,7 +198,7 @@ extern int dvbcfg_mulitplex_add_zap_pid(struct dvbcfg_service* service,
  * @param type Type of the PID (ISO13818 or DVBCFG_PIDTYPE_*)
  * @return 0 on success, nonzero on error.
  */
-extern int dvbcfg_mulitplex_remove_zap_pid(struct dvbcfg_service* service,
+extern int dvbcfg_multiplex_remove_zap_pid(struct dvbcfg_service* service,
                                            uint16_t pid,
                                            uint16_t type);
 
@@ -210,7 +210,7 @@ extern int dvbcfg_mulitplex_remove_zap_pid(struct dvbcfg_service* service,
  * @param type Type of the PID (ISO13818 or DVBCFG_PIDTYPE_*)
  * @return 0 on success, nonzero on error.
  */
-extern int dvbcfg_mulitplex_add_pmt_pid(struct dvbcfg_service* service,
+extern int dvbcfg_multiplex_add_pmt_pid(struct dvbcfg_service* service,
                                         uint16_t pid,
                                         uint16_t type);
 
@@ -222,7 +222,7 @@ extern int dvbcfg_mulitplex_add_pmt_pid(struct dvbcfg_service* service,
  * @param type Type of the PID (ISO13818 or DVBCFG_PIDTYPE_*)
  * @return 0 on success, nonzero on error.
  */
-extern int dvbcfg_mulitplex_remove_pmt_pid(struct dvbcfg_service* service,
+extern int dvbcfg_multiplex_remove_pmt_pid(struct dvbcfg_service* service,
                                            uint16_t pid,
                                            uint16_t type);
 
