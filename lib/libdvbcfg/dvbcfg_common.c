@@ -193,6 +193,16 @@ int dvbcfg_umid_from_string(char* string, struct dvbcfg_umid* umid)
         return 0;
 }
 
+int dvbcfg_umid_equal(struct dvbcfg_umid* umid1, struct dvbcfg_umid* umid2)
+{
+        if ((umid1->original_network_id == umid2->original_network_id) &&
+            (umid1->transport_stream_id == umid2->transport_stream_id) &&
+            (umid1->multiplex_differentiator == umid2->multiplex_differentiator))
+                return 1;
+
+        return 0;
+}
+
 char* dvbcfg_gmid_to_string(struct dvbcfg_gmid* gmid)
 {
         char tmp[256];
@@ -239,6 +249,15 @@ int dvbcfg_gmid_from_string(char* string, struct dvbcfg_gmid* gmid)
         return 0;
 }
 
+int dvbcfg_gmid_equal(struct dvbcfg_gmid* gmid1, struct dvbcfg_gmid* gmid2)
+{
+        if (dvbcfg_source_id_equal(&gmid1->source_id, &gmid2->source_id, 0) &&
+            dvbcfg_umid_equal(&gmid1->umid, &gmid2->umid))
+                return 1;
+
+        return 0;
+}
+
 char* dvbcfg_usid_to_string(struct dvbcfg_usid* usid)
 {
         char tmp[256];
@@ -266,6 +285,15 @@ int dvbcfg_usid_from_string(char* string, struct dvbcfg_usid* usid)
         if (sscanf(ptr+1, "%i", &val) != 1)
                 return -EINVAL;
         usid->service_differentiator = val;
+
+        return 0;
+}
+
+int dvbcfg_usid_equal(struct dvbcfg_usid* usid1, struct dvbcfg_usid* usid2)
+{
+        if ((usid1->program_number == usid2->program_number) &&
+            (usid1->service_differentiator == usid2->service_differentiator))
+                return 1;
 
         return 0;
 }
@@ -319,4 +347,13 @@ int dvbcfg_gsid_from_string(char* string, struct dvbcfg_gsid* gsid)
 
         /* parse the UMID now */
         return dvbcfg_gmid_from_string(string, &gsid->gmid);
+}
+
+int dvbcfg_gsid_equal(struct dvbcfg_gsid* gsid1, struct dvbcfg_gsid* gsid2)
+{
+        if (dvbcfg_gmid_equal(&gsid1->gmid, &gsid2->gmid) &&
+            dvbcfg_usid_equal(&gsid1->usid, &gsid2->usid))
+                return 1;
+
+        return 0;
 }

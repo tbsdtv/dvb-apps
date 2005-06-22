@@ -217,6 +217,15 @@ extern char* dvbcfg_umid_to_string(struct dvbcfg_umid* umid);
 extern int dvbcfg_umid_from_string(char* string, struct dvbcfg_umid* umid);
 
 /**
+ * Are two UMIDs equal?
+ *
+ * @param umid1 First UMID.
+ * @param umid2 Second UMID.
+ * @return 1 if they are, 0 if not.
+ */
+extern int dvbcfg_umid_equal(struct dvbcfg_umid* umid1, struct dvbcfg_umid* umid2);
+
+/**
  * Convert a GMID structure into a string.
  *
  * @param umid The GMID structure.
@@ -233,6 +242,15 @@ extern char* dvbcfg_gmid_to_string(struct dvbcfg_gmid* gmid);
  * @return 0 on success, nonzero on failure.
  */
 extern int dvbcfg_gmid_from_string(char* string, struct dvbcfg_gmid* gmid);
+
+/**
+ * Are two GMIDs equal?
+ *
+ * @param gmid1 First GMID.
+ * @param gmid2 Second GMID.
+ * @return 1 if they are, 0 if not.
+ */
+extern int dvbcfg_gmid_equal(struct dvbcfg_gmid* gmid1, struct dvbcfg_gmid* gmid2);
 
 /**
  * Convert a USID structure into a string.
@@ -253,6 +271,15 @@ extern char* dvbcfg_usid_to_string(struct dvbcfg_usid* usid);
 extern int dvbcfg_usid_from_string(char* string, struct dvbcfg_usid* usid);
 
 /**
+ * Are two USIDs equal?
+ *
+ * @param usid1 First USID.
+ * @param usid2 Second USID.
+ * @return 1 if they are, 0 if not.
+ */
+extern int dvbcfg_usid_equal(struct dvbcfg_usid* usid1, struct dvbcfg_usid* usid2);
+
+/**
  * Convert a GSID structure into a string.
  *
  * @param umid The GSID structure.
@@ -269,5 +296,14 @@ extern char* dvbcfg_gsid_to_string(struct dvbcfg_gsid* gsid);
  * @return 0 on success, nonzero on failure.
  */
 extern int dvbcfg_gsid_from_string(char* string, struct dvbcfg_gsid* gsid);
+
+/**
+ * Are two GSIDs equal?
+ *
+ * @param usid1 First GSID.
+ * @param usid2 Second GSID.
+ * @return 1 if they are, 0 if not.
+ */
+extern int dvbcfg_gsid_equal(struct dvbcfg_gsid* gsid1, struct dvbcfg_gsid* gsid2);
 
 #endif                          // DVBCFG_COMMON_H

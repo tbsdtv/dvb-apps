@@ -5,7 +5,8 @@ OBJS =  dvbcfg_util.o \
 	dvbcfg_common.o \
 	dvbcfg_diseqc.o \
 	dvbcfg_vdrchannel.o \
-	dvbcfg_zapchannel.o
+	dvbcfg_zapchannel.o \
+	dvbcfg_multiplex.o 
 
 INCLUDES = 	dvbcfg_source.h \
 		dvbcfg_diseqc.h \

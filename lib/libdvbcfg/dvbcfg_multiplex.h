@@ -23,6 +23,7 @@
 
 #include <dvbcfg_common.h>
 #include <dvbcfg_source.h>
+#include <linux/dvb/frontend.h>
 
 /**
  * FIXME: describe
@@ -132,20 +133,20 @@ extern int dvbcfg_multiplex_save(char *config_file,
  */
 extern struct dvbcfg_multiplex* dvbcfg_multiplex_new(struct dvbcfg_multiplex** multiplexes,
                                                      struct dvbcfg_source* source,
-                                                     struct dvbcfg_umid umid);
+                                                     char* umid);
 
 /**
  * Add a service to a multiplex.
  *
  * @param multiplex Multiplex to add to.
- * @param usid USID of the new service.
  * @param name Name of the service.
+ * @param usid USID of the new service.
  * @param service_flags DVBCFG_SERVICE_FLAG_* values ORed together.
  * @return The new struct dvbcfg_service structure, or NULL on error.
  */
 extern struct dvbcfg_service* dvbcfg_multiplex_add_service(struct dvbcfg_multiplex* multiplex,
-                                                           struct dvbcfg_usid usid,
                                                            char* name,
+                                                           char* usid,
                                                            uint32_t service_flags);
 
 /**
