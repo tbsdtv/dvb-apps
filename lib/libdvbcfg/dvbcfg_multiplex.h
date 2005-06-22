@@ -3,9 +3,6 @@
  *
  * Copyright (c) 2005 by Andrew de Quincey <adq_dvb@lidskialf.net>
  *
- * Credits go to Klaus Schmidinger's VDR for coming up with this really
- * great idea.
- *
  * This library is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation; either version 2.1 of
