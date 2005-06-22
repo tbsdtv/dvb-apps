@@ -31,13 +31,13 @@ void syntax();
 
 int main(int argc, char *argv[])
 {
-        if (argc != 4) {
+        struct dvbcfg_source *sources = NULL;
+
+        if (argc != 5) {
                 syntax();
         }
 
         if (!strcmp(argv[1], "-source")) {
-                struct dvbcfg_source *sources = NULL;
-
                 dvbcfg_source_load(argv[2], &sources);
                 dvbcfg_source_save(argv[3], sources);
                 dvbcfg_source_free_all(sources);
@@ -45,7 +45,8 @@ int main(int argc, char *argv[])
         } else if (!strcmp(argv[1], "-diseqc")) {
                 struct dvbcfg_diseqc *diseqcs = NULL;
 
-                dvbcfg_diseqc_load(argv[2], &diseqcs);
+                dvbcfg_source_load(argv[4], &sources);
+                dvbcfg_diseqc_load(argv[2], &sources, &diseqcs, 1);
                 dvbcfg_diseqc_save(argv[3], diseqcs);
                 dvbcfg_diseqc_free_all(diseqcs);
 
@@ -65,7 +66,8 @@ int main(int argc, char *argv[])
         } else if (!strcmp(argv[1], "-adapter")) {
                 struct dvbcfg_adapter *adapters = NULL;
 
-                dvbcfg_adapter_load(argv[2], &adapters);
+                dvbcfg_source_load(argv[4], &sources);
+                dvbcfg_adapter_load(argv[2], &sources, &adapters, 1);
                 dvbcfg_adapter_save(argv[3], adapters);
                 dvbcfg_adapter_free_all(adapters);
 
@@ -79,6 +81,6 @@ int main(int argc, char *argv[])
 void syntax()
 {
         fprintf(stderr,
-                "Syntax: dvcfg_test <-source|-diseqc|-vdrchannel|-zapchannel|-adapter> <input filename> <output filename>\n");
+                "Syntax: dvcfg_test <-source|-diseqc|-vdrchannel|-zapchannel|-adapter> <input filename> <output filename> <sources filename>\n");
         exit(1);
 }

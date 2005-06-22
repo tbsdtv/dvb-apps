@@ -30,9 +30,8 @@ int dvbcfg_source_load(char *config_file, struct dvbcfg_source **sources)
         FILE *in;
         char curline[256];
         char *linepos;
-        struct dvbcfg_source tmpsource;
-        struct dvbcfg_source *cursource;
         struct dvbcfg_source *newsource;
+        char* source_id;
         int numtokens;
         int error = 0;
 
@@ -41,15 +40,8 @@ int dvbcfg_source_load(char *config_file, struct dvbcfg_source **sources)
         if (in == NULL)
                 return errno;
 
-        /* move to the tail entry */
-        cursource = *sources;
-        if (cursource)
-                while (cursource->next)
-                        cursource = cursource->next;
-
         while (fgets(curline, sizeof(curline), in)) {
                 linepos = curline;
-                memset(&tmpsource, 0, sizeof(struct dvbcfg_source));
 
                 /* clean any comments/ whitespace */
                 if (dvbcfg_cleanline(linepos) == 0)
@@ -64,47 +56,18 @@ int dvbcfg_source_load(char *config_file, struct dvbcfg_source **sources)
                 /* the source_id */
                 if (strchr(linepos, ':'))
                         return;
-                if (dvbcfg_source_id_from_string(linepos, &tmpsource.source_id))
-                        continue;
+                source_id = linepos;
                 linepos = dvbcfg_nexttoken(linepos);
 
-                /* the description */
-                tmpsource.description = linepos;
-
-                /* create new entry */
-                newsource = (struct dvbcfg_source *)
-                    malloc(sizeof(struct dvbcfg_source));
-                if (newsource == NULL) {
+                /* create the source */
+                if (dvbcfg_source_new(sources, source_id, linepos) == NULL) {
                         error = -ENOMEM;
-                        break;
+                        goto exit;
                 }
-                memcpy(newsource, &tmpsource, sizeof(struct dvbcfg_source));
-                newsource->description = dvbcfg_strdupandtrim(tmpsource.description, -1);
-
-                if (!newsource->description) {
-                        dvbcfg_source_id_free(&tmpsource.source_id);
-                        if (newsource->description)
-                                free(newsource->description);
-                        free(newsource);
-                        error = -ENOMEM;
-                        break;
-                }
-
-                /* add it into the list */
-                if (cursource) {
-                        cursource->next = newsource;
-                        newsource->prev = cursource;
-                }
-                if (!*sources)
-                        *sources = newsource;
-                cursource = newsource;
         }
 
+exit:
         /* tidy up and return */
-        if (error) {
-                dvbcfg_source_free_all(*sources);
-                *sources = NULL;
-        }
         fclose(in);
         return error;
 }
@@ -135,6 +98,42 @@ int dvbcfg_source_save(char *config_file, struct dvbcfg_source *sources)
         return 0;
 }
 
+struct dvbcfg_source* dvbcfg_source_new(struct dvbcfg_source **sources, char* source_id, char* description)
+{
+        struct dvbcfg_source* newsource;
+        struct dvbcfg_source* cursource;
+
+        /* create new structure */
+        newsource = (struct dvbcfg_source*) malloc(sizeof(struct dvbcfg_source));
+        if (newsource == NULL)
+                return NULL;
+        memset(newsource, 0, sizeof(struct dvbcfg_source));
+        newsource->description = dvbcfg_strdupandtrim(description, -1);
+        if (newsource->description == NULL) {
+                free(newsource);
+                return NULL;
+        }
+
+        /* parse the source_id */
+        if (dvbcfg_source_id_from_string(source_id, &newsource->source_id)) {
+                free(newsource->description);
+                free(newsource);
+                return NULL;
+        }
+
+        /* add it to the list */
+        if (*sources == NULL)
+                *sources = newsource;
+        else {
+                cursource = *sources;
+                while(cursource->next)
+                        cursource = cursource->next;
+                cursource->next = newsource;
+        }
+
+        return newsource;
+}
+
 struct dvbcfg_source *dvbcfg_source_find(struct dvbcfg_source *sources,
                                          char source_type, char *source_network, char* source_region, char* source_locale)
 {
@@ -144,7 +143,6 @@ struct dvbcfg_source *dvbcfg_source_find(struct dvbcfg_source *sources,
         source_id.source_network = source_network;
         source_id.source_region = source_region;
         source_id.source_locale = source_locale;
-
 
         while (sources) {
                 if (dvbcfg_source_id_equal(&source_id, &sources->source_id, 1))
@@ -159,10 +157,9 @@ struct dvbcfg_source *dvbcfg_source_find(struct dvbcfg_source *sources,
 void dvbcfg_source_free(struct dvbcfg_source **sources,
                         struct dvbcfg_source *tofree)
 {
-        struct dvbcfg_source *prev;
         struct dvbcfg_source *next;
+        struct dvbcfg_source *cur;
 
-        prev = tofree->prev;
         next = tofree->next;
 
         /* free internal structures */
@@ -172,13 +169,15 @@ void dvbcfg_source_free(struct dvbcfg_source **sources,
         free(tofree);
 
         /* adjust pointers */
-        if (prev == NULL)
+        if (*sources == tofree)
                 *sources = next;
-        else
-                prev->next = next;
-
-        if (next != NULL)
-                next->prev = prev;
+        else {
+                cur = *sources;
+                while((cur->next != tofree) && (cur->next))
+                        cur = cur->next;
+                if (cur->next == tofree)
+                        cur->next = next;
+        }
 }
 
 void dvbcfg_source_free_all(struct dvbcfg_source *sources)

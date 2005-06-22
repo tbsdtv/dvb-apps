@@ -1,18 +1,19 @@
 
 OBJS =  dvbcfg_util.o \
         dvbcfg_source.o \
+	dvbcfg_adapter.o \
+	dvbcfg_common.o \
 	dvbcfg_diseqc.o \
 	dvbcfg_vdrchannel.o \
-	dvbcfg_zapchannel.o \
-	dvbcfg_adapter.o \
-	dvbcfg_common.o
+	dvbcfg_zapchannel.o
 
 INCLUDES = 	dvbcfg_source.h \
 		dvbcfg_diseqc.h \
 		dvbcfg_vdrchannel.h \
 		dvbcfg_zapchannel.h \
 		dvbcfg_adapter.h \
-		dvbcfg_common.h
+		dvbcfg_common.h \
+		dvbcfg_service.h
 
 CFLAGS = -I.
 

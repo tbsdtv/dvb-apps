@@ -26,6 +26,7 @@
 
 #include <dvbcfg_common.h>
 
+
 /**
  * The sources file defines standardised unique IDs for all DVB transmitters (as there is no
  * other real standard). It consists of multiple lines as follows:
@@ -41,7 +42,6 @@
  * Tuk-scottish-BlackHill A DVB-T transmitter in the UK serving the central belt of scotland.
  */
 
-
 /**
  * In-memory representation of a single source.
  */
@@ -49,7 +49,6 @@ struct dvbcfg_source {
         struct dvbcfg_source_id source_id;
         char *description;
 
-        struct dvbcfg_source *prev;     /* NULL=> this is the first entry */
         struct dvbcfg_source *next;     /* NULL=> this is the last entry */
 };
 
@@ -75,6 +74,16 @@ extern int dvbcfg_source_load(char *config_file,
  */
 extern int dvbcfg_source_save(char *config_file,
                               struct dvbcfg_source *sources);
+
+/**
+ * Add a new source.
+ *
+ * @param sources Pointer to list of sources to add to (source is added to this list on success).
+ * @param source_id The externalised source_id string of the source to add.
+ * @param description Description of the source.
+ * @return Pointer to the new dvbcfg_source structure, or NULL on error.
+ */
+extern struct dvbcfg_source* dvbcfg_source_new(struct dvbcfg_source** sources, char* source_id, char* description);
 
 /**
  * Find the entry for a particular source_id.

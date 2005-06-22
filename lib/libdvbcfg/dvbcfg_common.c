@@ -156,16 +156,10 @@ void dvbcfg_source_id_free(struct dvbcfg_source_id* source_id)
 char* dvbcfg_umid_to_string(struct dvbcfg_umid* umid)
 {
         char tmp[256];
-        char* sid;
         int len;
 
-        sid = dvbcfg_source_id_to_string(&umid->source_id);
-        if (sid == NULL)
-                return NULL;
-
-        len = snprintf(tmp, sizeof(tmp), "%s:0x%x:0x%x:0x%x",
-                      sid, umid->original_network_id, umid->transport_stream_id, umid->multiplex_differentiator);
-        free(sid);
+        len = snprintf(tmp, sizeof(tmp), "0x%x:0x%x:0x%x",
+                       umid->original_network_id, umid->transport_stream_id, umid->multiplex_differentiator);
         if (len >= sizeof(tmp))
                 return NULL;
 
@@ -177,12 +171,6 @@ int dvbcfg_umid_from_string(char* string, struct dvbcfg_umid* umid)
         int val;
         char* ptr;
         int result;
-
-        if (result = dvbcfg_source_id_from_string(string, &umid->source_id))
-                return result;
-
-        if ((ptr = strchr(string, ':')) == NULL)
-                return -EINVAL;
 
         if (sscanf(ptr+1, "%i", &val) != 1)
                 return -EINVAL;
@@ -201,6 +189,52 @@ int dvbcfg_umid_from_string(char* string, struct dvbcfg_umid* umid)
         if (sscanf(ptr+1, "%i", &val) != 1)
                 return -EINVAL;
         umid->multiplex_differentiator = val;
+
+        return 0;
+}
+
+char* dvbcfg_gmid_to_string(struct dvbcfg_gmid* gmid)
+{
+        char tmp[256];
+        char* sid;
+        char* umid;
+        int len;
+
+        sid = dvbcfg_source_id_to_string(&gmid->source_id);
+        if (sid == NULL)
+                return NULL;
+
+        umid = dvbcfg_umid_to_string(&gmid->umid);
+        if (umid == NULL) {
+                free(sid);
+                return NULL;
+        }
+
+        len = snprintf(tmp, sizeof(tmp), "%s:%s", sid, umid);
+        free(sid);
+        free(umid);
+        if (len >= sizeof(tmp))
+                return NULL;
+
+        return strdup(tmp);
+}
+
+int dvbcfg_gmid_from_string(char* string, struct dvbcfg_gmid* gmid)
+{
+        int val;
+        char* ptr;
+        int result;
+
+        if (result = dvbcfg_source_id_from_string(string, &gmid->source_id))
+                return result;
+
+        if ((ptr = strchr(string, ':')) == NULL)
+                return -EINVAL;
+
+        if ((result = dvbcfg_umid_from_string(ptr, &gmid->umid))) {
+                dvbcfg_source_id_free(&gmid->source_id);
+                return result;
+        }
 
         return 0;
 }
@@ -238,28 +272,28 @@ int dvbcfg_usid_from_string(char* string, struct dvbcfg_usid* usid)
 
 char* dvbcfg_gsid_to_string(struct dvbcfg_gsid* gsid)
 {
-        char* umids;
+        char* gmids;
         char* usids;
         char* tmp;
 
-        umids = dvbcfg_umid_to_string(&gsid->umid);
-        if (umids == NULL)
+        gmids = dvbcfg_gmid_to_string(&gsid->gmid);
+        if (gmids == NULL)
                 return NULL;
         usids = dvbcfg_usid_to_string(&gsid->usid);
         if (usids == NULL) {
-                free(umids);
+                free(gmids);
                 return NULL;
         }
-        tmp = malloc(strlen(umids) + strlen(usids) + 2);
+        tmp = malloc(strlen(gmids) + strlen(usids) + 2);
         if (tmp == NULL) {
-                free(umids);
+                free(gmids);
                 free(usids);
                 return NULL;
         }
 
-        sprintf(tmp, "%s:%s", umids, usids);
+        sprintf(tmp, "%s:%s", gmids, usids);
 
-        free(umids);
+        free(gmids);
         free(usids);
         return tmp;
 }
@@ -284,5 +318,5 @@ int dvbcfg_gsid_from_string(char* string, struct dvbcfg_gsid* gsid)
                 return result;
 
         /* parse the UMID now */
-        return dvbcfg_umid_from_string(string, &gsid->umid);
+        return dvbcfg_gmid_from_string(string, &gsid->gmid);
 }

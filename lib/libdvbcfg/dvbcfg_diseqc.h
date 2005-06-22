@@ -25,7 +25,7 @@
 #define DVBCFG_DISEQC_H
 
 #include <stdint.h>
-#include <dvbcfg_common.h>
+#include <dvbcfg_source.h>
 
 /**
  * The dvbcfg_diseqc file defines DISEQC command sequences to use for DVBS channels.
@@ -78,19 +78,18 @@ struct dvbcfg_diseqc_entry {
         uint32_t lof;
         char *command;
 
-        struct dvbcfg_diseqc_entry *next;       /* NULL=> last entry */
-        struct dvbcfg_diseqc_entry *prev;       /* NULL=> first entry */
+        struct dvbcfg_diseqc_entry *next;     /* NULL=> last entry */
 };
 
 /**
  * In-memory representation of diseqc information for a single source_id.
  */
 struct dvbcfg_diseqc {
-        struct dvbcfg_source_id source_id;
+        struct dvbcfg_source* source;
+
         struct dvbcfg_diseqc_entry *entries;
 
         struct dvbcfg_diseqc *next;     /* NULL=> last entry */
-        struct dvbcfg_diseqc *prev;     /* NULL=> first entry */
 };
 
 
@@ -98,13 +97,18 @@ struct dvbcfg_diseqc {
  * Load diseqcs from a config file.
  *
  * @param config_file Config filename to load.
+ * @param sources List of known dvbcfg_source structures.
  * @param diseqcs Where to put the pointer to the start of the loaded
  * diseqcs. If NULL, a new list will be created, if it points to an already initialised list,
  * the loaded diseqcs will be appended to it.
+ * @param create_sources If 1, and a diseqc refers to an unknown source, the unknown source will be created. If 0, the
+ * source will be ignored.
  * @return 0 on success, or nonzero error code on failure.
  */
 extern int dvbcfg_diseqc_load(char *config_file,
-                              struct dvbcfg_diseqc **diseqcs);
+                              struct dvbcfg_source** sources,
+                              struct dvbcfg_diseqc** diseqcs,
+                              int create_sources);
 
 /**
  * Save diseqcs to a config file.
@@ -117,13 +121,44 @@ extern int dvbcfg_diseqc_save(char *config_file,
                               struct dvbcfg_diseqc *diseqcs);
 
 /**
- * Find the matching dvcfg_diseqc for a particular source_id.
+ * Create a new diseqc.
+ *
+ * @param diseqcs List of diseqcs to add to.
+ * @param source The source of the diseqc.
+ * @return The new dvbcfg_adapter structure, or NULL on error.
+ */
+extern struct dvbcfg_diseqc* dvbcfg_diseqc_new(struct dvbcfg_diseqc** diseqcs, struct dvbcfg_source* source);
+
+/**
+ * Add a new entry to a diseqc.
+ *
+ * @param diseqc Diseqc to add to.
+ * @param slof Is the switching frequency for this entry (the maximum frequency this entry allows). It should be in MHz.
+ * @param polarization Is the polarization for this entry (one of DVBCFG_POLARIZATION_*).
+ * @param lof The frequency (in MHz) to subtract from the channel frequency.
+ * @param command The diseqc command to execute.
+ * @return The new dvbcfg_diseqc_entry structure, or NULL on error.
+ */
+extern struct dvbcfg_diseqc_entry* dvbcfg_diseqc_add_entry(struct dvbcfg_diseqc* diseqc,
+                                                           uint32_t slof, uint8_t polarization, uint32_t lof, char *command);
+
+/**
+ * Remove an entry from a diseqc.
+ *
+ * @param diseqc Diseqc to remove from.
+ * @param entry dvbcfg_diseqc_entry to remove.
+ * @return 0 on success, or nonzero on error.
+ */
+extern int dvbcfg_diseqc_remove_entry(struct dvbcfg_diseqc* diseqc, struct dvbcfg_diseqc_entry* entry);
+
+/**
+ * Find the matching dvcfg_diseqc for a particular source.
  *
  * @param diseqcs Pointer to the list to search.
- * @param source_id source_id concerned.
+ * @param source source concerned.
  * @return A dvbcfg_diseqc structure if found, or NULL if not.
  */
-extern struct dvbcfg_diseqc *dvbcfg_diseqc_find(struct dvbcfg_diseqc*diseqcs, struct dvbcfg_source_id* source_id);
+extern struct dvbcfg_diseqc *dvbcfg_diseqc_find(struct dvbcfg_diseqc* diseqcs, struct dvbcfg_source* source);
 
 /**
  * Find the matching dvcfg_diseqc_entry within a source for a particular frequency/polarization.
@@ -145,15 +180,6 @@ extern struct dvbcfg_diseqc_entry *dvbcfg_diseqc_find_entry(struct dvbcfg_diseqc
  */
 extern void dvbcfg_diseqc_free(struct dvbcfg_diseqc **diseqcs,
                                struct dvbcfg_diseqc *tofree);
-
-/**
- * Unlink a single dvbcfg_diseqc_entry from a dvbcfg_diseqc, and free its memory.
- *
- * @param diseqc The dvbcfg_diseqc.
- * @param tofree The dvbcfg_diseqc_entry to free.
- */
-extern void dvbcfg_diseqc_free_entry(struct dvbcfg_diseqc *diseqc,
-                                     struct dvbcfg_diseqc_entry *tofree);
 
 /**
  * Free memory for all diseqcs in a list.

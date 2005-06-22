@@ -20,24 +20,24 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <errno.h>
 #include "dvbcfg_adapter.h"
+#include "dvbcfg_source.h"
 #include "dvbcfg_util.h"
-
-static void freeentries(struct dvbcfg_adapter *adapter);
 
 
 int dvbcfg_adapter_load(char *config_file,
-                        struct dvbcfg_adapter **adapters)
+                        struct dvbcfg_source** sources,
+                        struct dvbcfg_adapter **adapters,
+                        int create_sources)
 {
         FILE *in;
         char curline[256];
         char *linepos;
-        struct dvbcfg_adapter tmpadapter;
-        struct dvbcfg_adapter *curadapter;
         struct dvbcfg_adapter *newadapter;
-        struct dvbcfg_adapter_entry *newentry;
-        struct dvbcfg_adapter_entry *curentry;
+        struct dvbcfg_source_id source_id;
+        struct dvbcfg_source* source;
         int numtokens;
         int error = 0;
         int i;
@@ -47,15 +47,8 @@ int dvbcfg_adapter_load(char *config_file,
         if (in == NULL)
                 return errno;
 
-        /* move to the tail entry */
-        curadapter = *adapters;
-        if (curadapter)
-                while (curadapter->next)
-                        curadapter = curadapter->next;
-
         while (fgets(curline, sizeof(curline), in)) {
                 linepos = curline;
-                memset(&tmpadapter, 0, sizeof(struct dvbcfg_adapter));
 
                 /* clean any comments/ whitespace */
                 if (dvbcfg_cleanline(linepos) == 0)
@@ -67,72 +60,55 @@ int dvbcfg_adapter_load(char *config_file,
                         continue;
                 }
 
-                /* the adapter_id */
-                tmpadapter.adapter_id = linepos;
-                linepos = dvbcfg_nexttoken(linepos);
+                /* create the new adapter */
+                newadapter = dvbcfg_adapter_new(adapters, linepos);
+                if (newadapter == NULL) {
+                        error = -ENOMEM;
+                        goto exit;
+                }
 
                 /* the source_ids */
                 for (i = 1; i < numtokens; i++) {
-                        newentry = (struct dvbcfg_adapter_entry *)
-                            malloc(sizeof(struct dvbcfg_adapter_entry));
-                        if (newentry == NULL) {
+                        if (dvbcfg_source_id_from_string(linepos, &source_id)) {
+                                dvbcfg_adapter_free(adapters, newadapter);
                                 error = -ENOMEM;
-                                break;
-                        }
-                        if (dvbcfg_source_id_from_string(linepos, &newentry->source_id)) {
-                                free(newentry);
-                                error = -ENOMEM;
-                                break;
+                                goto exit;
                         }
 
-                        /* hook it into the list */
-                        if (!tmpadapter.source_ids) {
-                                tmpadapter.source_ids = newentry;
-                        } else {
-                                curentry->next = newentry;
+                        /* try to find it */
+                        source = dvbcfg_source_find(*sources,
+                                                    source_id.source_type,
+                                                    source_id.source_network,
+                                                    source_id.source_region,
+                                                    source_id.source_locale);
+                        dvbcfg_source_id_free(&source_id);
+                        if (source == NULL) {
+                                if (!create_sources)
+                                        continue;
+
+                                source = dvbcfg_source_new(sources, linepos, "???");
+                                if (source == NULL) {
+                                        dvbcfg_adapter_free(adapters, newadapter);
+                                        error = -ENOMEM;
+                                        goto exit;
+                                }
+
                         }
-                        curentry = newentry;
+
+                        /* add it in */
+                        if (dvbcfg_adapter_add_source(newadapter, source)) {
+                                dvbcfg_adapter_free(adapters, newadapter);
+                                error = -ENOMEM;
+                                goto exit;
+                        }
 
                         /* next source_id please! */
                         linepos = dvbcfg_nexttoken(linepos);
                 }
-
-                /* create new entry */
-                newadapter = (struct dvbcfg_adapter *)
-                    malloc(sizeof(struct dvbcfg_adapter));
-                if (newadapter == NULL) {
-                        error = -ENOMEM;
-                        break;
-                }
-                memcpy(newadapter, &tmpadapter,
-                       sizeof(struct dvbcfg_adapter));
-                newadapter->adapter_id =
-                    dvbcfg_strdupandtrim(tmpadapter.adapter_id, -1);
-                newadapter->source_ids = tmpadapter.source_ids;
-                if (!newadapter->adapter_id) {
-                        if (newadapter->adapter_id)
-                                free(newadapter->adapter_id);
-                        freeentries(newadapter);
-                        free(newadapter);
-                        error = -ENOMEM;
-                        break;
-                }
-
-                /* add it into the list */
-                if (curadapter) {
-                        curadapter->next = newadapter;
-                        newadapter->prev = curadapter;
-                }
-                if (!*adapters)
-                        *adapters = newadapter;
-                curadapter = newadapter;
         }
 
+exit:
         /* tidy up and return */
-        if (error) {
-                dvbcfg_adapter_free_all(*adapters);
-                *adapters = NULL;
-        }
         fclose(in);
         return error;
 }
@@ -140,8 +116,8 @@ int dvbcfg_adapter_load(char *config_file,
 int dvbcfg_adapter_save(char *config_file, struct dvbcfg_adapter *adapters)
 {
         FILE *out;
-        struct dvbcfg_adapter_entry *entry;
         char* source_id;
+        int i;
 
         /* open the file */
         out = fopen(config_file, "w");
@@ -151,14 +127,12 @@ int dvbcfg_adapter_save(char *config_file, struct dvbcfg_adapter *adapters)
         while (adapters) {
                 fprintf(out, "%s ", adapters->adapter_id);
 
-                entry = adapters->source_ids;
-                while (entry) {
-                        source_id = dvbcfg_source_id_to_string(&entry->source_id);
+                for(i=0; i< adapters->sources_count; i++) {
+                        source_id = dvbcfg_source_id_to_string(&adapters->sources[i]->source_id);
                         if (source_id) {
                                 fprintf(out, "%s ", source_id);
                                 free(source_id);
                         }
-                        entry = entry->next;
                 }
                 fprintf(out, "\n");
 
@@ -166,6 +140,88 @@ int dvbcfg_adapter_save(char *config_file, struct dvbcfg_adapter *adapters)
         }
 
         fclose(out);
+        return 0;
+}
+
+struct dvbcfg_adapter* dvbcfg_adapter_new(struct dvbcfg_adapter** adapters, char* adapter_id)
+{
+        struct dvbcfg_adapter* newadapter;
+        struct dvbcfg_adapter* curadapter;
+
+        /* create new structure */
+        newadapter = (struct dvbcfg_adapter*) malloc(sizeof(struct dvbcfg_adapter));
+        if (newadapter == NULL)
+                return NULL;
+        memset(newadapter, 0, sizeof(struct dvbcfg_adapter));
+        newadapter->adapter_id = dvbcfg_strdupandtrim(adapter_id, -1);
+        if (newadapter->adapter_id == NULL) {
+                free(newadapter);
+                return NULL;
+        }
+
+        /* add it to the list */
+        if (*adapters == NULL)
+                *adapters = newadapter;
+        else {
+                curadapter = *adapters;
+                while(curadapter->next)
+                        curadapter = curadapter->next;
+                curadapter->next = newadapter;
+        }
+
+        return newadapter;
+}
+
+int dvbcfg_adapter_add_source(struct dvbcfg_adapter* adapter, struct dvbcfg_source* source)
+{
+        struct dvbcfg_source** tmp = adapter->sources;
+
+        if (adapter->sources == NULL) {
+                adapter->sources = (struct dvbcfg_source**) malloc(sizeof(struct dvbcfg_source*));
+                if (adapter->sources == NULL)
+                        return -ENOMEM;
+                adapter->sources[0] = source;
+                adapter->sources_count = 1;
+        } else {
+                adapter->sources = (struct dvbcfg_source**) realloc(adapter->sources,
+                                                                    sizeof(struct dvbcfg_source*) * (adapter->sources_count+1));
+                if (adapter->sources == NULL) {
+                        adapter->sources = tmp;
+                        return -ENOMEM;
+                }
+                adapter->sources[adapter->sources_count++] = source;
+        }
+
+        return 0;
+}
+
+int dvbcfg_adapter_remove_source(struct dvbcfg_adapter* adapter, struct dvbcfg_source* source)
+{
+        struct dvbcfg_source** tmp;
+        int i;
+
+        if (adapter->sources == NULL)
+                return -EINVAL;
+
+        for(i=0; i< adapter->sources_count; i++) {
+                if (adapter->sources[i] == source)
+                        break;
+        }
+        if (i >= adapter->sources_count)
+                return -EINVAL;
+
+        tmp = (struct dvbcfg_source**) malloc(sizeof(struct dvbcfg_source*) * (adapter->sources_count-1));
+        if (tmp == NULL)
+                return -ENOMEM;
+        memcpy(tmp, adapter->sources, sizeof(struct dvbcfg_source*) * i);
+        memcpy(tmp + (sizeof(struct dvbcfg_source*) * i),
+               adapter->sources + (sizeof(struct dvbcfg_source*) * (i + 1)),
+               sizeof(struct dvbcfg_source*) * (adapter->sources_count - i - 1));
+
+        free(adapter->sources);
+        adapter->sources = tmp;
+        adapter->sources_count--;
+
         return 0;
 }
 
@@ -182,26 +238,11 @@ struct dvbcfg_adapter *dvbcfg_adapter_find(struct dvbcfg_adapter *adapters,
         return NULL;
 }
 
-int dvbcfg_adapter_supports_source_id(struct dvbcfg_adapter *adapter, struct dvbcfg_source_id* source_id)
-{
-        struct dvbcfg_adapter_entry *entry;
-
-        entry = adapter->source_ids;
-        while (entry) {
-                if (dvbcfg_source_id_equal(source_id, &entry->source_id, 0))
-                        return 1;
-
-                entry = entry->next;
-        }
-
-        return 0;
-}
-
-struct dvbcfg_adapter *dvbcfg_adapter_find_source_id(struct dvbcfg_adapter *adapters,
-                                                     struct dvbcfg_source_id* source_id)
+struct dvbcfg_adapter *dvbcfg_adapter_find_source(struct dvbcfg_adapter *adapters,
+                                                  struct dvbcfg_source* source)
 {
         while (adapters) {
-                if (dvbcfg_adapter_supports_source_id(adapters, source_id))
+                if (dvbcfg_adapter_supports_source(adapters, source))
                         return adapters;
 
                 adapters = adapters->next;
@@ -210,48 +251,47 @@ struct dvbcfg_adapter *dvbcfg_adapter_find_source_id(struct dvbcfg_adapter *adap
         return NULL;
 }
 
+int dvbcfg_adapter_supports_source(struct dvbcfg_adapter *adapter, struct dvbcfg_source* source)
+{
+        int i;
+
+        for(i=0; i< adapter->sources_count; i++) {
+                if (source == adapter->sources[i])
+                        return 1;
+        }
+
+        return 0;
+}
 
 void dvbcfg_adapter_free(struct dvbcfg_adapter **adapters,
                          struct dvbcfg_adapter *tofree)
 {
-        struct dvbcfg_adapter *prev;
         struct dvbcfg_adapter *next;
+        struct dvbcfg_adapter *cur;
 
-        prev = tofree->prev;
         next = tofree->next;
 
         /* free internal structures */
         if (tofree->adapter_id)
                 free(tofree->adapter_id);
-        freeentries(tofree);
+        if (tofree->sources)
+                free(tofree->sources);
         free(tofree);
 
         /* adjust pointers */
-        if (prev == NULL)
+        if (*adapters == tofree)
                 *adapters = next;
-        else
-                prev->next = next;
-
-        if (next != NULL)
-                next->prev = prev;
+        else {
+                cur = *adapters;
+                while((cur->next != tofree) && (cur->next))
+                        cur = cur->next;
+                if (cur->next == tofree)
+                        cur->next = next;
+        }
 }
 
 void dvbcfg_adapter_free_all(struct dvbcfg_adapter *adapters)
 {
         while (adapters)
                 dvbcfg_adapter_free(&adapters, adapters);
-}
-
-static void freeentries(struct dvbcfg_adapter *adapter)
-{
-        struct dvbcfg_adapter_entry *entry;
-        struct dvbcfg_adapter_entry *next_entry;
-
-        entry = adapter->source_ids;
-        while (entry) {
-                next_entry = entry->next;
-                dvbcfg_source_id_free(&entry->source_id);
-                free(entry);
-                entry = next_entry;
-        }
 }

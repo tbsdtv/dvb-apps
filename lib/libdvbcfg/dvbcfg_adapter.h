@@ -21,7 +21,7 @@
 #ifndef DVBCFG_ADAPTER_H
 #define DVBCFG_ADAPTER_H
 
-#include <dvbcfg_common.h>
+#include <dvbcfg_source.h>
 
 /**
  * The adapters file describes each DVB adapter in a system, and indicates what source_ids
@@ -51,21 +51,15 @@
  * DVBT2.0 Tuk-BlackHill
  */
 
-
-struct dvbcfg_adapter_entry {
-        struct dvbcfg_source_id source_id;
-
-        struct dvbcfg_adapter_entry *next;
-};
-
 /**
  * In-memory representation of a single adapter.
  */
 struct dvbcfg_adapter {
         char *adapter_id;
-        struct dvbcfg_adapter_entry *source_ids;
 
-        struct dvbcfg_adapter *prev;    /* NULL=> this is the first entry */
+        struct dvbcfg_source** sources;
+        int sources_count;
+
         struct dvbcfg_adapter *next;    /* NULL=> this is the last entry */
 };
 
@@ -74,13 +68,18 @@ struct dvbcfg_adapter {
  * Load adapters from a config file.
  *
  * @param config_file Config filename to load.
+ * @param sources List of known dvbcfg_source structures.
  * @param adapters Where to put the pointer to the start of the loaded
  * adapters. If NULL, a new list will be created, if it points to an already initialised list,
  * the loaded adapters will be appended to it.
+ * @param create_sources If 1, and an adapter refers to an unknown source, the unknown source will be created. If 0, the
+ * source will be ignored.
  * @return 0 on success, or nonzero error code on failure.
  */
 extern int dvbcfg_adapter_load(char *config_file,
-                               struct dvbcfg_adapter **adapters);
+                               struct dvbcfg_source** sources,
+                               struct dvbcfg_adapter **adapters,
+                               int create_sources);
 
 /**
  * Save adapters to a config file.
@@ -93,35 +92,61 @@ extern int dvbcfg_adapter_save(char *config_file,
                                struct dvbcfg_adapter *adapters);
 
 /**
+ * Create a new adapter
+ *
+ * @param adapters List of adapters to add to.
+ * @param adapter_id The ID of the adapter.
+ * @return The new dvbcfg_adapter structure, or NULL on error.
+ */
+extern struct dvbcfg_adapter* dvbcfg_adapter_new(struct dvbcfg_adapter** adapters, char* adapter_id);
+
+/**
+ * Add a new source to an adapter.
+ *
+ * @param adapter Adapter to add to.
+ * @param source dvbcfg_source to add.
+ * @return 0 on success, or nonzero on error.
+ */
+extern int dvbcfg_adapter_add_source(struct dvbcfg_adapter* adapter, struct dvbcfg_source* source);
+
+/**
+ * Remove a source from an adapter.
+ *
+ * @param adapter Adapter to remove from.
+ * @param source dvbcfg_source to remove.
+ * @return 0 on success, or nonzero on error.
+ */
+extern int dvbcfg_adapter_remove_source(struct dvbcfg_adapter* adapter, struct dvbcfg_source* source);
+
+/**
  * Find the entry for a particular adapter_id.
  *
  * @param adapters Pointer to the list to search.
  * @param adapter_id adapter_id to find.
  * @return A dvbcfg_adapter structure if found, or NULL if not.
  */
-extern struct dvbcfg_adapter *dvbcfg_adapter_find(struct dvbcfg_adapter
-                                                  *adapters,
-                                                  char *adapter_id);
+extern struct dvbcfg_adapter *dvbcfg_adapter_find(struct dvbcfg_adapter* adapters,
+                                                  char* adapter_id);
 
 /**
- * Find an adapter supporting a source_id.
+ * Find an adapter supporting a dvbcfg_source.
  *
  * @param adapters Pointer to the list to search.
- * @param source_id source_id to find.
+ * @param source dvbcfg_source to find.
  * @return A dvbcfg_adapter structure if found, or NULL if not.
  */
-extern struct dvbcfg_adapter *dvbcfg_adapter_find_source_id(struct dvbcfg_adapter* adapters,
-                                                            struct dvbcfg_source_id* source_id);
+extern struct dvbcfg_adapter *dvbcfg_adapter_find_source(struct dvbcfg_adapter* adapters,
+                                                         struct dvbcfg_source* source);
 
 /**
- * Does the supplied adapter support the supplied source_id?
+ * Does the supplied adapter support the supplied dvbcfg_source?
  *
  * @param adapter Adapter to check
- * @param source_id sourec_id to check for.
+ * @param source dvbcfg_source to check for.
  * @return 1 if it does, 0 if not.
  */
-extern int dvbcfg_adapter_supports_source_id(struct dvbcfg_adapter* adapter,
-                                             struct dvbcfg_source_id* source_id);
+extern int dvbcfg_adapter_supports_source(struct dvbcfg_adapter* adapter,
+                                          struct dvbcfg_source* source);
 
 /**
  * Unlink a single adapter from a list, and free its memory.

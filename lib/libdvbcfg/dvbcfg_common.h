@@ -94,11 +94,10 @@ struct dvbcfg_source_id {
 
 
 /**
- * A Unique Multiplex ID uniquely identifies a multiplex across the global space of all multiplexes
- * in all DVB transmission types.
+ * A Unique Multiplex ID uniquely identifies a multiplex within a source - it is not necessarily globally unique.
  *
  * The externalised string version of this value is as follows:
- * <source_id>:<original_network_id>:<transport_stream_id>:<multiplex_differentiator>
+ * <original_network_id>:<transport_stream_id>:<multiplex_differentiator>
  *
  * <original_network_id> Is the ID of the original broadcaster of the multiplex.
  * <transport_stream_id> Is the ID of the multiplex as allocated by the broadcaster.
@@ -113,12 +112,23 @@ struct dvbcfg_source_id {
  */
 struct dvbcfg_umid
 {
-        struct dvbcfg_source_id source_id;
         uint32_t original_network_id;
         uint32_t transport_stream_id;
         uint32_t multiplex_differentiator;
 };
 
+/**
+ * A Global Multiplex ID uniquely identifies a multiplex across the global space of all multiplexes
+ * in all DVB transmission types. It is basically just the concatenation of the source_id and the UMID. The externalised
+ * string version is as follows:
+ *
+ * <source_id>:<original_network_id>:<transport_stream_id>:<multiplex_differentiator>
+ */
+struct dvbcfg_gmid
+{
+        struct dvbcfg_source_id source_id;
+        struct dvbcfg_umid umid;
+};
 
 /**
  * A Unique Service ID uniquely identifies a service within its multiplex.
@@ -137,7 +147,6 @@ struct dvbcfg_usid
         uint32_t service_differentiator;
 };
 
-
 /**
  * A Global Service ID uniquely identifies a service across the global space of all multiplexes
  * in all DVB transmission types. It is basically just the concatenation of the UMID and the USID. The externalised
@@ -145,15 +154,14 @@ struct dvbcfg_usid
  *
  * <source_id>:<original_network_id>:<transport_stream_id>:<multiplex_differentiator>:<program_number>:<service_differentiator>
  *
- * The following only applies to GSIDs. It does not apply to UMIDs on their own: DVBT, DVBC, ATSC give more complications
- * as usual. If the service represented by a GSID is receiveable across the entire <source_network>, <source_region>
- * and <source_locale> should be omitted/NULL.
+ * DVBT, DVBC, ATSC give more complications as usual. If the service represented by a GSID is receiveable across the
+ * entire <source_network>, <source_region> and <source_locale> should be omitted/NULL.
  *
  * If the service is only receivable in a particular <source_region>, only <source_locale> should be omitted/NULL.
  */
 struct dvbcfg_gsid
 {
-        struct dvbcfg_umid umid;
+        struct dvbcfg_gmid gmid;
         struct dvbcfg_usid usid;
 };
 
@@ -210,6 +218,24 @@ extern char* dvbcfg_umid_to_string(struct dvbcfg_umid* umid);
  * @return 0 on success, nonzero on failure.
  */
 extern int dvbcfg_umid_from_string(char* string, struct dvbcfg_umid* umid);
+
+/**
+ * Convert a GMID structure into a string.
+ *
+ * @param umid The GMID structure.
+ * @return Pointer to a malloc()ed buffer containing the string, or NULL on failure.
+ */
+extern char* dvbcfg_gmid_to_string(struct dvbcfg_gmid* gmid);
+
+/**
+ * Parse a string into a GMID.
+ *
+ * @param string The string to parse.
+ * @param umid Pointer to a GMID structure to fill out.
+ *
+ * @return 0 on success, nonzero on failure.
+ */
+extern int dvbcfg_gmid_from_string(char* string, struct dvbcfg_gmid* gmid);
 
 /**
  * Convert a USID structure into a string.

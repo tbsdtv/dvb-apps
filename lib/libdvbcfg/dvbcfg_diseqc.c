@@ -25,17 +25,21 @@
 #include "dvbcfg_common.h"
 #include "dvbcfg_util.h"
 
-int dvbcfg_diseqc_load(char *config_file, struct dvbcfg_diseqc **diseqcs)
+int dvbcfg_diseqc_load(char *config_file,
+                       struct dvbcfg_source** sources,
+                       struct dvbcfg_diseqc** diseqcs,
+                       int create_sources)
 {
         FILE *in;
         char curline[256];
         char *linepos;
         struct dvbcfg_source_id source_id;
+        uint32_t slof;
+        uint8_t polarization;
+        uint32_t lof;
+        char *command;
+        struct dvbcfg_source *source;
         struct dvbcfg_diseqc *curdiseqc;
-        struct dvbcfg_diseqc *tail;
-        struct dvbcfg_diseqc_entry tmpentry;
-        struct dvbcfg_diseqc_entry *newentry;
-        struct dvbcfg_diseqc_entry *curentry;
         int numtokens;
         int error = 0;
         int val;
@@ -45,15 +49,8 @@ int dvbcfg_diseqc_load(char *config_file, struct dvbcfg_diseqc **diseqcs)
         if (in == NULL)
                 return errno;
 
-        /* move to the tail entry */
-        tail = *diseqcs;
-        if (tail)
-                while (tail->next)
-                        tail = tail->next;
-
         while (fgets(curline, sizeof(curline), in)) {
                 linepos = curline;
-                memset(&tmpentry, 0, sizeof(struct dvbcfg_diseqc_entry));
 
                 /* clean any comments/ whitespace */
                 if (dvbcfg_cleanline(linepos) == 0)
@@ -65,47 +62,56 @@ int dvbcfg_diseqc_load(char *config_file, struct dvbcfg_diseqc **diseqcs)
                         continue;
 
                 /* the source id */
+                if (dvbcfg_source_id_from_string(linepos, &source_id)) {
+                  error = -ENOMEM;
+                  goto exit;
+                }
 
-                if (dvbcfg_source_id_from_string(linepos, &source_id))
-                        continue;
-                linepos = dvbcfg_nexttoken(linepos);
+                /* try to find the source */
+                source = dvbcfg_source_find(*sources,
+                                             source_id.source_type,
+                                             source_id.source_network,
+                                             source_id.source_region,
+                                             source_id.source_locale);
+                dvbcfg_source_id_free(&source_id);
+                if (source == NULL) {
+                        if (!create_sources)
+                                continue;
+
+                        source = dvbcfg_source_new(sources, linepos, "???");
+                        if (source == NULL) {
+                                error = -ENOMEM;
+                                goto exit;
+                        }
+                }
 
                 /* find/create the diseqc */
-                curdiseqc = dvbcfg_diseqc_find(*diseqcs, &source_id);
+                curdiseqc = dvbcfg_diseqc_find(*diseqcs, source);
                 if (curdiseqc == NULL) {
-                        curdiseqc = (struct dvbcfg_diseqc *) malloc(sizeof(struct dvbcfg_diseqc));
+                        /* create the diseqc */
+                        curdiseqc = dvbcfg_diseqc_new(diseqcs, source);
                         if (curdiseqc == NULL) {
                                 error = -ENOMEM;
-                                break;
+                                goto exit;
                         }
-                        memset(curdiseqc, 0, sizeof(struct dvbcfg_diseqc));
-                        memcpy(&curdiseqc->source_id, &source_id, sizeof(struct dvbcfg_source_id));
-                        if (tail)
-                                tail->next = curdiseqc;
-                        if (!*diseqcs)
-                                *diseqcs = curdiseqc;
-                        curdiseqc->prev = tail;
-                        tail = curdiseqc;
-
-                } else {
-                        dvbcfg_source_id_free(&source_id);
                 }
+                linepos = dvbcfg_nexttoken(linepos);
 
                 /* the SLOF */
                 if (sscanf(linepos, "%d", &val) != 1)
                         continue;
-                tmpentry.slof = val * 1000;  // want it in kHz
+                slof = val * 1000;  // want it in kHz
                 linepos = dvbcfg_nexttoken(linepos);
 
                 /* the polarization */
                 if (linepos[0] == 'H')
-                        tmpentry.polarization = DVBCFG_POLARIZATION_H;
+                        polarization = DVBCFG_POLARIZATION_H;
                 else if (linepos[0] == 'V')
-                        tmpentry.polarization = DVBCFG_POLARIZATION_V;
+                        polarization = DVBCFG_POLARIZATION_V;
                 else if (linepos[0] == 'L')
-                        tmpentry.polarization = DVBCFG_POLARIZATION_L;
+                        polarization = DVBCFG_POLARIZATION_L;
                 else if (linepos[0] == 'R')
-                        tmpentry.polarization = DVBCFG_POLARIZATION_R;
+                        polarization = DVBCFG_POLARIZATION_R;
                 else
                         continue;
                 linepos = dvbcfg_nexttoken(linepos);
@@ -113,51 +119,24 @@ int dvbcfg_diseqc_load(char *config_file, struct dvbcfg_diseqc **diseqcs)
                 /* LOF */
                 if (sscanf(linepos, "%d", &val) != 1)
                         continue;
-                tmpentry.lof = val * 1000;   // want it in kHz
+                lof = val * 1000;   // want it in kHz
                 linepos = dvbcfg_nexttoken(linepos);
 
                 /* command */
                 if (numtokens == 5)
-                        tmpentry.command = linepos;
+                        command = linepos;
                 else
-                        tmpentry.command = "";
+                        command = "";
 
-                /* create new dvbcfg_diseqc_entry */
-                newentry = (struct dvbcfg_diseqc_entry *)
-                    malloc(sizeof(struct dvbcfg_diseqc_entry));
-                if (newentry == NULL) {
+                /* create a new entry */
+                if (dvbcfg_diseqc_add_entry(curdiseqc, slof, polarization, lof, command) == NULL) {
                         error = -ENOMEM;
-                        break;
-                }
-                memcpy(newentry, &tmpentry,
-                       sizeof(struct dvbcfg_diseqc_entry));
-                newentry->command = dvbcfg_strdupandtrim(tmpentry.command, -1);
-                if (!newentry->command) {
-                        if (newentry->command)
-                                free(newentry->command);
-                        free(newentry);
-                        error = -ENOMEM;
-                        break;
-                }
-
-                /* link it in */
-                if (!curdiseqc->entries) {
-                        curdiseqc->entries = newentry;
-                } else {
-                        curentry = curdiseqc->entries;
-                        while (curentry->next)
-                                curentry = curentry->next;
-
-                        newentry->prev = curentry;
-                        curentry->next = newentry;
+                        goto exit;
                 }
         }
 
+exit:
         /* tidy up and return */
-        if (error) {
-                dvbcfg_diseqc_free_all(*diseqcs);
-                *diseqcs = NULL;
-        }
         fclose(in);
         return error;
 }
@@ -176,7 +155,7 @@ int dvbcfg_diseqc_save(char *config_file, struct dvbcfg_diseqc *diseqcs)
 
         while (diseqcs) {
 
-                source_id = dvbcfg_source_id_to_string(&diseqcs->source_id);
+                source_id = dvbcfg_source_id_to_string(&diseqcs->source->source_id);
                 if (source_id == NULL)
                         break;
 
@@ -216,11 +195,89 @@ int dvbcfg_diseqc_save(char *config_file, struct dvbcfg_diseqc *diseqcs)
         return 0;
 }
 
+struct dvbcfg_diseqc* dvbcfg_diseqc_new(struct dvbcfg_diseqc** diseqcs, struct dvbcfg_source* source)
+{
+        struct dvbcfg_diseqc* newdiseqc;
+        struct dvbcfg_diseqc* curdiseqc;
+
+        /* create new structure */
+        newdiseqc = (struct dvbcfg_diseqc*) malloc(sizeof(struct dvbcfg_diseqc));
+        if (newdiseqc == NULL)
+                return NULL;
+        memset(newdiseqc, 0, sizeof(struct dvbcfg_diseqc));
+        newdiseqc->source = source;
+
+        /* add it to the list */
+        if (*diseqcs == NULL)
+                *diseqcs = newdiseqc;
+        else {
+                curdiseqc = *diseqcs;
+                while(curdiseqc->next)
+                        curdiseqc = curdiseqc->next;
+                curdiseqc->next = newdiseqc;
+        }
+
+        return newdiseqc;
+}
+
+struct dvbcfg_diseqc_entry* dvbcfg_diseqc_add_entry(struct dvbcfg_diseqc* diseqc,
+                                                    uint32_t slof, uint8_t polarization, uint32_t lof, char *command)
+{
+        struct dvbcfg_diseqc_entry* newentry;
+        struct dvbcfg_diseqc_entry* curentry;
+
+        /* create new structure */
+        newentry = (struct dvbcfg_diseqc_entry*) malloc(sizeof(struct dvbcfg_diseqc_entry));
+        if (newentry == NULL)
+                return NULL;
+        memset(newentry, 0, sizeof(struct dvbcfg_diseqc_entry));
+        newentry->slof = slof;
+        newentry->polarization = polarization;
+        newentry->lof = lof;
+        newentry->command = dvbcfg_strdupandtrim(command, -1);
+
+        /* add it to the list */
+        if (diseqc->entries == NULL)
+                diseqc->entries = newentry;
+        else {
+                curentry = diseqc->entries;
+                while(curentry->next)
+                        curentry = curentry->next;
+                curentry->next = newentry;
+        }
+
+        return newentry;
+}
+
+int dvbcfg_diseqc_remove_entry(struct dvbcfg_diseqc* diseqc, struct dvbcfg_diseqc_entry* entry)
+{
+        struct dvbcfg_diseqc_entry *next;
+        struct dvbcfg_diseqc_entry *cur;
+
+        next = entry->next;
+
+        /* free internal structures */
+        if (entry->command)
+                free(entry->command);
+        free(entry);
+
+        /* adjust pointers */
+        if (diseqc->entries == entry)
+                diseqc->entries = next;
+        else {
+                cur = diseqc->entries;
+                while((cur->next != entry) && (cur->next))
+                        cur = cur->next;
+                if (cur->next == entry)
+                        cur->next = next;
+        }
+}
+
 struct dvbcfg_diseqc *dvbcfg_diseqc_find(struct dvbcfg_diseqc *diseqcs,
-                                         struct dvbcfg_source_id* source_id)
+                                         struct dvbcfg_source* source)
 {
         while (diseqcs) {
-                if (dvbcfg_source_id_equal(source_id, &diseqcs->source_id, 0))
+                if (source == diseqcs->source)
                         return diseqcs;
 
                 diseqcs = diseqcs->next;
@@ -256,55 +313,28 @@ struct dvbcfg_diseqc_entry *dvbcfg_diseqc_find_entry(struct dvbcfg_diseqc* diseq
 void dvbcfg_diseqc_free(struct dvbcfg_diseqc **diseqcs,
                         struct dvbcfg_diseqc *tofree)
 {
-        struct dvbcfg_diseqc *prev;
         struct dvbcfg_diseqc *next;
+        struct dvbcfg_diseqc *cur;
         struct dvbcfg_diseqc_entry *entry;
         struct dvbcfg_diseqc_entry *next_entry;
 
-        prev = tofree->prev;
         next = tofree->next;
 
         /* free internal structures */
-        dvbcfg_source_id_free(&tofree->source_id);
-        entry = tofree->entries;
-        while (entry) {
-                next_entry = entry->next;
-                free(entry->command);
-                free(entry);
-                entry = next_entry;
-        }
+        while(tofree->entries)
+                dvbcfg_diseqc_remove_entry(tofree, tofree->entries);
         free(tofree);
 
         /* adjust pointers */
-        if (prev == NULL)
+        if (*diseqcs == tofree)
                 *diseqcs = next;
-        else
-                prev->next = next;
-        if (next != NULL)
-                next->prev = prev;
-}
-
-void dvbcfg_diseqc_free_entry(struct dvbcfg_diseqc *diseqc,
-                              struct dvbcfg_diseqc_entry *tofree)
-{
-        struct dvbcfg_diseqc_entry *prev;
-        struct dvbcfg_diseqc_entry *next;
-
-        prev = tofree->prev;
-        next = tofree->next;
-
-        /* free internal structures */
-        if (tofree->command)
-                free(tofree->command);
-        free(tofree);
-
-        /* adjust pointers */
-        if (prev == NULL)
-                diseqc->entries = next;
-        else
-                prev->next = next;
-        if (next != NULL)
-                next->prev = prev;
+        else {
+                cur = *diseqcs;
+                while((cur->next != tofree) && (cur->next))
+                        cur = cur->next;
+                if (cur->next == tofree)
+                        cur->next = next;
+        }
 }
 
 void dvbcfg_diseqc_free_all(struct dvbcfg_diseqc *diseqcs)
