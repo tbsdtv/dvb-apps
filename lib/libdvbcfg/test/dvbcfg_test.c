@@ -25,6 +25,7 @@
 #include "dvbcfg_vdrchannel.h"
 #include "dvbcfg_zapchannel.h"
 #include "dvbcfg_adapter.h"
+#include "dvbcfg_multiplex.h"
 
 void syntax();
 

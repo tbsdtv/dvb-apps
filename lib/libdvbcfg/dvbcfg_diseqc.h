@@ -102,7 +102,7 @@ struct dvbcfg_diseqc {
  * diseqcs. If NULL, a new list will be created, if it points to an already initialised list,
  * the loaded diseqcs will be appended to it.
  * @param create_sources If 1, and a diseqc refers to an unknown source, the unknown source will be created. If 0, the
- * source will be ignored.
+ * diseqc will be ignored.
  * @return 0 on success, or nonzero error code on failure.
  */
 extern int dvbcfg_diseqc_load(char *config_file,
