@@ -27,7 +27,7 @@ S21.5E  Eutelsat II F3
 S23.5E  Astra 3A
 S24.2E  Astra 1D
 S26E    Arabsat 2A/3A
-S28.2E  Astra 2D/A/B 
+S28.2E  Astra 2D/A/B
 S28.5E  Eurobird
 S30.5E  Arabsat 2B
 S31.3E  Türksat 1B
@@ -37,7 +37,7 @@ S40E    Express A1R
 S42E    Turksat 1C & EurAsiaSat 1 & NewSat 1
 S45E    Europe*Star 1
 S47E    Telecom 2B
-S48E    Eutelsat II F1 
+S48E    Eutelsat II F1
 S50E    Anatolia 1
 S53E    Gorizont 32
 S55.1E  Insat 2DT
@@ -45,10 +45,10 @@ S56E    Most 1
 S57E    NSS 703
 S60E    Intelsat 904
 S62E    Intelsat 902
-S64E    Intelsat 906 
+S64E    Intelsat 906
 S66E    Intelsat 704
 S68.5E  PAS 7/10
-S72E    PAS 4 
+S72E    PAS 4
 S74E    Insat 3C
 S75E    LMI 1
 S76.5E  Apstar
@@ -107,5 +107,8 @@ Csomewhere-someplace       Cable
 
 # Terrestrial
 
-Tuk-BlackHill       Terrestrial
 Tuk-scottish-BlackHill       Terrestrial2
+
+# ATSC
+
+Asomewhere-something-somehow ATSC1

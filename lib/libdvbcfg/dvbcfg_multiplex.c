@@ -148,6 +148,7 @@ int dvbcfg_multiplex_load(char *config_file,
         int numtokens;
         int error = 0;
         int location = LOCATION_SOF;
+        int versionok = 0;
         char* tmpgmid = NULL;
         char* tmpdelivery = NULL;
         char* tmpusid = NULL;
@@ -163,7 +164,27 @@ int dvbcfg_multiplex_load(char *config_file,
         if (in == NULL)
                 return errno;
 
-        while (fgets(curline, sizeof(curline), in)) {
+        while (1) {
+                if (fgets(curline, sizeof(curline), in) == NULL) {
+                        switch(location) {
+                        case LOCATION_SERVICE:
+                                if (parse_service(newmultiplex, tmpusid, tmpname, tmpflags,
+                                    tmpca_systems, tmpzap_pids, tmppmt_extra) == NULL) {
+                                        error = -EINVAL;
+                                        goto exit;
+                                }
+                                break;
+
+                        case LOCATION_MULTIPLEX:
+                                newmultiplex = parse_multiplex(sources, multiplexes, create_sources, tmpgmid, tmpdelivery);
+                                if (newmultiplex == NULL) {
+                                        error = -EINVAL;
+                                        goto exit;
+                                }
+                                break;
+                        }
+                        break;
+                }
                 linepos = curline;
 
                 /* clean any comments/ whitespace */
@@ -186,6 +207,10 @@ int dvbcfg_multiplex_load(char *config_file,
                 } else if (dvbcfg_issection(linepos, "multiplex")) {
                         switch(location) {
                         case LOCATION_DVBMULTIPLEXES:
+                                if (!versionok) {
+                                        error = -EINVAL;
+                                        goto exit;
+                                }
                                 break;
 
                         case LOCATION_SERVICE:
@@ -264,7 +289,8 @@ int dvbcfg_multiplex_load(char *config_file,
                                         error = -EINVAL;
                                         goto exit;
                                 }
-                        } else if (value == dvbcfg_iskey(linepos, "date")) {
+                                versionok = 1;
+                        } else if (value = dvbcfg_iskey(linepos, "date")) {
                                 // ignore this
                         } else {
                                 error = -EINVAL;
@@ -275,7 +301,7 @@ int dvbcfg_multiplex_load(char *config_file,
                 case LOCATION_MULTIPLEX:
                         if (value = dvbcfg_iskey(linepos, "gmid")) {
                                 tmpgmid = dvbcfg_strdupandtrim(value, -1);
-                        } else if (value == dvbcfg_iskey(linepos, "delivery")) {
+                        } else if (value = dvbcfg_iskey(linepos, "delivery")) {
                                 tmpdelivery = dvbcfg_strdupandtrim(value, -1);
                         } else {
                                 error = -EINVAL;
@@ -286,15 +312,15 @@ int dvbcfg_multiplex_load(char *config_file,
                 case LOCATION_SERVICE:
                         if (value = dvbcfg_iskey(linepos, "usid")) {
                                 tmpusid = dvbcfg_strdupandtrim(value, -1);
-                        } else if (value == dvbcfg_iskey(linepos, "name")) {
+                        } else if (value = dvbcfg_iskey(linepos, "name")) {
                                 tmpname = dvbcfg_strdupandtrim(value, -1);
-                        } else if (value == dvbcfg_iskey(linepos, "flags")) {
+                        } else if (value = dvbcfg_iskey(linepos, "flags")) {
                                 tmpflags = dvbcfg_strdupandtrim(value, -1);
-                        } else if (value == dvbcfg_iskey(linepos, "ca_systems")) {
+                        } else if (value = dvbcfg_iskey(linepos, "ca_systems")) {
                                 tmpca_systems = dvbcfg_strdupandtrim(value, -1);
-                        } else if (value == dvbcfg_iskey(linepos, "zap_pids")) {
+                        } else if (value = dvbcfg_iskey(linepos, "zap_pids")) {
                                 tmpzap_pids = dvbcfg_strdupandtrim(value, -1);
-                        } else if (value == dvbcfg_iskey(linepos, "pmt_extra")) {
+                        } else if (value = dvbcfg_iskey(linepos, "pmt_extra")) {
                                 tmppmt_extra = dvbcfg_strdupandtrim(value, -1);
                         } else {
                                 error = -EINVAL;
@@ -413,7 +439,8 @@ static struct dvbcfg_multiplex* parse_multiplex(struct dvbcfg_source** sources,
         case DVBCFG_SOURCETYPE_DVBC:
                 numtokens = dvbcfg_tokenise(tmpdelivery, " \t", -1, 1);
                 if (numtokens != 5)
-                  goto error;
+                        goto error;
+                linepos = tmpdelivery;
 
                 /* frequency */
                 if (sscanf(linepos, "%i", &val) != 1)
@@ -437,6 +464,7 @@ static struct dvbcfg_multiplex* parse_multiplex(struct dvbcfg_source** sources,
                 if ((val = dvbcfg_parsesetting(linepos, fec_list)) < 0)
                         goto error;
                 multiplex->delivery.dvb.fe_params.u.qam.fec_inner = val;
+                linepos = dvbcfg_nexttoken(linepos);
 
                 /* modulation */
                 if ((val = dvbcfg_parsesetting(linepos, qam_modulation_list)) < 0)
@@ -449,6 +477,7 @@ static struct dvbcfg_multiplex* parse_multiplex(struct dvbcfg_source** sources,
                 numtokens = dvbcfg_tokenise(tmpdelivery, " \t", -1, 1);
                 if (numtokens != 9)
                         goto error;
+                linepos = tmpdelivery;
 
                 /* frequency */
                 if (sscanf(linepos, "%i", &val) != 1)
@@ -466,31 +495,37 @@ static struct dvbcfg_multiplex* parse_multiplex(struct dvbcfg_source** sources,
                 if ((val = dvbcfg_parsesetting(linepos, bandwidth_list)) < 0)
                         goto error;
                 multiplex->delivery.dvb.fe_params.u.ofdm.bandwidth = val;
+                linepos = dvbcfg_nexttoken(linepos);
 
                 /* code_rate_HP */
                 if ((val = dvbcfg_parsesetting(linepos, fec_list)) < 0)
                         goto error;
                 multiplex->delivery.dvb.fe_params.u.ofdm.code_rate_HP = val;
+                linepos = dvbcfg_nexttoken(linepos);
 
                 /* code_rate_LP */
                 if ((val = dvbcfg_parsesetting(linepos, fec_list)) < 0)
                         goto error;
                 multiplex->delivery.dvb.fe_params.u.ofdm.code_rate_LP = val;
+                linepos = dvbcfg_nexttoken(linepos);
 
                 /* constellation */
                 if ((val = dvbcfg_parsesetting(linepos, constellation_list)) < 0)
                         goto error;
                 multiplex->delivery.dvb.fe_params.u.ofdm.constellation = val;
+                linepos = dvbcfg_nexttoken(linepos);
 
                 /* transmission_mode */
                 if ((val = dvbcfg_parsesetting(linepos, transmission_mode_list)) < 0)
                         goto error;
                 multiplex->delivery.dvb.fe_params.u.ofdm.transmission_mode = val;
+                linepos = dvbcfg_nexttoken(linepos);
 
                 /* guard_interval */
                 if ((val = dvbcfg_parsesetting(linepos, guard_interval_list)) < 0)
                         goto error;
                 multiplex->delivery.dvb.fe_params.u.ofdm.guard_interval = val;
+                linepos = dvbcfg_nexttoken(linepos);
 
                 /* hierarchy_information */
                 if ((val = dvbcfg_parsesetting(linepos, hierarchy_information_list)) < 0)
@@ -503,6 +538,7 @@ static struct dvbcfg_multiplex* parse_multiplex(struct dvbcfg_source** sources,
                 numtokens = dvbcfg_tokenise(tmpdelivery, " \t", -1, 1);
                 if (numtokens != 3)
                         goto error;
+                linepos = tmpdelivery;
 
                 /* frequency */
                 if (sscanf(linepos, "%i", &val) != 1)
@@ -573,7 +609,7 @@ static struct dvbcfg_service* parse_service(struct dvbcfg_multiplex* multiplex,
 
         /* parse the CA systems */
         if (tmpca_systems != NULL) {
-                linepos = tmpflags;
+                linepos = tmpca_systems;
                 numtokens = dvbcfg_tokenise(linepos, " \t", -1, 1);
                 while(numtokens--) {
                         if (sscanf(linepos, "%i", &val) == 1) {
@@ -770,8 +806,8 @@ int dvbcfg_multiplex_save(char *config_file, struct dvbcfg_multiplex *multiplexe
                                 break;
 
                         fprintf(out, "[service]\n");
-                        fprintf(out, "name=%s\n", service->name);
                         fprintf(out, "usid=%s\n", usid);
+                        fprintf(out, "name=%s\n", service->name);
                         free(usid);
                         fprintf(out, "flags=");
                         if (service->service_flags & DVBCFG_SERVICE_FLAG_IGNOREPMT)
@@ -781,13 +817,14 @@ int dvbcfg_multiplex_save(char *config_file, struct dvbcfg_multiplex *multiplexe
                         if (service->ca_systems_count) {
                                 fprintf(out, "ca_systems=");
                                 for(i=0; i< service->ca_systems_count; i++) {
-                                        fprintf(out, "0x%x", service->ca_systems[i]);
+                                        fprintf(out, "0x%x ", service->ca_systems[i]);
                                 }
                                 fprintf(out, "\n");
                         }
 
                         format_pids(out, "zap_pids", service->zap_pids_count, service->zap_pids);
                         format_pids(out, "pmt_extra", service->pmt_extra_count, service->pmt_extra);
+                        fprintf(out, "\n");
 
                         service = service->next;
                 }
@@ -815,12 +852,19 @@ static void format_pids(FILE* out, char*key, int count, struct dvbcfg_pid* pids)
                                 switch(pids[i].type) {
                                 case DVBCFG_PIDTYPE_AC3:
                                         fprintf(out, "_ac3");
+                                        break;
+
                                 case DVBCFG_PIDTYPE_DTS:
                                         fprintf(out, "_dts");
+                                        break;
+
                                 case DVBCFG_PIDTYPE_TT:
                                         fprintf(out, "_tt");
+                                        break;
+
                                 case DVBCFG_PIDTYPE_PCR:
                                         fprintf(out, "_pcr");
+                                        break;
                                 }
                         }
                         fprintf(out, " ");
@@ -1059,7 +1103,7 @@ static int add_pid(int* count, struct dvbcfg_pid** pids, int pid, int type) {
                 }
                 (*pids)[*count].pid = pid;
                 (*pids)[*count].type = type;
-                *count++;
+                (*count)++;
         }
 
         return 0;
@@ -1101,7 +1145,7 @@ static int remove_pid(int* count, struct dvbcfg_pid** pids, int pid, int type)
 
                 free(*pids);
                 *pids = tmp;
-                *count--;
+                (*count)--;
         }
 
         return 0;

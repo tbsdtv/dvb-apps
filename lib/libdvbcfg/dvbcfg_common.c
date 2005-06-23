@@ -172,7 +172,8 @@ int dvbcfg_umid_from_string(char* string, struct dvbcfg_umid* umid)
         char* ptr;
         int result;
 
-        if (sscanf(ptr+1, "%i", &val) != 1)
+        ptr = string;
+        if (sscanf(ptr, "%i", &val) != 1)
                 return -EINVAL;
         umid->original_network_id = val;
 
@@ -233,15 +234,20 @@ int dvbcfg_gmid_from_string(char* string, struct dvbcfg_gmid* gmid)
 {
         int val;
         char* ptr;
+        char* tmp;
         int result;
 
-        if (result = dvbcfg_source_id_from_string(string, &gmid->source_id))
-                return result;
-
         if ((ptr = strchr(string, ':')) == NULL)
-                return -EINVAL;
+          return -EINVAL;
 
-        if ((result = dvbcfg_umid_from_string(ptr, &gmid->umid))) {
+        tmp = dvbcfg_strdupandtrim(string, ptr - string);
+        if (result = dvbcfg_source_id_from_string(tmp, &gmid->source_id)) {
+                free(tmp);
+                return result;
+        }
+        free(tmp);
+
+        if ((result = dvbcfg_umid_from_string(ptr+1, &gmid->umid))) {
                 dvbcfg_source_id_free(&gmid->source_id);
                 return result;
         }
