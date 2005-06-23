@@ -14,7 +14,7 @@ INCLUDES = 	dvbcfg_source.h \
 		dvbcfg_zapchannel.h \
 		dvbcfg_adapter.h \
 		dvbcfg_common.h \
-		dvbcfg_service.h
+		dvbcfg_multiplex.h
 
 CFLAGS = -I.
 
