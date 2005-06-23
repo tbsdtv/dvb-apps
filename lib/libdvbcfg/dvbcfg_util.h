@@ -21,6 +21,13 @@
 #ifndef DVBCFG_UTIL_H
 #define DVBCFG_UTIL_H
 
+#include <stdio.h>
+
+typedef struct {
+        char *name;
+        int value;
+} param;
+
 /**
  * Clean any comments/whitespace from the end of a line.
  *
@@ -66,5 +73,35 @@ extern char *dvbcfg_strdupandtrim(char *line, int maxchars);
  * @param with The character to replace it with.
  */
 extern void dvbcfg_replacechar(char *line, char replace, char with);
+
+/**
+ * Check if the supplied line is the section marker [sectionname].
+ *
+ * @param line The line to check (should have been processed with dvbcfg_cleanline).
+ * @param sectionname Name of section to check for.
+ * @return 1 if it is, 0 if not.
+ */
+extern int dvbcfg_issection(char* line, char* sectionname);
+
+/**
+ * Check if the supplied line is the key "key=...".
+ *
+ * @param line The line to check (should have been processed with dvbcfg_cleanline).
+ * @param keyname Name of key to check for.
+ * @return Pointer to value if it is, NULL if not.
+ */
+extern char* dvbcfg_iskey(char* line, char* keyname);
+
+/**
+ * Free the string pointed to by tofree if it is not already NULL. Will be set to
+ * NULL post-free.
+ *
+ * @param tofree The string to free.
+ */
+extern void dvbcfg_freestring(char** tofree);
+
+
+extern int dvbcfg_parsesetting(char* text, const param* settings);
+extern void dvbcfg_formatsetting(FILE* out, int setting, const param* settings);
 
 #endif                          // DVBCFG_UTIL

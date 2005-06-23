@@ -86,6 +86,17 @@ extern int dvbcfg_source_save(char *config_file,
 extern struct dvbcfg_source* dvbcfg_source_new(struct dvbcfg_source** sources, char* source_id, char* description);
 
 /**
+ * Add a new source using a source_id structure.
+ *
+ * @param sources Pointer to list of sources to add to (source is added to this list on success).
+ * @param source_id The dvbcfg_source_id structure of the source to add.
+ * @param description Description of the source.
+ * @return Pointer to the new dvbcfg_source structure, or NULL on error.
+ */
+extern struct dvbcfg_source* dvbcfg_source_new2(struct dvbcfg_source** sources,
+                                                struct dvbcfg_source_id* source_id, char* description);
+
+/**
  * Find the entry for a particular source_id.
  *
  * @param sources Pointer to the list to search.
@@ -97,6 +108,18 @@ extern struct dvbcfg_source* dvbcfg_source_new(struct dvbcfg_source** sources, c
  */
 extern struct dvbcfg_source *dvbcfg_source_find(struct dvbcfg_source *sources,
                                                 char source_type, char *source_network, char* source_region, char* source_locale);
+
+/**
+ * Find the entry for a particular source_id using a dvbcfg_source_id structure.
+ *
+ * @param sources Pointer to the list to search.
+ * @param source_type Type of source.
+ * @param source_network source_network to find.
+ * @param source_region source_region to find (pass NULL for DVBS, or to simply match by source_network).
+ * @param source_locale source_locale to find (pass NULL for DVBS, or to simply match by source_network+source_region).
+ * @return A dvbcfg_source structure if found, or NULL if not.
+ */
+extern struct dvbcfg_source *dvbcfg_source_find2(struct dvbcfg_source *sources, struct dvbcfg_source_id* source_id);
 
 /**
  * Unlink a single source from a list, and free its memory.

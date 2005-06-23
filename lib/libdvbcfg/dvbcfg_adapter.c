@@ -76,23 +76,23 @@ int dvbcfg_adapter_load(char *config_file,
                         }
 
                         /* try to find it */
-                        source = dvbcfg_source_find(*sources,
-                                                    source_id.source_type,
-                                                    source_id.source_network,
-                                                    source_id.source_region,
-                                                    source_id.source_locale);
-                        dvbcfg_source_id_free(&source_id);
+                        source = dvbcfg_source_find2(*sources, &source_id);
                         if (source == NULL) {
-                                if (!create_sources)
+                                if (!create_sources) {
+                                        dvbcfg_source_id_free(&source_id);
                                         continue;
+                                }
 
-                                source = dvbcfg_source_new(sources, linepos, "???");
+                                source = dvbcfg_source_new2(sources, &source_id, "???");
+                                dvbcfg_source_id_free(&source_id);
                                 if (source == NULL) {
                                         dvbcfg_adapter_free(adapters, newadapter);
                                         error = -ENOMEM;
                                         goto exit;
                                 }
 
+                        } else {
+                                dvbcfg_source_id_free(&source_id);
                         }
 
                         /* add it in */

@@ -136,6 +136,18 @@ extern struct dvbcfg_multiplex* dvbcfg_multiplex_new(struct dvbcfg_multiplex** m
                                                      char* umid);
 
 /**
+ * Create a new multiplex using a dvbcfg_umid.
+ *
+ * @param multiplexes List of multiplexes to add to.
+ * @param source dvbcfg_source of the new multiplex.
+ * @param umid UMID of the new multiplex.
+ * @return new struct dvbcfg_multiplex structure, or NULL on error.
+ */
+extern struct dvbcfg_multiplex* dvbcfg_multiplex_new2(struct dvbcfg_multiplex** multiplexes,
+                                                     struct dvbcfg_source* source,
+                                                     struct dvbcfg_umid* umid);
+
+/**
  * Add a service to a multiplex.
  *
  * @param multiplex Multiplex to add to.
@@ -148,6 +160,20 @@ extern struct dvbcfg_service* dvbcfg_multiplex_add_service(struct dvbcfg_multipl
                                                            char* name,
                                                            char* usid,
                                                            uint32_t service_flags);
+
+/**
+ * Add a service to a multiplex using a dvbcfg_usid.
+ *
+ * @param multiplex Multiplex to add to.
+ * @param name Name of the service.
+ * @param usid USID of the new service.
+ * @param service_flags DVBCFG_SERVICE_FLAG_* values ORed together.
+ * @return The new struct dvbcfg_service structure, or NULL on error.
+ */
+extern struct dvbcfg_service* dvbcfg_multiplex_add_service2(struct dvbcfg_multiplex* multiplex,
+                                                            char* name,
+                                                            struct dvbcfg_usid* usid,
+                                                            uint32_t service_flags);
 
 /**
  * Remove a service from a multiplex.
@@ -234,7 +260,16 @@ extern int dvbcfg_multiplex_remove_pmt_pid(struct dvbcfg_service* service,
  * @param gmid GMID of the multiplex to search for.
  * @return struct dvbcfg_multiplex pointer, or NULL if not found.
  */
-extern struct dvbcfg_multiplex *dvbcfg_multiplex_find(struct dvbcfg_multiplex *multiplexes, struct dvbcfg_gmid* gmid);
+extern struct dvbcfg_multiplex *dvbcfg_multiplex_find(struct dvbcfg_multiplex *multiplexes, char* gmid);
+
+/**
+ * Find a multiplex using a dvbcfg_gmid.
+ *
+ * @param multiplexes List to search in.
+ * @param gmid GMID of the multiplex to search for.
+ * @return struct dvbcfg_multiplex pointer, or NULL if not found.
+ */
+extern struct dvbcfg_multiplex *dvbcfg_multiplex_find2(struct dvbcfg_multiplex *multiplexes, struct dvbcfg_gmid* gmid);
 
 /**
  * Find a service in a specific multiplex.
@@ -243,8 +278,17 @@ extern struct dvbcfg_multiplex *dvbcfg_multiplex_find(struct dvbcfg_multiplex *m
  * @param usid USID of the service to find.
  * @return struct dvbcfg_service pointer, or NULL if not found.
  */
-extern struct dvbcfg_service *dvbcfg_multiplex_find_service_in_multiplex(struct dvbcfg_multiplex *multiplex,
-                                                                         struct dvbcfg_usid* usid);
+extern struct dvbcfg_service *dvbcfg_multiplex_find_service_in_multiplex(struct dvbcfg_multiplex *multiplex, char* usid);
+
+/**
+ * Find a service in a specific multiplex using a dvbcfg_usid
+ *
+ * @param multiplex Multiplex to search in.
+ * @param usid USID of the service to find.
+ * @return struct dvbcfg_service pointer, or NULL if not found.
+ */
+extern struct dvbcfg_service *dvbcfg_multiplex_find_service_in_multiplex2(struct dvbcfg_multiplex *multiplex,
+                                                                          struct dvbcfg_usid* usid);
 
 /**
  * Find a service in all multiplexes.
@@ -253,7 +297,16 @@ extern struct dvbcfg_service *dvbcfg_multiplex_find_service_in_multiplex(struct 
  * @param gsid GSID of the service to find.
  * @return struct dvbcfg_service pointer, or NULL if not found.
  */
-extern struct dvbcfg_service *dvbcfg_multiplex_find_service(struct dvbcfg_multiplex *multiplexes, struct dvbcfg_gsid* gsid);
+extern struct dvbcfg_service *dvbcfg_multiplex_find_service(struct dvbcfg_multiplex *multiplexes, char* gsid);
+
+/**
+ * Find a service in all multiplexes using a dvbcfg_gsid.
+ *
+ * @param multiplexes Multiplexes to search in.
+ * @param gsid GSID of the service to find.
+ * @return struct dvbcfg_service pointer, or NULL if not found.
+ */
+extern struct dvbcfg_service *dvbcfg_multiplex_find_service2(struct dvbcfg_multiplex *multiplexes, struct dvbcfg_gsid* gsid);
 
 /**
  * Unlink a single multiplex from a list, and free its memory.

@@ -98,7 +98,22 @@ int dvbcfg_source_save(char *config_file, struct dvbcfg_source *sources)
         return 0;
 }
 
-struct dvbcfg_source* dvbcfg_source_new(struct dvbcfg_source **sources, char* source_id, char* description)
+struct dvbcfg_source* dvbcfg_source_new(struct dvbcfg_source **sources, char* source_idstr, char* description)
+{
+        struct dvbcfg_source_id source_id;
+        struct dvbcfg_source* source;
+
+        if (dvbcfg_source_id_from_string(source_idstr, &source_id)) {
+                return NULL;
+        }
+
+        source = dvbcfg_source_new2(sources, &source_id, description);
+
+        dvbcfg_source_id_free(&source_id);
+        return source;
+}
+
+struct dvbcfg_source* dvbcfg_source_new2(struct dvbcfg_source **sources, struct dvbcfg_source_id* source_id, char* description)
 {
         struct dvbcfg_source* newsource;
         struct dvbcfg_source* cursource;
@@ -115,7 +130,16 @@ struct dvbcfg_source* dvbcfg_source_new(struct dvbcfg_source **sources, char* so
         }
 
         /* parse the source_id */
-        if (dvbcfg_source_id_from_string(source_id, &newsource->source_id)) {
+        newsource->source_id.source_type = source_id->source_type;
+        newsource->source_id.source_network = dvbcfg_strdupandtrim(source_id->source_network, -1);
+        newsource->source_id.source_region = dvbcfg_strdupandtrim(source_id->source_region, -1);
+        newsource->source_id.source_locale = dvbcfg_strdupandtrim(source_id->source_locale, -1);
+
+        /* check */
+        if (((newsource->source_id.source_network == NULL) != (source_id->source_network == NULL)) ||
+            ((newsource->source_id.source_region == NULL) != (source_id->source_region == NULL)) ||
+            ((newsource->source_id.source_locale == NULL) != (source_id->source_locale == NULL))) {
+                dvbcfg_source_id_free(&newsource->source_id);
                 free(newsource->description);
                 free(newsource);
                 return NULL;
@@ -144,8 +168,13 @@ struct dvbcfg_source *dvbcfg_source_find(struct dvbcfg_source *sources,
         source_id.source_region = source_region;
         source_id.source_locale = source_locale;
 
+        return dvbcfg_source_find2(sources, &source_id);
+}
+
+struct dvbcfg_source *dvbcfg_source_find2(struct dvbcfg_source *sources, struct dvbcfg_source_id* source_id)
+{
         while (sources) {
-                if (dvbcfg_source_id_equal(&source_id, &sources->source_id, 1))
+                if (dvbcfg_source_id_equal(source_id, &sources->source_id, 1))
                         return sources;
 
                 sources = sources->next;
@@ -153,6 +182,7 @@ struct dvbcfg_source *dvbcfg_source_find(struct dvbcfg_source *sources,
 
         return NULL;
 }
+
 
 void dvbcfg_source_free(struct dvbcfg_source **sources,
                         struct dvbcfg_source *tofree)

@@ -26,11 +26,6 @@
 #include "dvbcfg_common.h"
 
 
-typedef struct {
-        char *name;
-        int value;
-} param;
-
 static const param bandwidth_list [] = {
         { "BANDWIDTH_6_MHZ", BANDWIDTH_6_MHZ },
         { "BANDWIDTH_7_MHZ", BANDWIDTH_7_MHZ },
@@ -109,9 +104,6 @@ static const param atsc_modulation_list[] = {
         { NULL, -1 },
 };
 
-static int parsesetting(char* text, const param* settings);
-static void formatsetting(FILE* out, int setting, const param* settings);
-
 
 int dvbcfg_zapchannel_load(char *config_file, struct dvbcfg_zapchannel **zapchannels)
 {
@@ -185,49 +177,49 @@ int dvbcfg_zapchannel_load(char *config_file, struct dvbcfg_zapchannel **zapchan
                                 has_channel_number = 1;
 
                         /* inversion */
-                        if ((val = parsesetting(linepos, inversion_list)) < 0)
+                        if ((val = dvbcfg_parsesetting(linepos, inversion_list)) < 0)
                                 continue;
                         tmpzapchannel.fe_params.inversion = val;
                         linepos = dvbcfg_nexttoken(linepos);
 
                         /* bandwidth */
-                        if ((val = parsesetting(linepos, bandwidth_list)) < 0)
+                        if ((val = dvbcfg_parsesetting(linepos, bandwidth_list)) < 0)
                                 continue;
                         tmpzapchannel.fe_params.u.ofdm.bandwidth = val;
                         linepos = dvbcfg_nexttoken(linepos);
 
                         /* FEC HP */
-                        if ((val = parsesetting(linepos, fec_list)) < 0)
+                        if ((val = dvbcfg_parsesetting(linepos, fec_list)) < 0)
                                 continue;
                         tmpzapchannel.fe_params.u.ofdm.code_rate_HP = val;
                         linepos = dvbcfg_nexttoken(linepos);
 
                         /* FEC LP */
-                        if ((val = parsesetting(linepos, fec_list)) < 0)
+                        if ((val = dvbcfg_parsesetting(linepos, fec_list)) < 0)
                                 continue;
                         tmpzapchannel.fe_params.u.ofdm.code_rate_LP = val;
                         linepos = dvbcfg_nexttoken(linepos);
 
                         /* Constellation */
-                        if ((val = parsesetting(linepos, constellation_list)) < 0)
+                        if ((val = dvbcfg_parsesetting(linepos, constellation_list)) < 0)
                                 continue;
                         tmpzapchannel.fe_params.u.ofdm.constellation = val;
                         linepos = dvbcfg_nexttoken(linepos);
 
                         /* Transmit mode */
-                        if ((val = parsesetting(linepos, transmission_mode_list)) < 0)
+                        if ((val = dvbcfg_parsesetting(linepos, transmission_mode_list)) < 0)
                                 continue;
                         tmpzapchannel.fe_params.u.ofdm.transmission_mode = val;
                         linepos = dvbcfg_nexttoken(linepos);
 
                         /* Guard interval */
-                        if ((val = parsesetting(linepos, guard_interval_list)) < 0)
+                        if ((val = dvbcfg_parsesetting(linepos, guard_interval_list)) < 0)
                                 continue;
                         tmpzapchannel.fe_params.u.ofdm.guard_interval = val;
                         linepos = dvbcfg_nexttoken(linepos);
 
                         /* hierarchy */
-                        if ((val = parsesetting(linepos, hierarchy_list)) < 0)
+                        if ((val = dvbcfg_parsesetting(linepos, hierarchy_list)) < 0)
                                 continue;
                         tmpzapchannel.fe_params.u.ofdm.hierarchy_information = val;
                         linepos = dvbcfg_nexttoken(linepos);
@@ -241,7 +233,7 @@ int dvbcfg_zapchannel_load(char *config_file, struct dvbcfg_zapchannel **zapchan
                                 has_channel_number = 1;
 
                         /* inversion */
-                        if ((val = parsesetting(linepos, inversion_list)) < 0)
+                        if ((val = dvbcfg_parsesetting(linepos, inversion_list)) < 0)
                                 continue;
                         tmpzapchannel.fe_params.inversion = val;
                         linepos = dvbcfg_nexttoken(linepos);
@@ -253,13 +245,13 @@ int dvbcfg_zapchannel_load(char *config_file, struct dvbcfg_zapchannel **zapchan
                         linepos = dvbcfg_nexttoken(linepos);
 
                         /* FEC */
-                        if ((val = parsesetting(linepos, fec_list)) < 0)
+                        if ((val = dvbcfg_parsesetting(linepos, fec_list)) < 0)
                                 continue;
                         tmpzapchannel.fe_params.u.qam.fec_inner = val;
                         linepos = dvbcfg_nexttoken(linepos);
 
                         /* modulation */
-                        if ((val = parsesetting(linepos, qam_modulation_list)) < 0)
+                        if ((val = dvbcfg_parsesetting(linepos, qam_modulation_list)) < 0)
                                 continue;
                         tmpzapchannel.fe_params.u.qam.modulation = val;
                         linepos = dvbcfg_nexttoken(linepos);
@@ -315,7 +307,7 @@ int dvbcfg_zapchannel_load(char *config_file, struct dvbcfg_zapchannel **zapchan
                         tmpzapchannel.fe_params.inversion = INVERSION_AUTO;
 
                         /* Modulation */
-                        if ((val = parsesetting(linepos, atsc_modulation_list)) < 0)
+                        if ((val = dvbcfg_parsesetting(linepos, atsc_modulation_list)) < 0)
                                 continue;
                         tmpzapchannel.fe_params.u.vsb.modulation = val;
                         linepos = dvbcfg_nexttoken(linepos);
@@ -392,22 +384,22 @@ int dvbcfg_zapchannel_save(char *config_file, struct dvbcfg_zapchannel *zapchann
                 switch(zapchannels->fe_type) {
                 case FE_OFDM:
                         fprintf(out, "%i:", zapchannels->fe_params.frequency);
-                        formatsetting(out, zapchannels->fe_params.inversion, inversion_list);
-                        formatsetting(out, zapchannels->fe_params.u.ofdm.bandwidth, bandwidth_list);
-                        formatsetting(out, zapchannels->fe_params.u.ofdm.code_rate_HP, fec_list);
-                        formatsetting(out, zapchannels->fe_params.u.ofdm.code_rate_LP, fec_list);
-                        formatsetting(out, zapchannels->fe_params.u.ofdm.constellation, constellation_list);
-                        formatsetting(out, zapchannels->fe_params.u.ofdm.transmission_mode, transmission_mode_list);
-                        formatsetting(out, zapchannels->fe_params.u.ofdm.guard_interval, guard_interval_list);
-                        formatsetting(out, zapchannels->fe_params.u.ofdm.hierarchy_information, hierarchy_list);
+                        dvbcfg_formatsetting(out, zapchannels->fe_params.inversion, inversion_list);
+                        dvbcfg_formatsetting(out, zapchannels->fe_params.u.ofdm.bandwidth, bandwidth_list);
+                        dvbcfg_formatsetting(out, zapchannels->fe_params.u.ofdm.code_rate_HP, fec_list);
+                        dvbcfg_formatsetting(out, zapchannels->fe_params.u.ofdm.code_rate_LP, fec_list);
+                        dvbcfg_formatsetting(out, zapchannels->fe_params.u.ofdm.constellation, constellation_list);
+                        dvbcfg_formatsetting(out, zapchannels->fe_params.u.ofdm.transmission_mode, transmission_mode_list);
+                        dvbcfg_formatsetting(out, zapchannels->fe_params.u.ofdm.guard_interval, guard_interval_list);
+                        dvbcfg_formatsetting(out, zapchannels->fe_params.u.ofdm.hierarchy_information, hierarchy_list);
                         break;
 
                 case FE_QAM:
                         fprintf(out, "%i:", zapchannels->fe_params.frequency);
-                        formatsetting(out, zapchannels->fe_params.inversion, inversion_list);
+                        dvbcfg_formatsetting(out, zapchannels->fe_params.inversion, inversion_list);
                         fprintf(out, "%i:", zapchannels->fe_params.u.qam.symbol_rate);
-                        formatsetting(out, zapchannels->fe_params.u.qam.fec_inner, fec_list);
-                        formatsetting(out, zapchannels->fe_params.u.qam.modulation, qam_modulation_list);
+                        dvbcfg_formatsetting(out, zapchannels->fe_params.u.qam.fec_inner, fec_list);
+                        dvbcfg_formatsetting(out, zapchannels->fe_params.u.qam.modulation, qam_modulation_list);
                         break;
 
                 case FE_QPSK:
@@ -427,7 +419,7 @@ int dvbcfg_zapchannel_save(char *config_file, struct dvbcfg_zapchannel *zapchann
 
                 case FE_ATSC:
                         fprintf(out, "%i:", zapchannels->fe_params.frequency);
-                        formatsetting(out, zapchannels->fe_params.u.vsb.modulation, atsc_modulation_list);
+                        dvbcfg_formatsetting(out, zapchannels->fe_params.u.vsb.modulation, atsc_modulation_list);
                         break;
                 }
                 fprintf(out, "%i:%i", zapchannels->video_pid, zapchannels->audio_pid);
@@ -483,28 +475,4 @@ void dvbcfg_zapchannel_free_all(struct dvbcfg_zapchannel *zapchannels)
 {
         while (zapchannels)
                 dvbcfg_zapchannel_free(&zapchannels, zapchannels);
-}
-
-static int parsesetting(char* text, const param* settings)
-{
-        while(settings->name) {
-                if (!strcmp(text, settings->name))
-                        return settings->value;
-
-                settings++;
-        }
-
-        return -1;
-}
-
-static void formatsetting(FILE* out, int setting, const param* settings)
-{
-        while(settings->name) {
-                if (setting == settings->value) {
-                        fprintf(out, "%s:", settings->name);
-                        return;
-                }
-
-                settings++;
-        }
 }

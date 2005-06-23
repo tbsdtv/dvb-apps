@@ -144,3 +144,83 @@ void dvbcfg_replacechar(char *line, char replace, char with)
         while (line = strchr(line, replace))
                 *line++ = with;
 }
+
+int dvbcfg_issection(char* line, char* sectionname)
+{
+        int len;
+
+        len = strlen(line);
+        if (len < 2)
+                return 0;
+
+        if ((line[0] != '[') || (line[len-1] != ']'))
+                return 0;
+
+        line++;
+        while(isspace(*line))
+                line++;
+
+        if (strncmp(line, sectionname, strlen(sectionname)))
+                return 0;
+
+        return 1;
+}
+
+char* dvbcfg_iskey(char* line, char* keyname)
+{
+        int len = strlen(keyname);
+
+        /* does the key match? */
+        if (strncmp(line, keyname, len))
+                return NULL;
+
+        /* skip keyname & any whitespace */
+        line += len;
+        while(isspace(*line))
+                line++;
+
+        /* should be the '=' sign */
+        if (*line != '=')
+                return 0;
+
+        /* more whitespace skipping */
+        line++;
+        while(isspace(*line))
+                line++;
+
+        /* finally, return the value */
+        return line;
+}
+
+void dvbcfg_freestring(char** tofree)
+{
+  if (*tofree == NULL)
+    return;
+
+  free(*tofree);
+  *tofree = NULL;
+}
+
+int dvbcfg_parsesetting(char* text, const param* settings)
+{
+        while(settings->name) {
+                if (!strcmp(text, settings->name))
+                        return settings->value;
+
+                settings++;
+        }
+
+        return -1;
+}
+
+void dvbcfg_formatsetting(FILE* out, int setting, const param* settings)
+{
+        while(settings->name) {
+                if (setting == settings->value) {
+                        fprintf(out, "%s:", settings->name);
+                        return;
+                }
+
+                settings++;
+        }
+}
