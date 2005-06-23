@@ -19,6 +19,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <errno.h>
 #include "dvbcfg_multiplex.h"
 #include "dvbcfg_util.h"
@@ -127,6 +128,11 @@ static struct dvbcfg_service* parse_service(struct dvbcfg_multiplex* multiplex,
                                             char* tmpca_systems,
                                             char* tmpzap_pids,
                                             char* tmppmt_extra);
+
+static int parse_pids(struct dvbcfg_multiplex* multiplex, struct dvbcfg_service* service, char* line, int type);
+static void format_pids(FILE* out, char*key, int count, struct dvbcfg_pid* pids);
+static int add_pid(int* count, struct dvbcfg_pid** pids, int pid, int type);
+static int remove_pid(int* count, struct dvbcfg_pid** pids, int pid, int type);
 
 
 int dvbcfg_multiplex_load(char *config_file,
@@ -328,6 +334,10 @@ static struct dvbcfg_multiplex* parse_multiplex(struct dvbcfg_source** sources,
         int numtokens;
         char* linepos;
         int val;
+
+        /* validate nonoptional parameters */
+        if ((tmpgmid == NULL) || (tmpdelivery == NULL))
+          return NULL;
 
         /* parse the GMID and find the associated dvbcfg_source instance */
         if (dvbcfg_gmid_from_string(tmpgmid, &gmid))
@@ -534,15 +544,131 @@ static struct dvbcfg_service* parse_service(struct dvbcfg_multiplex* multiplex,
                                             char* tmpzap_pids,
                                             char* tmppmt_extra)
 {
-  // FIXME
+        uint32_t flags = 0;
+        struct dvbcfg_service* service;
+        int numtokens;
+        char* linepos;
+        int val;
+
+        /* validate nonoptional parameters */
+        if ((tmpname == NULL) || (tmpusid == NULL))
+                return NULL;
+
+        /* parse the flags */
+        if (tmpflags != NULL) {
+                linepos = tmpflags;
+                numtokens = dvbcfg_tokenise(linepos, " \t", -1, 1);
+                while(numtokens--) {
+                        if (!strcmp(linepos, "ignorepmt"))
+                                flags |= DVBCFG_SERVICE_FLAG_IGNOREPMT;
+
+                        linepos = dvbcfg_nexttoken(linepos);
+                }
+        }
+
+        /* create the service itself */
+        service = dvbcfg_multiplex_add_service(multiplex, tmpname, tmpusid, flags);
+        if (service == NULL)
+                return NULL;
+
+        /* parse the CA systems */
+        if (tmpca_systems != NULL) {
+                linepos = tmpflags;
+                numtokens = dvbcfg_tokenise(linepos, " \t", -1, 1);
+                while(numtokens--) {
+                        if (sscanf(linepos, "%i", &val) == 1) {
+                                if (dvbcfg_multiplex_add_ca_system(service, val)) {
+                                        dvbcfg_multiplex_remove_service(multiplex, service);
+                                        return NULL;
+                                }
+                        }
+
+                        linepos = dvbcfg_nexttoken(linepos);
+                }
+        }
+
+        /* parse the zap pids */
+        if (parse_pids(multiplex, service, tmpzap_pids, 0)) {
+                dvbcfg_multiplex_remove_service(multiplex, service);
+                return NULL;
+        }
+
+        /* parse the pmt extra */
+        if (parse_pids(multiplex, service, tmppmt_extra, 1)) {
+                dvbcfg_multiplex_remove_service(multiplex, service);
+                return NULL;
+        }
+
+        return service;
+}
+
+static int parse_pids(struct dvbcfg_multiplex* multiplex, struct dvbcfg_service* service, char* line, int parse_type)
+{
+        int pid;
+        int type;
+        char* linepos;
+        int numtokens;
+
+        if (line == NULL)
+                return 0;
+
+        linepos = line;
+        numtokens = dvbcfg_tokenise(linepos, " \t:", -1, 1);
+        if ((numtokens % 2) != 0)
+                return 0;
+
+        while(numtokens) {
+                /* the pid */
+                if (sscanf(linepos, "%i", &pid) != 1)
+                        break;
+                linepos = dvbcfg_nexttoken(linepos);
+
+                /* the type */
+                if (sscanf(linepos, "%i", &type) != 1) {
+                        if (!strcmp(linepos, "_ac3"))
+                                type = DVBCFG_PIDTYPE_AC3;
+                        else if (!strcmp(linepos, "_dts"))
+                                type = DVBCFG_PIDTYPE_DTS;
+                        else if (!strcmp(linepos, "_tt"))
+                                type = DVBCFG_PIDTYPE_TT;
+                        else if (!strcmp(linepos, "_pcr"))
+                                type = DVBCFG_PIDTYPE_PCR;
+                        else
+                                break;
+                }
+                linepos = dvbcfg_nexttoken(linepos);
+
+                /* add it in */
+                switch(parse_type) {
+                case 0:
+                        if (dvbcfg_multiplex_add_zap_pid(service, pid, type)) {
+                                return -ENOMEM;
+                        }
+                        break;
+
+                case 1:
+                        if (dvbcfg_multiplex_add_pmt_extra(service, pid, type)) {
+                                return -ENOMEM;
+                        }
+                        break;
+                }
+
+                /* have process two tokens */
+                numtokens-=2;
+        }
+
+        return 0;
 }
 
 int dvbcfg_multiplex_save(char *config_file, struct dvbcfg_multiplex *multiplexes)
 {
         FILE *out;
         char* umid;
+        char* usid;
         char polarization;
         char* source_id;
+        struct dvbcfg_service* service;
+        int i;
 
         /* open the file */
         out = fopen(config_file, "w");
@@ -595,33 +721,33 @@ int dvbcfg_multiplex_save(char *config_file, struct dvbcfg_multiplex *multiplexe
 
                         fprintf(out, "%i %s %c %i %s\n",
                                 multiplexes->delivery.dvb.fe_params.frequency,
-                                dvbcfg_lookupstr(multiplexes->delivery.dvb.fe_params.inversion, inversion_list),
+                                dvbcfg_lookupsetting(multiplexes->delivery.dvb.fe_params.inversion, inversion_list),
                                 polarization,
                                 multiplexes->delivery.dvb.fe_params.u.qpsk.symbol_rate,
-                                dvbcfg_lookupstr(multiplexes->delivery.dvb.fe_params.u.qpsk.fec_inner, fec_list));
+                                dvbcfg_lookupsetting(multiplexes->delivery.dvb.fe_params.u.qpsk.fec_inner, fec_list));
                         break;
 
                 case DVBCFG_SOURCETYPE_DVBC:
                         fprintf(out, "%i %s %i %s %s\n",
                                 multiplexes->delivery.dvb.fe_params.frequency,
-                                dvbcfg_lookupstr(multiplexes->delivery.dvb.fe_params.inversion, inversion_list),
+                                dvbcfg_lookupsetting(multiplexes->delivery.dvb.fe_params.inversion, inversion_list),
                                 multiplexes->delivery.dvb.fe_params.u.qpsk.symbol_rate,
-                                dvbcfg_lookupstr(multiplexes->delivery.dvb.fe_params.u.qam.fec_inner, fec_list),
-                                dvbcfg_lookupstr(multiplexes->delivery.dvb.fe_params.u.qam.modulation, qam_modulation_list));
+                                dvbcfg_lookupsetting(multiplexes->delivery.dvb.fe_params.u.qam.fec_inner, fec_list),
+                                dvbcfg_lookupsetting(multiplexes->delivery.dvb.fe_params.u.qam.modulation, qam_modulation_list));
                         break;
 
                 case DVBCFG_SOURCETYPE_DVBT:
                         fprintf(out, "%i %s %s %s %s %s %s %s %s\n",
                                 multiplexes->delivery.dvb.fe_params.frequency,
-                                dvbcfg_lookupstr(multiplexes->delivery.dvb.fe_params.inversion, inversion_list),
-                                dvbcfg_lookupstr(multiplexes->delivery.dvb.fe_params.u.ofdm.bandwidth, bandwidth_list),
-                                dvbcfg_lookupstr(multiplexes->delivery.dvb.fe_params.u.ofdm.code_rate_HP, fec_list),
-                                dvbcfg_lookupstr(multiplexes->delivery.dvb.fe_params.u.ofdm.code_rate_LP, fec_list),
-                                dvbcfg_lookupstr(multiplexes->delivery.dvb.fe_params.u.ofdm.constellation, constellation_list),
-                                dvbcfg_lookupstr(multiplexes->delivery.dvb.fe_params.u.ofdm.transmission_mode,
+                                dvbcfg_lookupsetting(multiplexes->delivery.dvb.fe_params.inversion, inversion_list),
+                                dvbcfg_lookupsetting(multiplexes->delivery.dvb.fe_params.u.ofdm.bandwidth, bandwidth_list),
+                                dvbcfg_lookupsetting(multiplexes->delivery.dvb.fe_params.u.ofdm.code_rate_HP, fec_list),
+                                dvbcfg_lookupsetting(multiplexes->delivery.dvb.fe_params.u.ofdm.code_rate_LP, fec_list),
+                                dvbcfg_lookupsetting(multiplexes->delivery.dvb.fe_params.u.ofdm.constellation, constellation_list),
+                                dvbcfg_lookupsetting(multiplexes->delivery.dvb.fe_params.u.ofdm.transmission_mode,
                                                   transmission_mode_list),
-                                dvbcfg_lookupstr(multiplexes->delivery.dvb.fe_params.u.ofdm.guard_interval, guard_interval_list),
-                                dvbcfg_lookupstr(multiplexes->delivery.dvb.fe_params.u.ofdm.hierarchy_information,
+                                dvbcfg_lookupsetting(multiplexes->delivery.dvb.fe_params.u.ofdm.guard_interval, guard_interval_list),
+                                dvbcfg_lookupsetting(multiplexes->delivery.dvb.fe_params.u.ofdm.hierarchy_information,
                                                 hierarchy_information_list));
 
                         break;
@@ -629,19 +755,78 @@ int dvbcfg_multiplex_save(char *config_file, struct dvbcfg_multiplex *multiplexe
                 case DVBCFG_SOURCETYPE_ATSC:
                         fprintf(out, "%i %s %s\n",
                                 multiplexes->delivery.dvb.fe_params.frequency,
-                                dvbcfg_lookupstr(multiplexes->delivery.dvb.fe_params.inversion, inversion_list),
-                                dvbcfg_lookupstr(multiplexes->delivery.dvb.fe_params.u.vsb.modulation, atsc_modulation_list));
+                                dvbcfg_lookupsetting(multiplexes->delivery.dvb.fe_params.inversion, inversion_list),
+                                dvbcfg_lookupsetting(multiplexes->delivery.dvb.fe_params.u.vsb.modulation, atsc_modulation_list));
                         break;
                 }
                 fprintf(out, "\n");
 
-                // FIXME: output services
+                /* output services */
+                service = multiplexes->services;
+                while(service) {
+
+                        usid = dvbcfg_usid_to_string(&service->usid);
+                        if (usid == NULL)
+                                break;
+
+                        fprintf(out, "[service]\n");
+                        fprintf(out, "name=%s\n", service->name);
+                        fprintf(out, "usid=%s\n", usid);
+                        free(usid);
+                        fprintf(out, "flags=");
+                        if (service->service_flags & DVBCFG_SERVICE_FLAG_IGNOREPMT)
+                                fprintf(out, "ignorepmt ");
+                        fprintf(out, "\n");
+
+                        if (service->ca_systems_count) {
+                                fprintf(out, "ca_systems=");
+                                for(i=0; i< service->ca_systems_count; i++) {
+                                        fprintf(out, "0x%x", service->ca_systems[i]);
+                                }
+                                fprintf(out, "\n");
+                        }
+
+                        format_pids(out, "zap_pids", service->zap_pids_count, service->zap_pids);
+                        format_pids(out, "pmt_extra", service->pmt_extra_count, service->pmt_extra);
+
+                        service = service->next;
+                }
+
 
                 multiplexes = multiplexes->next;
         }
 
         fclose(out);
         return 0;
+}
+
+static void format_pids(FILE* out, char*key, int count, struct dvbcfg_pid* pids)
+{
+        int i;
+
+        if (count) {
+                fprintf(out, "%s=", key);
+                for(i=0; i< count; i++) {
+                        fprintf(out, "0x%x:", pids[i].pid);
+
+                        if ((pids[i].type & 0xff00) == 0) {
+                                fprintf(out, "0x%x", pids[i].type);
+                        } else {
+                                switch(pids[i].type) {
+                                case DVBCFG_PIDTYPE_AC3:
+                                        fprintf(out, "_ac3");
+                                case DVBCFG_PIDTYPE_DTS:
+                                        fprintf(out, "_dts");
+                                case DVBCFG_PIDTYPE_TT:
+                                        fprintf(out, "_tt");
+                                case DVBCFG_PIDTYPE_PCR:
+                                        fprintf(out, "_pcr");
+                                }
+                        }
+                        fprintf(out, " ");
+                }
+                fprintf(out, "\n");
+        }
 }
 
 struct dvbcfg_multiplex* dvbcfg_multiplex_new(struct dvbcfg_multiplex** multiplexes,
@@ -688,10 +873,16 @@ struct dvbcfg_multiplex* dvbcfg_multiplex_new2(struct dvbcfg_multiplex** multipl
 
 struct dvbcfg_service* dvbcfg_multiplex_add_service(struct dvbcfg_multiplex* multiplex,
                                                     char* name,
-                                                    char* usid,
+                                                    char* usidstr,
                                                     uint32_t service_flags)
 {
-  // FIXME
+        struct dvbcfg_usid usid;
+        struct dvbcfg_service* service;
+
+        if (dvbcfg_usid_from_string(usidstr, &usid))
+               return NULL;
+
+        return dvbcfg_multiplex_add_service2(multiplex, name, &usid, service_flags);
 }
 
 struct dvbcfg_service* dvbcfg_multiplex_add_service2(struct dvbcfg_multiplex* multiplex,
@@ -699,53 +890,221 @@ struct dvbcfg_service* dvbcfg_multiplex_add_service2(struct dvbcfg_multiplex* mu
                                                      struct dvbcfg_usid* usid,
                                                      uint32_t service_flags)
 {
-  // FIXME
+        struct dvbcfg_service* service;
+        struct dvbcfg_service* curservice;
+
+        service = (struct dvbcfg_service*) malloc(sizeof(struct dvbcfg_service));
+        if (service == NULL)
+                return NULL;
+        memset(service, 0, sizeof(struct dvbcfg_service));
+
+        memcpy(&service->usid, usid, sizeof(struct dvbcfg_usid));
+        service->name = dvbcfg_strdupandtrim(name, -1);
+        service->service_flags = service_flags;
+
+        /* add it to the list */
+        if (multiplex->services == NULL)
+                multiplex->services = service;
+        else {
+                curservice = multiplex->services;
+                while(curservice->next)
+                        curservice = curservice->next;
+                curservice->next = service;
+        }
+
+        return service;
 }
 
-int dvbcfg_multiplex_remove_service(struct dvbcfg_multiplex* multiplex,
+void dvbcfg_multiplex_remove_service(struct dvbcfg_multiplex* multiplex,
                                     struct dvbcfg_service* service)
 {
-  // FIXME
+        struct dvbcfg_service *next;
+        struct dvbcfg_service *cur;
+
+        next = service->next;
+
+        /* free internal structures */
+        if (service->name)
+                free(service->name);
+        free(service->ca_systems);
+        dvbcfg_multiplex_remove_zap_pid(service, -1, -1);
+        dvbcfg_multiplex_remove_pmt_extra(service, -1, -1);
+        free(service);
+
+        /* adjust pointers */
+        if (multiplex->services == service)
+                multiplex->services = next;
+        else {
+                cur = multiplex->services;
+                while((cur->next != service) && (cur->next))
+                        cur = cur->next;
+                if (cur->next == service)
+                        cur->next = next;
+        }
 }
 
 int dvbcfg_multiplex_add_ca_system(struct dvbcfg_service* service,
                                    uint16_t ca_system_id)
 {
-  // FIXME
+        uint16_t* tmp;
+        int i;
+
+        /* check it isn't already there */
+        for(i=0; i< service->ca_systems_count; i++) {
+                if (service->ca_systems[i] == ca_system_id)
+                        return 0;
+        }
+
+        if (service->ca_systems_count == 0) {
+                service->ca_systems = (uint16_t*) malloc(sizeof(uint16_t));
+                if (service->ca_systems == NULL)
+                        return -ENOMEM;
+                service->ca_systems[0] = ca_system_id;
+                service->ca_systems_count = 1;
+        } else {
+                tmp = service->ca_systems;
+                service->ca_systems = (uint16_t*) realloc(service->ca_systems, sizeof(uint16_t) * (service->ca_systems_count + 1));
+                if (service->ca_systems == NULL) {
+                        service->ca_systems = tmp;
+                        return -ENOMEM;
+                }
+                service->ca_systems[service->ca_systems_count++] = ca_system_id;
+        }
+
+        return 0;
 }
 
 int dvbcfg_multiplex_remove_ca_system(struct dvbcfg_service* service,
                                       uint16_t ca_system_id)
 {
-  // FIXME
+        uint16_t* tmp;
+        int i;
+
+        if (service->ca_systems == NULL)
+                return -EINVAL;
+
+        for(i=0; i< service->ca_systems_count; i++) {
+                if (service->ca_systems[i] == ca_system_id)
+                        break;
+        }
+        if (i >= service->ca_systems_count)
+                return -EINVAL;
+
+        tmp = (uint16_t*) malloc(sizeof(uint16_t) * (service->ca_systems_count-1));
+        if (tmp == NULL)
+                return -ENOMEM;
+        memcpy(tmp, service->ca_systems, sizeof(uint16_t) * i);
+        memcpy(tmp + (sizeof(uint16_t) * i),
+              service->ca_systems + (sizeof(uint16_t) * (i + 1)),
+              sizeof(uint16_t) * (service->ca_systems_count - i - 1));
+
+        free(service->ca_systems);
+        service->ca_systems = tmp;
+        service->ca_systems_count--;
+
+        return 0;
 }
 
 int dvbcfg_multiplex_add_zap_pid(struct dvbcfg_service* service,
                                  int pid,
                                  int type)
 {
-  // FIXME
+        return add_pid(&service->zap_pids_count, &service->zap_pids, pid, type);
 }
 
 int dvbcfg_multiplex_remove_zap_pid(struct dvbcfg_service* service,
                                     int pid,
                                     int type)
 {
-  // FIXME
+        return remove_pid(&service->zap_pids_count, &service->zap_pids, pid, type);
 }
 
-int dvbcfg_multiplex_add_pmt_pid(struct dvbcfg_service* service,
+int dvbcfg_multiplex_add_pmt_extra(struct dvbcfg_service* service,
                                  int pid,
                                  int type)
 {
-  // FIXME
+        return add_pid(&service->pmt_extra_count, &service->pmt_extra, pid, type);
 }
 
-int dvbcfg_multiplex_remove_pmt_pid(struct dvbcfg_service* service,
-                                    int pid,
-                                    int type)
+int dvbcfg_multiplex_remove_pmt_extra(struct dvbcfg_service* service,
+                                      int pid,
+                                      int type)
 {
-  // FIXME
+        return remove_pid(&service->pmt_extra_count, &service->pmt_extra, pid, type);
+}
+
+static int add_pid(int* count, struct dvbcfg_pid** pids, int pid, int type) {
+        struct dvbcfg_pid* tmp;
+        int i;
+
+        /* check it isn't already there */
+        for(i=0; i< *count; i++) {
+                if (((*pids)[i].pid == pid) && ((*pids[i]).type == type))
+                        return 0;
+        }
+
+        if (*count == 0) {
+                *pids = (struct dvbcfg_pid*) malloc(sizeof(struct dvbcfg_pid));
+                if (*pids == NULL)
+                        return -ENOMEM;
+                (*pids)[0].pid = pid;
+                (*pids)[0].type = type;
+                *count = 1;
+        } else {
+                tmp = *pids;
+                *pids = (struct dvbcfg_pid*) realloc(*pids, sizeof(struct dvbcfg_pid) * (*count + 1));
+                if (*pids == NULL) {
+                        *pids = tmp;
+                        return -ENOMEM;
+                }
+                (*pids)[*count].pid = pid;
+                (*pids)[*count].type = type;
+                *count++;
+        }
+
+        return 0;
+}
+
+static int remove_pid(int* count, struct dvbcfg_pid** pids, int pid, int type)
+{
+        struct dvbcfg_pid* tmp;
+        int i;
+
+        if (*pids == NULL)
+                return -EINVAL;
+
+        if ((pid == -1) && (type == -1)) {
+                free(*pids);
+                *pids = NULL;
+                *count = 0;
+                return 0;
+        }
+
+        /* we keep removing until there are no more matches */
+        while(1) {
+                /* does the pid/type combo exist? */
+                for(i=0; i< *count; i++) {
+                        if (((pid == -1) || ((*pids)[i].pid == pid)) &&
+                            ((type == -1) || ((*pids)[i].type == type)))
+                                break;
+                }
+                if (i >= *count)
+                        break;
+
+                tmp = (struct dvbcfg_pid*) malloc(sizeof(struct dvbcfg_pid) * (*count-1));
+                if (tmp == NULL)
+                        return -ENOMEM;
+                memcpy(tmp, *pids, sizeof(struct dvbcfg_pid) * i);
+                memcpy(tmp + (sizeof(struct dvbcfg_pid) * i),
+                      *pids + (sizeof(struct dvbcfg_pid) * (i + 1)),
+                      sizeof(struct dvbcfg_pid) * (*count - i - 1));
+
+                free(*pids);
+                *pids = tmp;
+                *count--;
+        }
+
+        return 0;
 }
 
 struct dvbcfg_multiplex *dvbcfg_multiplex_find(struct dvbcfg_multiplex *multiplexes, char* gmidstr)
@@ -775,25 +1134,55 @@ struct dvbcfg_multiplex *dvbcfg_multiplex_find2(struct dvbcfg_multiplex *multipl
         return NULL;
 }
 
-struct dvbcfg_service *dvbcfg_multiplex_find_service_in_multiplex(struct dvbcfg_multiplex *multiplex, char* usid)
+struct dvbcfg_service *dvbcfg_multiplex_find_service_in_multiplex(struct dvbcfg_multiplex *multiplex, char* usidstr)
 {
-  // FIXME
+        struct dvbcfg_usid usid;
+
+        if (dvbcfg_usid_from_string(usidstr, &usid))
+                return NULL;
+
+        return dvbcfg_multiplex_find_service_in_multiplex2(multiplex, &usid);
 }
 
 struct dvbcfg_service *dvbcfg_multiplex_find_service_in_multiplex2(struct dvbcfg_multiplex *multiplex,
                                                                    struct dvbcfg_usid* usid)
 {
-  // FIXME
+        struct dvbcfg_service* service;
+
+        service = multiplex->services;
+        while(service) {
+                if (dvbcfg_usid_equal(&service->usid, usid))
+                        return service;
+
+                service = service->next;
+        }
+
+        return NULL;
 }
 
-struct dvbcfg_service *dvbcfg_multiplex_find_service(struct dvbcfg_multiplex *multiplexes, char* gsid)
+struct dvbcfg_service *dvbcfg_multiplex_find_service(struct dvbcfg_multiplex *multiplexes, char* gsidstr)
 {
-  // FIXME
+        struct dvbcfg_gsid gsid;
+        struct dvbcfg_service* service;
+
+        if (dvbcfg_gsid_from_string(gsidstr, &gsid))
+                return NULL;
+
+        service = dvbcfg_multiplex_find_service2(multiplexes, &gsid);
+        dvbcfg_source_id_free(&gsid.gmid.source_id);
+
+        return service;
 }
 
 struct dvbcfg_service *dvbcfg_multiplex_find_service2(struct dvbcfg_multiplex *multiplexes, struct dvbcfg_gsid* gsid)
 {
-  // FIXME
+        struct dvbcfg_multiplex* multiplex;
+
+        multiplex = dvbcfg_multiplex_find2(multiplexes, &gsid->gmid);
+        if (multiplex == NULL)
+                return NULL;
+
+        return dvbcfg_multiplex_find_service_in_multiplex2(multiplex, &gsid->usid);
 }
 
 void dvbcfg_multiplex_free(struct dvbcfg_multiplex **multiplexes,
@@ -806,7 +1195,7 @@ void dvbcfg_multiplex_free(struct dvbcfg_multiplex **multiplexes,
 
         /* free internal structures */
         while(tofree->services)
-                dvbcfg_remove_service(tofree, tofree->services);
+                dvbcfg_multiplex_remove_service(tofree, tofree->services);
         free(tofree);
 
         /* adjust pointers */
@@ -859,7 +1248,7 @@ restart_dupefilter:
                         if (testmultiplex != curmultiplex) {
                                 if (dvbcfg_source_id_equal(&testmultiplex->source->source_id, &curmultiplex->source->source_id, 0) &&
                                     dvbcfg_umid_equal(&testmultiplex->umid, &curmultiplex->umid) &&
-                                    (dvcfg_multiplex_calculate_differentiator(testmultiplex) == dvbcfg_multiplex_calculate_differentiator(curmultiplex))) {
+                                    (dvbcfg_multiplex_calculate_differentiator(testmultiplex) == dvbcfg_multiplex_calculate_differentiator(curmultiplex))) {
                                         dvbcfg_multiplex_free(multiplexes, testmultiplex);
                                         goto restart_dupefilter;
                                 }
@@ -882,7 +1271,7 @@ restart_differentiator:
                         if (testmultiplex != curmultiplex) {
                                 if (dvbcfg_source_id_equal(&testmultiplex->source->source_id, &curmultiplex->source->source_id, 0) &&
                                     dvbcfg_umid_equal(&testmultiplex->umid, &curmultiplex->umid)) {
-                                        testmultiplex->umid.multiplex_differentiator = dvcfg_multiplex_calculate_differentiator(testmultiplex);
+                                        testmultiplex->umid.multiplex_differentiator = dvbcfg_multiplex_calculate_differentiator(testmultiplex);
                                         goto restart_differentiator;
                                 }
                         }
@@ -953,19 +1342,4 @@ uint32_t dvbcfg_multiplex_calculate_differentiator(struct dvbcfg_multiplex* mult
         }
 
         return 0;
-}
-
-
-
-
-static int parsesetting(char* text, const struct dvbcfg_setting* settings)
-{
-  while(settings->name) {
-    if (!strcmp(text, settings->name))
-      return settings->value;
-
-    settings++;
-  }
-
-  return -1;
 }

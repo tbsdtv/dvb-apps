@@ -91,7 +91,7 @@ struct dvbcfg_source_id {
 
 
 /**
- * A Unique Multiplex ID uniquely identifies a multiplex within a source - it is not necessarily globally unique.
+ * A Unique Multiplex ID (UMID) uniquely identifies a multiplex within a source - it is not necessarily globally unique.
  *
  * The externalised string version of this value is as follows:
  * <original_network_id>:<transport_stream_id>:<multiplex_differentiator>
@@ -115,7 +115,7 @@ struct dvbcfg_umid
 };
 
 /**
- * A Global Multiplex ID uniquely identifies a multiplex across the global space of all multiplexes
+ * A Global Multiplex ID (GMID) uniquely identifies a multiplex across the global space of all multiplexes
  * in all DVB transmission types. It is basically just the concatenation of the source_id and the UMID. The externalised
  * string version is as follows:
  *
@@ -128,7 +128,7 @@ struct dvbcfg_gmid
 };
 
 /**
- * A Unique Service ID uniquely identifies a service within its multiplex.
+ * A Unique Service ID (USID) uniquely identifies a service within its multiplex.
  *
  * The externalised string version of this value is as follows:
  * <program_number>:<service_differentiator>
@@ -145,7 +145,7 @@ struct dvbcfg_usid
 };
 
 /**
- * A Global Service ID uniquely identifies a service across the global space of all multiplexes
+ * A Global Service ID (GSID) uniquely identifies a service across the global space of all multiplexes
  * in all DVB transmission types. It is basically just the concatenation of the UMID and the USID. The externalised
  * string version is as follows:
  *

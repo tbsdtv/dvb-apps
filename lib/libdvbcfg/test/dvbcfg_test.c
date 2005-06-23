@@ -72,6 +72,14 @@ int main(int argc, char *argv[])
                 dvbcfg_adapter_save(argv[3], adapters);
                 dvbcfg_adapter_free_all(adapters);
 
+        } else if (!strcmp(argv[1], "-multiplex")) {
+                struct dvbcfg_multiplex *multiplexes = NULL;
+
+                dvbcfg_source_load(argv[4], &sources);
+                dvbcfg_multiplex_load(argv[2], &sources, &multiplexes, 1);
+                dvbcfg_multiplex_save(argv[3], multiplexes);
+                dvbcfg_multiplex_free_all(multiplexes);
+
         } else {
                 syntax();
         }
@@ -82,6 +90,6 @@ int main(int argc, char *argv[])
 void syntax()
 {
         fprintf(stderr,
-                "Syntax: dvcfg_test <-source|-diseqc|-vdrchannel|-zapchannel|-adapter> <input filename> <output filename> <sources filename>\n");
+                "Syntax: dvcfg_test <-source|-diseqc|-vdrchannel|-zapchannel|-adapter|-multiplex> <input filename> <output filename> <sources filename>\n");
         exit(1);
 }

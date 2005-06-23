@@ -23,6 +23,7 @@
 
 #include <dvbcfg_common.h>
 #include <dvbcfg_source.h>
+#include <stdint.h>
 #include <linux/dvb/frontend.h>
 
 /**
@@ -68,8 +69,8 @@ struct dvbcfg_service {
         struct dvbcfg_pid* zap_pids;
         int zap_pids_count;
 
-        struct dvbcfg_pid* pmt_pids;
-        int pmt_pids_count;
+        struct dvbcfg_pid* pmt_extra;
+        int pmt_extra_count;
 
         struct dvbcfg_service *next;     /* NULL=> this is the last entry */
 };
@@ -180,10 +181,9 @@ extern struct dvbcfg_service* dvbcfg_multiplex_add_service2(struct dvbcfg_multip
  *
  * @param multiplex The multiplex to remove from.
  * @param service The service to remove.
- * @return 0 on success, nonzero on error.
  */
-extern int dvbcfg_multiplex_remove_service(struct dvbcfg_multiplex* multiplex,
-                                           struct dvbcfg_service* service);
+extern void dvbcfg_multiplex_remove_service(struct dvbcfg_multiplex* multiplex,
+                                            struct dvbcfg_service* service);
 
 /**
  * Add a CA system to a service.
@@ -230,28 +230,28 @@ extern int dvbcfg_multiplex_remove_zap_pid(struct dvbcfg_service* service,
                                            int type);
 
 /**
- * Add a pmt_pid to a service.
+ * Add a pmt_extra to a service.
  *
  * @param service Service to add to.
  * @param pid The PID to add.
  * @param type Type of the PID (ISO13818 or DVBCFG_PIDTYPE_*)
  * @return 0 on success, nonzero on error.
  */
-extern int dvbcfg_multiplex_add_pmt_pid(struct dvbcfg_service* service,
+extern int dvbcfg_multiplex_add_pmt_extra(struct dvbcfg_service* service,
                                         int pid,
                                         int type);
 
 /**
- * Remove a pmt_pid from a service. You can set pid and/or type to -1 for a wildcard.
+ * Remove a pmt_extra from a service. You can set pid and/or type to -1 for a wildcard.
  *
  * @param service Service to remove from.
  * @param pid The PID to remove (or -1 for any PID)
  * @param type Type of the PID (ISO13818 or DVBCFG_PIDTYPE_*) (or -1 for any type)
  * @return 0 on success, nonzero on error.
  */
-extern int dvbcfg_multiplex_remove_pmt_pid(struct dvbcfg_service* service,
-                                           int pid,
-                                           int type);
+extern int dvbcfg_multiplex_remove_pmt_extra(struct dvbcfg_service* service,
+                                            int pid,
+                                            int type);
 
 /**
  * Find a multiplex.
