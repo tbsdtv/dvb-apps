@@ -214,20 +214,20 @@ extern int dvbcfg_multiplex_remove_ca_system(struct dvbcfg_service* service,
  * @return 0 on success, nonzero on error.
  */
 extern int dvbcfg_multiplex_add_zap_pid(struct dvbcfg_service* service,
-                                        uint16_t pid,
-                                        uint16_t type);
+                                        int pid,
+                                        int type);
 
 /**
- * Remove a zap_pid from a service.
+ * Remove a zap_pid from a service. You can set pid and/or type to -1 for a wildcard.
  *
  * @param service Service to remove from.
- * @param pid The PID to remove.
- * @param type Type of the PID (ISO13818 or DVBCFG_PIDTYPE_*)
+ * @param pid The PID to remove (or -1 for any PID)
+ * @param type Type of the PID (ISO13818 or DVBCFG_PIDTYPE_*) (or -1 for any type)
  * @return 0 on success, nonzero on error.
  */
 extern int dvbcfg_multiplex_remove_zap_pid(struct dvbcfg_service* service,
-                                           uint16_t pid,
-                                           uint16_t type);
+                                           int pid,
+                                           int type);
 
 /**
  * Add a pmt_pid to a service.
@@ -238,20 +238,20 @@ extern int dvbcfg_multiplex_remove_zap_pid(struct dvbcfg_service* service,
  * @return 0 on success, nonzero on error.
  */
 extern int dvbcfg_multiplex_add_pmt_pid(struct dvbcfg_service* service,
-                                        uint16_t pid,
-                                        uint16_t type);
+                                        int pid,
+                                        int type);
 
 /**
- * Remove a pmt_pid from a service.
+ * Remove a pmt_pid from a service. You can set pid and/or type to -1 for a wildcard.
  *
  * @param service Service to remove from.
- * @param pid The PID to remove.
- * @param type Type of the PID (ISO13818 or DVBCFG_PIDTYPE_*)
+ * @param pid The PID to remove (or -1 for any PID)
+ * @param type Type of the PID (ISO13818 or DVBCFG_PIDTYPE_*) (or -1 for any type)
  * @return 0 on success, nonzero on error.
  */
 extern int dvbcfg_multiplex_remove_pmt_pid(struct dvbcfg_service* service,
-                                           uint16_t pid,
-                                           uint16_t type);
+                                           int pid,
+                                           int type);
 
 /**
  * Find a multiplex.

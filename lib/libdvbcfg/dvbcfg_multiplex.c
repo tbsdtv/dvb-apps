@@ -29,7 +29,7 @@
 #define LOCATION_MULTIPLEX 2
 #define LOCATION_SERVICE 3
 
-static const param bandwidth_list [] = {
+static const struct dvbcfg_setting bandwidth_list [] = {
         { "BANDWIDTH_6_MHZ", BANDWIDTH_6_MHZ },
         { "BANDWIDTH_7_MHZ", BANDWIDTH_7_MHZ },
         { "BANDWIDTH_8_MHZ", BANDWIDTH_8_MHZ },
@@ -37,7 +37,7 @@ static const param bandwidth_list [] = {
         { NULL, -1 },
 };
 
-static const param guard_interval_list [] = {
+static const struct dvbcfg_setting guard_interval_list [] = {
         {"GUARD_INTERVAL_1_16", GUARD_INTERVAL_1_16},
         {"GUARD_INTERVAL_1_32", GUARD_INTERVAL_1_32},
         {"GUARD_INTERVAL_1_4",  GUARD_INTERVAL_1_4},
@@ -46,7 +46,7 @@ static const param guard_interval_list [] = {
         { NULL, -1 },
 };
 
-static const param hierarchy_list [] = {
+static const struct dvbcfg_setting hierarchy_information_list [] = {
         { "HIERARCHY_NONE", HIERARCHY_NONE },
         { "HIERARCHY_1",    HIERARCHY_1 },
         { "HIERARCHY_2",    HIERARCHY_2 },
@@ -55,7 +55,7 @@ static const param hierarchy_list [] = {
         { NULL, -1 },
 };
 
-static const param constellation_list [] = {
+static const struct dvbcfg_setting constellation_list [] = {
         { "QPSK",     QPSK },
         { "QAM_16",   QAM_16 },
         { "QAM_32",   QAM_32 },
@@ -66,21 +66,21 @@ static const param constellation_list [] = {
         { NULL, -1 },
 };
 
-static const param transmission_mode_list [] = {
+static const struct dvbcfg_setting transmission_mode_list [] = {
         { "TRANSMISSION_MODE_2K",   TRANSMISSION_MODE_2K },
         { "TRANSMISSION_MODE_8K",   TRANSMISSION_MODE_8K },
         { "TRANSMISSION_MODE_AUTO", TRANSMISSION_MODE_AUTO },
         { NULL, -1 },
 };
 
-static const param inversion_list[] = {
+static const struct dvbcfg_setting inversion_list[] = {
         { "INVERSION_OFF",  INVERSION_OFF },
         { "INVERSION_ON",   INVERSION_ON },
         { "INVERSION_AUTO", INVERSION_AUTO },
         { NULL, -1 },
 };
 
-static const param fec_list[] = {
+static const struct dvbcfg_setting fec_list[] = {
         { "FEC_NONE", FEC_NONE },
         { "FEC_1_2",  FEC_1_2 },
         { "FEC_2_3",  FEC_2_3 },
@@ -94,7 +94,7 @@ static const param fec_list[] = {
         { NULL, -1 },
 };
 
-static const param qam_modulation_list[] = {
+static const struct dvbcfg_setting qam_modulation_list[] = {
         { "QAM_16",   QAM_16 },
         { "QAM_32",   QAM_32 },
         { "QAM_64",   QAM_64 },
@@ -104,7 +104,7 @@ static const param qam_modulation_list[] = {
         { NULL, -1 },
 };
 
-static const param atsc_modulation_list[] = {
+static const struct dvbcfg_setting atsc_modulation_list[] = {
         { "VSB_8",    VSB_8 },
         { "VSB_16",   VSB_16 },
         { "QAM_64",   QAM_64 },
@@ -141,7 +141,7 @@ int dvbcfg_multiplex_load(char *config_file,
         char* value;
         int numtokens;
         int error = 0;
-        int location = 0;
+        int location = LOCATION_SOF;
         char* tmpgmid = NULL;
         char* tmpdelivery = NULL;
         char* tmpusid = NULL;
@@ -390,7 +390,7 @@ static struct dvbcfg_multiplex* parse_multiplex(struct dvbcfg_source** sources,
                 /* symbol_rate */
                 if (sscanf(linepos, "%i", &val) != 1)
                         goto error;
-                multiplex->delivery.dvb.fe_params.u.qpsk.symbol_rate = val * 1000;
+                multiplex->delivery.dvb.fe_params.u.qpsk.symbol_rate = val;
                 linepos = dvbcfg_nexttoken(linepos);
 
                 /* fec_inner */
@@ -420,7 +420,7 @@ static struct dvbcfg_multiplex* parse_multiplex(struct dvbcfg_source** sources,
                 /* symbol_rate */
                 if (sscanf(linepos, "%i", &val) != 1)
                         goto error;
-                multiplex->delivery.dvb.fe_params.u.qam.symbol_rate = val * 1000;
+                multiplex->delivery.dvb.fe_params.u.qam.symbol_rate = val;
                 linepos = dvbcfg_nexttoken(linepos);
 
                 /* fec_inner */
@@ -472,18 +472,18 @@ static struct dvbcfg_multiplex* parse_multiplex(struct dvbcfg_source** sources,
                         goto error;
                 multiplex->delivery.dvb.fe_params.u.ofdm.constellation = val;
 
-                /* code_rate_HP */
+                /* transmission_mode */
                 if ((val = dvbcfg_parsesetting(linepos, transmission_mode_list)) < 0)
                         goto error;
                 multiplex->delivery.dvb.fe_params.u.ofdm.transmission_mode = val;
 
-                /* code_rate_HP */
+                /* guard_interval */
                 if ((val = dvbcfg_parsesetting(linepos, guard_interval_list)) < 0)
                         goto error;
                 multiplex->delivery.dvb.fe_params.u.ofdm.guard_interval = val;
 
-                /* code_rate_HP */
-                if ((val = dvbcfg_parsesetting(linepos, hierarchy_list)) < 0)
+                /* hierarchy_information */
+                if ((val = dvbcfg_parsesetting(linepos, hierarchy_information_list)) < 0)
                         goto error;
                 multiplex->delivery.dvb.fe_params.u.ofdm.hierarchy_information = val;
 
@@ -540,16 +540,102 @@ static struct dvbcfg_service* parse_service(struct dvbcfg_multiplex* multiplex,
 int dvbcfg_multiplex_save(char *config_file, struct dvbcfg_multiplex *multiplexes)
 {
         FILE *out;
-        char* tmp;
+        char* umid;
+        char polarization;
+        char* source_id;
 
         /* open the file */
         out = fopen(config_file, "w");
         if (out == NULL)
                 return errno;
 
+        fprintf(out, "[dvbmultiplexes]\n");
+        fprintf(out, "version=0.1\n");
+        fprintf(out, "date=%i\n", time(NULL));
+        fprintf(out, "\n");
+
         while (multiplexes) {
 
-                // FIXME
+                umid = dvbcfg_umid_to_string(&multiplexes->umid);
+                if (umid == NULL)
+                  break;
+
+                source_id = dvbcfg_source_id_to_string(&multiplexes->source->source_id);
+                if (source_id == NULL) {
+                  free(umid);
+                  break;
+                }
+
+                fprintf(out, "[multiplex]\n");
+                fprintf(out, "gmid=%s:%s\n", source_id, umid);
+                free(umid);
+                free(source_id);
+
+                /* output the delivery */
+                fprintf(out, "delivery = ");
+                switch(multiplexes->source->source_id.source_type) {
+                case DVBCFG_SOURCETYPE_DVBS:
+                        switch(multiplexes->delivery.dvb.polarization) {
+                        case DVBCFG_POLARIZATION_H:
+                                polarization = 'H';
+                                break;
+
+                        case DVBCFG_POLARIZATION_V:
+                                polarization = 'V';
+                                break;
+
+                        case DVBCFG_POLARIZATION_L:
+                                polarization = 'L';
+                                break;
+
+                        case DVBCFG_POLARIZATION_R:
+                                polarization = 'R';
+                                break;
+                        }
+
+                        fprintf(out, "%i %s %c %i %s\n",
+                                multiplexes->delivery.dvb.fe_params.frequency,
+                                dvbcfg_lookupstr(multiplexes->delivery.dvb.fe_params.inversion, inversion_list),
+                                polarization,
+                                multiplexes->delivery.dvb.fe_params.u.qpsk.symbol_rate,
+                                dvbcfg_lookupstr(multiplexes->delivery.dvb.fe_params.u.qpsk.fec_inner, fec_list));
+                        break;
+
+                case DVBCFG_SOURCETYPE_DVBC:
+                        fprintf(out, "%i %s %i %s %s\n",
+                                multiplexes->delivery.dvb.fe_params.frequency,
+                                dvbcfg_lookupstr(multiplexes->delivery.dvb.fe_params.inversion, inversion_list),
+                                multiplexes->delivery.dvb.fe_params.u.qpsk.symbol_rate,
+                                dvbcfg_lookupstr(multiplexes->delivery.dvb.fe_params.u.qam.fec_inner, fec_list),
+                                dvbcfg_lookupstr(multiplexes->delivery.dvb.fe_params.u.qam.modulation, qam_modulation_list));
+                        break;
+
+                case DVBCFG_SOURCETYPE_DVBT:
+                        fprintf(out, "%i %s %s %s %s %s %s %s %s\n",
+                                multiplexes->delivery.dvb.fe_params.frequency,
+                                dvbcfg_lookupstr(multiplexes->delivery.dvb.fe_params.inversion, inversion_list),
+                                dvbcfg_lookupstr(multiplexes->delivery.dvb.fe_params.u.ofdm.bandwidth, bandwidth_list),
+                                dvbcfg_lookupstr(multiplexes->delivery.dvb.fe_params.u.ofdm.code_rate_HP, fec_list),
+                                dvbcfg_lookupstr(multiplexes->delivery.dvb.fe_params.u.ofdm.code_rate_LP, fec_list),
+                                dvbcfg_lookupstr(multiplexes->delivery.dvb.fe_params.u.ofdm.constellation, constellation_list),
+                                dvbcfg_lookupstr(multiplexes->delivery.dvb.fe_params.u.ofdm.transmission_mode,
+                                                  transmission_mode_list),
+                                dvbcfg_lookupstr(multiplexes->delivery.dvb.fe_params.u.ofdm.guard_interval, guard_interval_list),
+                                dvbcfg_lookupstr(multiplexes->delivery.dvb.fe_params.u.ofdm.hierarchy_information,
+                                                hierarchy_information_list));
+
+                        break;
+
+                case DVBCFG_SOURCETYPE_ATSC:
+                        fprintf(out, "%i %s %s\n",
+                                multiplexes->delivery.dvb.fe_params.frequency,
+                                dvbcfg_lookupstr(multiplexes->delivery.dvb.fe_params.inversion, inversion_list),
+                                dvbcfg_lookupstr(multiplexes->delivery.dvb.fe_params.u.vsb.modulation, atsc_modulation_list));
+                        break;
+                }
+                fprintf(out, "\n");
+
+                // FIXME: output services
 
                 multiplexes = multiplexes->next;
         }
@@ -635,29 +721,29 @@ int dvbcfg_multiplex_remove_ca_system(struct dvbcfg_service* service,
 }
 
 int dvbcfg_multiplex_add_zap_pid(struct dvbcfg_service* service,
-                                 uint16_t pid,
-                                 uint16_t type)
+                                 int pid,
+                                 int type)
 {
   // FIXME
 }
 
 int dvbcfg_multiplex_remove_zap_pid(struct dvbcfg_service* service,
-                                    uint16_t pid,
-                                    uint16_t type)
+                                    int pid,
+                                    int type)
 {
   // FIXME
 }
 
 int dvbcfg_multiplex_add_pmt_pid(struct dvbcfg_service* service,
-                                 uint16_t pid,
-                                 uint16_t type)
+                                 int pid,
+                                 int type)
 {
   // FIXME
 }
 
 int dvbcfg_multiplex_remove_pmt_pid(struct dvbcfg_service* service,
-                                    uint16_t pid,
-                                    uint16_t type)
+                                    int pid,
+                                    int type)
 {
   // FIXME
 }
@@ -741,7 +827,7 @@ void dvbcfg_multiplex_free_all(struct dvbcfg_multiplex *multiplexes)
                 dvbcfg_multiplex_free(&multiplexes, multiplexes);
 }
 
-static int parsesetting(char* text, const param* settings)
+static int parsesetting(char* text, const struct dvbcfg_setting* settings)
 {
         while(settings->name) {
                 if (!strcmp(text, settings->name))

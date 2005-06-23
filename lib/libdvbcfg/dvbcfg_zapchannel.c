@@ -26,14 +26,14 @@
 #include "dvbcfg_common.h"
 
 
-static const param bandwidth_list [] = {
+static const struct dvbcfg_setting bandwidth_list [] = {
         { "BANDWIDTH_6_MHZ", BANDWIDTH_6_MHZ },
         { "BANDWIDTH_7_MHZ", BANDWIDTH_7_MHZ },
         { "BANDWIDTH_8_MHZ", BANDWIDTH_8_MHZ },
         { NULL, -1 },
 };
 
-static const param guard_interval_list [] = {
+static const struct dvbcfg_setting guard_interval_list [] = {
         {"GUARD_INTERVAL_1_16", GUARD_INTERVAL_1_16},
         {"GUARD_INTERVAL_1_32", GUARD_INTERVAL_1_32},
         {"GUARD_INTERVAL_1_4", GUARD_INTERVAL_1_4},
@@ -41,7 +41,7 @@ static const param guard_interval_list [] = {
         { NULL, -1 },
 };
 
-static const param hierarchy_list [] = {
+static const struct dvbcfg_setting hierarchy_list [] = {
         { "HIERARCHY_1", HIERARCHY_1 },
         { "HIERARCHY_2", HIERARCHY_2 },
         { "HIERARCHY_4", HIERARCHY_4 },
@@ -49,7 +49,7 @@ static const param hierarchy_list [] = {
         { NULL, -1 },
 };
 
-static const param constellation_list [] = {
+static const struct dvbcfg_setting constellation_list [] = {
         { "QPSK", QPSK },
         { "QAM_128", QAM_128 },
         { "QAM_16", QAM_16 },
@@ -59,20 +59,20 @@ static const param constellation_list [] = {
         { NULL, -1 },
 };
 
-static const param transmission_mode_list [] = {
+static const struct dvbcfg_setting transmission_mode_list [] = {
         { "TRANSMISSION_MODE_2K", TRANSMISSION_MODE_2K },
         { "TRANSMISSION_MODE_8K", TRANSMISSION_MODE_8K },
         { NULL, -1 },
 };
 
-static const param inversion_list[] = {
+static const struct dvbcfg_setting inversion_list[] = {
         { "INVERSION_OFF", INVERSION_OFF },
         { "INVERSION_ON", INVERSION_ON },
         { "INVERSION_AUTO", INVERSION_AUTO },
         { NULL, -1 },
 };
 
-static const param fec_list[] = {
+static const struct dvbcfg_setting fec_list[] = {
         { "FEC_1_2", FEC_1_2 },
         { "FEC_2_3", FEC_2_3 },
         { "FEC_3_4", FEC_3_4 },
@@ -86,7 +86,7 @@ static const param fec_list[] = {
         { NULL, -1 },
 };
 
-static const param qam_modulation_list[] = {
+static const struct dvbcfg_setting qam_modulation_list[] = {
         { "QAM_16", QAM_16 },
         { "QAM_32", QAM_32 },
         { "QAM_64", QAM_64 },
@@ -96,7 +96,7 @@ static const param qam_modulation_list[] = {
         { NULL, -1 },
 };
 
-static const param atsc_modulation_list[] = {
+static const struct dvbcfg_setting atsc_modulation_list[] = {
         { "8VSB", VSB_8 },
         { "16VSB", VSB_16 },
         { "QAM_64", QAM_64 },
@@ -372,6 +372,7 @@ int dvbcfg_zapchannel_load(char *config_file, struct dvbcfg_zapchannel **zapchan
 int dvbcfg_zapchannel_save(char *config_file, struct dvbcfg_zapchannel *zapchannels)
 {
         FILE *out;
+        char polarization;
 
         /* open the file */
         out = fopen(config_file, "w");
@@ -383,43 +384,48 @@ int dvbcfg_zapchannel_save(char *config_file, struct dvbcfg_zapchannel *zapchann
 
                 switch(zapchannels->fe_type) {
                 case FE_OFDM:
-                        fprintf(out, "%i:", zapchannels->fe_params.frequency);
-                        dvbcfg_formatsetting(out, zapchannels->fe_params.inversion, inversion_list);
-                        dvbcfg_formatsetting(out, zapchannels->fe_params.u.ofdm.bandwidth, bandwidth_list);
-                        dvbcfg_formatsetting(out, zapchannels->fe_params.u.ofdm.code_rate_HP, fec_list);
-                        dvbcfg_formatsetting(out, zapchannels->fe_params.u.ofdm.code_rate_LP, fec_list);
-                        dvbcfg_formatsetting(out, zapchannels->fe_params.u.ofdm.constellation, constellation_list);
-                        dvbcfg_formatsetting(out, zapchannels->fe_params.u.ofdm.transmission_mode, transmission_mode_list);
-                        dvbcfg_formatsetting(out, zapchannels->fe_params.u.ofdm.guard_interval, guard_interval_list);
-                        dvbcfg_formatsetting(out, zapchannels->fe_params.u.ofdm.hierarchy_information, hierarchy_list);
+                        fprintf(out, "%i:%s:%s:%s:%s:%s:%s:%s:%s:",
+                                zapchannels->fe_params.frequency,
+                                dvbcfg_lookupsetting(zapchannels->fe_params.inversion, inversion_list),
+                                dvbcfg_lookupsetting(zapchannels->fe_params.u.ofdm.bandwidth, bandwidth_list),
+                                dvbcfg_lookupsetting(zapchannels->fe_params.u.ofdm.code_rate_HP, fec_list),
+                                dvbcfg_lookupsetting(zapchannels->fe_params.u.ofdm.code_rate_LP, fec_list),
+                                dvbcfg_lookupsetting(zapchannels->fe_params.u.ofdm.constellation, constellation_list),
+                                dvbcfg_lookupsetting(zapchannels->fe_params.u.ofdm.transmission_mode, transmission_mode_list),
+                                dvbcfg_lookupsetting(zapchannels->fe_params.u.ofdm.guard_interval, guard_interval_list),
+                                dvbcfg_lookupsetting(zapchannels->fe_params.u.ofdm.hierarchy_information, hierarchy_list));
                         break;
 
                 case FE_QAM:
-                        fprintf(out, "%i:", zapchannels->fe_params.frequency);
-                        dvbcfg_formatsetting(out, zapchannels->fe_params.inversion, inversion_list);
-                        fprintf(out, "%i:", zapchannels->fe_params.u.qam.symbol_rate);
-                        dvbcfg_formatsetting(out, zapchannels->fe_params.u.qam.fec_inner, fec_list);
-                        dvbcfg_formatsetting(out, zapchannels->fe_params.u.qam.modulation, qam_modulation_list);
+                        fprintf(out, "%i:%s:%i:%s:%s:",
+                                zapchannels->fe_params.frequency,
+                                dvbcfg_lookupsetting(zapchannels->fe_params.inversion, inversion_list),
+                                zapchannels->fe_params.u.qam.symbol_rate,
+                                dvbcfg_lookupsetting(zapchannels->fe_params.u.qam.fec_inner, fec_list),
+                                dvbcfg_lookupsetting(zapchannels->fe_params.u.qam.modulation, qam_modulation_list));
                         break;
 
                 case FE_QPSK:
-                        fprintf(out, "%i:", zapchannels->fe_params.frequency / 1000);
                         switch(zapchannels->polarization) {
                         case DVBCFG_POLARIZATION_H:
-                                fprintf(out, "h:");
+                                polarization = 'h';
                                 break;
 
                         case DVBCFG_POLARIZATION_V:
-                                fprintf(out, "v:");
+                                polarization = 'v';
                                 break;
                         }
-                        fprintf(out, "%i:", zapchannels->satellite_switch);
-                        fprintf(out, "%i:", zapchannels->fe_params.u.qpsk.symbol_rate / 1000);
+                        fprintf(out, "%i:%c:%i:%i:",
+                                zapchannels->fe_params.frequency / 1000,
+                                polarization,
+                                zapchannels->satellite_switch,
+                                zapchannels->fe_params.u.qpsk.symbol_rate / 1000);
                         break;
 
                 case FE_ATSC:
-                        fprintf(out, "%i:", zapchannels->fe_params.frequency);
-                        dvbcfg_formatsetting(out, zapchannels->fe_params.u.vsb.modulation, atsc_modulation_list);
+                        fprintf(out, "%i:%s:",
+                                zapchannels->fe_params.frequency,
+                                dvbcfg_lookupsetting(zapchannels->fe_params.u.vsb.modulation, atsc_modulation_list));
                         break;
                 }
                 fprintf(out, "%i:%i", zapchannels->video_pid, zapchannels->audio_pid);

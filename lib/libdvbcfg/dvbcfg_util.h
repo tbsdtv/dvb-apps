@@ -21,12 +21,10 @@
 #ifndef DVBCFG_UTIL_H
 #define DVBCFG_UTIL_H
 
-#include <stdio.h>
-
-typedef struct {
+struct dvbcfg_setting {
         char *name;
         int value;
-} param;
+};
 
 /**
  * Clean any comments/whitespace from the end of a line.
@@ -100,8 +98,22 @@ extern char* dvbcfg_iskey(char* line, char* keyname);
  */
 extern void dvbcfg_freestring(char** tofree);
 
+/**
+ * Look up 'text' in the supplied param table.
+ *
+ * @param text Text to look up.
+ * @param settings Param table to look in.
+ * @return The value if found, or -1 if not.
+ */
+extern int dvbcfg_parsesetting(char* text, const struct dvbcfg_setting* settings);
 
-extern int dvbcfg_parsesetting(char* text, const param* settings);
-extern void dvbcfg_formatsetting(FILE* out, int setting, const param* settings);
+/**
+ * Look up 'setting' in the supplied param table.
+ *
+ * @param setting Setting to look up.
+ * @param settings Param table to look in.
+ * @return The text for that setting if found, or NULL if not.
+ */
+extern char* dvbcfg_lookupsetting(int setting, const struct dvbcfg_setting* settings);
 
 #endif                          // DVBCFG_UTIL

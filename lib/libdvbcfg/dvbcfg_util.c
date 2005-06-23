@@ -194,14 +194,14 @@ char* dvbcfg_iskey(char* line, char* keyname)
 
 void dvbcfg_freestring(char** tofree)
 {
-  if (*tofree == NULL)
-    return;
+        if (*tofree == NULL)
+                return;
 
-  free(*tofree);
-  *tofree = NULL;
+        free(*tofree);
+        *tofree = NULL;
 }
 
-int dvbcfg_parsesetting(char* text, const param* settings)
+int dvbcfg_parsesetting(char* text, const struct dvbcfg_setting* settings)
 {
         while(settings->name) {
                 if (!strcmp(text, settings->name))
@@ -213,14 +213,16 @@ int dvbcfg_parsesetting(char* text, const param* settings)
         return -1;
 }
 
-void dvbcfg_formatsetting(FILE* out, int setting, const param* settings)
+char* dvbcfg_lookupsetting(int setting, const struct dvbcfg_setting* settings)
 {
         while(settings->name) {
                 if (setting == settings->value) {
-                        fprintf(out, "%s:", settings->name);
+                        return settings->name;
                         return;
                 }
 
                 settings++;
         }
+
+        return NULL;
 }
