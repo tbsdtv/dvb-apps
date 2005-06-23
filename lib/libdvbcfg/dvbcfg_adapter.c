@@ -66,6 +66,7 @@ int dvbcfg_adapter_load(char *config_file,
                         error = -ENOMEM;
                         goto exit;
                 }
+                linepos = dvbcfg_nexttoken(linepos);
 
                 /* the source_ids */
                 for (i = 1; i < numtokens; i++) {

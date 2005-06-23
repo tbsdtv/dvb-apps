@@ -131,9 +131,12 @@ struct dvbcfg_source* dvbcfg_source_new2(struct dvbcfg_source **sources, struct 
 
         /* parse the source_id */
         newsource->source_id.source_type = source_id->source_type;
-        newsource->source_id.source_network = dvbcfg_strdupandtrim(source_id->source_network, -1);
-        newsource->source_id.source_region = dvbcfg_strdupandtrim(source_id->source_region, -1);
-        newsource->source_id.source_locale = dvbcfg_strdupandtrim(source_id->source_locale, -1);
+        if (source_id->source_network)
+                newsource->source_id.source_network = dvbcfg_strdupandtrim(source_id->source_network, -1);
+        if (source_id->source_region)
+                newsource->source_id.source_region = dvbcfg_strdupandtrim(source_id->source_region, -1);
+        if (source_id->source_locale)
+                newsource->source_id.source_locale = dvbcfg_strdupandtrim(source_id->source_locale, -1);
 
         /* check */
         if (((newsource->source_id.source_network == NULL) != (source_id->source_network == NULL)) ||

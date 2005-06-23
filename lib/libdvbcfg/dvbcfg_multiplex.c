@@ -927,8 +927,8 @@ void dvbcfg_multiplex_remove_service(struct dvbcfg_multiplex* multiplex,
         if (service->name)
                 free(service->name);
         free(service->ca_systems);
-        dvbcfg_multiplex_remove_zap_pid(service, -1, -1);
-        dvbcfg_multiplex_remove_pmt_extra(service, -1, -1);
+        free(service->zap_pids);
+        free(service->pmt_extra);
         free(service);
 
         /* adjust pointers */
