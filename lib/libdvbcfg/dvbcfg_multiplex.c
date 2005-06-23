@@ -827,14 +827,145 @@ void dvbcfg_multiplex_free_all(struct dvbcfg_multiplex *multiplexes)
                 dvbcfg_multiplex_free(&multiplexes, multiplexes);
 }
 
-static int parsesetting(char* text, const struct dvbcfg_setting* settings)
+void dvbcfg_multiplex_postprocess(struct dvbcfg_multiplex** multiplexes)
 {
-        while(settings->name) {
-                if (!strcmp(text, settings->name))
-                        return settings->value;
+        struct dvbcfg_multiplex* curmultiplex;
+        struct dvbcfg_service* curservice;
+        struct dvbcfg_multiplex* testmultiplex;
+        struct dvbcfg_service* testservice;
+        int i;
 
-                settings++;
+        /* first of all, set all differentiators to 0 */
+        curmultiplex = *multiplexes;
+        while(curmultiplex) {
+                curmultiplex->umid.multiplex_differentiator = 0;
+
+                curservice = curmultiplex->services;
+                while(curservice) {
+                        curservice->usid.service_differentiator = 0;
+                        curservice = curservice->next;
+                }
+
+                curmultiplex = curmultiplex->next;
         }
 
-        return -1;
+        /* next, filter out any duplicate multiplexes */
+        curmultiplex = *multiplexes;
+        while(curmultiplex) {
+
+restart_dupefilter:
+                testmultiplex = *multiplexes;
+                while(testmultiplex) {
+                        if (testmultiplex != curmultiplex) {
+                                if (dvbcfg_source_id_equal(&testmultiplex->source->source_id, &curmultiplex->source->source_id, 0) &&
+                                    dvbcfg_umid_equal(&testmultiplex->umid, &curmultiplex->umid) &&
+                                    (dvcfg_multiplex_calculate_differentiator(testmultiplex) == dvbcfg_multiplex_calculate_differentiator(curmultiplex))) {
+                                        dvbcfg_multiplex_free(multiplexes, testmultiplex);
+                                        goto restart_dupefilter;
+                                }
+                        }
+
+                        testmultiplex = testmultiplex->next;
+                }
+
+                curmultiplex = curmultiplex->next;
+        }
+
+        /* now, differentiate each multiplex and service where necessary */
+        curmultiplex = *multiplexes;
+        while(curmultiplex) {
+
+                /* do the multiplex */
+restart_differentiator:
+                testmultiplex = *multiplexes;
+                while(testmultiplex) {
+                        if (testmultiplex != curmultiplex) {
+                                if (dvbcfg_source_id_equal(&testmultiplex->source->source_id, &curmultiplex->source->source_id, 0) &&
+                                    dvbcfg_umid_equal(&testmultiplex->umid, &curmultiplex->umid)) {
+                                        testmultiplex->umid.multiplex_differentiator = dvcfg_multiplex_calculate_differentiator(testmultiplex);
+                                        goto restart_differentiator;
+                                }
+                        }
+
+                        testmultiplex = testmultiplex->next;
+                }
+
+                /* now differentiate the services for this multiplex */
+                curservice = curmultiplex->services;
+                while(curservice) {
+
+restart_differentiator_service:
+                        i = 0;
+                        testservice = curmultiplex->services;
+                        while(testservice) {
+                                if (testservice != curservice) {
+                                        if (dvbcfg_usid_equal(&testservice->usid, &curservice->usid)) {
+                                                testservice->usid.service_differentiator = i;
+                                                goto restart_differentiator_service;
+                                        }
+                                }
+
+                                i++;
+                                testservice = testservice->next;
+                        }
+
+                        curservice = curservice->next;
+                }
+
+                /* next multiplex! */
+                curmultiplex = curmultiplex->next;
+        }
+}
+
+uint32_t dvbcfg_multiplex_calculate_differentiator(struct dvbcfg_multiplex* multiplex)
+{
+        uint32_t tmp;
+
+        switch(multiplex->source->source_id.source_type) {
+        case DVBCFG_SOURCETYPE_DVBS:
+                tmp = multiplex->delivery.dvb.fe_params.frequency / (multiplex->delivery.dvb.fe_params.u.qpsk.symbol_rate / 1000);
+                tmp <<= 2;
+                tmp |= (multiplex->delivery.dvb.polarization & 3);
+                return tmp;
+
+        case DVBCFG_SOURCETYPE_DVBC:
+                return multiplex->delivery.dvb.fe_params.frequency / multiplex->delivery.dvb.fe_params.u.qam.symbol_rate;
+
+        case DVBCFG_SOURCETYPE_DVBT:
+                switch(multiplex->delivery.dvb.fe_params.u.ofdm.bandwidth) {
+                case BANDWIDTH_8_MHZ:
+                        tmp = 8000000;
+                        break;
+
+                case BANDWIDTH_7_MHZ:
+                        tmp = 7000000;
+                        break;
+
+                case BANDWIDTH_AUTO:
+                case BANDWIDTH_6_MHZ:
+                        tmp = 6000000;
+                        break;
+                }
+                return multiplex->delivery.dvb.fe_params.frequency / tmp;
+
+        case DVBCFG_SOURCETYPE_ATSC:
+                return multiplex->delivery.dvb.fe_params.frequency / 6000000;
+        }
+
+        return 0;
+}
+
+
+
+
+static int parsesetting(char* text, const struct dvbcfg_setting* settings)
+{
+  while(settings->name) {
+    if (!strcmp(text, settings->name))
+      return settings->value;
+
+    settings++;
+  }
+
+  return -1;
 }

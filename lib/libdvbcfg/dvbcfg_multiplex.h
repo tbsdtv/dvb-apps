@@ -324,4 +324,19 @@ extern void dvbcfg_multiplex_free(struct dvbcfg_multiplex** multiplexes,
  */
 extern void dvbcfg_multiplex_free_all(struct dvbcfg_multiplex* multiplexes);
 
+/**
+ * Postproces a list of multiplexes, removing duplicates and assinging differentiators where necessary.
+ *
+ * @param multiplexes List of multiplexes to process.
+ */
+extern void dvbcfg_multiplex_postprocess(struct dvbcfg_multiplex** multiplexes);
+
+/**
+ * Calculate the differentiator value for a multiplex.
+ *
+ * @param multiplex The multiplex concerned.
+ * @return The differentiator value.
+ */
+extern uint32_t dvbcfg_multiplex_calculate_differentiator(struct dvbcfg_multiplex* multiplex);
+
 #endif                          // DVBCFG_MULTIPLEX_H
