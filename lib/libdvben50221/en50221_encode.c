@@ -54,7 +54,7 @@ uint16_t en50221_encode_descriptor(struct ca_msg *p_ca_msg, struct ca_descriptor
 	p_ca_msg->msg[pos + 1] = p_desc->descriptor_length;
 	p_ca_msg->msg[pos + 2] = (p_desc->ca_system_id >> 8) & 0xff;
 	p_ca_msg->msg[pos + 3] = p_desc->ca_system_id & 0xff;
-	p_ca_msg->msg[pos + 4] = ((p_ca_msg->msg[pos + 4] | p_desc->reserved) << 5) | ((p_desc->ca_pid >> 8) & 0x07);
+	p_ca_msg->msg[pos + 4] = ((p_ca_msg->msg[pos + 4] | p_desc->reserved) << 5) | ((p_desc->ca_pid >> 8) & 0x1f);
 	p_ca_msg->msg[pos + 5] = p_ca_msg->msg[pos + 5] | (p_desc->ca_pid & 0xff);
 
 	pos += 6;
