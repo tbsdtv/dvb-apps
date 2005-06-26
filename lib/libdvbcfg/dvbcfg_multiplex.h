@@ -27,7 +27,96 @@
 #include <linux/dvb/frontend.h>
 
 /**
- * FIXME: describe
+ * The dvbcfg_multiplex file consists of multiple sections, each describing a
+ * particular multiplex or a service belonging to a multiplex. Its format is as
+ * follows:
+ * [dvbmultiplexes]
+ * version=0.1
+ * date=<unixdate>
+ *
+ * [multiplex]
+ * gmid = <GMID of this multiplex>
+ * delivery = <delivery specific parameters>
+ *
+ * [service]
+ * usid= <USID of this service>
+ * name= <name of this service>
+ * flags= <service specific flags>
+ * ca_systems= <list of ca systems supported by this multiplex>
+ * zap_pids= <list of pids and their types for accelerated channel locking>
+ * pmt_extra= <list of pids and their types used as a supplement/replacement to the standard PMT SI tables>
+ *
+ * There may only be one [dvbmultiplex] section, and it must be the first section within the file.
+ *
+ * There can be multiple [multiplex] and [service] sections in any one file. A [service] belongs
+ * to the most recent preceding [multiplex] section.
+ *
+ * All keys within the sections are mandatory, except for the following: flags, ca_systems, zap_pids, pmt_extra.
+ *
+ * GMID and USID are described in dvbcfg_common.h.
+ *
+ * The <delivery specific parameters> vary depending on the source_type of the multiplex. They are as follows:
+ * DVBS: <frequency> <inversion> <polarization> <symbol_rate> <fec_inner>
+ * DVBC: <frequency> <inversion> <symbol_rate> <fec_inner> <modulation>
+ * DVBT: <frequency> <inversion> <bandwidth> <code_rate_HP> <code_rate_LP> <constellation> <tranmission_mode> <guard_interval> <hierarchy_information>
+ * ATSC: <frequency> <inversion> <modulation>
+ *
+ * All numerical values are in the units used in the "struct dvb_frontend_parameters". For other parameters, the exact string used in
+ * dvb_frontend.h is used (e.g. INVERSION_OFF is represented by the string "INVERSION_OFF" and so on).
+ *
+ * Currently only the flag "ignorepmt" is defined for the <service specific flags>. If this is present, the
+ * PMT should be ignored completely, and the pmt_extra entries used instead.
+ *
+ * The <list of ca systems supported by this multiplex> is only used for encrypted services to identify the
+ * type of CAM/subscription card the user must have in order to successfully decrypt a service. This is just
+ * a list of numbers seperated by whitespace.
+ *
+ * Both zap_pids and pmt_extra have the same format: <pid>:<type>. <type> may either be one of the standard
+ * PMT stream types as defined in ISO13818-1, table 2-29, or it may be one of the special values "_ac3", "_dts",
+ * "_tt", or "_pcr".
+ *
+ * zap_pids is to provide accelerated channel zapping. It gives a pre-extracted list of PIDs
+ * (usually just audio, video, and pcr) so that a channel can be zapped to without having to wait for the
+ * PAT or PMT tables. They should be verified against the PAT/PMT when it is received, in case they
+ * have changed in the meantime. Use of these is optional.
+ *
+ * pmt_extra gives a list of extra PID/type pairs for PIDS that are for some reason missing from the PMT
+ * table for a channel. If the "ignorepmt" flag is also set, these entries will be used instead of a PMT.
+ * If not, they will be used in addition to the PMT (however the pmt_extra entries should override any clashing
+ * entries in the PMT).
+ *
+ * This file format can also be used for "seed" transponders - if this is the case, the file should consist
+ * only of [multiplex] sections.
+ *
+ * Comments begin with '#' - any characters after this will be ignored
+ * to the end of the line.
+ *
+ * Example:
+ * [dvbmultiplexes]
+ * version=0.1
+ * date=5798475834
+ *
+ * [multiplex]
+ * gmid=S5E:0x0001:0x002:0x000
+ * delivery = 12345 INVERSION_OFF H 27500000 FEC_AUTO
+ *
+ * [service]
+ * usid=0x0001:0x000
+ * name=service 1
+ * ca_systems=
+ * zap_pids=0x55:_ac3 0x56:0x78 0x57:_pcr 0x59:0x01
+ * pmt_extra=0x100:_dts 0x101:_tt 0x102:0x76
+ *
+ * [service]
+ * usid=0x0002:0x000
+ * name=service 2
+ * flags=
+ * zap_pids=0x55:_ac3 0x56:0x78 0x57:_pcr 0x59:0x01
+ * pmt_extra=0x100:_dts 0x101:_tt 0x102:0x76
+ *
+ * [multiplex]
+ * gmid=Cde-de-Berlin:0x0001:0x002:0x000
+ * delivery = 12345 INVERSION_OFF 27500000 FEC_AUTO QAM_128
  */
 
 
