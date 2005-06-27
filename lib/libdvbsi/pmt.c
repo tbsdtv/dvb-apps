@@ -112,7 +112,8 @@ uint16_t parse_pmt(struct pmt *p_pmt, uint8_t *buf, uint32_t pmt_pid, int bytes)
 		printf("%02x ", buf[i]);
 	printf("]\n");
 
-	printf("\n%s: ----------->parse PMT section, PMT PID=[%d], bytes=[%d]\n", __FUNCTION__, pmt_pid, bytes);
+	printf("\n%s: ----------->parse PMT section, PMT PID=[%d], bytes=[%d]\n",
+			__FUNCTION__, pmt_pid, bytes);
 	pos = parse_pmt_header(p_pmt, buf);	// PMT Header (12 bytes)
 	printf("%s: Program info length=[%d]\n", __FUNCTION__, p_pmt->program_info_length);
 
@@ -122,7 +123,8 @@ uint16_t parse_pmt(struct pmt *p_pmt, uint8_t *buf, uint32_t pmt_pid, int bytes)
 	for (count = 0; count < p_pmt->program_info_length; count++) {
 		pos = parse_descriptor(p_pmt->p_descriptor, &descr_info, buf, pos);
 		count += pos, p_pmt->program_desc_count++;
-		printf("%s: Count=[%d], Position=[%d], Program descriptor count=[%d]\n", __FUNCTION__, count, pos, p_pmt->program_info_length);
+		printf("%s: Count=[%d], Position=[%d], Program descriptor count=[%d]\n",
+			__FUNCTION__, count, pos, p_pmt->program_info_length);
 	}
 
 	p_pmt->p_streams = (struct streams *) malloc(sizeof (struct streams) * MAX_STREAMS);

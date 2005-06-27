@@ -29,15 +29,15 @@ uint16_t parse_nit_header(struct nit *p_nit, uint8_t *buf, uint16_t pos)
 	p_nit->section_synatx_indicator = buf[pos + 1] >> 7;
 	p_nit->reserved_1 = (buf[pos + 1] >> 6) & 0x01;
 	p_nit->reserved_2 = (buf[pos + 1]] >> 4) & 0x03;
-	p_nit->section_length = ((p_nit->section_length | (buf[pos + 1] & 0x0f)) << 8) | buf[pos + 2];
-	p_nit->network_id = ((p_nit->network_id | buf[pos + 3]) << 8) | buf[pos + 4];
+	p_nit->section_length = ((buf[pos + 1] & 0x0f) << 8) | buf[pos + 2];
+	p_nit->network_id = (buf[pos + 3] << 8) | buf[pos + 4];
 	p_nit->reserved_3 = buf[pos + 5] >> 6;
 	p_nit->version_number = (buf[pos + 5] >> 1) & 0x1f;
 	p_nit->current_next_indicator = buf[pos + 5] >> 7;
 	p_nit->section_number = buf[pos + 6];
 	p_nit->last_section_number = buf[pos + 7];
 	p_nit->reserved_4 = buf[pos + 8] >> 4;
-	p_nit->network_descriptors_length = ((p_nit->network_descriptors_length | (buf[pos + 8] & 0x0f)) << 8) | buf[pos + 9];
+	p_nit->network_descriptors_length = ((buf[pos + 8] & 0x0f) << 8) | buf[pos + 9];
 
 	pos += 10;
 
