@@ -33,10 +33,11 @@ uint16_t do_gimmick(struct en50221_pmt_object *p_en50221_pmt_object, struct serv
 
 uint16_t do_tps_gimmick(struct en50221_pmt_object *p_en50221_pmt_object, struct service_info *p_si)
 {
+	(void)p_en50221_pmt_object;
+	(void)p_si;
+
 	/*	Move descriptors from stream level to program level.	*/
 	/*	First cross verify whether what we know is right	*/
-	while (p_si->p_pmt->stream_count)
-
 
 	return 0;
 }

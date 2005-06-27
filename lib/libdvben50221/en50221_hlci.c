@@ -113,9 +113,8 @@ static uint16_t copy_en50221_stream_object(struct en50221_stream *p_en50221_stre
 
 static uint16_t copy_en50221_pmt_object(struct service_info *p_si, struct en50221_pmt_object *p_en50221_pmt_object)
 {
-	uint8_t descriptor_count = 0, stream_count = 0, ca_descriptors = 0;
-	uint16_t object_length = 0;
-	struct ca_descriptor *p_descriptor = NULL;
+	int i, stream_count = 0, ca_descriptors = 0, object_length = 0;
+
 	p_en50221_pmt_object->p_en50221_prog_desc = NULL;
 
 	//	Program header
@@ -146,13 +145,12 @@ static uint16_t copy_en50221_pmt_object(struct service_info *p_si, struct en5022
 		return 0;
 	}
 
-	for (descriptor_count = 0; descriptor_count < p_en50221_pmt_object->program_desc_count; descriptor_count++) {
-
-		p_prog_desc = (struct ca_descriptor *) &p_si->p_pmt->p_descriptor[descriptor_count];
+	p_prog_desc = (struct ca_descriptor*)p_si->p_pmt->p_descriptor;
+	for (i = 0; i < p_si->p_pmt->program_desc_count; ++i, ++p_prog_desc) {
 		printf("%s: CA descriptor=[%02x] found, @ [%p], descriptor length=[%02x]\n", __FUNCTION__,
 				p_prog_desc->descriptor_tag, &p_prog_desc, p_prog_desc->descriptor_length);
 
-		if (p_prog_desc[descriptor_count].descriptor_tag == 0x09) {	// Copy only CA descriptors
+		if (p_prog_desc->descriptor_tag == 0x09) {	// Copy only CA descriptors
 			p_en50221_descriptor = (struct ca_descriptor *) &p_descriptor_objects[ca_descriptors];
 			object_length += copy_en50221_descriptor_object(p_en50221_descriptor, p_prog_desc);
 			printf("%s: [%d] CA descriptor copied\n", __FUNCTION__, ca_descriptors);
@@ -185,9 +183,8 @@ static uint16_t copy_en50221_pmt_object(struct service_info *p_si, struct en5022
 }
 
 
-uint16_t set_pmt_command(struct en50221_pmt_object *p_en50221_pmt_object, struct service_info *p_si, uint8_t pmt_command)
+uint16_t set_pmt_command(struct en50221_pmt_object *p_en50221_pmt_object, uint8_t pmt_command)
 {
-	uint8_t loops = 0;
 	uint16_t object_length = 0;
 	uint16_t i = 0, j = 0;
 
@@ -217,7 +214,7 @@ uint16_t set_pmt_command(struct en50221_pmt_object *p_en50221_pmt_object, struct
 
 uint16_t do_en50221_pmt_object(struct en50221_pmt_object *p_en50221_pmt_object, struct service_info *p_si, uint8_t pmt_list_mgmt, uint8_t pmt_command)
 {
-	uint16_t length = 0, object_length = 0;
+	uint16_t object_length = 0;
 	uint32_t asn_1_words = 0;
 	uint8_t i;
 
@@ -229,11 +226,11 @@ uint16_t do_en50221_pmt_object(struct en50221_pmt_object *p_en50221_pmt_object, 
 	printf("%s: CA PMT List Management=[%02x]\n",__FUNCTION__, p_en50221_pmt_object->ca_pmt_list_mgmt);
 
 	// check whether scrambling @program/stream level
-	object_length += set_pmt_command(p_en50221_pmt_object, p_si, pmt_command);
+	object_length += set_pmt_command(p_en50221_pmt_object, pmt_command);
 	printf("%s: Object length=[%d], Total length=[%d]\n", __FUNCTION__, object_length, (object_length / 8));
 	p_en50221_pmt_object->asn_1_length = asn_1_encode((object_length / 8), &asn_1_words);	// convert to bytes
 
-	printf("%s: ASN.1 words=[%lu], Length Array=[ ", __FUNCTION__, asn_1_words);
+	printf("%s: ASN.1 words=[%u], Length Array=[ ", __FUNCTION__, asn_1_words);
 	for (i = 0; i < asn_1_words; i++)
 		printf(" %d ", p_en50221_pmt_object->asn_1_length[i]);
 	printf("]\n");
@@ -277,12 +274,14 @@ uint16_t write_en50221_pmt_object(struct en50221_pmt_object *p_en50221_pmt_objec
 	struct ca_msg *p_ca_msg;
 	uint8_t i, words = 0;
 	uint16_t pos = 0;
-
-	p_ca_msg = (struct ca_msg *) malloc(sizeof (struct ca_msg));
-
 	struct ca_descriptor *p_desc = NULL;
 	struct en50221_stream *p_en50221_stream = NULL;
-	uint32_t test = 0;
+
+	p_ca_msg = (struct ca_msg *) malloc(sizeof (struct ca_msg));
+	if (p_ca_msg == NULL)
+		return 0; // -ENOMEM
+
+	memset(p_ca_msg, 0, sizeof(struct ca_msg));
 
 	// get length of the object
 	object_length = asn_1_decode(p_en50221_pmt_object->asn_1_length);
@@ -331,8 +330,6 @@ uint16_t write_en50221_pmt_object(struct en50221_pmt_object *p_en50221_pmt_objec
 		// breakup size = 255 - (L_APDU_TAG/M_APDU_TAG + length_field)
 		// L_APDU_TAG = 0x80, M_APDU_TAG = 0x00
 	}
-
-	uint8_t *p_asn_1_array = NULL;
 
 	debug_message(p_ca_msg, pos);
 	write_to_slot(p_ca_msg, ca_dev);
