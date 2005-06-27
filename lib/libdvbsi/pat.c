@@ -27,11 +27,9 @@
 static uint16_t parse_descriptor(struct program_descriptor *p_program_descriptor,
 								uint8_t *buf, uint16_t pos)
 {
-	p_program_descriptor->program_number =
-		((p_program_descriptor->program_number | buf[pos + 0]) << 8) | buf[pos + 1];
+	p_program_descriptor->program_number = (buf[pos + 0] << 8) | buf[pos + 1];
 	p_program_descriptor->reserved = buf[pos + 2] >> 5;
-	p_program_descriptor->pid = (
-		(p_program_descriptor->pid | (buf[pos + 2] & 0x1f)) << 8) | buf[pos + 3];
+	p_program_descriptor->pid = ((buf[pos + 2] & 0x1f) << 8) | buf[pos + 3];
 
 //	printf("%s: Program Number=[%d], ", __FUNCTION__,
 //		p_program_descriptor->program_number);
@@ -51,20 +49,15 @@ uint16_t parse_pat(struct pat *p_pat, uint8_t *buf, uint32_t pat_pid, int bytes)
 
 	/*	PAT Header	*/
 	p_pat->table_id = buf[pos + 0];
-	p_pat->section_syntax =
-		p_pat->section_syntax | (buf[pos + 1] & 0x01);
+	p_pat->section_syntax =	buf[pos + 1] & 0x01;
 	p_pat->reserved_1 = (buf[pos + 1] & 0xf0) >> 4;
-	p_pat->section_length =
-		((p_pat->section_length | (buf[pos + 1] & 0x3f)) << 8) | buf[pos + 2];
-	p_pat->transport_stream_id =
-		((p_pat->section_length | buf[pos + 3]) << 8) | buf[pos + 4];
+	p_pat->section_length =	((buf[pos + 1] & 0x3f) << 8) | buf[pos + 2];
+	p_pat->transport_stream_id = (buf[pos + 3] << 8) | buf[pos + 4];
 	p_pat->reserved_2 = buf[pos + 5] >> 6;
-	p_pat->version_number =
-		p_pat->version_number | ((buf[pos + 5] >> 1) & 0x1f);
-	p_pat->current_next =
-		p_pat->current_next | (buf[pos + 5] & 0x01);
-	p_pat->section_number = p_pat->section_number | buf[pos + 6];
-	p_pat->last_section = p_pat->last_section | buf[pos + 7];
+	p_pat->version_number =	(buf[pos + 5] >> 1) & 0x1f;
+	p_pat->current_next = buf[pos + 5] & 0x01;
+	p_pat->section_number = buf[pos + 6];
+	p_pat->last_section = buf[pos + 7];
 
 	p_pat->pat_header_length = pos + 8;
 

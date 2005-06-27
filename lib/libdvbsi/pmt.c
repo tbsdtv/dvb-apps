@@ -35,12 +35,10 @@ static int parse_pmt_header(struct pmt *p_pmt, uint8_t *buf)
 	p_pmt->section_syntax = buf[pos + 1] & 0x80;
 	p_pmt->reserved_1 = (buf[pos + 1] >> 4) & 0x03;
 	p_pmt->section_length = 0;
-	p_pmt->section_length =
-		((p_pmt->section_length | (buf[pos + 1] & 0x0f)) << 8) | buf[pos + 2];
+	p_pmt->section_length = ((buf[pos + 1] & 0x0f) << 8) | buf[pos + 2];
 
 	p_pmt->program_number = 0;
-	p_pmt->program_number =
-		((p_pmt->program_number | buf[pos + 3]) << 8) | buf[pos + 4];
+	p_pmt->program_number =	(buf[pos + 3] << 8) | buf[pos + 4];
 
 	p_pmt->reserved_2 = buf[pos + 5] >> 6;
 	p_pmt->version_number = (buf[pos + 5] >> 1) & 0x1f;
@@ -50,11 +48,10 @@ static int parse_pmt_header(struct pmt *p_pmt, uint8_t *buf)
 	p_pmt->last_section = buf[pos + 7];
 	p_pmt->reserved_3 = buf[pos + 8] >> 5;
 
-	p_pmt->pcr_pid = (((p_pmt->pcr_pid | buf[pos + 8]) & 0x1f) << 8) | buf[pos + 9];
+	p_pmt->pcr_pid = ((buf[pos + 8] & 0x1f) << 8) | buf[pos + 9];
 
 	p_pmt->reserved_4 = buf[pos + 10] >> 4;
-	p_pmt->program_info_length =
-		(((p_pmt->program_info_length | buf[pos + 10]) & 0x0f) << 8) | buf[pos + 11];
+	p_pmt->program_info_length = ((buf[pos + 10] & 0x0f) << 8) | buf[pos + 11];
 
 	printf("%s: Table ID=[%d], Section Length=[%d], Program Number=[%d], "
 		"Section Number=[%d], PCR PID=[%d], Program info length=[%d]\n",
@@ -75,10 +72,10 @@ static uint16_t parse_streams(struct streams *p_streams, uint8_t *buf,
 
 	p_streams->stream_type = buf[pos + 0];
 	p_streams->reserved_1 = buf[pos + 1] >> 5;
-	p_streams->elementary_pid = ((p_streams->elementary_pid | (buf[pos + 1] & 0x1f)) << 8) | buf[pos + 2];
+	p_streams->elementary_pid = ((buf[pos + 1] & 0x1f) << 8) | buf[pos + 2];
 	p_streams->reserved_2 = buf[pos + 3] >> 4;
 	p_streams->es_info_length = 0;
-	p_streams->es_info_length = ((p_streams->es_info_length | (buf[pos + 3] & 0x0f)) << 8) | buf[pos + 4];
+	p_streams->es_info_length = ((buf[pos + 3] & 0x0f) << 8) | buf[pos + 4];
 
 	printf("\n\t%s: Elements=[", __FUNCTION__);
 	for (i = 0; i < (p_streams->es_info_length + 5); i++)
