@@ -174,7 +174,7 @@ static int videoSlowMotion(int fd,int nframes)
 }
 
 #define BUFFY 32768
-#define NFD   2
+#define NFD   3
 static void play_file_av(int filefd, int vfd, int afd)
 {
 	char buf[BUFFY];
