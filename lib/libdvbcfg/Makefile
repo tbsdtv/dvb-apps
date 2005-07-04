@@ -16,7 +16,7 @@ INCLUDES = 	dvbcfg_source.h \
 		dvbcfg_common.h \
 		dvbcfg_multiplex.h
 
-CFLAGS = -I.
+CFLAGS = -I. -I../../include
 
 LIB = libdvbcfg.a
 RANLIB = ranlib

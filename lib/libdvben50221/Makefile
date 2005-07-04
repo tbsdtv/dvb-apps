@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS= -g -Wall -W -I ../libdvbsi $(ARCH)
-CPPFLAGS = -MD -I../libdvbsi -I. $(DEFS)
+CPPFLAGS = -MD -I../libdvbsi -I. -I../../include $(DEFS)
 OBJS = en50221_hlci.o asn_1.o en50221_encode.o gimmick.o
 
 all: $(OBJS) libs
