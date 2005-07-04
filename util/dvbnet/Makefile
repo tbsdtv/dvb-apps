@@ -14,6 +14,8 @@ all: version.h $(TARGET)
 .c.o:
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
+dvbnet.o: version.h
+
 $(TARGET): $(OBJS)
 	$(CC) -o $@ $(OBJS) $(LFLAGS)
 

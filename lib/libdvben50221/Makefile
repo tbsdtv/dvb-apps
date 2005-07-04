@@ -8,7 +8,7 @@ all: $(OBJS) libs
 $(OBJS): %.o : %.c
 	$(CC) -c $(CPPFLAGS) $(CFLAGS) $< -o $@
 
-libs:
+libs: $(OBJS)
 	ar rcs libdvben50221.a en50221_hlci.o asn_1.o en50221_encode.o gimmick.o
 
 clean:

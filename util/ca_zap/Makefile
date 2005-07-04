@@ -9,7 +9,7 @@ TARGETS =ca_zap
 
 all: $(OBJS) $(TARGETS)
 
-ca_zap:
+ca_zap: $(OBJS)
 	$(CC) $(CPPFLAGS) $(CFLAGS) ca_zap ca_zap.o $(LDFLAGS)
 
 clean:

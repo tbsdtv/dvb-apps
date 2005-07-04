@@ -11,7 +11,7 @@ $(OBJS): %.o : %.c
 clean:
 	rm -f *.o *.d *.a
 
-libs:
+libs: $(OBJS)
 	ar rcs libdvbsi.a filter.o pat.o pmt.o si.o descriptor.o channels.o
 
 -include $(wildcard *.d) dummy

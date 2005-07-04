@@ -9,7 +9,7 @@ TARGETS = dst_test
 
 all: $(OBJS) $(TARGETS)
 
-dst_test:
+dst_test: $(OBJS)
 	$(CC) $(CPPFLAGS) $(CFLAGS) dst_test dst_test.o $(LD_FLAGS)
 
 clean:

@@ -39,5 +39,7 @@ install-data:
 
 -include $(wildcard *.d) dummy
 
+atsc_psip_section.h: atsc_psip_section.c
+
 atsc_psip_section.c: atsc_psip_section.pl section_generate.pl
 	perl section_generate.pl atsc_psip_section.pl
