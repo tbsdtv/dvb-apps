@@ -3,7 +3,7 @@
  *
  * Copyright (C) 2000 Marcus Metzler <marcus@convergence.de>
  *                  & Ralph  Metzler <ralph@convergence.de>
-                      for convergence integrated media GmbH
+ *                    for convergence integrated media GmbH
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -112,10 +112,10 @@ typedef struct dmx_filter
 
 struct dmx_sct_filter_params
 {
-	__u16            pid;
+	__u16          pid;
 	dmx_filter_t   filter;
-	__u32            timeout;
-	__u32            flags;
+	__u32          timeout;
+	__u32          flags;
 #define DMX_CHECK_CRC       1
 #define DMX_ONESHOT         2
 #define DMX_IMMEDIATE_START 4
@@ -125,11 +125,11 @@ struct dmx_sct_filter_params
 
 struct dmx_pes_filter_params
 {
-	__u16            pid;
+	__u16          pid;
 	dmx_input_t    input;
 	dmx_output_t   output;
 	dmx_pes_type_t pes_type;
-	__u32            flags;
+	__u32          flags;
 };
 
 
@@ -145,7 +145,7 @@ struct dmx_event
 
 typedef struct dmx_caps {
 	__u32 caps;
-	int num_decoders; 
+	int num_decoders;
 } dmx_caps_t;
 
 typedef enum {
@@ -166,7 +166,7 @@ struct dmx_stc {
 };
 
 
-#define DMX_START                _IO('o', 41) 
+#define DMX_START                _IO('o', 41)
 #define DMX_STOP                 _IO('o', 42)
 #define DMX_SET_FILTER           _IOW('o', 43, struct dmx_sct_filter_params)
 #define DMX_SET_PES_FILTER       _IOW('o', 44, struct dmx_pes_filter_params)
@@ -178,4 +178,3 @@ struct dmx_stc {
 #define DMX_GET_STC              _IOWR('o', 50, struct dmx_stc)
 
 #endif /*_DVBDMX_H_*/
-

@@ -3,7 +3,7 @@
  *
  * Copyright (C) 2000 Marcus Metzler <marcus@convergence.de>
  *                  & Ralph  Metzler <ralph@convergence.de>
-                      for convergence integrated media GmbH
+ *                    for convergence integrated media GmbH
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -30,7 +30,7 @@
 struct dvb_net_if {
 	__u16 pid;
 	__u16 if_num;
-	__u8 feedtype;
+	__u8  feedtype;
 #define DVB_NET_FEEDTYPE_MPE 0	/* multi protocol encapsulation */
 #define DVB_NET_FEEDTYPE_ULE 1	/* ultra lightweight encapsulation */
 };
