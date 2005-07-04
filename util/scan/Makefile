@@ -35,7 +35,7 @@ install-data:
 	mkdir -p $(DESTDIR)$(datadir)/dvb
 	for d in dvb-* atsc ; do test -d $$d || continue ; echo ..... $$d ..... \
 	; mkdir -p $(DESTDIR)$(datadir)/dvb/$$d/ \
-	; cp `find $$d -type f` $(DESTDIR)$(datadir)/dvb/$$d/ ; done
+	; cp `find $$d -type f|grep -v CVS` $(DESTDIR)$(datadir)/dvb/$$d/ ; done
 
 -include $(wildcard *.d) dummy
 

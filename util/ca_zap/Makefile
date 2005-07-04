@@ -15,4 +15,6 @@ ca_zap: $(OBJS)
 clean:
 	$(RM) $(TARGETS) *.o *.d ca_zap
 
+install:
+
 -include $(wildcard *.d) dummy

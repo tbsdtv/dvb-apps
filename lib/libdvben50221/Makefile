@@ -14,4 +14,6 @@ libs: $(OBJS)
 clean:
 	rm -f *.a *.o *.d
 
+install:
+
 -include $(wildcard *.d) dummy

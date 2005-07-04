@@ -15,4 +15,6 @@ dst_test: $(OBJS)
 clean:
 	$(RM) $(TARGETS) *.o dst_test
 
+install:
+
 -include $(wildcard *.d) dummy

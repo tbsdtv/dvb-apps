@@ -14,4 +14,6 @@ clean:
 libs: $(OBJS)
 	ar rcs libdvbsi.a filter.o pat.o pmt.o si.o descriptor.o channels.o
 
+install:
+
 -include $(wildcard *.d) dummy
