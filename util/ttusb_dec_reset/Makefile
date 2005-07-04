@@ -1,7 +1,8 @@
 CC	= gcc
 RM	= rm -f
-CFLAGS	= -g -Wall -O2 $(ARCH)
-CPPFLAGS = $(DEFS)
+CFLAGS  ?= -g -Wall -O2 
+CFLAGS  += $(ARCH)
+CPPFLAGS += $(DEFS)
 LFLAGS	= -g -Wall
 LDFLAGS = -lusb
 bindir  = /usr/local/bin

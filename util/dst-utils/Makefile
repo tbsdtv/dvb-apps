@@ -1,6 +1,7 @@
 CC = gcc
-CFLAGS = -g -O2 -W -Wall -o $(ARCH)
-CPPFLAGS = -MD -I../../lib/libdvbsi -I../../lib/libdvben50221 -I../../include
+CFLAGS ?= -g -O2 -W -Wall
+CFLAGS += $(ARCH)
+CPPFLAGS += -MD -I../../lib/libdvbsi -I../../lib/libdvben50221 -I../../include
 LDFLAGS = -g -O2 -L ../../lib/libdvbsi -ldvbsi -L ../../lib/libdvben50221 -ldvben50221
 RM = rm -f
 
@@ -10,7 +11,7 @@ TARGETS = dst_test
 all: $(OBJS) $(TARGETS)
 
 dst_test: $(OBJS)
-	$(CC) $(CPPFLAGS) $(CFLAGS) dst_test dst_test.o $(LD_FLAGS)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o dst_test dst_test.o $(LD_FLAGS)
 
 clean:
 	$(RM) $(TARGETS) *.o dst_test

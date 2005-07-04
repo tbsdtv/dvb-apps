@@ -1,7 +1,8 @@
 
 CC      = gcc
-CFLAGS  = -g -O2 -Wall $(ARCH)
-CPPFLAGS= -MD -I. -I../../include $(DEFS)
+CFLAGS  ?= -g -O2 -Wall
+CFLAGS  += $(ARCH)
+CPPFLAGS += -MD -I. -I../../include $(DEFS)
 LFLAGS  =
 bindir = /usr/local/bin
 libdir = /usr/local/lib

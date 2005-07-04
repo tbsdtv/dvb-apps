@@ -1,7 +1,8 @@
 
 CC = gcc
-CFLAGS = -g -Wall -O2 $(ARCH)
-CPPFLAGS = -MD -I../../include -I../lib $(DEFS)
+CFLAGS ?= -g -Wall -O2
+CFLAGS +=$(ARCH)
+CPPFLAGS += -MD -I../../include -I../lib $(DEFS)
 LFLAGS = -g -Wall
 DEFS = '-DDATADIR="$(datadir)"'
 bindir = /usr/local/bin

@@ -1,11 +1,11 @@
 CC=gcc
 TARGET=dib3000-watch
 OBJECTS=dib3000-watch.o
-CFLAGS=-c -Wall
+CFLAGS ?= -Wall
 LFLAGS=-lm
 
 .c.o:
-	$(CC) $(CFLAGS) $< -o $@
+	$(CC) -c $(CFLAGS) $< -o $@
 
 all: $(TARGET)
 

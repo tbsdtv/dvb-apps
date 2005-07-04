@@ -1,7 +1,8 @@
 
 CC = gcc
-CFLAGS = -g -Wall -O2 $(ARCH)
-CPPFLAGS = -MD -I../../include -I. $(DEFS)
+CFLAGS ?= -g -Wall -O2
+CFLAGS += $(ARCH)
+CPPFLAGS += -MD -I../../include -I. $(DEFS)
 bindir = /usr/local/bin
 
 OBJS = lnb.o

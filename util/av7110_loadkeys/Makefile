@@ -1,6 +1,7 @@
 CC = gcc
-CFLAGS = -g -Wall -O2 $(ARCH)
-CPPFLAGS = $(DEFS)
+CFLAGS ?= -g -Wall -O2
+CFLAGS += $(ARCH)
+CPPFLAGS += $(DEFS)
 DEFS = '-DDATADIR="$(datadir)"'
 bindir  = /usr/local/bin
 datadir = /usr/local/share

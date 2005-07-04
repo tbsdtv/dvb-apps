@@ -1,8 +1,9 @@
 # Makefile for Linux DVB API Version 3 test programs
 
 CC = gcc
-CFLAGS = -g -O2 -W -Wall -D__user= $(ARCH)
-CPPFLAGS = -I../include $(DEFS)
+CFLAGS ?= -g -O2 -W -Wall
+CFLAGS += -D__user= $(ARCH)
+CPPFLAGS += -I../include $(DEFS)
 
 TARGETS = \
 	diseqc		\
