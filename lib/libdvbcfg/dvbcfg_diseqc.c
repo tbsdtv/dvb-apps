@@ -20,6 +20,8 @@
  */
 
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 #include <errno.h>
 #include "dvbcfg_diseqc.h"
 #include "dvbcfg_common.h"
@@ -249,7 +251,7 @@ struct dvbcfg_diseqc_entry* dvbcfg_diseqc_add_entry(struct dvbcfg_diseqc* diseqc
         return newentry;
 }
 
-int dvbcfg_diseqc_remove_entry(struct dvbcfg_diseqc* diseqc, struct dvbcfg_diseqc_entry* entry)
+void dvbcfg_diseqc_remove_entry(struct dvbcfg_diseqc* diseqc, struct dvbcfg_diseqc_entry* entry)
 {
         struct dvbcfg_diseqc_entry *next;
         struct dvbcfg_diseqc_entry *cur;
@@ -315,8 +317,6 @@ void dvbcfg_diseqc_free(struct dvbcfg_diseqc **diseqcs,
 {
         struct dvbcfg_diseqc *next;
         struct dvbcfg_diseqc *cur;
-        struct dvbcfg_diseqc_entry *entry;
-        struct dvbcfg_diseqc_entry *next_entry;
 
         next = tofree->next;
 

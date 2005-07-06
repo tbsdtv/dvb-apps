@@ -20,6 +20,9 @@
  */
 
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <ctype.h>
 #include "dvbcfg_util.h"
 
 
@@ -28,7 +31,7 @@ int dvbcfg_cleanline(char *line)
         char *tmp;
 
         /* knock off any comments */
-        if (tmp = strchr(line, '#'))
+        if ((tmp = strchr(line, '#')) != 0)
                 *tmp = 0;
 
         /* trim any whitespace */
@@ -102,7 +105,6 @@ char *dvbcfg_nexttoken(char *line)
 char *dvbcfg_strdupandtrim(char *line, int maxchars)
 {
         int length = 0;
-        int count = 0;
         char *result;
 
         if (maxchars == 0) {
@@ -141,7 +143,7 @@ char *dvbcfg_strdupandtrim(char *line, int maxchars)
 
 void dvbcfg_replacechar(char *line, char replace, char with)
 {
-        while (line = strchr(line, replace))
+        while ((line = strchr(line, replace)) != 0)
                 *line++ = with;
 }
 
@@ -218,7 +220,6 @@ char* dvbcfg_lookupsetting(int setting, const struct dvbcfg_setting* settings)
         while(settings->name) {
                 if (setting == settings->value) {
                         return settings->name;
-                        return;
                 }
 
                 settings++;

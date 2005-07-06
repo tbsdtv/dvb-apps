@@ -20,6 +20,8 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 #include <errno.h>
 #include <dvbcfg_common.h>
 #include "dvbcfg_util.h"
@@ -58,7 +60,6 @@ int dvbcfg_source_id_from_string(char* string, struct dvbcfg_source_id* source_i
         int locale_len = 0;
         char* region_start = NULL;
         char* locale_start = NULL;
-        int len;
 
         memset(source_id, 0, sizeof(struct dvbcfg_source_id));
 
@@ -170,7 +171,6 @@ int dvbcfg_umid_from_string(char* string, struct dvbcfg_umid* umid)
 {
         int val;
         char* ptr;
-        int result;
 
         ptr = string;
         if (sscanf(ptr, "%i", &val) != 1)
@@ -232,7 +232,6 @@ char* dvbcfg_gmid_to_string(struct dvbcfg_gmid* gmid)
 
 int dvbcfg_gmid_from_string(char* string, struct dvbcfg_gmid* gmid)
 {
-        int val;
         char* ptr;
         char* tmp;
         int result;
@@ -241,7 +240,7 @@ int dvbcfg_gmid_from_string(char* string, struct dvbcfg_gmid* gmid)
           return -EINVAL;
 
         tmp = dvbcfg_strdupandtrim(string, ptr - string);
-        if (result = dvbcfg_source_id_from_string(tmp, &gmid->source_id)) {
+        if ((result = dvbcfg_source_id_from_string(tmp, &gmid->source_id)) != 0) {
                 free(tmp);
                 return result;
         }
@@ -348,7 +347,7 @@ int dvbcfg_gsid_from_string(char* string, struct dvbcfg_gsid* gsid)
                 return -EINVAL;
 
         /* parse the USID */
-        if (result = dvbcfg_usid_from_string(ptr, &gsid->usid))
+        if ((result = dvbcfg_usid_from_string(ptr, &gsid->usid)) != 0)
                 return result;
 
         /* parse the UMID now */

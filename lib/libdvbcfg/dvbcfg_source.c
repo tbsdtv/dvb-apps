@@ -20,7 +20,9 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <errno.h>
+#include <string.h>
 #include "dvbcfg_source.h"
 #include "dvbcfg_util.h"
 
@@ -30,7 +32,6 @@ int dvbcfg_source_load(char *config_file, struct dvbcfg_source **sources)
         FILE *in;
         char curline[256];
         char *linepos;
-        struct dvbcfg_source *newsource;
         char* source_id;
         int numtokens;
         int error = 0;
@@ -55,7 +56,7 @@ int dvbcfg_source_load(char *config_file, struct dvbcfg_source **sources)
 
                 /* the source_id */
                 if (strchr(linepos, ':'))
-                        return;
+                        continue;
                 source_id = linepos;
                 linepos = dvbcfg_nexttoken(linepos);
 

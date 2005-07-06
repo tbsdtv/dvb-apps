@@ -20,6 +20,9 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
 #include <errno.h>
 #include "dvbcfg_vdrchannel.h"
 #include "dvbcfg_util.h"
@@ -33,8 +36,6 @@ static int parse_fe_setting(char *string, char **nextptr,
                             fe_type_t fe_type);
 static int set_fe_setting(struct dvbcfg_vdrchannel *channel, int code,
                           int value);
-static void render_fe_setting(FILE * out, int code, int value);
-static void outputescapedname(FILE * out, char *string);
 
 
 int dvbcfg_vdrchannel_load(char *config_file,
@@ -50,7 +51,6 @@ int dvbcfg_vdrchannel_load(char *config_file,
         struct dvbcfg_vdrchannel *newchannel;
         char *tmpparamsstring;
         int numtokens;
-        int i;
         int error = 0;
 
         /* open the file */
@@ -90,7 +90,7 @@ int dvbcfg_vdrchannel_load(char *config_file,
                         *tmpptr = 0;
                         tmpptr++;
                 }
-                if (tmpptr = strchr(tmpptr, ';')) {
+                if ((tmpptr = strchr(tmpptr, ';')) != NULL) {
                         tmpchannel.provider_name = tmpptr + 1;
                         *tmpptr = 0;
                 }
@@ -148,7 +148,6 @@ int dvbcfg_vdrchannel_load(char *config_file,
                 /* we can now parse the channel parameters now we know the type of source */
                 while (tmpparamsstring && *tmpparamsstring) {
                         int val;
-                        char *nextptr;
                         int code;
 
                         /* skip any leading space characters */
@@ -175,31 +174,29 @@ int dvbcfg_vdrchannel_load(char *config_file,
                 /* the symbol rate */
                 switch (tmpchannel.fe_type) {
                 case FE_QPSK:
-                        if (sscanf
-                            (linepos, "%d",
-                             &tmpchannel.fe_params.u.qpsk.symbol_rate) !=
-                            1) {
+                        if (sscanf(linepos, "%d", &tmpchannel.fe_params.u.qpsk.symbol_rate) != 1) {
                                 continue;
                         }
                         tmpchannel.fe_params.u.qpsk.symbol_rate *= 1000;
                         break;
 
                 case FE_QAM:
-                        if (sscanf
-                            (linepos, "%d",
-                             &tmpchannel.fe_params.u.qam.symbol_rate) !=
-                            1) {
+                        if (sscanf(linepos, "%d", &tmpchannel.fe_params.u.qam.symbol_rate) != 1) {
                                 continue;
                         }
+                        break;
+
+                default:
+                        break;
                 }
                 linepos = dvbcfg_nexttoken(linepos);
 
                 /* the video PID & optional PCR PID (VPID[+PCRPID]) */
-                if (sscanf(linepos, "%d", &tmpchannel.video_pid) != 1) {
+                if (sscanf(linepos, "%hu", &tmpchannel.video_pid) != 1) {
                         continue;
                 }
-                if (tmpptr = strchr(linepos, '+')) {
-                        if (sscanf(tmpptr + 1, "%d", &tmpchannel.pcr_pid)
+                if ((tmpptr = strchr(linepos, '+')) != NULL) {
+                        if (sscanf(tmpptr + 1, "%hu", &tmpchannel.pcr_pid)
                             != 1) {
                                 continue;
                         }
@@ -207,7 +204,7 @@ int dvbcfg_vdrchannel_load(char *config_file,
                 linepos = dvbcfg_nexttoken(linepos);
 
                 /* the audio PIDs */
-                if (ac3pids = strchr(linepos, ';')) {
+                if ((ac3pids = strchr(linepos, ';')) != NULL) {
                         /* we will parse these in a moment */
                         *ac3pids = 0;
                         ac3pids++;
@@ -229,14 +226,14 @@ int dvbcfg_vdrchannel_load(char *config_file,
                 linepos = dvbcfg_nexttoken(linepos);
 
                 /* the teletext PID */
-                if (sscanf(linepos, "%d", &tmpchannel.teletext_pid) != 1)
+                if (sscanf(linepos, "%hu", &tmpchannel.teletext_pid) != 1)
                         continue;
                 linepos = dvbcfg_nexttoken(linepos);
 
                 /* check for "old format" VDR files */
                 if (numtokens == 9) {
                         /* old format service id */
-                        if (sscanf(linepos, "%d", &tmpchannel.service_id)
+                        if (sscanf(linepos, "%hu", &tmpchannel.service_id)
                             != 1)
                                 continue;
                 } else {        /* "new format" files */
@@ -246,10 +243,7 @@ int dvbcfg_vdrchannel_load(char *config_file,
                         while (tmpptr
                                && (tmpchannel.num_caids <
                                    DVBCFG_VDRCHANNEL_MAXCAIDS)) {
-                                if (sscanf
-                                    (tmpptr, "%d",
-                                     &tmpchannel.caids[tmpchannel.
-                                                       num_caids]) != 1)
+                                if (sscanf(tmpptr, "%hu", &tmpchannel.caids[tmpchannel.num_caids]) != 1)
                                         break;
                                 tmpchannel.num_caids++;
 
@@ -261,28 +255,22 @@ int dvbcfg_vdrchannel_load(char *config_file,
                         linepos = dvbcfg_nexttoken(linepos);
 
                         /* new format service id */
-                        if (sscanf(linepos, "%d", &tmpchannel.service_id)
-                            != 1)
+                        if (sscanf(linepos, "%hu", &tmpchannel.service_id) != 1)
                                 continue;
                         linepos = dvbcfg_nexttoken(linepos);
 
                         /* original network id */
-                        if (sscanf
-                            (linepos, "%d",
-                             &tmpchannel.original_network_id) != 1)
+                        if (sscanf(linepos, "%hu", &tmpchannel.original_network_id) != 1)
                                 continue;
                         linepos = dvbcfg_nexttoken(linepos);
 
                         /* transport stream id */
-                        if (sscanf
-                            (linepos, "%d",
-                             &tmpchannel.transport_stream_id) != 1)
+                        if (sscanf(linepos, "%hu", &tmpchannel.transport_stream_id) != 1)
                                 continue;
                         linepos = dvbcfg_nexttoken(linepos);
 
                         /* radio id */
-                        if (sscanf(linepos, "%d", &tmpchannel.radio_id) !=
-                            1)
+                        if (sscanf(linepos, "%hu", &tmpchannel.radio_id) != 1)
                                 continue;
                         linepos = dvbcfg_nexttoken(linepos);
                 }
@@ -420,7 +408,7 @@ static int readaudiopids(char *line, struct dvbcfg_vdrchannel *channel,
                 struct dvbcfg_vdrchannel_audio *curstream;
 
                 /* if there is another one after this, terminate the string */
-                if (next = strchr(line, ',')) {
+                if ((next = strchr(line, ',')) != NULL) {
                         *next = 0;
                 }
 
@@ -430,7 +418,7 @@ static int readaudiopids(char *line, struct dvbcfg_vdrchannel *channel,
 
                 /* if there is an "=LNG" code, grab that */
                 memset(lang, 0, sizeof(lang));
-                if (equals = strchr(line, '=')) {
+                if ((equals = strchr(line, '=')) != NULL) {
                         strncpy(lang, equals + 1, 3);
                 }
 
@@ -466,7 +454,7 @@ static int readaudiopids(char *line, struct dvbcfg_vdrchannel *channel,
 
 #define PARSEINT(__RESULT, __STRING, __NEXTPTR) \
     errno = 0; \
-    val = strtol(__STRING, *__NEXTPTR, 10); \
+    val = strtol(__STRING, __NEXTPTR, 10); \
     if (errno) return -1;
 
 static int parse_fe_setting(char *string, char **nextptr,
@@ -658,7 +646,7 @@ static int set_fe_setting(struct dvbcfg_vdrchannel *channel, int code,
 {
         if (code == 'I') {
                 channel->fe_params.inversion = value;
-                return;
+                return 0;
         }
 
         switch (channel->fe_type) {
@@ -719,18 +707,10 @@ static int set_fe_setting(struct dvbcfg_vdrchannel *channel, int code,
                             value;
                         break;
                 }
+
+        case FE_ATSC:
+                return -EINVAL;
         }
-}
 
-static void outputescapedname(FILE * out, char *string)
-{
-        char *tmp;
-
-        tmp = strdup(string);
-        if (tmp == NULL)
-                return;
-
-        dvbcfg_replacechar(tmp, ':', '|');
-        fprintf(out, "%s", tmp);
-        free(tmp);
+        return 0;
 }

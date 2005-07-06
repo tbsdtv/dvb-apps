@@ -147,9 +147,8 @@ extern struct dvbcfg_diseqc_entry* dvbcfg_diseqc_add_entry(struct dvbcfg_diseqc*
  *
  * @param diseqc Diseqc to remove from.
  * @param entry dvbcfg_diseqc_entry to remove.
- * @return 0 on success, or nonzero on error.
  */
-extern int dvbcfg_diseqc_remove_entry(struct dvbcfg_diseqc* diseqc, struct dvbcfg_diseqc_entry* entry);
+extern void dvbcfg_diseqc_remove_entry(struct dvbcfg_diseqc* diseqc, struct dvbcfg_diseqc_entry* entry);
 
 /**
  * Find the matching dvcfg_diseqc for a particular source.

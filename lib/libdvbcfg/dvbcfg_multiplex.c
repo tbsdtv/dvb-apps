@@ -20,6 +20,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
+#include <string.h>
+#include <time.h>
 #include <errno.h>
 #include "dvbcfg_multiplex.h"
 #include "dvbcfg_util.h"
@@ -145,7 +148,6 @@ int dvbcfg_multiplex_load(char *config_file,
         char *linepos;
         struct dvbcfg_multiplex *newmultiplex;
         char* value;
-        int numtokens;
         int error = 0;
         int location = LOCATION_SOF;
         int versionok = 0;
@@ -284,13 +286,13 @@ int dvbcfg_multiplex_load(char *config_file,
                 /* deal with the keys depending on the file location */
                 switch(location) {
                 case LOCATION_DVBMULTIPLEXES:
-                        if (value = dvbcfg_iskey(linepos, "version")) {
+                        if ((value = dvbcfg_iskey(linepos, "version")) != NULL) {
                                 if (strcmp(value, "0.1")) {
                                         error = -EINVAL;
                                         goto exit;
                                 }
                                 versionok = 1;
-                        } else if (value = dvbcfg_iskey(linepos, "date")) {
+                        } else if ((value = dvbcfg_iskey(linepos, "date")) != NULL) {
                                 // ignore this
                         } else {
                                 error = -EINVAL;
@@ -299,9 +301,9 @@ int dvbcfg_multiplex_load(char *config_file,
                         break;
 
                 case LOCATION_MULTIPLEX:
-                        if (value = dvbcfg_iskey(linepos, "gmid")) {
+                        if ((value = dvbcfg_iskey(linepos, "gmid")) != NULL) {
                                 tmpgmid = dvbcfg_strdupandtrim(value, -1);
-                        } else if (value = dvbcfg_iskey(linepos, "delivery")) {
+                        } else if ((value = dvbcfg_iskey(linepos, "delivery")) != NULL) {
                                 tmpdelivery = dvbcfg_strdupandtrim(value, -1);
                         } else {
                                 error = -EINVAL;
@@ -310,17 +312,17 @@ int dvbcfg_multiplex_load(char *config_file,
                         break;
 
                 case LOCATION_SERVICE:
-                        if (value = dvbcfg_iskey(linepos, "usid")) {
+                        if ((value = dvbcfg_iskey(linepos, "usid")) != NULL) {
                                 tmpusid = dvbcfg_strdupandtrim(value, -1);
-                        } else if (value = dvbcfg_iskey(linepos, "name")) {
+                        } else if ((value = dvbcfg_iskey(linepos, "name")) != NULL) {
                                 tmpname = dvbcfg_strdupandtrim(value, -1);
-                        } else if (value = dvbcfg_iskey(linepos, "flags")) {
+                        } else if ((value = dvbcfg_iskey(linepos, "flags")) != NULL) {
                                 tmpflags = dvbcfg_strdupandtrim(value, -1);
-                        } else if (value = dvbcfg_iskey(linepos, "ca_systems")) {
+                        } else if ((value = dvbcfg_iskey(linepos, "ca_systems")) != NULL) {
                                 tmpca_systems = dvbcfg_strdupandtrim(value, -1);
-                        } else if (value = dvbcfg_iskey(linepos, "zap_pids")) {
+                        } else if ((value = dvbcfg_iskey(linepos, "zap_pids")) != NULL) {
                                 tmpzap_pids = dvbcfg_strdupandtrim(value, -1);
-                        } else if (value = dvbcfg_iskey(linepos, "pmt_extra")) {
+                        } else if ((value = dvbcfg_iskey(linepos, "pmt_extra")) != NULL) {
                                 tmppmt_extra = dvbcfg_strdupandtrim(value, -1);
                         } else {
                                 error = -EINVAL;
@@ -713,7 +715,7 @@ int dvbcfg_multiplex_save(char *config_file, struct dvbcfg_multiplex *multiplexe
 
         fprintf(out, "[dvbmultiplexes]\n");
         fprintf(out, "version=0.1\n");
-        fprintf(out, "date=%i\n", time(NULL));
+        fprintf(out, "date=%lu\n", time(NULL));
         fprintf(out, "\n");
 
         while (multiplexes) {
@@ -921,7 +923,6 @@ struct dvbcfg_service* dvbcfg_multiplex_add_service(struct dvbcfg_multiplex* mul
                                                     uint32_t service_flags)
 {
         struct dvbcfg_usid usid;
-        struct dvbcfg_service* service;
 
         if (dvbcfg_usid_from_string(usidstr, &usid))
                return NULL;
