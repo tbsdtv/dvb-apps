@@ -146,7 +146,7 @@ exit:
 int dvbcfg_diseqc_save(char *config_file, struct dvbcfg_diseqc *diseqcs)
 {
         FILE *out;
-        char polarization;
+        char polarization = 'H';
         struct dvbcfg_diseqc_entry *entry;
         char* source_id;
 

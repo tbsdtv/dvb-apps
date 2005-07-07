@@ -375,7 +375,7 @@ int dvbcfg_zapchannel_load(char *config_file, struct dvbcfg_zapchannel **zapchan
 int dvbcfg_zapchannel_save(char *config_file, struct dvbcfg_zapchannel *zapchannels)
 {
         FILE *out;
-        char polarization;
+        char polarization = 'h';
 
         /* open the file */
         out = fopen(config_file, "w");

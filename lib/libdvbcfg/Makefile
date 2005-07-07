@@ -16,7 +16,8 @@ INCLUDES = 	dvbcfg_source.h \
 		dvbcfg_common.h \
 		dvbcfg_multiplex.h
 
-CFLAGS += -I. -I../../include -Wall -Wstrict-prototypes -Wshadow -Wpointer-arith
+CFLAGS ?= -O2 -g -Wall -Wstrict-prototypes -Wshadow -Wpointer-arith
+CPPFLAGS = -I. -I../../include
 
 LIB = libdvbcfg.a
 RANLIB = ranlib

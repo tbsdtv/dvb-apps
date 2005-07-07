@@ -146,7 +146,7 @@ int dvbcfg_multiplex_load(char *config_file,
         FILE *in;
         char curline[256];
         char *linepos;
-        struct dvbcfg_multiplex *newmultiplex;
+        struct dvbcfg_multiplex *newmultiplex = NULL;
         char* value;
         int error = 0;
         int location = LOCATION_SOF;
@@ -703,7 +703,7 @@ int dvbcfg_multiplex_save(char *config_file, struct dvbcfg_multiplex *multiplexe
         FILE *out;
         char* umid;
         char* usid;
-        char polarization;
+        char polarization = 'H';
         char* source_id;
         struct dvbcfg_service* service;
         int i;
@@ -1353,7 +1353,7 @@ restart_differentiator_service:
 
 uint32_t dvbcfg_multiplex_calculate_differentiator(struct dvbcfg_multiplex* multiplex)
 {
-        uint32_t tmp;
+        uint32_t tmp = 0;
 
         switch(multiplex->source->source_id.source_type) {
         case DVBCFG_SOURCETYPE_DVBS:
