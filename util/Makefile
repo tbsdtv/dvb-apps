@@ -1,6 +1,6 @@
 # Makefile for linuxtv.org dvb-apps/util
 
-%:: FORCE
+all %::
 	$(MAKE) -C lib $(MAKECMDGOALS)
 	$(MAKE) -C szap $(MAKECMDGOALS)
 	$(MAKE) -C ca_zap $(MAKECMDGOALS)
@@ -11,4 +11,3 @@
 	$(MAKE) -C av7110_loadkeys $(MAKECMDGOALS)
 	$(MAKE) -C ttusb_dec_reset $(MAKECMDGOALS)
 	$(MAKE) -C dst-utils $(MAKECMDGOALS)
-FORCE:
