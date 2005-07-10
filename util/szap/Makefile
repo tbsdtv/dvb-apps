@@ -43,6 +43,11 @@ install-bin:
 	mkdir -p $(DESTDIR)$(bindir)/
 	for i in $(TARGETS) ; do cp $$i $(DESTDIR)$(bindir)/ ; done
 install-data:
+	test "$(datadir)/" != "/"
+	mkdir -p $(DESTDIR)$(datadir)/dvb/zap
+	for d in dvb-{s,c,t} atsc ; do test -d channels-conf/$$d || continue ; echo ..... $$d ..... \
+	; mkdir -p $(DESTDIR)$(datadir)/dvb/zap/$$d/ \
+	; cp `find channels-conf/$$d -type f|grep -v CVS` $(DESTDIR)$(datadir)/dvb/zap/$$d/ ; done
 
 -include $(wildcard *.d) dummy
 
