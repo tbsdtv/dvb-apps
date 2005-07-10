@@ -1,2 +1,4 @@
 *.d
 dvbscan
+atscscan
+atsc_psip_section.[ch]
