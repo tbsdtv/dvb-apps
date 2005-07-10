@@ -9,29 +9,73 @@
 #include <sys/poll.h>
 #include <sys/time.h>
 #include <string.h>
+#include <limits.h>
 
 #include <linux/dvb/dmx.h>
 
 #define BSIZE 188
 
-int pidt[0x2001];
+static int pidt[0x2001];
+
+static void usage(FILE *output)
+{
+	fprintf(output,
+		"Usage: dvbtraffic [OPTION]...\n"
+		"Options:\n"
+		"	-a N	use DVB /dev/dvb/adapterN/\n"
+		"	-d N	use DVB /dev/dvb/adapter?/demuxN\n"
+		"	-h	display this help\n");
+}
 
 int main(int argc, char **argv)
 {
-	int fd, ffd, packets = 0;
+	char demux_devname[PATH_MAX], dvr_devname[PATH_MAX];
 	struct timeval startt;
 	struct dmx_pes_filter_params flt;
-	char *search;
-	unsigned char buffer[BSIZE];
+	int adapter = 0, demux = 0;
+	char *search = NULL;
+	int fd, ffd, packets = 0;
+	int opt;
 
-	fd = open("/dev/dvb/adapter0/dvr0", O_RDONLY);
+	while ((opt = getopt(argc, argv, "a:d:hs:")) != -1) {
+		switch (opt) {
+		case 'a':
+			adapter = atoi(optarg);
+			break;
+		case 'd':
+			demux = atoi(optarg);
+			break;
+		case 'h':
+			usage(stdout);
+			exit(0);
+		case 's':
+			search = strdup(optarg);
+			break;
+		default:
+			usage(stderr);
+			exit(1);
+		}
+	}
+
+	snprintf(demux_devname, sizeof demux_devname,
+		 "/dev/dvb/adapter%d/demux%d", adapter, demux);
+	snprintf(dvr_devname, sizeof dvr_devname,
+		 "/dev/dvb/adapter%d/dvr%d", adapter, demux);
+
+	fd = open(dvr_devname, O_RDONLY);
+	if (fd < 0) {
+		fprintf(stderr, "dvbtraffic: Could not open dvr device '%s': %m\n",
+			dvr_devname);
+		exit(1);
+	}
 
 	ioctl(fd, DMX_SET_BUFFER_SIZE, 1024 * 1024);
 
-	ffd = open("/dev/dvb/adapter0/demux0", O_RDWR);
+	ffd = open(demux_devname, O_RDWR);
 	if (ffd < 0) {
-		perror("/dev/dvb/adapter0/demux0");
-		return -fd;
+		fprintf(stderr, "dvbtraffic: Could not open demux device '%s': %m\n",
+			demux_devname);
+		exit(1);
 	}
 
 	flt.pid = 0x2000;
@@ -52,19 +96,17 @@ int main(int argc, char **argv)
 
 	gettimeofday(&startt, 0);
 
-	if (argc > 1)
-		search = argv[1];
-	else
-		search = 0;
-
 	while (1) {
-		int pid, r, ok;
-		if ((r = read(fd, buffer, 188)) <= 0) {
+		unsigned char buffer[BSIZE];
+		int pid, ok;
+		ssize_t r;
+
+		if ((r = read(fd, buffer, BSIZE)) <= 0) {
 			perror("read");
 			break;
 		}
-		if (r != 188) {
-			printf("only read %d\n", r);
+		if (r != BSIZE) {
+			fprintf(stderr, "dvbtraffic: only read %zd bytes\n", r);
 			break;
 		}
 		if (buffer[0] != 0x47) {
