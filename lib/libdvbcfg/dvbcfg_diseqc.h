@@ -105,7 +105,7 @@ struct dvbcfg_diseqc {
  * diseqc will be ignored.
  * @return 0 on success, or nonzero error code on failure.
  */
-extern int dvbcfg_diseqc_load(char *config_file,
+extern int dvbcfg_diseqc_load(const char *config_file,
                               struct dvbcfg_source** sources,
                               struct dvbcfg_diseqc** diseqcs,
                               int create_sources);
@@ -117,7 +117,7 @@ extern int dvbcfg_diseqc_load(char *config_file,
  * @param diseqcs Pointer to the list of diseqcs to save.
  * @return 0 on success, or nonzero error code on failure.
  */
-extern int dvbcfg_diseqc_save(char *config_file,
+extern int dvbcfg_diseqc_save(const char *config_file,
                               struct dvbcfg_diseqc *diseqcs);
 
 /**

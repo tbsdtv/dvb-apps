@@ -108,7 +108,8 @@ static const struct dvbcfg_setting atsc_modulation_list[] = {
 };
 
 
-int dvbcfg_zapchannel_load(char *config_file, struct dvbcfg_zapchannel **zapchannels)
+int dvbcfg_zapchannel_load(const char *config_file,
+			   struct dvbcfg_zapchannel **zapchannels)
 {
         FILE *in;
         char curline[256];
@@ -372,7 +373,8 @@ int dvbcfg_zapchannel_load(char *config_file, struct dvbcfg_zapchannel **zapchan
         return error;
 }
 
-int dvbcfg_zapchannel_save(char *config_file, struct dvbcfg_zapchannel *zapchannels)
+int dvbcfg_zapchannel_save(const char *config_file,
+			   struct dvbcfg_zapchannel *zapchannels)
 {
         FILE *out;
         char polarization = 'h';

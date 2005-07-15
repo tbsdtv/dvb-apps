@@ -27,7 +27,7 @@
 #include "dvbcfg_common.h"
 #include "dvbcfg_util.h"
 
-int dvbcfg_diseqc_load(char *config_file,
+int dvbcfg_diseqc_load(const char *config_file,
                        struct dvbcfg_source** sources,
                        struct dvbcfg_diseqc** diseqcs,
                        int create_sources)
@@ -143,7 +143,8 @@ exit:
         return error;
 }
 
-int dvbcfg_diseqc_save(char *config_file, struct dvbcfg_diseqc *diseqcs)
+int dvbcfg_diseqc_save(const char *config_file,
+		       struct dvbcfg_diseqc *diseqcs)
 {
         FILE *out;
         char polarization = 'H';

@@ -76,7 +76,7 @@ struct dvbcfg_adapter {
  * source will be ignored.
  * @return 0 on success, or nonzero error code on failure.
  */
-extern int dvbcfg_adapter_load(char *config_file,
+extern int dvbcfg_adapter_load(const char *config_file,
                                struct dvbcfg_source** sources,
                                struct dvbcfg_adapter **adapters,
                                int create_sources);
@@ -88,7 +88,7 @@ extern int dvbcfg_adapter_load(char *config_file,
  * @param adapters Pointer to the list of adapters to save.
  * @return 0 on success, or nonzero error code on failure.
  */
-extern int dvbcfg_adapter_save(char *config_file,
+extern int dvbcfg_adapter_save(const char *config_file,
                                struct dvbcfg_adapter *adapters);
 
 /**

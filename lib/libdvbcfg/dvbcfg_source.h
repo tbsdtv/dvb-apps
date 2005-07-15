@@ -62,7 +62,7 @@ struct dvbcfg_source {
  * the loaded sources will be appended to it.
  * @return 0 on success, or nonzero error code on failure.
  */
-extern int dvbcfg_source_load(char *config_file,
+extern int dvbcfg_source_load(const char *config_file,
                               struct dvbcfg_source **sources);
 
 /**
@@ -72,7 +72,7 @@ extern int dvbcfg_source_load(char *config_file,
  * @param sources Pointer to the list of sources to save.
  * @return 0 on success, or nonzero error code on failure.
  */
-extern int dvbcfg_source_save(char *config_file,
+extern int dvbcfg_source_save(const char *config_file,
                               struct dvbcfg_source *sources);
 
 /**

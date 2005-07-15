@@ -27,7 +27,8 @@
 #include "dvbcfg_util.h"
 
 
-int dvbcfg_source_load(char *config_file, struct dvbcfg_source **sources)
+int dvbcfg_source_load(const char *config_file,
+		       struct dvbcfg_source **sources)
 {
         FILE *in;
         char curline[256];
@@ -73,7 +74,8 @@ exit:
         return error;
 }
 
-int dvbcfg_source_save(char *config_file, struct dvbcfg_source *sources)
+int dvbcfg_source_save(const char *config_file,
+		       struct dvbcfg_source *sources)
 {
         FILE *out;
         char* tmp;

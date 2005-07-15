@@ -138,7 +138,7 @@ static int add_pid(int* count, struct dvbcfg_pid** pids, int pid, int type);
 static int remove_pid(int* count, struct dvbcfg_pid** pids, int pid, int type);
 
 
-int dvbcfg_multiplex_load(char *config_file,
+int dvbcfg_multiplex_load(const char *config_file,
                           struct dvbcfg_source** sources,
                           struct dvbcfg_multiplex** multiplexes,
                           int create_sources)
@@ -698,7 +698,8 @@ static int parse_pids(struct dvbcfg_multiplex* multiplex, struct dvbcfg_service*
         return 0;
 }
 
-int dvbcfg_multiplex_save(char *config_file, struct dvbcfg_multiplex *multiplexes)
+int dvbcfg_multiplex_save(const char *config_file,
+			  struct dvbcfg_multiplex *multiplexes)
 {
         FILE *out;
         char* umid;

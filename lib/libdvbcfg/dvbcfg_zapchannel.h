@@ -48,7 +48,7 @@ struct dvbcfg_zapchannel
  * the loaded channels will be appended to it.
  * @return 0 on success, or nonzero error code on failure.
  */
-extern int dvbcfg_zapchannel_load(char *config_file,
+extern int dvbcfg_zapchannel_load(const char *config_file,
                                   struct dvbcfg_zapchannel **channels);
 
 /**
@@ -58,7 +58,7 @@ extern int dvbcfg_zapchannel_load(char *config_file,
  * @param sources Pointer to the list of channels to save.
  * @return 0 on success, or nonzero error code on failure.
  */
-extern int dvbcfg_zapchannel_save(char *config_file,
+extern int dvbcfg_zapchannel_save(const char *config_file,
                                   struct dvbcfg_zapchannel *channels);
 
 /**

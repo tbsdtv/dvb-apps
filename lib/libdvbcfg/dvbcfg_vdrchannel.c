@@ -38,7 +38,7 @@ static int set_fe_setting(struct dvbcfg_vdrchannel *channel, int code,
                           int value);
 
 
-int dvbcfg_vdrchannel_load(char *config_file,
+int dvbcfg_vdrchannel_load(const char *config_file,
                            struct dvbcfg_vdrchannel **channels)
 {
         FILE *in;

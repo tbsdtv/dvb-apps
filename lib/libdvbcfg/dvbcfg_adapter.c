@@ -28,7 +28,7 @@
 #include "dvbcfg_util.h"
 
 
-int dvbcfg_adapter_load(char *config_file,
+int dvbcfg_adapter_load(const char *config_file,
                         struct dvbcfg_source** sources,
                         struct dvbcfg_adapter **adapters,
                         int create_sources)
@@ -115,7 +115,8 @@ exit:
         return error;
 }
 
-int dvbcfg_adapter_save(char *config_file, struct dvbcfg_adapter *adapters)
+int dvbcfg_adapter_save(const char *config_file,
+			struct dvbcfg_adapter *adapters)
 {
         FILE *out;
         char* source_id;

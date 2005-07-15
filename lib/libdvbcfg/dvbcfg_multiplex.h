@@ -198,7 +198,7 @@ struct dvbcfg_multiplex {
  * multiplex will be ignored.
  * @return 0 on success, or nonzero error code on failure.
  */
-extern int dvbcfg_multiplex_load(char *config_file,
+extern int dvbcfg_multiplex_load(const char *config_file,
                                  struct dvbcfg_source** sources,
                                  struct dvbcfg_multiplex** multiplexes,
                                  int create_sources);
@@ -210,7 +210,7 @@ extern int dvbcfg_multiplex_load(char *config_file,
  * @param multiplexes Pointer to the list of multiplexes to save.
  * @return 0 on success, or nonzero error code on failure.
  */
-extern int dvbcfg_multiplex_save(char *config_file,
+extern int dvbcfg_multiplex_save(const char *config_file,
                                  struct dvbcfg_multiplex* multiplexes);
 
 /**

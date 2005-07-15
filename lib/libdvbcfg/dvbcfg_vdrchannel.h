@@ -70,7 +70,7 @@ struct dvbcfg_vdrchannel {
  * the loaded channels will be appended to it.
  * @return 0 on success, or nonzero error code on failure.
  */
-extern int dvbcfg_vdrchannel_load(char *config_file,
+extern int dvbcfg_vdrchannel_load(const char *config_file,
                                  struct dvbcfg_vdrchannel **channels);
 
 /**
