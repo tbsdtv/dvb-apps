@@ -82,7 +82,7 @@ int dvbcfg_source_id_from_string(char* string, struct dvbcfg_source_id* source_i
 
 	network_start++;
 	network_len = strlen(network_start);
-        region_start = strchr(string, '-');
+        region_start = strchr(network_start, '-');
         if (region_start) {
                 region_start++;
                 region_len = strlen(region_start);
