@@ -40,7 +40,7 @@ int dvbcfg_source_load(const char *config_file,
         /* open the file */
         in = fopen(config_file, "r");
         if (in == NULL)
-                return errno;
+                return -errno;
 
         while (fgets(curline, sizeof(curline), in)) {
                 linepos = curline;
@@ -83,7 +83,7 @@ int dvbcfg_source_save(const char *config_file,
         /* open the file */
         out = fopen(config_file, "w");
         if (out == NULL)
-                return errno;
+                return -errno;
 
         while (sources) {
                 tmp = dvbcfg_source_id_to_string(&sources->source_id);

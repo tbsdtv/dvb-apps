@@ -164,7 +164,7 @@ int dvbcfg_multiplex_load(const char *config_file,
         /* open the file */
         in = fopen(config_file, "r");
         if (in == NULL)
-                return errno;
+                return -errno;
 
         while (1) {
                 if (fgets(curline, sizeof(curline), in) == NULL) {
@@ -712,7 +712,7 @@ int dvbcfg_multiplex_save(const char *config_file,
         /* open the file */
         out = fopen(config_file, "w");
         if (out == NULL)
-                return errno;
+                return -errno;
 
         fprintf(out, "[dvbmultiplexes]\n");
         fprintf(out, "version=0.1\n");

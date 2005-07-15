@@ -49,7 +49,7 @@ int dvbcfg_diseqc_load(const char *config_file,
         /* open the file */
         in = fopen(config_file, "r");
         if (in == NULL)
-                return errno;
+                return -errno;
 
         while (fgets(curline, sizeof(curline), in)) {
                 linepos = curline;
@@ -154,7 +154,7 @@ int dvbcfg_diseqc_save(const char *config_file,
         /* open the file */
         out = fopen(config_file, "w");
         if (out == NULL)
-                return errno;
+                return -errno;
 
         while (diseqcs) {
 

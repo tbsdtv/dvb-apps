@@ -125,7 +125,7 @@ int dvbcfg_zapchannel_load(const char *config_file,
         /* open the file */
         in = fopen(config_file, "r");
         if (in == NULL)
-                return errno;
+                return -errno;
 
         /* move to the tail entry */
         curzapchannel = *zapchannels;
@@ -382,7 +382,7 @@ int dvbcfg_zapchannel_save(const char *config_file,
         /* open the file */
         out = fopen(config_file, "w");
         if (out == NULL)
-                return errno;
+                return -errno;
 
         while (zapchannels) {
                 fprintf(out, "%s:", zapchannels->name);

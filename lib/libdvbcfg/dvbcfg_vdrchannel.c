@@ -56,7 +56,7 @@ int dvbcfg_vdrchannel_load(const char *config_file,
         /* open the file */
         in = fopen(config_file, "r");
         if (in == NULL)
-                return errno;
+                return -errno;
 
         /* move to the tail entry */
         curchannel = *channels;
