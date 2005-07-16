@@ -69,7 +69,7 @@ struct dvbcfg_source_backend {
 /**
  * Convenience method to load all sources from a backend.
  *
- * @param config_file Config filename to load.
+ * @param backend Backend to use.
  * @param sources Where to put the pointer to the start of the loaded sources.
  * If NULL, a new list will be created, if it points to an already initialised
  * list, the loaded sources will be appended to it.
@@ -81,7 +81,7 @@ extern int dvbcfg_source_load(struct dvbcfg_source_backend *backend,
 /**
  * Convenience method to store all sources to a backend.
  *
- * @param config_file Config filename to save.
+ * @param backend Backend to use.
  * @param sources Pointer to the list of sources to save.
  * @return 0 on success, or nonzero error code on failure.
  */
