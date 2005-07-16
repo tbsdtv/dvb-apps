@@ -28,43 +28,11 @@
 #include <dvbcfg_source.h>
 
 /**
- * The dvbcfg_diseqc file defines DISEQC command sequences to use for DVBS channels.
- * A channel is matched to a command sequence by matching its source_id, polarization, and if its
- * frequency is less than the SLOF for the command (if more than one command is a candidate because
- * the frequency is less than several SLOFs, the one with the lowest SLOF is chosen).
- *
- * The file consists of a set of lines as follows:
- *
- * <source_id> <slof> <polarization> <lof> <diseqc command>
- *
- * <source_id> Should correspond to an entry in the dvbcfg_sources file. In this file, the special source_id
- * "*" is used to allow a set of default diseqc entries to be specified.
- * <slof> Is the switching frequency for this entry (the maximum frequency this entry allows). It should be in MHz.
- * <polarization> Is the polarization for this entry - one of 'H','V','L', or 'R'.
- * <lof> The frequency (in MHz) to subtract from the channel frequency if this entry matches.
- * <diseqc command> The diseqc command to execute if this entry matches.
- *
- * A diseqc command consists of a sequence of the following codes, separated by whitespace:
- * t        - turn 22kHz tone off.
- * T        - turn 22kHz tone on.
- * _        - set voltage to 0v (i.e. off).
- * v        - set voltage to 13v.
- * V        - set voltage to 18v.
- * +        - Enable high LNB voltage.
- * -        - Disable high LNB voltage.
- * A        - send DISEQC mini command A.
- * B        - send DISEQC mini command B.
- * Wii      - Delay for ii milliseconds.
- * [XX ...] - Send a diseqc master command. The command may be up to 6 bytes long, each byte must be in hex-ascii.
- *
- * Comments begin with '#' - any characters after this will be ignored
- * to the end of the line.
- *
- * Examples:
- * S19.2E  11700 V  9750  t v W15 [E0 10 38 F0] W15 A W15 t
- * S19.2E  99999 V 10600  t v W15 [E0 10 38 F1] W15 A W15 T
- * S19.2E  11700 H  9750  t V W15 [E0 10 38 F2] W15 A W15 t
- * S19.2E  99999 H 10600  t V W15 [E0 10 38 F3] W15 A W15 T
+ * dvbcfg_diseqc defines DISEQC command sequences to use for DVBS channels.
+ * A channel is matched to a command sequence by matching its source_id,
+ * polarization, and if its frequency is less than the SLOF for the command
+ * (if more than one command is a candidate because the frequency is less than
+ * several SLOFs, the one with the lowest SLOF is chosen).
  */
 
 /**
@@ -92,32 +60,51 @@ struct dvbcfg_diseqc {
         struct dvbcfg_diseqc *next;     /* NULL=> last entry */
 };
 
+/**
+ * Diseqc backend API.
+ */
+struct dvbcfg_diseqc_backend {
+        /**
+         * Loads a single diseqc from the backend and add to the supplied list.
+         *
+         * @param backend Pointer to the backend structure concerned.
+         * @param diseqcs Pointer to the list of diseqcs.
+         * @return 0 on success, <0 on error, or 1 on end of file.
+         */
+        int (*get)(struct dvbcfg_diseqc_backend* backend,
+                   struct dvbcfg_diseqc** diseqcs);
+
+        /**
+         * Stores a single diseqc to the backend.
+         *
+         * @param backend Pointer to the backend structure concerned.
+         * @param diseqc Diseqc to store.
+         * @return 0 on success, <0 on error.
+         */
+        int (*put)(struct dvbcfg_diseqc_backend* backend,
+                   struct dvbcfg_diseqc* diseqc);
+};
 
 /**
- * Load diseqcs from a config file.
+ * Convenience method to load all diseqcs from a backend.
  *
  * @param config_file Config filename to load.
- * @param sources List of known dvbcfg_source structures.
- * @param diseqcs Where to put the pointer to the start of the loaded
- * diseqcs. If NULL, a new list will be created, if it points to an already initialised list,
- * the loaded diseqcs will be appended to it.
- * @param create_sources If 1, and a diseqc refers to an unknown source, the unknown source will be created. If 0, the
- * diseqc will be ignored.
+ * @param sources Where to put the pointer to the start of the loaded sources.
+ * If NULL, a new list will be created, if it points to an already initialised
+ * list, the loaded sources will be appended to it.
  * @return 0 on success, or nonzero error code on failure.
  */
-extern int dvbcfg_diseqc_load(const char *config_file,
-                              struct dvbcfg_source** sources,
-                              struct dvbcfg_diseqc** diseqcs,
-                              int create_sources);
+extern int dvbcfg_diseqc_load(struct dvbcfg_diseqc_backend *backend,
+                              struct dvbcfg_diseqc **diseqcs);
 
 /**
- * Save diseqcs to a config file.
+ * Convenience method to store all sources to a backend.
  *
  * @param config_file Config filename to save.
- * @param diseqcs Pointer to the list of diseqcs to save.
+ * @param sources Pointer to the list of sources to save.
  * @return 0 on success, or nonzero error code on failure.
  */
-extern int dvbcfg_diseqc_save(const char *config_file,
+extern int dvbcfg_diseqc_save(struct dvbcfg_diseqc_backend *backend,
                               struct dvbcfg_diseqc *diseqcs);
 
 /**
@@ -127,20 +114,25 @@ extern int dvbcfg_diseqc_save(const char *config_file,
  * @param source The source of the diseqc.
  * @return The new dvbcfg_adapter structure, or NULL on error.
  */
-extern struct dvbcfg_diseqc* dvbcfg_diseqc_new(struct dvbcfg_diseqc** diseqcs, struct dvbcfg_source* source);
+extern struct dvbcfg_diseqc* dvbcfg_diseqc_new(struct dvbcfg_diseqc** diseqcs,
+                                               struct dvbcfg_source* source);
 
 /**
  * Add a new entry to a diseqc.
  *
  * @param diseqc Diseqc to add to.
- * @param slof Is the switching frequency for this entry (the maximum frequency this entry allows). It should be in MHz.
+ * @param slof Is the switching frequency for this entry (the maximum frequency
+ * this entry allows). It should be in MHz.
  * @param polarization Is the polarization for this entry (one of DVBCFG_POLARIZATION_*).
  * @param lof The frequency (in MHz) to subtract from the channel frequency.
  * @param command The diseqc command to execute.
  * @return The new dvbcfg_diseqc_entry structure, or NULL on error.
  */
 extern struct dvbcfg_diseqc_entry* dvbcfg_diseqc_add_entry(struct dvbcfg_diseqc* diseqc,
-                                                           uint32_t slof, uint8_t polarization, uint32_t lof, char *command);
+                                                           uint32_t slof,
+                                                           uint8_t polarization,
+                                                           uint32_t lof,
+                                                           char *command);
 
 /**
  * Remove an entry from a diseqc.
@@ -148,7 +140,8 @@ extern struct dvbcfg_diseqc_entry* dvbcfg_diseqc_add_entry(struct dvbcfg_diseqc*
  * @param diseqc Diseqc to remove from.
  * @param entry dvbcfg_diseqc_entry to remove.
  */
-extern void dvbcfg_diseqc_remove_entry(struct dvbcfg_diseqc* diseqc, struct dvbcfg_diseqc_entry* entry);
+extern void dvbcfg_diseqc_remove_entry(struct dvbcfg_diseqc* diseqc,
+                                       struct dvbcfg_diseqc_entry* entry);
 
 /**
  * Find the matching dvcfg_diseqc for a particular source.
@@ -157,12 +150,15 @@ extern void dvbcfg_diseqc_remove_entry(struct dvbcfg_diseqc* diseqc, struct dvbc
  * @param source source concerned.
  * @return A dvbcfg_diseqc structure if found, or NULL if not.
  */
-extern struct dvbcfg_diseqc *dvbcfg_diseqc_find(struct dvbcfg_diseqc* diseqcs, struct dvbcfg_source* source);
+extern struct dvbcfg_diseqc *dvbcfg_diseqc_find(struct dvbcfg_diseqc* diseqcs,
+                                                struct dvbcfg_source* source);
 
 /**
- * Find the matching dvcfg_diseqc_entry within a source for a particular frequency/polarization.
+ * Find the matching dvcfg_diseqc_entry within a source for a particular
+ * frequency/polarization.
  *
- * @param diseqcs Pointer to the dvbcfg_diseqc previously found with dvbcfg_diseqc_find().
+ * @param diseqcs Pointer to the dvbcfg_diseqc previously found with
+ * dvbcfg_diseqc_find().
  * @param frequency Frequency concerned.
  * @param polarization Polarization concerned.
  * @return A dvbcfg_diseqc_entry structure if found, or NULL if not.
@@ -187,4 +183,4 @@ extern void dvbcfg_diseqc_free(struct dvbcfg_diseqc **diseqcs,
  */
 extern void dvbcfg_diseqc_free_all(struct dvbcfg_diseqc *diseqcs);
 
-#endif                          // DVBCFG_DISEQC_H
+#endif
