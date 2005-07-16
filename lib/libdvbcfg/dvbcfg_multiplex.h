@@ -151,6 +151,8 @@ struct dvbcfg_pid {
 struct dvbcfg_service {
         struct dvbcfg_usid usid;
         char* name;
+        char* short_name;               /* can be NULL */
+        char* provider_name;            /* can be NULL */
         uint32_t service_flags;
 
         uint16_t* ca_systems;
@@ -162,7 +164,7 @@ struct dvbcfg_service {
         struct dvbcfg_pid* pmt_extra;
         int pmt_extra_count;
 
-        struct dvbcfg_service *next;     /* NULL=> this is the last entry */
+        struct dvbcfg_service *next;    /* NULL=> this is the last entry */
 };
 
 
@@ -243,12 +245,16 @@ extern struct dvbcfg_multiplex* dvbcfg_multiplex_new2(struct dvbcfg_multiplex** 
  *
  * @param multiplex Multiplex to add to.
  * @param name Name of the service.
+ * @param short_name Short name of the service.
+ * @param provider_name Name of the provider of the service.
  * @param usid USID of the new service.
  * @param service_flags DVBCFG_SERVICE_FLAG_* values ORed together.
  * @return The new struct dvbcfg_service structure, or NULL on error.
  */
 extern struct dvbcfg_service* dvbcfg_multiplex_add_service(struct dvbcfg_multiplex* multiplex,
                                                            char* name,
+                                                           char* short_name,
+                                                           char* provider_name,
                                                            char* usid,
                                                            uint32_t service_flags);
 
@@ -257,12 +263,16 @@ extern struct dvbcfg_service* dvbcfg_multiplex_add_service(struct dvbcfg_multipl
  *
  * @param multiplex Multiplex to add to.
  * @param name Name of the service.
+ * @param short_name Short name of the service.
+ * @param provider_name Name of the provider of the service.
  * @param usid USID of the new service.
  * @param service_flags DVBCFG_SERVICE_FLAG_* values ORed together.
  * @return The new struct dvbcfg_service structure, or NULL on error.
  */
 extern struct dvbcfg_service* dvbcfg_multiplex_add_service2(struct dvbcfg_multiplex* multiplex,
                                                             char* name,
+                                                            char* short_name,
+                                                            char* provider_name,
                                                             struct dvbcfg_usid* usid,
                                                             uint32_t service_flags);
 

@@ -127,6 +127,8 @@ static struct dvbcfg_multiplex* parse_multiplex(struct dvbcfg_source** sources,
 static struct dvbcfg_service* parse_service(struct dvbcfg_multiplex* multiplex,
                                             char* tmpusid,
                                             char* tmpname,
+                                            char* tmpshortname,
+                                            char* tmpprovidername,
                                             char* tmpflags,
                                             char* tmpca_systems,
                                             char* tmpzap_pids,
@@ -155,6 +157,8 @@ int dvbcfg_multiplex_load(const char *config_file,
         char* tmpdelivery = NULL;
         char* tmpusid = NULL;
         char* tmpname = NULL;
+        char* tmpshortname = NULL;
+        char* tmpprovidername = NULL;
         char* tmpflags = NULL;
         char* tmpca_systems = NULL;
         char* tmpzap_pids = NULL;
@@ -170,8 +174,10 @@ int dvbcfg_multiplex_load(const char *config_file,
                 if (fgets(curline, sizeof(curline), in) == NULL) {
                         switch(location) {
                         case LOCATION_SERVICE:
-                                if (parse_service(newmultiplex, tmpusid, tmpname, tmpflags,
-                                    tmpca_systems, tmpzap_pids, tmppmt_extra) == NULL) {
+                                if (parse_service(newmultiplex, tmpusid, tmpname,
+                                                  tmpshortname, tmpprovidername,
+                                                  tmpflags, tmpca_systems,
+                                                  tmpzap_pids, tmppmt_extra) == NULL) {
                                         error = -EINVAL;
                                         goto exit;
                                 }
@@ -216,7 +222,7 @@ int dvbcfg_multiplex_load(const char *config_file,
                                 break;
 
                         case LOCATION_SERVICE:
-                                if (parse_service(newmultiplex, tmpusid, tmpname, tmpflags,
+                                if (parse_service(newmultiplex, tmpusid, tmpname, tmpshortname, tmpprovidername, tmpflags,
                                                   tmpca_systems, tmpzap_pids, tmppmt_extra) == NULL) {
                                         error = -EINVAL;
                                         goto exit;
@@ -241,6 +247,8 @@ int dvbcfg_multiplex_load(const char *config_file,
                         dvbcfg_freestring(&tmpdelivery);
                         dvbcfg_freestring(&tmpusid);
                         dvbcfg_freestring(&tmpname);
+                        dvbcfg_freestring(&tmpshortname);
+                        dvbcfg_freestring(&tmpprovidername);
                         dvbcfg_freestring(&tmpflags);
                         dvbcfg_freestring(&tmpca_systems);
                         dvbcfg_freestring(&tmpzap_pids);
@@ -250,8 +258,10 @@ int dvbcfg_multiplex_load(const char *config_file,
                 } else if (dvbcfg_issection(linepos, "s")) {
                         switch(location) {
                         case LOCATION_SERVICE:
-                                if (parse_service(newmultiplex, tmpusid, tmpname, tmpflags,
-                                                  tmpca_systems, tmpzap_pids, tmppmt_extra) == NULL) {
+                                if (parse_service(newmultiplex, tmpusid, tmpname,
+                                                  tmpshortname, tmpprovidername,
+                                                  tmpflags, tmpca_systems,
+                                                  tmpzap_pids, tmppmt_extra) == NULL) {
                                         error = -EINVAL;
                                         goto exit;
                                 }
@@ -275,6 +285,8 @@ int dvbcfg_multiplex_load(const char *config_file,
                         dvbcfg_freestring(&tmpdelivery);
                         dvbcfg_freestring(&tmpusid);
                         dvbcfg_freestring(&tmpname);
+                        dvbcfg_freestring(&tmpshortname);
+                        dvbcfg_freestring(&tmpprovidername);
                         dvbcfg_freestring(&tmpflags);
                         dvbcfg_freestring(&tmpca_systems);
                         dvbcfg_freestring(&tmpzap_pids);
@@ -316,6 +328,10 @@ int dvbcfg_multiplex_load(const char *config_file,
                                 tmpusid = dvbcfg_strdupandtrim(value, -1);
                         } else if ((value = dvbcfg_iskey(linepos, "name")) != NULL) {
                                 tmpname = dvbcfg_strdupandtrim(value, -1);
+                        } else if ((value = dvbcfg_iskey(linepos, "sname")) != NULL) {
+                                tmpshortname = dvbcfg_strdupandtrim(value, -1);
+                        } else if ((value = dvbcfg_iskey(linepos, "pname")) != NULL) {
+                                tmpprovidername = dvbcfg_strdupandtrim(value, -1);
                         } else if ((value = dvbcfg_iskey(linepos, "flags")) != NULL) {
                                 tmpflags = dvbcfg_strdupandtrim(value, -1);
                         } else if ((value = dvbcfg_iskey(linepos, "ca")) != NULL) {
@@ -342,6 +358,8 @@ exit:
         dvbcfg_freestring(&tmpdelivery);
         dvbcfg_freestring(&tmpusid);
         dvbcfg_freestring(&tmpname);
+        dvbcfg_freestring(&tmpshortname);
+        dvbcfg_freestring(&tmpprovidername);
         dvbcfg_freestring(&tmpflags);
         dvbcfg_freestring(&tmpca_systems);
         dvbcfg_freestring(&tmpzap_pids);
@@ -577,6 +595,8 @@ error:
 static struct dvbcfg_service* parse_service(struct dvbcfg_multiplex* multiplex,
                                             char* tmpusid,
                                             char* tmpname,
+                                            char* tmpshortname,
+                                            char* tmpprovidername,
                                             char* tmpflags,
                                             char* tmpca_systems,
                                             char* tmpzap_pids,
@@ -605,7 +625,8 @@ static struct dvbcfg_service* parse_service(struct dvbcfg_multiplex* multiplex,
         }
 
         /* create the service itself */
-        service = dvbcfg_multiplex_add_service(multiplex, tmpname, tmpusid, flags);
+        service = dvbcfg_multiplex_add_service(multiplex, tmpname, tmpshortname,
+                                               tmpprovidername, tmpusid, flags);
         if (service == NULL)
                 return NULL;
 
@@ -920,6 +941,8 @@ struct dvbcfg_multiplex* dvbcfg_multiplex_new2(struct dvbcfg_multiplex** multipl
 
 struct dvbcfg_service* dvbcfg_multiplex_add_service(struct dvbcfg_multiplex* multiplex,
                                                     char* name,
+                                                    char* short_name,
+                                                    char* provider_name,
                                                     char* usidstr,
                                                     uint32_t service_flags)
 {
@@ -928,11 +951,13 @@ struct dvbcfg_service* dvbcfg_multiplex_add_service(struct dvbcfg_multiplex* mul
         if (dvbcfg_usid_from_string(usidstr, &usid))
                return NULL;
 
-        return dvbcfg_multiplex_add_service2(multiplex, name, &usid, service_flags);
+        return dvbcfg_multiplex_add_service2(multiplex, name, short_name, provider_name, &usid, service_flags);
 }
 
 struct dvbcfg_service* dvbcfg_multiplex_add_service2(struct dvbcfg_multiplex* multiplex,
                                                      char* name,
+                                                     char* short_name,
+                                                     char* provider_name,
                                                      struct dvbcfg_usid* usid,
                                                      uint32_t service_flags)
 {
@@ -946,6 +971,10 @@ struct dvbcfg_service* dvbcfg_multiplex_add_service2(struct dvbcfg_multiplex* mu
 
         memcpy(&service->usid, usid, sizeof(struct dvbcfg_usid));
         service->name = dvbcfg_strdupandtrim(name, -1);
+        if (short_name)
+          service->short_name = dvbcfg_strdupandtrim(short_name, -1);
+        if (provider_name)
+          service->provider_name = dvbcfg_strdupandtrim(provider_name, -1);
         service->service_flags = service_flags;
 
         /* add it to the list */
@@ -972,6 +1001,10 @@ void dvbcfg_multiplex_remove_service(struct dvbcfg_multiplex* multiplex,
         /* free internal structures */
         if (service->name)
                 free(service->name);
+        if (service->short_name)
+                free(service->short_name);
+        if (service->provider_name)
+                free(service->provider_name);
         free(service->ca_systems);
         free(service->zap_pids);
         free(service->pmt_extra);
