@@ -39,8 +39,7 @@ struct dvbcfg_source_backend_file {
 static int get_source(struct dvbcfg_source_backend* backend, struct dvbcfg_source** sources);
 static int put_source(struct dvbcfg_source_backend* backend, struct dvbcfg_source* source);
 
-
-int dvbcfg_source_backend_file_create(char* filename,
+int dvbcfg_source_backend_file_create(const char* filename,
                                       struct dvbcfg_source_backend** backend)
 {
         struct dvbcfg_source_backend_file* fbackend;
@@ -50,8 +49,8 @@ int dvbcfg_source_backend_file_create(char* filename,
                 return -ENOMEM;
 
         memset(fbackend, 0, sizeof(struct dvbcfg_source_backend_file));
-        fbackend->api.get_source = get_source;
-        fbackend->api.put_source = put_source;
+        fbackend->api.get = get_source;
+        fbackend->api.put = put_source;
 
         if (filename) {
                 fbackend->filename = strdup(filename);

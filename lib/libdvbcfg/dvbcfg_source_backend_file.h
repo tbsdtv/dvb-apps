@@ -46,11 +46,12 @@
  * Create an instance of the file backend. This stores the source in a file
  * on disk.
  *
- * @param filename Pathname to the sources file. Pass NULL to use the default pathname.
+ * @param filename Pathname to the sources file. Pass NULL to use the default
+ * config file name/location.
  * @param backend Will be updated to point to the backend API instance.
  * @return 0 on success, nonzero on error.
  */
-extern int dvbcfg_source_backend_file_create(char* filename,
+extern int dvbcfg_source_backend_file_create(const char* filename,
                                              struct dvbcfg_source_backend** backend);
 
 /**

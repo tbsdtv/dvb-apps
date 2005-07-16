@@ -30,7 +30,7 @@ int dvbcfg_source_load(struct dvbcfg_source_backend *backend,
                        struct dvbcfg_source **sources)
 {
         int status;
-        while(!(status = backend->get_source(backend, sources)));
+        while(!(status = backend->get(backend, sources)));
 
         if (status < 0)
                 return status;
@@ -44,7 +44,7 @@ int dvbcfg_source_save(struct dvbcfg_source_backend *backend,
         int status;
 
         while(sources) {
-                if ((status = backend->put_source(backend, sources)) != 0)
+                if ((status = backend->put(backend, sources)) != 0)
                         return status;
 
                 sources = sources->next;

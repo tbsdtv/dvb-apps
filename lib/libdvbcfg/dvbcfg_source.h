@@ -27,8 +27,8 @@
 #include <dvbcfg_common.h>
 
 /**
- * Sources are standardised unique IDs defined for all DVB transmitters (as
- * there is no other real standard).
+ * dvbcfg_source are standardised unique IDs defined for all DVB transmitters
+ * (as there is no other real standard).
  */
 
 /**
@@ -52,8 +52,8 @@ struct dvbcfg_source_backend {
          * @param sources Pointer to the list of sources.
          * @return 0 on success, <0 on error, or 1 on end of file.
          */
-        int (*get_source)(struct dvbcfg_source_backend* backend,
-                          struct dvbcfg_source** sources);
+        int (*get)(struct dvbcfg_source_backend* backend,
+                   struct dvbcfg_source** sources);
 
         /**
          * Stores a single source to the backend.
@@ -62,8 +62,8 @@ struct dvbcfg_source_backend {
          * @param source Source to store.
          * @return 0 on success, <0 on error.
          */
-        int (*put_source)(struct dvbcfg_source_backend* backend,
-                          struct dvbcfg_source* source);
+        int (*put)(struct dvbcfg_source_backend* backend,
+                   struct dvbcfg_source* source);
 };
 
 /**
