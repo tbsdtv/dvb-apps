@@ -127,7 +127,8 @@ static int get_source(struct dvbcfg_source_backend* backend,
                 return 0;
         }
 
-        return 0;
+        /* end of file! */
+        return 1;
 }
 
 static int put_source(struct dvbcfg_source_backend* backend,
