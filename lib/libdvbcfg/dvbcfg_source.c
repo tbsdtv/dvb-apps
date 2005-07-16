@@ -3,7 +3,6 @@
  *
  * Copyright (c) 2005 by Andrew de Quincey <adq_dvb@lidskialf.net>
  *
- *
  * This library is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation; either version 2.1 of
@@ -27,81 +26,35 @@
 #include "dvbcfg_util.h"
 
 
-int dvbcfg_source_load(const char *config_file,
-		       struct dvbcfg_source **sources)
+int dvbcfg_source_load(struct dvbcfg_source_backend *backend,
+                       struct dvbcfg_source **sources)
 {
-        FILE *in;
-        char curline[256];
-        char *linepos;
-        char* source_id;
-        int numtokens;
-        int error = 0;
+        int status;
+        while(!(status = backend->get_source(backend, sources)));
 
-        /* open the file */
-        in = fopen(config_file, "r");
-        if (in == NULL)
-                return -errno;
+        if (status < 0)
+                return status;
 
-        while (fgets(curline, sizeof(curline), in)) {
-                linepos = curline;
-
-                /* clean any comments/ whitespace */
-                if (dvbcfg_cleanline(linepos) == 0)
-                        continue;
-
-                /* tokenise the line */
-                numtokens = dvbcfg_tokenise(linepos, " \t", 1, 1);
-                if (numtokens != 2) {
-                        continue;
-                }
-
-                /* the source_id */
-                if (strchr(linepos, ':'))
-                        continue;
-                source_id = linepos;
-                linepos = dvbcfg_nexttoken(linepos);
-
-                /* create the source */
-                if (dvbcfg_source_new(sources, source_id, linepos) == NULL) {
-                        error = -ENOMEM;
-                        goto exit;
-                }
-        }
-
-exit:
-        /* tidy up and return */
-        fclose(in);
-        return error;
+        return 0;
 }
 
-int dvbcfg_source_save(const char *config_file,
-		       struct dvbcfg_source *sources)
+int dvbcfg_source_save(struct dvbcfg_source_backend *backend,
+                       struct dvbcfg_source *sources)
 {
-        FILE *out;
-        char* tmp;
+        int status;
 
-        /* open the file */
-        out = fopen(config_file, "w");
-        if (out == NULL)
-                return -errno;
-
-        while (sources) {
-                tmp = dvbcfg_source_id_to_string(&sources->source_id);
-                if (tmp == NULL)
-                        break;
-
-                fprintf(out, "%s", tmp);
-                free(tmp);
-                fprintf(out, " %s\n", sources->description);
+        while(sources) {
+                if ((status = backend->put_source(backend, sources)) != 0)
+                        return status;
 
                 sources = sources->next;
         }
 
-        fclose(out);
         return 0;
 }
 
-struct dvbcfg_source* dvbcfg_source_new(struct dvbcfg_source **sources, char* source_idstr, char* description)
+struct dvbcfg_source* dvbcfg_source_new(struct dvbcfg_source **sources,
+                                        char* source_idstr, char* description)
 {
         struct dvbcfg_source_id source_id;
         struct dvbcfg_source* source;
@@ -116,7 +69,9 @@ struct dvbcfg_source* dvbcfg_source_new(struct dvbcfg_source **sources, char* so
         return source;
 }
 
-struct dvbcfg_source* dvbcfg_source_new2(struct dvbcfg_source **sources, struct dvbcfg_source_id* source_id, char* description)
+struct dvbcfg_source* dvbcfg_source_new2(struct dvbcfg_source **sources,
+                                         struct dvbcfg_source_id* source_id,
+                                         char* description)
 {
         struct dvbcfg_source* newsource;
         struct dvbcfg_source* cursource;
@@ -135,16 +90,22 @@ struct dvbcfg_source* dvbcfg_source_new2(struct dvbcfg_source **sources, struct 
         /* parse the source_id */
         newsource->source_id.source_type = source_id->source_type;
         if (source_id->source_network)
-                newsource->source_id.source_network = dvbcfg_strdupandtrim(source_id->source_network, -1);
+                newsource->source_id.source_network =
+                        dvbcfg_strdupandtrim(source_id->source_network, -1);
         if (source_id->source_region)
-                newsource->source_id.source_region = dvbcfg_strdupandtrim(source_id->source_region, -1);
+                newsource->source_id.source_region =
+                        dvbcfg_strdupandtrim(source_id->source_region, -1);
         if (source_id->source_locale)
-                newsource->source_id.source_locale = dvbcfg_strdupandtrim(source_id->source_locale, -1);
+                newsource->source_id.source_locale =
+                        dvbcfg_strdupandtrim(source_id->source_locale, -1);
 
         /* check */
-        if (((newsource->source_id.source_network == NULL) != (source_id->source_network == NULL)) ||
-            ((newsource->source_id.source_region == NULL) != (source_id->source_region == NULL)) ||
-            ((newsource->source_id.source_locale == NULL) != (source_id->source_locale == NULL))) {
+        if (((newsource->source_id.source_network == NULL) !=
+              (source_id->source_network == NULL)) ||
+            ((newsource->source_id.source_region == NULL) !=
+              (source_id->source_region == NULL)) ||
+            ((newsource->source_id.source_locale == NULL) !=
+              (source_id->source_locale == NULL))) {
                 dvbcfg_source_id_free(&newsource->source_id);
                 free(newsource->description);
                 free(newsource);
@@ -165,7 +126,8 @@ struct dvbcfg_source* dvbcfg_source_new2(struct dvbcfg_source **sources, struct 
 }
 
 struct dvbcfg_source *dvbcfg_source_find(struct dvbcfg_source *sources,
-                                         char source_type, char *source_network, char* source_region, char* source_locale)
+                                         char source_type, char *source_network,
+                                         char* source_region, char* source_locale)
 {
         struct dvbcfg_source_id source_id;
 
@@ -177,7 +139,8 @@ struct dvbcfg_source *dvbcfg_source_find(struct dvbcfg_source *sources,
         return dvbcfg_source_find2(sources, &source_id);
 }
 
-struct dvbcfg_source *dvbcfg_source_find2(struct dvbcfg_source *sources, struct dvbcfg_source_id* source_id)
+struct dvbcfg_source *dvbcfg_source_find2(struct dvbcfg_source *sources,
+                                          struct dvbcfg_source_id* source_id)
 {
         while (sources) {
                 if (dvbcfg_source_id_equal(source_id, &sources->source_id, 1))

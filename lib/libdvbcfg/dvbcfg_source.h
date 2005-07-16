@@ -26,20 +26,9 @@
 
 #include <dvbcfg_common.h>
 
-
 /**
- * The sources file defines standardised unique IDs for all DVB transmitters (as there is no
- * other real standard). It consists of multiple lines as follows:
- *
- * <source_id> <human readable description>
- *
- * Comments begin with '#' - any characters after this will be ignored to the end of the line.
- *
- * Examples:
- * S5E     Sirius 2/3
- * S13E    Hotbird 1-(5)-6
- * Tau-au-Adelaide A DVB-T transmitter in Australia serving the Adelaide area.
- * Tuk-scottish-BlackHill A DVB-T transmitter in the UK serving the central belt of scotland.
+ * Sources are standardised unique IDs defined for all DVB transmitters (as
+ * there is no other real standard).
  */
 
 /**
@@ -52,49 +41,77 @@ struct dvbcfg_source {
         struct dvbcfg_source *next;     /* NULL=> this is the last entry */
 };
 
+/**
+ * Source backend API.
+ */
+struct dvbcfg_source_backend {
+        /**
+         * Loads a single source from the backend and add to the supplied list.
+         *
+         * @param backend Pointer to the backend structure concerned.
+         * @param sources Pointer to the list of sources.
+         * @return 0 on success, <0 on error, or 1 on end of file.
+         */
+        int (*get_source)(struct dvbcfg_source_backend* backend,
+                          struct dvbcfg_source** sources);
+
+        /**
+         * Stores a single source to the backend.
+         *
+         * @param backend Pointer to the backend structure concerned.
+         * @param source Source to store.
+         * @return 0 on success, <0 on error.
+         */
+        int (*put_source)(struct dvbcfg_source_backend* backend,
+                          struct dvbcfg_source* source);
+};
 
 /**
- * Load sources from a config file.
+ * Convenience method to load all sources from a backend.
  *
  * @param config_file Config filename to load.
- * @param sources Where to put the pointer to the start of the loaded
- * sources. If NULL, a new list will be created, if it points to an already initialised list,
- * the loaded sources will be appended to it.
+ * @param sources Where to put the pointer to the start of the loaded sources.
+ * If NULL, a new list will be created, if it points to an already initialised
+ * list, the loaded sources will be appended to it.
  * @return 0 on success, or nonzero error code on failure.
  */
-extern int dvbcfg_source_load(const char *config_file,
+extern int dvbcfg_source_load(struct dvbcfg_source_backend *backend,
                               struct dvbcfg_source **sources);
 
 /**
- * Save sources to a config file.
+ * Convenience method to store all sources to a backend.
  *
  * @param config_file Config filename to save.
  * @param sources Pointer to the list of sources to save.
  * @return 0 on success, or nonzero error code on failure.
  */
-extern int dvbcfg_source_save(const char *config_file,
+extern int dvbcfg_source_save(struct dvbcfg_source_backend *backend,
                               struct dvbcfg_source *sources);
 
 /**
  * Add a new source.
  *
- * @param sources Pointer to list of sources to add to (source is added to this list on success).
+ * @param sources Pointer to list of sources to add to (source is added to this
+ * list on success).
  * @param source_id The externalised source_id string of the source to add.
  * @param description Description of the source.
  * @return Pointer to the new dvbcfg_source structure, or NULL on error.
  */
-extern struct dvbcfg_source* dvbcfg_source_new(struct dvbcfg_source** sources, char* source_id, char* description);
+extern struct dvbcfg_source* dvbcfg_source_new(struct dvbcfg_source** sources,
+                                               char* source_id, char* description);
 
 /**
  * Add a new source using a source_id structure.
  *
- * @param sources Pointer to list of sources to add to (source is added to this list on success).
+ * @param sources Pointer to list of sources to add to (source is added to this
+ * list on success).
  * @param source_id The dvbcfg_source_id structure of the source to add.
  * @param description Description of the source.
  * @return Pointer to the new dvbcfg_source structure, or NULL on error.
  */
 extern struct dvbcfg_source* dvbcfg_source_new2(struct dvbcfg_source** sources,
-                                                struct dvbcfg_source_id* source_id, char* description);
+                                                struct dvbcfg_source_id* source_id,
+                                                char* description);
 
 /**
  * Find the entry for a particular source_id.
@@ -102,12 +119,17 @@ extern struct dvbcfg_source* dvbcfg_source_new2(struct dvbcfg_source** sources,
  * @param sources Pointer to the list to search.
  * @param source_type Type of source.
  * @param source_network source_network to find.
- * @param source_region source_region to find (pass NULL for DVBS, or to simply match by source_network).
- * @param source_locale source_locale to find (pass NULL for DVBS, or to simply match by source_network+source_region).
+ * @param source_region source_region to find (pass NULL for DVBS, or to simply
+ * match by source_network).
+ * @param source_locale source_locale to find (pass NULL for DVBS, or to simply
+ * match by source_network+source_region).
  * @return A dvbcfg_source structure if found, or NULL if not.
  */
 extern struct dvbcfg_source *dvbcfg_source_find(struct dvbcfg_source *sources,
-                                                char source_type, char *source_network, char* source_region, char* source_locale);
+                                                char source_type,
+                                                char *source_network,
+                                                char* source_region,
+                                                char* source_locale);
 
 /**
  * Find the entry for a particular source_id using a dvbcfg_source_id structure.
@@ -115,11 +137,14 @@ extern struct dvbcfg_source *dvbcfg_source_find(struct dvbcfg_source *sources,
  * @param sources Pointer to the list to search.
  * @param source_type Type of source.
  * @param source_network source_network to find.
- * @param source_region source_region to find (pass NULL for DVBS, or to simply match by source_network).
- * @param source_locale source_locale to find (pass NULL for DVBS, or to simply match by source_network+source_region).
+ * @param source_region source_region to find (pass NULL for DVBS, or to simply
+ * match by source_network).
+ * @param source_locale source_locale to find (pass NULL for DVBS, or to simply
+ * match by source_network+source_region).
  * @return A dvbcfg_source structure if found, or NULL if not.
  */
-extern struct dvbcfg_source *dvbcfg_source_find2(struct dvbcfg_source *sources, struct dvbcfg_source_id* source_id);
+extern struct dvbcfg_source *dvbcfg_source_find2(struct dvbcfg_source *sources,
+                                                 struct dvbcfg_source_id* source_id);
 
 /**
  * Unlink a single source from a list, and free its memory.
@@ -137,4 +162,4 @@ extern void dvbcfg_source_free(struct dvbcfg_source **sources,
  */
 extern void dvbcfg_source_free_all(struct dvbcfg_source *sources);
 
-#endif                          // DVBCFG_SOURCE_H
+#endif

@@ -1,14 +1,16 @@
 
 OBJS =  dvbcfg_util.o \
         dvbcfg_source.o \
+        dvbcfg_source_backend_file.o \
 	dvbcfg_adapter.o \
 	dvbcfg_common.o \
 	dvbcfg_diseqc.o \
 	dvbcfg_vdrchannel.o \
 	dvbcfg_zapchannel.o \
-	dvbcfg_multiplex.o 
+	dvbcfg_multiplex.o
 
 INCLUDES = 	dvbcfg_source.h \
+		dvbcfg_source_backend_file.h \
 		dvbcfg_diseqc.h \
 		dvbcfg_vdrchannel.h \
 		dvbcfg_zapchannel.h \
@@ -16,7 +18,9 @@ INCLUDES = 	dvbcfg_source.h \
 		dvbcfg_common.h \
 		dvbcfg_multiplex.h
 
-CFLAGS ?= -O2 -g -Wall -Wstrict-prototypes -Wshadow -Wpointer-arith
+DVBCFG_DEFAULT_DIR = /tmp
+
+CFLAGS ?= -O2 -g -Wall -Wstrict-prototypes -Wshadow -Wpointer-arith -DDVBCFG_DEFAULT_DIR=$(DVBCFG_DEFAULT_DIR)
 CPPFLAGS = -I. -I../../include
 
 LIB = libdvbcfg.a
