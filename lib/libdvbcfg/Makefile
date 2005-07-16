@@ -3,6 +3,7 @@ OBJS =  dvbcfg_util.o \
         dvbcfg_source.o \
         dvbcfg_source_backend_file.o \
 	dvbcfg_adapter.o \
+        dvbcfg_adapter_backend_file.o \
 	dvbcfg_common.o \
 	dvbcfg_diseqc.o \
 	dvbcfg_vdrchannel.o \
@@ -11,10 +12,11 @@ OBJS =  dvbcfg_util.o \
 
 INCLUDES = 	dvbcfg_source.h \
 		dvbcfg_source_backend_file.h \
+		dvbcfg_adapter.h \
+		dvbcfg_adapter_backend_file.h \
 		dvbcfg_diseqc.h \
 		dvbcfg_vdrchannel.h \
 		dvbcfg_zapchannel.h \
-		dvbcfg_adapter.h \
 		dvbcfg_common.h \
 		dvbcfg_multiplex.h
 

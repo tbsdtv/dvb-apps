@@ -24,31 +24,8 @@
 #include <dvbcfg_source.h>
 
 /**
- * The adapters file describes each DVB adapter in a system, and indicates what source_ids
- * are receivable by each adapter. It consists of multiple lines as follows:
- *
- * <adapter_id> <source_id> ...
- *
- * <adapter_id> identifies a DVB adapter in the system. The following adapter_ids are supported:
- *
- *   DVB<dvb_type><adapter_number>.<frontend_number>
- *   ATSC<adapter_number>.<frontend_number>
- *
- *   <dvb_type> is one of 'S', 'T', or 'C'(DVBS, DVBT, and DVBC respectively)
- *   <adapter_number> is the number allocated to the DVB device by the OS (i.e. /dev/dvb/adapterX)
- *   <frontend_number> is the frontend ID on a particular DVB device (i.e. /dev/dvb/adapterX/frontendY)
- *
- * <source_id> corresponds to an entry in the dvbcfg_sources file. Multiple source_ids can
- * be specified for an adapter, indicating it can be automatically switched between them in
- * some manner (e.g. by using DISEQC for DVBS adapters).
- *
- * Comments begin with '#' - any characters after this will be ignored
- * to the end of the line.
- *
- * Examples:
- * DVBS0.0 S5E S7E
- * DVBC1.0
- * DVBT2.0 Tuk-BlackHill
+ * dvbcfg_adapter describes each DVB adapter in a system, and indicates what
+ * source_ids are receivable by each adapter.
  */
 
 /**
@@ -63,32 +40,51 @@ struct dvbcfg_adapter {
         struct dvbcfg_adapter *next;    /* NULL=> this is the last entry */
 };
 
+/**
+ * Adapter backend API.
+ */
+struct dvbcfg_adapter_backend {
+        /**
+         * Loads a single adapter from the backend and add to the supplied list.
+         *
+         * @param backend Pointer to the backend structure concerned.
+         * @param adapters Pointer to the list of adapters.
+         * @return 0 on success, <0 on error, or 1 on end of file.
+         */
+        int (*get)(struct dvbcfg_adapter_backend* backend,
+                   struct dvbcfg_adapter** adapters);
+
+        /**
+         * Stores a single adapter to the backend.
+         *
+         * @param backend Pointer to the backend structure concerned.
+         * @param adapter Adapter to store.
+         * @return 0 on success, <0 on error.
+         */
+        int (*put)(struct dvbcfg_adapter_backend* backend,
+                   struct dvbcfg_adapter* adapter);
+};
 
 /**
- * Load adapters from a config file.
+ * Convenience method to load all adapters from a backend.
  *
- * @param config_file Config filename to load.
- * @param sources List of known dvbcfg_source structures.
- * @param adapters Where to put the pointer to the start of the loaded
- * adapters. If NULL, a new list will be created, if it points to an already initialised list,
- * the loaded adapters will be appended to it.
- * @param create_sources If 1, and an adapter refers to an unknown source, the unknown source will be created. If 0, the
- * source will be ignored.
+ * @param backend Pointer to the backend structure concerned.
+ * @param adapters Where to put the pointer to the start of the loaded adapters.
+ * If NULL, a new list will be created, if it points to an already initialised
+ * list, the loaded adapters will be appended to it.
  * @return 0 on success, or nonzero error code on failure.
  */
-extern int dvbcfg_adapter_load(const char *config_file,
-                               struct dvbcfg_source** sources,
-                               struct dvbcfg_adapter **adapters,
-                               int create_sources);
+extern int dvbcfg_adapter_load(struct dvbcfg_adapter_backend *backend,
+                               struct dvbcfg_adapter **adapters);
 
 /**
- * Save adapters to a config file.
+ * Convenience method to store all adapters to a backend.
  *
- * @param config_file Config filename to save.
+ * @param backend Pointer to the backend structure concerned.
  * @param adapters Pointer to the list of adapters to save.
  * @return 0 on success, or nonzero error code on failure.
  */
-extern int dvbcfg_adapter_save(const char *config_file,
+extern int dvbcfg_adapter_save(struct dvbcfg_adapter_backend *backend,
                                struct dvbcfg_adapter *adapters);
 
 /**
@@ -164,4 +160,4 @@ extern void dvbcfg_adapter_free(struct dvbcfg_adapter **adapters,
  */
 extern void dvbcfg_adapter_free_all(struct dvbcfg_adapter *adapters);
 
-#endif                          // DVBCFG_ADAPTER_H
+#endif

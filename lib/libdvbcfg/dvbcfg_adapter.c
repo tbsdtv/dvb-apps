@@ -28,121 +28,30 @@
 #include "dvbcfg_util.h"
 
 
-int dvbcfg_adapter_load(const char *config_file,
-                        struct dvbcfg_source** sources,
-                        struct dvbcfg_adapter **adapters,
-                        int create_sources)
+int dvbcfg_adapter_load(struct dvbcfg_adapter_backend *backend,
+                        struct dvbcfg_adapter **adapters)
 {
-        FILE *in;
-        char curline[256];
-        char *linepos;
-        struct dvbcfg_adapter *newadapter;
-        struct dvbcfg_source_id source_id;
-        struct dvbcfg_source* source;
-        int numtokens;
-        int error = 0;
-        int i;
+        int status;
+        while(!(status = backend->get(backend, adapters)));
 
-        /* open the file */
-        in = fopen(config_file, "r");
-        if (in == NULL)
-                return -errno;
+        if (status < 0)
+                return status;
 
-        while (fgets(curline, sizeof(curline), in)) {
-                linepos = curline;
-
-                /* clean any comments/ whitespace */
-                if (dvbcfg_cleanline(linepos) == 0)
-                        continue;
-
-                /* tokenise the line */
-                numtokens = dvbcfg_tokenise(linepos, " \t", -1, 1);
-                if (numtokens < 1) {
-                        continue;
-                }
-
-                /* create the new adapter */
-                newadapter = dvbcfg_adapter_new(adapters, linepos);
-                if (newadapter == NULL) {
-                        error = -ENOMEM;
-                        goto exit;
-                }
-                linepos = dvbcfg_nexttoken(linepos);
-
-                /* the source_ids */
-                for (i = 1; i < numtokens; i++) {
-                        if (dvbcfg_source_id_from_string(linepos, &source_id)) {
-                                dvbcfg_adapter_free(adapters, newadapter);
-                                error = -ENOMEM;
-                                goto exit;
-                        }
-
-                        /* try to find it */
-                        source = dvbcfg_source_find2(*sources, &source_id);
-                        if (source == NULL) {
-                                if (!create_sources) {
-                                        dvbcfg_source_id_free(&source_id);
-                                        continue;
-                                }
-
-                                source = dvbcfg_source_new2(sources, &source_id, "???");
-                                dvbcfg_source_id_free(&source_id);
-                                if (source == NULL) {
-                                        dvbcfg_adapter_free(adapters, newadapter);
-                                        error = -ENOMEM;
-                                        goto exit;
-                                }
-
-                        } else {
-                                dvbcfg_source_id_free(&source_id);
-                        }
-
-                        /* add it in */
-                        if (dvbcfg_adapter_add_source(newadapter, source)) {
-                                dvbcfg_adapter_free(adapters, newadapter);
-                                error = -ENOMEM;
-                                goto exit;
-                        }
-
-                        /* next source_id please! */
-                        linepos = dvbcfg_nexttoken(linepos);
-                }
-        }
-
-exit:
-        /* tidy up and return */
-        fclose(in);
-        return error;
+        return 0;
 }
 
-int dvbcfg_adapter_save(const char *config_file,
-			struct dvbcfg_adapter *adapters)
+int dvbcfg_adapter_save(struct dvbcfg_adapter_backend *backend,
+                        struct dvbcfg_adapter *adapters)
 {
-        FILE *out;
-        char* source_id;
-        int i;
+        int status;
 
-        /* open the file */
-        out = fopen(config_file, "w");
-        if (out == NULL)
-                return -errno;
-
-        while (adapters) {
-                fprintf(out, "%s ", adapters->adapter_id);
-
-                for(i=0; i< adapters->sources_count; i++) {
-                        source_id = dvbcfg_source_id_to_string(&adapters->sources[i]->source_id);
-                        if (source_id) {
-                                fprintf(out, "%s ", source_id);
-                                free(source_id);
-                        }
-                }
-                fprintf(out, "\n");
+        while(adapters) {
+                if ((status = backend->put(backend, adapters)) != 0)
+                        return status;
 
                 adapters = adapters->next;
         }
 
-        fclose(out);
         return 0;
 }
 
