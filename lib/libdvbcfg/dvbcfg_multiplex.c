@@ -194,7 +194,7 @@ int dvbcfg_multiplex_load(const char *config_file,
                         continue;
 
                 /* is it a [section]? */
-                if (dvbcfg_issection(linepos, "dvbmultiplexes")) {
+                if (dvbcfg_issection(linepos, "multiplexes")) {
                         switch(location) {
                         case LOCATION_SOF:
                                 break;
@@ -206,7 +206,7 @@ int dvbcfg_multiplex_load(const char *config_file,
 
                         location = LOCATION_DVBMULTIPLEXES;
                         continue;
-                } else if (dvbcfg_issection(linepos, "multiplex")) {
+                } else if (dvbcfg_issection(linepos, "m")) {
                         switch(location) {
                         case LOCATION_DVBMULTIPLEXES:
                                 if (!versionok) {
@@ -247,7 +247,7 @@ int dvbcfg_multiplex_load(const char *config_file,
                         dvbcfg_freestring(&tmppmt_extra);
                         location = LOCATION_MULTIPLEX;
                         continue;
-                } else if (dvbcfg_issection(linepos, "service")) {
+                } else if (dvbcfg_issection(linepos, "s")) {
                         switch(location) {
                         case LOCATION_SERVICE:
                                 if (parse_service(newmultiplex, tmpusid, tmpname, tmpflags,
@@ -303,7 +303,7 @@ int dvbcfg_multiplex_load(const char *config_file,
                 case LOCATION_MULTIPLEX:
                         if ((value = dvbcfg_iskey(linepos, "gmid")) != NULL) {
                                 tmpgmid = dvbcfg_strdupandtrim(value, -1);
-                        } else if ((value = dvbcfg_iskey(linepos, "delivery")) != NULL) {
+                        } else if ((value = dvbcfg_iskey(linepos, "d")) != NULL) {
                                 tmpdelivery = dvbcfg_strdupandtrim(value, -1);
                         } else {
                                 error = -EINVAL;
@@ -318,11 +318,11 @@ int dvbcfg_multiplex_load(const char *config_file,
                                 tmpname = dvbcfg_strdupandtrim(value, -1);
                         } else if ((value = dvbcfg_iskey(linepos, "flags")) != NULL) {
                                 tmpflags = dvbcfg_strdupandtrim(value, -1);
-                        } else if ((value = dvbcfg_iskey(linepos, "ca_systems")) != NULL) {
+                        } else if ((value = dvbcfg_iskey(linepos, "ca")) != NULL) {
                                 tmpca_systems = dvbcfg_strdupandtrim(value, -1);
-                        } else if ((value = dvbcfg_iskey(linepos, "zap_pids")) != NULL) {
+                        } else if ((value = dvbcfg_iskey(linepos, "zap")) != NULL) {
                                 tmpzap_pids = dvbcfg_strdupandtrim(value, -1);
-                        } else if ((value = dvbcfg_iskey(linepos, "pmt_extra")) != NULL) {
+                        } else if ((value = dvbcfg_iskey(linepos, "pmt")) != NULL) {
                                 tmppmt_extra = dvbcfg_strdupandtrim(value, -1);
                         } else {
                                 error = -EINVAL;
@@ -597,7 +597,7 @@ static struct dvbcfg_service* parse_service(struct dvbcfg_multiplex* multiplex,
                 linepos = tmpflags;
                 numtokens = dvbcfg_tokenise(linepos, " \t", -1, 1);
                 while(numtokens--) {
-                        if (!strcmp(linepos, "ignorepmt"))
+                        if (!strcmp(linepos, "nopmt"))
                                 flags |= DVBCFG_SERVICE_FLAG_IGNOREPMT;
 
                         linepos = dvbcfg_nexttoken(linepos);
@@ -699,7 +699,7 @@ static int parse_pids(struct dvbcfg_multiplex* multiplex, struct dvbcfg_service*
 }
 
 int dvbcfg_multiplex_save(const char *config_file,
-			  struct dvbcfg_multiplex *multiplexes)
+        struct dvbcfg_multiplex *multiplexes)
 {
         FILE *out;
         char* umid;
@@ -714,7 +714,7 @@ int dvbcfg_multiplex_save(const char *config_file,
         if (out == NULL)
                 return -errno;
 
-        fprintf(out, "[dvbmultiplexes]\n");
+        fprintf(out, "[multiplexes]\n");
         fprintf(out, "version=0.1\n");
         fprintf(out, "date=%lu\n", time(NULL));
         fprintf(out, "\n");
@@ -731,13 +731,13 @@ int dvbcfg_multiplex_save(const char *config_file,
                   break;
                 }
 
-                fprintf(out, "[multiplex]\n");
+                fprintf(out, "[m]\n");
                 fprintf(out, "gmid=%s:%s\n", source_id, umid);
                 free(umid);
                 free(source_id);
 
                 /* output the delivery */
-                fprintf(out, "delivery = ");
+                fprintf(out, "d = ");
                 switch(multiplexes->source->source_id.source_type) {
                 case DVBCFG_SOURCETYPE_DVBS:
                         switch(multiplexes->delivery.dvb.polarization) {
@@ -808,25 +808,25 @@ int dvbcfg_multiplex_save(const char *config_file,
                         if (usid == NULL)
                                 break;
 
-                        fprintf(out, "[service]\n");
+                        fprintf(out, "[s]\n");
                         fprintf(out, "usid=%s\n", usid);
                         fprintf(out, "name=%s\n", service->name);
                         free(usid);
                         fprintf(out, "flags=");
                         if (service->service_flags & DVBCFG_SERVICE_FLAG_IGNOREPMT)
-                                fprintf(out, "ignorepmt ");
+                                fprintf(out, "nopmt ");
                         fprintf(out, "\n");
 
                         if (service->ca_systems_count) {
-                                fprintf(out, "ca_systems=");
+                                fprintf(out, "ca=");
                                 for(i=0; i< service->ca_systems_count; i++) {
                                         fprintf(out, "0x%x ", service->ca_systems[i]);
                                 }
                                 fprintf(out, "\n");
                         }
 
-                        format_pids(out, "zap_pids", service->zap_pids_count, service->zap_pids);
-                        format_pids(out, "pmt_extra", service->pmt_extra_count, service->pmt_extra);
+                        format_pids(out, "zap", service->zap_pids_count, service->zap_pids);
+                        format_pids(out, "pmt", service->pmt_extra_count, service->pmt_extra);
                         fprintf(out, "\n");
 
                         service = service->next;
