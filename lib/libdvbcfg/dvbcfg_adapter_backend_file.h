@@ -54,7 +54,7 @@
  * Create an instance of the file backend. This stores the adapters in a file
  * on disk.
  *
- * @param filename Pathname to the sources file. Pass NULL to use the default
+ * @param filename Pathname to the adapters file. Pass NULL to use the default
  * config file name/location.
  * @param sources Pointer to list of pre-loaded source instances.
  * @param create_sources If 1, any missing sources will automatically be added

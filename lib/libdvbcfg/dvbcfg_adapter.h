@@ -68,7 +68,7 @@ struct dvbcfg_adapter_backend {
 /**
  * Convenience method to load all adapters from a backend.
  *
- * @param backend Pointer to the backend structure concerned.
+ * @param backend Backend to use.
  * @param adapters Where to put the pointer to the start of the loaded adapters.
  * If NULL, a new list will be created, if it points to an already initialised
  * list, the loaded adapters will be appended to it.
@@ -80,7 +80,7 @@ extern int dvbcfg_adapter_load(struct dvbcfg_adapter_backend *backend,
 /**
  * Convenience method to store all adapters to a backend.
  *
- * @param backend Pointer to the backend structure concerned.
+ * @param backend Backend to use.
  * @param adapters Pointer to the list of adapters to save.
  * @return 0 on success, or nonzero error code on failure.
  */
