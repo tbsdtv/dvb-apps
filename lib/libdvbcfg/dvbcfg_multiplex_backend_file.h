@@ -67,7 +67,7 @@
  * "struct dvb_frontend_parameters". For other parameters, there are two
  * possiblities: either the numerical value as defined in the enumerations in
  * frontend.h, or the exact string corresponding to that numerical value as
- * defined in frontend.h. Each delivery line must use the same format for all
+ * defined in frontend.h. Each delivery line entry use the same format for all
  * values in a single entry.
  *
  * Currently only the flag "nopmt" is defined for the <service specific flags>.
