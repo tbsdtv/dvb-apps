@@ -141,7 +141,7 @@ void parse_pmt(dvb_filter_t * filter, struct section_ext * ext)
 	struct descriptor * descriptor = NULL;
 	struct dvb_program * program;
 
-	pmt = mpeg_pmt_section_parse(ext, SYSTEM_MPEG | SYSTEM_DVB);
+	pmt = mpeg_pmt_section_parse(ext);
 	if (pmt == NULL)
 		return;
 
@@ -211,11 +211,11 @@ void parse_data(dvb_filter_t * filter, uint8_t * buf, int len)
 		return;
 
 	switch (section->table_id) {
-		case sct_program_association:
+		case sct_mpeg_program_association:
 			parse_pat(filter, section_ext);
 			break;
 
-		case sct_program_map:
+		case sct_mpeg_program_map:
 			parse_pmt(filter, section_ext);
 			break;
 	}
