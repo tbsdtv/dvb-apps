@@ -20,12 +20,12 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include "dvbcfg_source.h"
-#include "dvbcfg_diseqc.h"
+#include "dvbcfg_source_backend_file.h"
+#include "dvbcfg_diseqc_backend_file.h"
+#include "dvbcfg_adapter_backend_file.h"
+#include "dvbcfg_multiplex_backend_file.h"
 #include "dvbcfg_vdrchannel.h"
 #include "dvbcfg_zapchannel.h"
-#include "dvbcfg_adapter.h"
-#include "dvbcfg_multiplex.h"
 
 void syntax();
 
@@ -33,23 +33,42 @@ void syntax();
 int main(int argc, char *argv[])
 {
         struct dvbcfg_source *sources = NULL;
+        struct dvbcfg_source_backend* source_backend;
+        struct dvbcfg_diseqc_backend* diseqc_backend;
+        struct dvbcfg_adapter_backend* adapter_backend;
+        struct dvbcfg_multiplex_backend* multiplex_backend;
 
         if (argc != 5) {
                 syntax();
         }
 
         if (!strcmp(argv[1], "-source")) {
-                dvbcfg_source_load(argv[2], &sources);
-                dvbcfg_source_save(argv[3], sources);
+                dvbcfg_source_backend_file_create(argv[2], &source_backend);
+                dvbcfg_source_load(source_backend, &sources);
+                dvbcfg_source_backend_file_destroy(source_backend);
+
+                dvbcfg_source_backend_file_create(argv[3], &source_backend);
+                dvbcfg_source_save(source_backend, sources);
+                dvbcfg_source_backend_file_destroy(source_backend);
                 dvbcfg_source_free_all(sources);
 
         } else if (!strcmp(argv[1], "-diseqc")) {
                 struct dvbcfg_diseqc *diseqcs = NULL;
 
-                dvbcfg_source_load(argv[4], &sources);
-                dvbcfg_diseqc_load(argv[2], &sources, &diseqcs, 1);
-                dvbcfg_diseqc_save(argv[3], diseqcs);
+                dvbcfg_source_backend_file_create(argv[4], &source_backend);
+                dvbcfg_source_load(source_backend, &sources);
+                dvbcfg_source_backend_file_destroy(source_backend);
+
+                dvbcfg_diseqc_backend_file_create(argv[2], &sources, 1, &diseqc_backend);
+                dvbcfg_diseqc_load(diseqc_backend, &diseqcs);
+                dvbcfg_diseqc_backend_file_destroy(diseqc_backend);
+
+                dvbcfg_diseqc_backend_file_create(argv[3], &sources, 1, &diseqc_backend);
+                dvbcfg_diseqc_save(diseqc_backend, diseqcs);
+                dvbcfg_diseqc_backend_file_destroy(diseqc_backend);
+
                 dvbcfg_diseqc_free_all(diseqcs);
+                dvbcfg_source_free_all(sources);
 
         } else if (!strcmp(argv[1], "-vdrchannel")) {
                 struct dvbcfg_vdrchannel *vdrchannels = NULL;
@@ -67,18 +86,56 @@ int main(int argc, char *argv[])
         } else if (!strcmp(argv[1], "-adapter")) {
                 struct dvbcfg_adapter *adapters = NULL;
 
-                dvbcfg_source_load(argv[4], &sources);
-                dvbcfg_adapter_load(argv[2], &sources, &adapters, 1);
-                dvbcfg_adapter_save(argv[3], adapters);
-                dvbcfg_adapter_free_all(adapters);
+                dvbcfg_source_backend_file_create(argv[4], &source_backend);
+                dvbcfg_source_load(source_backend, &sources);
+                dvbcfg_source_backend_file_destroy(source_backend);
 
-        } else if (!strcmp(argv[1], "-multiplex")) {
+                dvbcfg_adapter_backend_file_create(argv[2], &sources, 1, &adapter_backend);
+                dvbcfg_adapter_load(adapter_backend, &adapters);
+                dvbcfg_adapter_backend_file_destroy(adapter_backend);
+
+                dvbcfg_adapter_backend_file_create(argv[3], &sources, 1, &adapter_backend);
+                dvbcfg_adapter_save(adapter_backend, adapters);
+                dvbcfg_adapter_backend_file_destroy(adapter_backend);
+
+                dvbcfg_adapter_free_all(adapters);
+                dvbcfg_source_free_all(sources);
+
+        } else if (!strcmp(argv[1], "-multiplex-long")) {
                 struct dvbcfg_multiplex *multiplexes = NULL;
 
-                dvbcfg_source_load(argv[4], &sources);
-                dvbcfg_multiplex_load(argv[2], &sources, &multiplexes, 1);
-                dvbcfg_multiplex_save(argv[3], multiplexes);
+                dvbcfg_source_backend_file_create(argv[4], &source_backend);
+                dvbcfg_source_load(source_backend, &sources);
+                dvbcfg_source_backend_file_destroy(source_backend);
+
+                dvbcfg_multiplex_backend_file_create(argv[2], &sources, 1, 1, &multiplex_backend);
+                dvbcfg_multiplex_load(multiplex_backend, &multiplexes);
+                dvbcfg_multiplex_backend_file_destroy(multiplex_backend);
+
+                dvbcfg_multiplex_backend_file_create(argv[3], &sources, 1, 1, &multiplex_backend);
+                dvbcfg_multiplex_save(multiplex_backend, multiplexes);
+                dvbcfg_multiplex_backend_file_destroy(multiplex_backend);
+
                 dvbcfg_multiplex_free_all(multiplexes);
+                dvbcfg_source_free_all(sources);
+
+        } else if (!strcmp(argv[1], "-multiplex-short")) {
+                struct dvbcfg_multiplex *multiplexes = NULL;
+
+                dvbcfg_source_backend_file_create(argv[4], &source_backend);
+                dvbcfg_source_load(source_backend, &sources);
+                dvbcfg_source_backend_file_destroy(source_backend);
+
+                dvbcfg_multiplex_backend_file_create(argv[2], &sources, 1, 0, &multiplex_backend);
+                dvbcfg_multiplex_load(multiplex_backend, &multiplexes);
+                dvbcfg_multiplex_backend_file_destroy(multiplex_backend);
+
+                dvbcfg_multiplex_backend_file_create(argv[3], &sources, 1, 0, &multiplex_backend);
+                dvbcfg_multiplex_save(multiplex_backend, multiplexes);
+                dvbcfg_multiplex_backend_file_destroy(multiplex_backend);
+
+                dvbcfg_multiplex_free_all(multiplexes);
+                dvbcfg_source_free_all(sources);
 
         } else {
                 syntax();
@@ -90,6 +147,6 @@ int main(int argc, char *argv[])
 void syntax()
 {
         fprintf(stderr,
-                "Syntax: dvcfg_test <-source|-diseqc|-vdrchannel|-zapchannel|-adapter|-multiplex> <input filename> <output filename> <sources filename>\n");
+                "Syntax: dvcfg_test <-source|-diseqc|-vdrchannel|-zapchannel|-adapter|-multiplex-long|-multiplex-short> <input filename> <output filename> <sources filename>\n");
         exit(1);
 }
