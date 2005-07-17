@@ -177,8 +177,8 @@ struct dvbcfg_gsid
  * "struct dvb_frontend_parameters". For other parameters, there are two
  * possiblities: either the numerical value as defined in the enumerations in
  * frontend.h, or the exact string corresponding to that numerical value as
- * defined in frontend.h. Each delivery line entry use the same format for all
- * values in a single entry.
+ * defined in frontend.h. The same format for all such values must be used
+ * within a single entry.
  */
 struct dvbcfg_delivery {
         union {
