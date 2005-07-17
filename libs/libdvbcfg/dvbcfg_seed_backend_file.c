@@ -64,7 +64,8 @@ int dvbcfg_seed_backend_file_create(const char* filename,
         if (filename[0] == '/') {
                 fbackend->filename = strdup(filename);
         } else {
-                snprintf(tmp, sizeof(tmp)-1, "%s/%s", DVBCFG_DEFAULT_SEED_DIRECTORY, filename);
+                if (snprintf(tmp, sizeof(tmp), "%s/%s", DVBCFG_DEFAULT_SEED_DIRECTORY, filename) >= sizeof(tmp))
+                        return -ENOMEM;
                 fbackend->filename = strdup(tmp);
         }
         if (fbackend->filename == NULL) {
