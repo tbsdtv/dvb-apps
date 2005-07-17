@@ -84,9 +84,6 @@
  * addition to the PMT (however the pmt entries should override any clashing
  * entries in the PMT).
  *
- * This file format can also be used for "seed" transponders - if this is the
- * case, the file should consist only of [m] sections.
- *
  * Comments begin with '#' - any characters after this will be ignored
  * to the end of the line.
  *
