@@ -7,20 +7,22 @@ OBJS =  dvbcfg_util.o \
         dvbcfg_adapter_backend_file.o \
 	dvbcfg_diseqc.o \
         dvbcfg_diseqc_backend_file.o \
+	dvbcfg_multiplex.o \
+	dvbcfg_multiplex_backend_file.o \
 	dvbcfg_vdrchannel.o \
-	dvbcfg_zapchannel.o \
-	dvbcfg_multiplex.o
+	dvbcfg_zapchannel.o
 
-INCLUDES = 	dvbcfg_source.h \
+INCLUDES = 	dvbcfg_common.h \
+		dvbcfg_source.h \
 		dvbcfg_source_backend_file.h \
 		dvbcfg_adapter.h \
 		dvbcfg_adapter_backend_file.h \
 		dvbcfg_diseqc.h \
 		dvbcfg_diseqc_backend_file.h \
+		dvbcfg_multiplex.h \
+		dvbcfg_multiplex_backend_file.h \
 		dvbcfg_vdrchannel.h \
-		dvbcfg_zapchannel.h \
-		dvbcfg_common.h \
-		dvbcfg_multiplex.h
+		dvbcfg_zapchannel.h
 
 DVBCFG_DEFAULT_DIR = /tmp
 
