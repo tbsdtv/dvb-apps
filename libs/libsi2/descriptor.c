@@ -33,13 +33,12 @@
 int verify_descriptors(uint8_t * buf, int len)
 {
 	int pos = 0;
-	struct descriptor *d;
 
 	while (pos < len) {
 		if ((pos + 2) > len)
 			return -1;
 
-		pos += 2 + d->len;
+		pos += 2 + buf[pos+1];
 	}
 
 	if (pos != len)
