@@ -37,15 +37,6 @@ struct dvbcfg_seed {
 };
 
 /**
- * Initialise a dvbcfg_seed structure
- */
-static inline void dvbcfg_seed_init(struct dvbcfg_seed* seed)
-{
-        memset(seed, 0, sizeof(struct dvbcfg_seed));
-}
-
-
-/**
  * seed backend API.
  */
 struct dvbcfg_seed_backend {
@@ -69,6 +60,14 @@ struct dvbcfg_seed_backend {
         int (*put)(struct dvbcfg_seed_backend* backend,
                    struct dvbcfg_delivery* delivery);
 };
+
+/**
+ * Initialise a dvbcfg_seed structure
+ */
+static inline void dvbcfg_seed_init(struct dvbcfg_seed* seed)
+{
+        memset(seed, 0, sizeof(struct dvbcfg_seed));
+}
 
 /**
  * Convenience method to load a seed from a backend.
