@@ -35,10 +35,12 @@
 /**
  * Possible types of source_id.
  */
-#define DVBCFG_SOURCETYPE_DVBS 'S'
-#define DVBCFG_SOURCETYPE_DVBC 'C'
-#define DVBCFG_SOURCETYPE_DVBT 'T'
-#define DVBCFG_SOURCETYPE_ATSC 'A'
+enum dvbcfg_sourcetype {
+	DVBCFG_SOURCETYPE_DVBS = 'S',
+	DVBCFG_SOURCETYPE_DVBC = 'C',
+	DVBCFG_SOURCETYPE_DVBT = 'T',
+	DVBCFG_SOURCETYPE_ATSC = 'A',
+};
 
 
 /**
