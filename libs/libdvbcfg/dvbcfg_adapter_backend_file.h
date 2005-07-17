@@ -45,9 +45,9 @@
  * to the end of the line.
  *
  * Examples:
- * DVBS0.0 S5E S7E
+ * DVBS0.0 S-5E S-7E
  * DVBC1.0
- * DVBT2.0 Tuk-BlackHill
+ * DVBT2.0 T-uk-BlackHill
  */
 
 /**
