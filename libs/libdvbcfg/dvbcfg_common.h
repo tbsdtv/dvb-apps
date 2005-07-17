@@ -185,8 +185,8 @@ struct dvbcfg_delivery {
                 struct {
                         struct dvb_frontend_parameters fe_params;
                         enum dvbcfg_polarization polarization;      /* DVBS only */
-                };
-        } dvb;
+                } dvb;
+        } u;
 };
 
 /**
