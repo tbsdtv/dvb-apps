@@ -28,7 +28,7 @@
 
 char* dvbcfg_source_id_to_string(struct dvbcfg_source_id* source_id)
 {
-	int len = 3;
+  int len = 3;
         char* str;
         char* ptr;
 
@@ -44,7 +44,7 @@ char* dvbcfg_source_id_to_string(struct dvbcfg_source_id* source_id)
                 return NULL;
 
         ptr = str;
-	ptr += sprintf(ptr, "%c-%s", source_id->source_type, source_id->source_network);
+        ptr += sprintf(ptr, "%c-%s", source_id->source_type, source_id->source_network);
         if (source_id->source_region)
                 ptr += sprintf(ptr, "-%s", source_id->source_region);
         if (source_id->source_locale)
@@ -58,7 +58,7 @@ int dvbcfg_source_id_from_string(char* string, struct dvbcfg_source_id* source_i
         int network_len = 0;
         int region_len = 0;
         int locale_len = 0;
-	char* network_start = NULL;
+        char* network_start = NULL;
         char* region_start = NULL;
         char* locale_start = NULL;
 
@@ -76,12 +76,12 @@ int dvbcfg_source_id_from_string(char* string, struct dvbcfg_source_id* source_i
         }
         source_id->source_type = string[0];
 
-	network_start = strchr(string, '-');
-	if (network_start == NULL)
-		return -EINVAL;
+        network_start = strchr(string, '-');
+        if (network_start == NULL)
+                return -EINVAL;
 
-	network_start++;
-	network_len = strlen(network_start);
+        network_start++;
+        network_len = strlen(network_start);
         region_start = strchr(network_start, '-');
         if (region_start) {
                 region_start++;
@@ -112,7 +112,7 @@ int dvbcfg_source_id_from_string(char* string, struct dvbcfg_source_id* source_i
                 }
         }
 
-	source_id->source_network = dvbcfg_strdupandtrim(network_start, network_len);
+        source_id->source_network = dvbcfg_strdupandtrim(network_start, network_len);
         if (source_id->source_network == NULL) {
                 if (source_id->source_locale)
                         free(source_id->source_locale);
