@@ -98,7 +98,7 @@ int dvbcfg_seed_remove_delivery(struct dvbcfg_seed* seed, int idx)
         return 0;
 }
 
-void dvbcfg_seed_free(struct dvbcfg_seed *tofree)
+void dvbcfg_seed_clear(struct dvbcfg_seed *tofree)
 {
         /* free internal structures */
         if (tofree->deliveries)

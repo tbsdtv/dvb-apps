@@ -112,6 +112,6 @@ extern int dvbcfg_seed_remove_delivery(struct dvbcfg_seed* seed, int idx);
  *
  * @param seed The seed whose contents are to be freed.
  */
-extern void dvbcfg_seed_free(struct dvbcfg_seed *tofree);
+extern void dvbcfg_seed_clear(struct dvbcfg_seed *tofree);
 
 #endif
