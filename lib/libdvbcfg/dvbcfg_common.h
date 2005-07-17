@@ -22,26 +22,27 @@
 #define DVBCFG_COMMON_H 1
 
 #include <stdint.h>
+#include <linux/dvb/frontend.h>
 
 /**
  * Possible polarization values.
  */
-#define DVBCFG_POLARIZATION_H 0
-#define DVBCFG_POLARIZATION_V 1
-#define DVBCFG_POLARIZATION_L 2
-#define DVBCFG_POLARIZATION_R 3
-
+enum dvbcfg_polarization {
+        DVBCFG_POLARIZATION_H = 0,
+        DVBCFG_POLARIZATION_V = 1,
+        DVBCFG_POLARIZATION_L = 2,
+        DVBCFG_POLARIZATION_R = 3,
+};
 
 /**
  * Possible types of source_id.
  */
 enum dvbcfg_sourcetype {
-	DVBCFG_SOURCETYPE_DVBS = 'S',
-	DVBCFG_SOURCETYPE_DVBC = 'C',
-	DVBCFG_SOURCETYPE_DVBT = 'T',
-	DVBCFG_SOURCETYPE_ATSC = 'A',
+        DVBCFG_SOURCETYPE_DVBS = 'S',
+        DVBCFG_SOURCETYPE_DVBC = 'C',
+        DVBCFG_SOURCETYPE_DVBT = 'T',
+        DVBCFG_SOURCETYPE_ATSC = 'A',
 };
-
 
 /**
  * A <source_id> defines a unique standardised ID for all DVB networks. It is divided into
@@ -85,12 +86,11 @@ enum dvbcfg_sourcetype {
  * whitespace characters.
  */
 struct dvbcfg_source_id {
-        char source_type;
+        enum dvbcfg_sourcetype source_type;
         char *source_network;
         char *source_region;
         char *source_locale;
 };
-
 
 /**
  * A Unique Multiplex ID (UMID) uniquely identifies a multiplex within a source - it is not necessarily globally unique.
@@ -162,6 +162,31 @@ struct dvbcfg_gsid
 {
         struct dvbcfg_gmid gmid;
         struct dvbcfg_usid usid;
+};
+
+/**
+ * A delivery represents how to tune to a specific channel. The format varies
+ * depending on the source_type of that channel, as follows:
+ *
+ * DVBS: <frequency> <inversion> <polarization> <symbol_rate> <fec_inner>
+ * DVBC: <frequency> <inversion> <symbol_rate> <fec_inner> <modulation>
+ * DVBT: <frequency> <inversion> <bandwidth> <code_rate_HP> <code_rate_LP> <constellation> <tranmission_mode> <guard_interval> <hierarchy_information>
+ * ATSC: <frequency> <inversion> <modulation>
+ *
+ * All numerical values in the delivery are in the units used in the
+ * "struct dvb_frontend_parameters". For other parameters, there are two
+ * possiblities: either the numerical value as defined in the enumerations in
+ * frontend.h, or the exact string corresponding to that numerical value as
+ * defined in frontend.h. Each delivery line entry use the same format for all
+ * values in a single entry.
+ */
+struct dvbcfg_delivery {
+        union {
+                struct {
+                        struct dvb_frontend_parameters fe_params;
+                        enum dvbcfg_polarization polarization;      /* DVBS only */
+                };
+        } dvb;
 };
 
 /**
@@ -307,5 +332,34 @@ extern int dvbcfg_gsid_from_string(char* string, struct dvbcfg_gsid* gsid);
  * @return 1 if they are, 0 if not.
  */
 extern int dvbcfg_gsid_equal(struct dvbcfg_gsid* gsid1, struct dvbcfg_gsid* gsid2);
+
+/**
+ * Parse a string of externalised delivery parameters as described in
+ * dvbcfg_multiplex_backend.h.
+ *
+ * @param delivery_str The string to parse.
+ * @param source_type The type of source this delivery is for.
+ * @param delivery The structure where the parsed parameters should be written.
+ * @return 0 on success, non-zero on error.
+ */
+extern int dvbcfg_delivery_from_string(char * delivery_str,
+                                       enum dvbcfg_sourcetype source_type,
+                                       struct dvbcfg_delivery *delivery);
+
+/**
+ * Generate an externalised string version of delivery parameters.
+ *
+ * @param source_type The type of source this delivery is for.
+ * @param long_delivery If 1 the long version will be used, if 0 the short version.
+ * @param delivery The delivery parameters structure.
+ * @param dest Where to put the string.
+ * @param destsz Size of dest in bytes.
+ * @return 0 on success, or nonzero on error.
+ */
+extern int dvbcfg_delivery_to_string(enum dvbcfg_sourcetype source_type,
+                                     int long_delivery,
+                                     struct dvbcfg_delivery *delivery,
+                                     char* dest,
+                                     int destsz);
 
 #endif

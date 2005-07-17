@@ -23,8 +23,93 @@
 #include <string.h>
 #include <stdio.h>
 #include <errno.h>
+#include <ctype.h>
 #include <dvbcfg_common.h>
 #include "dvbcfg_util.h"
+
+static const struct dvbcfg_setting bandwidth_list [] = {
+        { "BANDWIDTH_6_MHZ", BANDWIDTH_6_MHZ },
+        { "BANDWIDTH_7_MHZ", BANDWIDTH_7_MHZ },
+        { "BANDWIDTH_8_MHZ", BANDWIDTH_8_MHZ },
+        { "BANDWIDTH_AUTO",  BANDWIDTH_AUTO },
+        { NULL, -1 },
+};
+
+static const struct dvbcfg_setting guard_interval_list [] = {
+        {"GUARD_INTERVAL_1_16", GUARD_INTERVAL_1_16},
+        {"GUARD_INTERVAL_1_32", GUARD_INTERVAL_1_32},
+        {"GUARD_INTERVAL_1_4",  GUARD_INTERVAL_1_4},
+        {"GUARD_INTERVAL_1_8",  GUARD_INTERVAL_1_8},
+        {"GUARD_INTERVAL_AUTO", GUARD_INTERVAL_AUTO},
+        { NULL, -1 },
+};
+
+static const struct dvbcfg_setting hierarchy_information_list [] = {
+        { "HIERARCHY_NONE", HIERARCHY_NONE },
+        { "HIERARCHY_1",    HIERARCHY_1 },
+        { "HIERARCHY_2",    HIERARCHY_2 },
+        { "HIERARCHY_4",    HIERARCHY_4 },
+        { "HIERARCHY_AUTO", HIERARCHY_AUTO },
+        { NULL, -1 },
+};
+
+static const struct dvbcfg_setting constellation_list [] = {
+        { "QPSK",     QPSK },
+        { "QAM_16",   QAM_16 },
+        { "QAM_32",   QAM_32 },
+        { "QAM_64",   QAM_64 },
+        { "QAM_128",  QAM_128 },
+        { "QAM_256",  QAM_256 },
+        { "QAM_AUTO", QAM_AUTO },
+        { NULL, -1 },
+};
+
+static const struct dvbcfg_setting transmission_mode_list [] = {
+        { "TRANSMISSION_MODE_2K",   TRANSMISSION_MODE_2K },
+        { "TRANSMISSION_MODE_8K",   TRANSMISSION_MODE_8K },
+        { "TRANSMISSION_MODE_AUTO", TRANSMISSION_MODE_AUTO },
+        { NULL, -1 },
+};
+
+static const struct dvbcfg_setting inversion_list[] = {
+        { "INVERSION_OFF",  INVERSION_OFF },
+        { "INVERSION_ON",   INVERSION_ON },
+        { "INVERSION_AUTO", INVERSION_AUTO },
+        { NULL, -1 },
+};
+
+static const struct dvbcfg_setting fec_list[] = {
+        { "FEC_NONE", FEC_NONE },
+        { "FEC_1_2",  FEC_1_2 },
+        { "FEC_2_3",  FEC_2_3 },
+        { "FEC_3_4",  FEC_3_4 },
+        { "FEC_4_5",  FEC_4_5 },
+        { "FEC_5_6",  FEC_5_6 },
+        { "FEC_6_7",  FEC_6_7 },
+        { "FEC_7_8",  FEC_7_8 },
+        { "FEC_8_9",  FEC_8_9 },
+        { "FEC_AUTO", FEC_AUTO },
+        { NULL, -1 },
+};
+
+static const struct dvbcfg_setting qam_modulation_list[] = {
+        { "QAM_16",   QAM_16 },
+        { "QAM_32",   QAM_32 },
+        { "QAM_64",   QAM_64 },
+        { "QAM_128",  QAM_128 },
+        { "QAM_256",  QAM_256 },
+        { "QAM_AUTO", QAM_AUTO },
+        { NULL, -1 },
+};
+
+static const struct dvbcfg_setting atsc_modulation_list[] = {
+        { "VSB_8",    VSB_8 },
+        { "VSB_16",   VSB_16 },
+        { "QAM_64",   QAM_64 },
+        { "QAM_256",  QAM_256 },
+        { "QAM_AUTO", QAM_AUTO },
+        { NULL, -1 },
+};
 
 char* dvbcfg_source_id_to_string(struct dvbcfg_source_id* source_id)
 {
@@ -364,6 +449,408 @@ int dvbcfg_gsid_equal(struct dvbcfg_gsid* gsid1, struct dvbcfg_gsid* gsid2)
         if (dvbcfg_gmid_equal(&gsid1->gmid, &gsid2->gmid) &&
             dvbcfg_usid_equal(&gsid1->usid, &gsid2->usid))
                 return 1;
+
+        return 0;
+}
+
+int dvbcfg_delivery_from_string(char * delivery_str,
+                                enum dvbcfg_sourcetype source_type,
+                                struct dvbcfg_delivery *delivery)
+{
+        int numtokens;
+        int val;
+        char *linepos;
+        int long_delivery = 0;
+
+        switch(source_type) {
+        case DVBCFG_SOURCETYPE_DVBS:
+                numtokens = dvbcfg_tokenise(delivery_str, " \t", -1, 1);
+                if (numtokens != 5)
+                        return -EINVAL;
+                linepos = delivery_str;
+
+                /* frequency */
+                if (sscanf(linepos, "%i", &val) != 1)
+                        return -EINVAL;
+                delivery->dvb.fe_params.frequency = val;
+                linepos = dvbcfg_nexttoken(linepos);
+
+                /* determine delivery type */
+                if (!strncmp(linepos, "INVERSION_", 10))
+                        long_delivery = 1;
+
+                /* inversion */
+                if (long_delivery) {
+                        if ((val = dvbcfg_parsesetting(linepos, inversion_list)) < 0)
+                                return -EINVAL;
+                } else {
+                        if (sscanf(linepos, "%i", &val) != 1)
+                                return -EINVAL;
+                }
+                delivery->dvb.fe_params.inversion = val;
+                linepos = dvbcfg_nexttoken(linepos);
+
+                /* polarization */
+                if (toupper(linepos[0]) == 'H')
+                        delivery->dvb.polarization = DVBCFG_POLARIZATION_H;
+                else if (toupper(linepos[0]) == 'V')
+                        delivery->dvb.polarization = DVBCFG_POLARIZATION_V;
+                else if (toupper(linepos[0]) == 'L')
+                        delivery->dvb.polarization = DVBCFG_POLARIZATION_L;
+                else if (toupper(linepos[0]) == 'R')
+                        delivery->dvb.polarization = DVBCFG_POLARIZATION_R;
+                else
+                        return -EINVAL;
+                linepos = dvbcfg_nexttoken(linepos);
+
+                /* symbol_rate */
+                if (sscanf(linepos, "%i", &val) != 1)
+                        return -EINVAL;
+                delivery->dvb.fe_params.u.qpsk.symbol_rate = val;
+                linepos = dvbcfg_nexttoken(linepos);
+
+                /* fec_inner */
+                if (long_delivery) {
+                        if ((val = dvbcfg_parsesetting(linepos, fec_list)) < 0)
+                                return -EINVAL;
+                } else {
+                        if (sscanf(linepos, "%i", &val) != 1)
+                                return -EINVAL;
+                }
+                delivery->dvb.fe_params.u.qpsk.fec_inner = val;
+                break;
+
+        case DVBCFG_SOURCETYPE_DVBC:
+                numtokens = dvbcfg_tokenise(delivery_str, " \t", -1, 1);
+                if (numtokens != 5)
+                        return -EINVAL;
+                linepos = delivery_str;
+
+                /* frequency */
+                if (sscanf(linepos, "%i", &val) != 1)
+                        return -EINVAL;
+                delivery->dvb.fe_params.frequency = val;
+                linepos = dvbcfg_nexttoken(linepos);
+
+                /* determine delivery type */
+                if (!strncmp(linepos, "INVERSION_", 10))
+                        long_delivery = 1;
+
+                /* inversion */
+                if (long_delivery) {
+                        if ((val = dvbcfg_parsesetting(linepos, inversion_list)) < 0)
+                                return -EINVAL;
+                } else {
+                        if (sscanf(linepos, "%i", &val) != 1)
+                                return -EINVAL;
+                }
+                delivery->dvb.fe_params.inversion = val;
+                linepos = dvbcfg_nexttoken(linepos);
+
+                /* symbol_rate */
+                if (sscanf(linepos, "%i", &val) != 1)
+                        return -EINVAL;
+                delivery->dvb.fe_params.u.qam.symbol_rate = val;
+                linepos = dvbcfg_nexttoken(linepos);
+
+                /* fec_inner */
+                if (long_delivery) {
+                        if ((val = dvbcfg_parsesetting(linepos, fec_list)) < 0)
+                                return -EINVAL;
+                } else {
+                        if (sscanf(linepos, "%i", &val) != 1)
+                                return -EINVAL;
+                }
+                delivery->dvb.fe_params.u.qam.fec_inner = val;
+                linepos = dvbcfg_nexttoken(linepos);
+
+                /* modulation */
+                if (long_delivery) {
+                        if ((val = dvbcfg_parsesetting(linepos, qam_modulation_list)) < 0)
+                                return -EINVAL;
+                } else {
+                        if (sscanf(linepos, "%i", &val) != 1)
+                                return -EINVAL;
+                }
+                delivery->dvb.fe_params.u.qam.modulation = val;
+                break;
+
+        case DVBCFG_SOURCETYPE_DVBT:
+                numtokens = dvbcfg_tokenise(delivery_str, " \t", -1, 1);
+                if (numtokens != 9)
+                        return -EINVAL;
+                linepos = delivery_str;
+
+                /* frequency */
+                if (sscanf(linepos, "%i", &val) != 1)
+                        return -EINVAL;
+                delivery->dvb.fe_params.frequency = val;
+                linepos = dvbcfg_nexttoken(linepos);
+
+                /* determine delivery type */
+                if (!strncmp(linepos, "INVERSION_", 10))
+                        long_delivery = 1;
+
+                /* inversion */
+                if (long_delivery) {
+                        if ((val = dvbcfg_parsesetting(linepos, inversion_list)) < 0)
+                                return -EINVAL;
+                } else {
+                        if (sscanf(linepos, "%i", &val) != 1)
+                                return -EINVAL;
+                }
+                delivery->dvb.fe_params.inversion = val;
+                linepos = dvbcfg_nexttoken(linepos);
+
+                /* bandwidth */
+                if (long_delivery) {
+                        if ((val = dvbcfg_parsesetting(linepos, bandwidth_list)) < 0)
+                                return -EINVAL;
+                } else {
+                        if (sscanf(linepos, "%i", &val) != 1)
+                                return -EINVAL;
+                }
+                delivery->dvb.fe_params.u.ofdm.bandwidth = val;
+                linepos = dvbcfg_nexttoken(linepos);
+
+                /* code_rate_HP */
+                if (long_delivery) {
+                        if ((val = dvbcfg_parsesetting(linepos, fec_list)) < 0)
+                                return -EINVAL;
+                } else {
+                        if (sscanf(linepos, "%i", &val) != 1)
+                                return -EINVAL;
+                }
+                delivery->dvb.fe_params.u.ofdm.code_rate_HP = val;
+                linepos = dvbcfg_nexttoken(linepos);
+
+                /* code_rate_LP */
+                if (long_delivery) {
+                        if ((val = dvbcfg_parsesetting(linepos, fec_list)) < 0)
+                                return -EINVAL;
+                } else {
+                        if (sscanf(linepos, "%i", &val) != 1)
+                                return -EINVAL;
+                }
+                delivery->dvb.fe_params.u.ofdm.code_rate_LP = val;
+                linepos = dvbcfg_nexttoken(linepos);
+
+                /* constellation */
+                if (long_delivery) {
+                        if ((val = dvbcfg_parsesetting(linepos, constellation_list)) < 0)
+                                return -EINVAL;
+                } else {
+                        if (sscanf(linepos, "%i", &val) != 1)
+                                return -EINVAL;
+                }
+                delivery->dvb.fe_params.u.ofdm.constellation = val;
+                linepos = dvbcfg_nexttoken(linepos);
+
+                /* transmission_mode */
+                if (long_delivery) {
+                        if ((val = dvbcfg_parsesetting(linepos, transmission_mode_list)) < 0)
+                                return -EINVAL;
+                } else {
+                        if (sscanf(linepos, "%i", &val) != 1)
+                                return -EINVAL;
+                }
+                delivery->dvb.fe_params.u.ofdm.transmission_mode = val;
+                linepos = dvbcfg_nexttoken(linepos);
+
+                /* guard_interval */
+                if (long_delivery) {
+                        if ((val = dvbcfg_parsesetting(linepos, guard_interval_list)) < 0)
+                                return -EINVAL;
+                } else {
+                        if (sscanf(linepos, "%i", &val) != 1)
+                                return -EINVAL;
+                }
+                delivery->dvb.fe_params.u.ofdm.guard_interval = val;
+                linepos = dvbcfg_nexttoken(linepos);
+
+                /* hierarchy_information */
+                if (long_delivery) {
+                        if ((val = dvbcfg_parsesetting(linepos, hierarchy_information_list)) < 0)
+                                return -EINVAL;
+                } else {
+                        if (sscanf(linepos, "%i", &val) != 1)
+                                return -EINVAL;
+                }
+                delivery->dvb.fe_params.u.ofdm.hierarchy_information = val;
+                break;
+
+        case DVBCFG_SOURCETYPE_ATSC:
+                numtokens = dvbcfg_tokenise(delivery_str, " \t", -1, 1);
+                if (numtokens != 3)
+                        return -EINVAL;
+                linepos = delivery_str;
+
+                /* frequency */
+                if (sscanf(linepos, "%i", &val) != 1)
+                        return -EINVAL;
+                delivery->dvb.fe_params.frequency = val;
+                linepos = dvbcfg_nexttoken(linepos);
+
+                /* determine delivery type */
+                if (!strncmp(linepos, "INVERSION_", 10))
+                        long_delivery = 1;
+
+                /* inversion */
+                if (long_delivery) {
+                        if ((val = dvbcfg_parsesetting(linepos, inversion_list)) < 0)
+                                return -EINVAL;
+                } else {
+                        if (sscanf(linepos, "%i", &val) != 1)
+                                return -EINVAL;
+                }
+                delivery->dvb.fe_params.inversion = val;
+                linepos = dvbcfg_nexttoken(linepos);
+
+                /* modulation */
+                if (long_delivery) {
+                        if ((val = dvbcfg_parsesetting(linepos, atsc_modulation_list)) < 0)
+                                return -EINVAL;
+                } else {
+                        if (sscanf(linepos, "%i", &val) != 1)
+                                return -EINVAL;
+                }
+                delivery->dvb.fe_params.u.vsb.modulation = val;
+                break;
+
+        default:
+                return -EINVAL;
+        }
+
+        /* success! */
+        return 0;
+}
+
+int dvbcfg_delivery_to_string(enum dvbcfg_sourcetype source_type,
+                              int long_delivery,
+                              struct dvbcfg_delivery *delivery,
+                              char* dest,
+                              int destsz)
+{
+        char polarization = 'H';
+
+        switch(source_type) {
+        case DVBCFG_SOURCETYPE_DVBS:
+                switch(delivery->dvb.polarization) {
+                case DVBCFG_POLARIZATION_H:
+                        polarization = 'H';
+                        break;
+
+                case DVBCFG_POLARIZATION_V:
+                        polarization = 'V';
+                        break;
+
+                case DVBCFG_POLARIZATION_L:
+                        polarization = 'L';
+                        break;
+
+                case DVBCFG_POLARIZATION_R:
+                        polarization = 'R';
+                        break;
+                }
+
+                if (long_delivery) {
+                        if (snprintf(dest, destsz, "%i %s %c %i %s\n",
+                                    delivery->dvb.fe_params.frequency,
+                                    dvbcfg_lookupsetting(delivery->dvb.fe_params.inversion,
+                                                          inversion_list),
+                                    polarization,
+                                    delivery->dvb.fe_params.u.qpsk.symbol_rate,
+                                    dvbcfg_lookupsetting(delivery->dvb.fe_params.u.qpsk.fec_inner,
+                                                          fec_list)) >= destsz)
+                                return -ENOMEM;
+                } else {
+                        if (snprintf(dest, destsz, "%i %i %c %i %i\n",
+                                    delivery->dvb.fe_params.frequency,
+                                    delivery->dvb.fe_params.inversion,
+                                    polarization,
+                                    delivery->dvb.fe_params.u.qpsk.symbol_rate,
+                                    delivery->dvb.fe_params.u.qpsk.fec_inner) >= destsz)
+                                return -ENOMEM;
+                }
+                break;
+
+        case DVBCFG_SOURCETYPE_DVBC:
+                if (long_delivery) {
+                        if (snprintf(dest, destsz, "%i %s %i %s %s\n",
+                                    delivery->dvb.fe_params.frequency,
+                                    dvbcfg_lookupsetting(delivery->dvb.fe_params.inversion,
+                                                          inversion_list),
+                                    delivery->dvb.fe_params.u.qpsk.symbol_rate,
+                                    dvbcfg_lookupsetting(delivery->dvb.fe_params.u.qam.fec_inner,
+                                                          fec_list),
+                                    dvbcfg_lookupsetting(delivery->dvb.fe_params.u.qam.modulation,
+                                                          qam_modulation_list)) >= destsz)
+                                return -ENOMEM;
+                } else {
+                        if (snprintf(dest, destsz, "%i %i %i %i %i\n",
+                                     delivery->dvb.fe_params.frequency,
+                                     delivery->dvb.fe_params.inversion,
+                                     delivery->dvb.fe_params.u.qpsk.symbol_rate,
+                                     delivery->dvb.fe_params.u.qam.fec_inner,
+                                     delivery->dvb.fe_params.u.qam.modulation) >= destsz)
+                                return -ENOMEM;
+                }
+                break;
+
+        case DVBCFG_SOURCETYPE_DVBT:
+                if (long_delivery) {
+                        if (snprintf(dest, destsz, "%i %s %s %s %s %s %s %s %s\n",
+                                    delivery->dvb.fe_params.frequency,
+                                    dvbcfg_lookupsetting(delivery->dvb.fe_params.inversion,
+                                                          inversion_list),
+                                    dvbcfg_lookupsetting(delivery->dvb.fe_params.u.ofdm.bandwidth,
+                                                          bandwidth_list),
+                                    dvbcfg_lookupsetting(delivery->dvb.fe_params.u.ofdm.code_rate_HP,
+                                                          fec_list),
+                                    dvbcfg_lookupsetting(delivery->dvb.fe_params.u.ofdm.code_rate_LP,
+                                                          fec_list),
+                                    dvbcfg_lookupsetting(delivery->dvb.fe_params.u.ofdm.constellation,
+                                                          constellation_list),
+                                    dvbcfg_lookupsetting(delivery->dvb.fe_params.u.ofdm.transmission_mode,
+                                                          transmission_mode_list),
+                                    dvbcfg_lookupsetting(delivery->dvb.fe_params.u.ofdm.guard_interval,
+                                                          guard_interval_list),
+                                    dvbcfg_lookupsetting(delivery->dvb.fe_params.u.ofdm.hierarchy_information,
+                                                          hierarchy_information_list)) >= destsz)
+                                return -ENOMEM;
+                } else {
+                        if (snprintf(dest, destsz, "%i %i %i %i %i %i %i %i %i\n",
+                                    delivery->dvb.fe_params.frequency,
+                                    delivery->dvb.fe_params.inversion,
+                                    delivery->dvb.fe_params.u.ofdm.bandwidth,
+                                    delivery->dvb.fe_params.u.ofdm.code_rate_HP,
+                                    delivery->dvb.fe_params.u.ofdm.code_rate_LP,
+                                    delivery->dvb.fe_params.u.ofdm.constellation,
+                                    delivery->dvb.fe_params.u.ofdm.transmission_mode,
+                                    delivery->dvb.fe_params.u.ofdm.guard_interval,
+                                    delivery->dvb.fe_params.u.ofdm.hierarchy_information) >= destsz)
+                                return -ENOMEM;
+                }
+                break;
+
+        case DVBCFG_SOURCETYPE_ATSC:
+                if (long_delivery) {
+                        if (snprintf(dest, destsz, "%i %s %s\n",
+                                    delivery->dvb.fe_params.frequency,
+                                    dvbcfg_lookupsetting(delivery->dvb.fe_params.inversion,
+                                                         inversion_list),
+                                    dvbcfg_lookupsetting(delivery->dvb.fe_params.u.vsb.modulation,
+                                                         atsc_modulation_list)) >= destsz)
+                                return -ENOMEM;
+                } else {
+                        if (snprintf(dest, destsz, "%i %i %i\n",
+                                     delivery->dvb.fe_params.frequency,
+                                     delivery->dvb.fe_params.inversion,
+                                     delivery->dvb.fe_params.u.vsb.modulation) >= destsz)
+                                return -ENOMEM;
+                }
+                break;
+        }
 
         return 0;
 }

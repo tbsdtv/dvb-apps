@@ -22,6 +22,7 @@
 #define DVBCFG_MULTIPLEX_BACKEND_FILE_H 1
 
 #include <dvbcfg_multiplex.h>
+#include <dvbcfg_common.h>
 
 /**
  * The file backend consists of multiple sections, each describing a
@@ -56,19 +57,7 @@
  *
  * GMID and USID are described in dvbcfg_common.h.
  *
- * The <delivery specific parameters> vary depending on the source_type of the
- * multiplex. They are as follows:
- * DVBS: <frequency> <inversion> <polarization> <symbol_rate> <fec_inner>
- * DVBC: <frequency> <inversion> <symbol_rate> <fec_inner> <modulation>
- * DVBT: <frequency> <inversion> <bandwidth> <code_rate_HP> <code_rate_LP> <constellation> <tranmission_mode> <guard_interval> <hierarchy_information>
- * ATSC: <frequency> <inversion> <modulation>
- *
- * All numerical values in the delivery are in the units used in the
- * "struct dvb_frontend_parameters". For other parameters, there are two
- * possiblities: either the numerical value as defined in the enumerations in
- * frontend.h, or the exact string corresponding to that numerical value as
- * defined in frontend.h. Each delivery line entry use the same format for all
- * values in a single entry.
+ * The <delivery specific parameters> are described in dvbcfg_common.h.
  *
  * Currently only the flag "nopmt" is defined for the <service specific flags>.
  * If this is present, the PMT should be ignored completely, and the pmt entries

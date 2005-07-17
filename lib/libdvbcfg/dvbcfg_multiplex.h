@@ -24,18 +24,19 @@
 #include <dvbcfg_common.h>
 #include <dvbcfg_source.h>
 #include <stdint.h>
-#include <linux/dvb/frontend.h>
 
 /**
  * dvbcfg_multiplex represents the set of multiplexes and their associated
  * services.
  */
 
-
+/**
+ * Extra PID identifiers for streams stored in private streams.
+ */
 #define DVBCFG_PIDTYPE_AC3 0x100
-#define DVBCFG_PIDTYPE_DTS 0x200
-#define DVBCFG_PIDTYPE_TT  0x300
-#define DVBCFG_PIDTYPE_PCR 0x400
+#define DVBCFG_PIDTYPE_DTS 0x101
+#define DVBCFG_PIDTYPE_TT  0x102
+#define DVBCFG_PIDTYPE_PCR 0x103
 
 /**
  * Structure describing a particular PID
@@ -76,7 +77,6 @@ struct dvbcfg_service {
         struct dvbcfg_service *next;    /* NULL=> this is the last entry */
 };
 
-
 /**
  * In-memory representation of a single multiplex.
  */
@@ -85,12 +85,7 @@ struct dvbcfg_multiplex {
 
         struct dvbcfg_umid umid;
 
-        union {
-                struct {
-                        struct dvb_frontend_parameters fe_params;
-                        uint8_t polarization:2;            /* DVBS only */
-                } dvb;
-        } delivery;
+        struct dvbcfg_delivery delivery;
 
         struct dvbcfg_service* services;
 
