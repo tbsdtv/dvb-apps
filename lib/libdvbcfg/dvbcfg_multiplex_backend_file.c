@@ -676,8 +676,12 @@ static int put_service(struct dvbcfg_multiplex_backend* backend,
 
         fprintf(fbackend->outhandle, "[s]\n");
         fprintf(fbackend->outhandle, "usid=%s\n", usid);
-        fprintf(fbackend->outhandle, "name=%s\n", service->name);
         free(usid);
+        fprintf(fbackend->outhandle, "name=%s\n", service->name);
+        if (service->short_name)
+                fprintf(fbackend->outhandle, "sname=%s\n", service->short_name);
+        if (service->provider_name)
+                fprintf(fbackend->outhandle, "pname=%s\n", service->provider_name);
         fprintf(fbackend->outhandle, "flags=");
         if (service->service_flags & DVBCFG_SERVICE_FLAG_IGNOREPMT)
                 fprintf(fbackend->outhandle, "nopmt ");
