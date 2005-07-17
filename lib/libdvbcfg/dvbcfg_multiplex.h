@@ -19,7 +19,7 @@
  */
 
 #ifndef DVBCFG_MULTIPLEX_H
-#define DVBCFG_MULTIPLEX_H
+#define DVBCFG_MULTIPLEX_H 1
 
 #include <dvbcfg_common.h>
 #include <dvbcfg_source.h>

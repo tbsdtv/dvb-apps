@@ -19,7 +19,7 @@
  */
 
 #ifndef DVBCFG_UTIL_H
-#define DVBCFG_UTIL_H
+#define DVBCFG_UTIL_H 1
 
 struct dvbcfg_setting {
         char *name;
@@ -116,4 +116,4 @@ extern int dvbcfg_parsesetting(char* text, const struct dvbcfg_setting* settings
  */
 extern char* dvbcfg_lookupsetting(int setting, const struct dvbcfg_setting* settings);
 
-#endif                          // DVBCFG_UTIL
+#endif

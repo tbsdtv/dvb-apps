@@ -22,7 +22,7 @@
  */
 
 #ifndef DVBCFG_DISEQC_H
-#define DVBCFG_DISEQC_H
+#define DVBCFG_DISEQC_H 1
 
 #include <stdint.h>
 #include <dvbcfg_source.h>

@@ -22,7 +22,7 @@
  */
 
 #ifndef DVBCFG_DISEQC_BACKEND_FILE_H
-#define DVBCFG_DISEQC_BACKEND_FILE_H
+#define DVBCFG_DISEQC_BACKEND_FILE_H 1
 
 #include <stdint.h>
 #include <dvbcfg_diseqc.h>

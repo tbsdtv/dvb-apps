@@ -19,7 +19,7 @@
  */
 
 #ifndef DVBCFG_COMMON_H
-#define DVBCFG_COMMON_H
+#define DVBCFG_COMMON_H 1
 
 #include <stdint.h>
 
@@ -306,4 +306,4 @@ extern int dvbcfg_gsid_from_string(char* string, struct dvbcfg_gsid* gsid);
  */
 extern int dvbcfg_gsid_equal(struct dvbcfg_gsid* gsid1, struct dvbcfg_gsid* gsid2);
 
-#endif                          // DVBCFG_COMMON_H
+#endif

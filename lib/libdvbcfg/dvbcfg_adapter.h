@@ -19,7 +19,7 @@
  */
 
 #ifndef DVBCFG_ADAPTER_H
-#define DVBCFG_ADAPTER_H
+#define DVBCFG_ADAPTER_H 1
 
 #include <dvbcfg_source.h>
 

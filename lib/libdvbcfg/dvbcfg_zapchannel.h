@@ -19,7 +19,7 @@
  */
 
 #ifndef DVBCFG_ZAPCHANNEL_H
-#define DVBCFG_ZAPCHANNEL_H
+#define DVBCFG_ZAPCHANNEL_H 1
 
 #include <stdint.h>
 #include <linux/dvb/frontend.h>

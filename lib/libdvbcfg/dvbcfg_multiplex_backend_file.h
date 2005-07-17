@@ -19,7 +19,7 @@
  */
 
 #ifndef DVBCFG_MULTIPLEX_BACKEND_FILE_H
-#define DVBCFG_MULTIPLEX_BACKEND_FILE_H
+#define DVBCFG_MULTIPLEX_BACKEND_FILE_H 1
 
 #include <dvbcfg_multiplex.h>
 

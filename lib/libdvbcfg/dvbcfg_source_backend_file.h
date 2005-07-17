@@ -22,7 +22,7 @@
  */
 
 #ifndef DVBCFG_SOURCE_BACKEND_FILE_H
-#define DVBCFG_SOURCE_BACKEND_FILE_H
+#define DVBCFG_SOURCE_BACKEND_FILE_H 1
 
 #include <dvbcfg_common.h>
 #include <dvbcfg_source.h>
