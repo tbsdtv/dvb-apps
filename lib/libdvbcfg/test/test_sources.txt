@@ -17,98 +17,98 @@
 
 # Satellites
 
-S5E     Sirius 2/3
-S7E     Eutelsat W3
-S10E    Eutelsat W1R
-S13E    Hotbird 1-(5)-6
-S16E    Eutelsat W2
-S19.2E  Astra 1B/C/E/F/G/H/2C
-S21.5E  Eutelsat II F3
-S23.5E  Astra 3A
-S24.2E  Astra 1D
-S26E    Arabsat 2A/3A
-S28.2E  Astra 2D/A/B
-S28.5E  Eurobird
-S30.5E  Arabsat 2B
-S31.3E  Türksat 1B
-S36E    Eutelsat W4 & Sesat
-S39E    Hellas Sat
-S40E    Express A1R
-S42E    Turksat 1C & EurAsiaSat 1 & NewSat 1
-S45E    Europe*Star 1
-S47E    Telecom 2B
-S48E    Eutelsat II F1
-S50E    Anatolia 1
-S53E    Gorizont 32
-S55.1E  Insat 2DT
-S56E    Most 1
-S57E    NSS 703
-S60E    Intelsat 904
-S62E    Intelsat 902
-S64E    Intelsat 906
-S66E    Intelsat 704
-S68.5E  PAS 7/10
-S72E    PAS 4
-S74E    Insat 3C
-S75E    LMI 1
-S76.5E  Apstar
-S78.5E  Thaicom 2/3
-S80E    Express 6A
-S83E    Insat 2E/3B
-S100.5E Asiasat 2
-S105.5E Asiasat 3S
-S113E   Palapa C2
-S152E   Optus B3
-S156E   Optus C1
-S160E   Optus B1
-S166E   PAS 8
-S169E   PAS 2
-S180E   Intelsat 701
+S-5E     Sirius 2/3
+S-7E     Eutelsat W3
+S-10E    Eutelsat W1R
+S-13E    Hotbird 1-(5)-6
+S-16E    Eutelsat W2
+S-19.2E  Astra 1B/C/E/F/G/H/2C
+S-21.5E  Eutelsat II F3
+S-23.5E  Astra 3A
+S-24.2E  Astra 1D
+S-26E    Arabsat 2A/3A
+S-28.2E  Astra 2D/A/B
+S-28.5E  Eurobird
+S-30.5E  Arabsat 2B
+S-31.3E  Türksat 1B
+S-36E    Eutelsat W4 & Sesat
+S-39E    Hellas Sat
+S-40E    Express A1R
+S-42E    Turksat 1C & EurAsiaSat 1 & NewSat 1
+S-45E    Europe*Star 1
+S-47E    Telecom 2B
+S-48E    Eutelsat II F1
+S-50E    Anatolia 1
+S-53E    Gorizont 32
+S-55.1E  Insat 2DT
+S-56E    Most 1
+S-57E    NSS 703
+S-60E    Intelsat 904
+S-62E    Intelsat 902
+S-64E    Intelsat 906
+S-66E    Intelsat 704
+S-68.5E  PAS 7/10
+S-72E    PAS 4
+S-74E    Insat 3C
+S-75E    LMI 1
+S-76.5E  Apstar
+S-78.5E  Thaicom 2/3
+S-80E    Express 6A
+S-83E    Insat 2E/3B
+S-100.5E Asiasat 2
+S-105.5E Asiasat 3S
+S-113E   Palapa C2
+S-152E   Optus B3
+S-156E   Optus C1
+S-160E   Optus B1
+S-166E   PAS 8
+S-169E   PAS 2
+S-180E   Intelsat 701
 
-S1W     Thor 2/3 & Intelsat 707
-S4W     Amos 1
-S5W     Telecom 2C & Atlantic Bird 3
-S7W     Nilesat 101 & 102
-S8W     Telecom 2A/2D & Atlantic Bird 2
-S11W    Express 3A
-S12.5W  Eutelsat II F2
-S14W    Gorizont 26
-S15W    Telstar 12
-S18W    Intelsat 901
-S21.5W  NSS 7
-S27.5W  Intelsat 605
-S30W    Hispasat 1
-S31.5W  Intelsat 801
-S34.5W  Intelsat 903
-S37.5W  Telstar 11
-S40.5W  NSS 806
-S43W    PAS 3R/6/6B
-S45W    PAS 1/5R
-S47W    TDRS 6
-S53W    Intelsat 706
-S55.5W  Intelsat 805
-S58W    PAS 9
-S61.5W  Echostar 3
-S79W    AMC5
-S82W    Nimiq 2
-S87W    AMC3
-S91W    Nimiq 1
-S97W    Telestar 5
-S105W   AMC2
-S110W   Echostar 6/8
-S119W   Echostar 7
-S121W   Echostar 9
-S148W   Echostar 1/2
-S157W   Echostar 4
+S-1W     Thor 2/3 & Intelsat 707
+S-4W     Amos 1
+S-5W     Telecom 2C & Atlantic Bird 3
+S-7W     Nilesat 101 & 102
+S-8W     Telecom 2A/2D & Atlantic Bird 2
+S-11W    Express 3A
+S-12.5W  Eutelsat II F2
+S-14W    Gorizont 26
+S-15W    Telstar 12
+S-18W    Intelsat 901
+S-21.5W  NSS 7
+S-27.5W  Intelsat 605
+S-30W    Hispasat 1
+S-31.5W  Intelsat 801
+S-34.5W  Intelsat 903
+S-37.5W  Telstar 11
+S-40.5W  NSS 806
+S-43W    PAS 3R/6/6B
+S-45W    PAS 1/5R
+S-47W    TDRS 6
+S-53W    Intelsat 706
+S-55.5W  Intelsat 805
+S-58W    PAS 9
+S-61.5W  Echostar 3
+S-79W    AMC5
+S-82W    Nimiq 2
+S-87W    AMC3
+S-91W    Nimiq 1
+S-97W    Telestar 5
+S-105W   AMC2
+S-110W   Echostar 6/8
+S-119W   Echostar 7
+S-121W   Echostar 9
+S-148W   Echostar 1/2
+S-157W   Echostar 4
 
 # Cable
 
-Csomewhere-someplace       Cable
+C-somewhere-someplace       Cable
 
 # Terrestrial
 
-Tuk-scottish-BlackHill       Terrestrial2
+T-uk-scottish-BlackHill       Terrestrial2
 
 # ATSC
 
-Asomewhere-something-somehow ATSC1
+A-somewhere-something-somehow ATSC1
