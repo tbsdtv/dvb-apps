@@ -9,6 +9,8 @@ OBJS =  dvbcfg_util.o \
         dvbcfg_diseqc_backend_file.o \
 	dvbcfg_multiplex.o \
 	dvbcfg_multiplex_backend_file.o \
+        dvbcfg_seed.o \
+        dvbcfg_seed_backend_file.o \
 	dvbcfg_vdrchannel.o \
 	dvbcfg_zapchannel.o
 
@@ -21,6 +23,8 @@ INCLUDES = 	dvbcfg_common.h \
 		dvbcfg_diseqc_backend_file.h \
 		dvbcfg_multiplex.h \
 		dvbcfg_multiplex_backend_file.h \
+		dvbcfg_seed.h \
+		dvbcfg_seed_backend_file.h \
 		dvbcfg_vdrchannel.h \
 		dvbcfg_zapchannel.h
 
