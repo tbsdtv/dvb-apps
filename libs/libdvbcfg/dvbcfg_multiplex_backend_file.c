@@ -272,7 +272,7 @@ static int get_multiplex(struct dvbcfg_multiplex_backend* backend,
                         if ((value = dvbcfg_iskey(linepos, "version")) != NULL) {
                                 if (strcmp(value, "0.1"))
                                         return -EINVAL;
-                        } else if ((value = dvbcfg_iskey(linepos, "version")) != NULL) {
+                        } else if ((value = dvbcfg_iskey(linepos, "date")) != NULL) {
                                 /* ignore this */
                         } else {
                                 return -EINVAL;
