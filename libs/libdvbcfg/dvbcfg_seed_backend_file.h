@@ -46,7 +46,7 @@
  * on disk.
  *
  * @param filename Pathname to the seeds file. Pass an absolute path to a seed
- * file, OR, a path relative to <defaultconfigdir>/seed/.
+ * file, OR, a path relative to <DVBCFG_DEFAULT_DIR>/seed/.
  * @param long_delivery If 1, the long format for delivery lines will be used
  * (human readable strings). If 0, the short format will be used (integers only).
  * @param source_type source_type of the deliveries in this seed file.
