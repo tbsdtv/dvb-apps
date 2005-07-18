@@ -21,8 +21,8 @@
 #ifndef DVBCFG_MULTIPLEX_BACKEND_FILE_H
 #define DVBCFG_MULTIPLEX_BACKEND_FILE_H 1
 
-#include <dvbcfg_multiplex.h>
-#include <dvbcfg_common.h>
+#include <cfg/dvbcfg_multiplex.h>
+#include <cfg/dvbcfg_common.h>
 
 /**
  * The file backend consists of multiple sections, each describing a

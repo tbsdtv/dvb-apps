@@ -40,7 +40,11 @@ RANLIB = ranlib
 STRIP = strip
 INSTDIR=/usr/local
 
-all: $(STATICLIB) $(SHAREDLIB)
+all: symlink $(STATICLIB) $(SHAREDLIB)
+
+symlink:
+	@rm -f cfg
+	@ln -s . cfg
 
 $(STATICLIB): $(OBJS)
 	$(AR) rc $(STATICLIB) $(OBJS)

@@ -24,7 +24,7 @@
 #ifndef DVBCFG_SOURCE_H
 #define DVBCFG_SOURCE_H 1
 
-#include <dvbcfg_common.h>
+#include <cfg/dvbcfg_common.h>
 
 /**
  * dvbcfg_source are standardised unique IDs defined for all DVB transmitters

@@ -25,7 +25,7 @@
 #define DVBCFG_DISEQC_BACKEND_FILE_H 1
 
 #include <stdint.h>
-#include <dvbcfg_diseqc.h>
+#include <cfg/dvbcfg_diseqc.h>
 
 /**
  * The dvbcfg_diseqc file backend consists of a set of lines as follows:

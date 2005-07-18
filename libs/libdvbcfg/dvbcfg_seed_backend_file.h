@@ -21,7 +21,7 @@
 #ifndef DVBCFG_SEED_BACKEND_FILE_H
 #define DVBCFG_SEED_BACKEND_FILE_H 1
 
-#include <dvbcfg_seed.h>
+#include <cfg/dvbcfg_seed.h>
 
 /**
  * The file backend consists of multiple lines as follows:

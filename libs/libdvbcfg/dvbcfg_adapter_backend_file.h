@@ -21,7 +21,7 @@
 #ifndef DVBCFG_ADAPTER_BACKEND_FILE_H
 #define DVBCFG_ADAPTER_BACKEND_FILE_H 1
 
-#include <dvbcfg_adapter.h>
+#include <cfg/dvbcfg_adapter.h>
 
 /**
  * The file backend consists of multiple lines as follows:

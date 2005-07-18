@@ -21,7 +21,7 @@
 #ifndef DVBCFG_SEED_H
 #define DVBCFG_SEED_H 1
 
-#include <dvbcfg_common.h>
+#include <cfg/dvbcfg_common.h>
 
 /**
  * dvbcfg_seed describes a list of known deliveries which are used to scan and

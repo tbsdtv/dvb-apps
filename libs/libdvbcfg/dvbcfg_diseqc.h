@@ -25,7 +25,7 @@
 #define DVBCFG_DISEQC_H 1
 
 #include <stdint.h>
-#include <dvbcfg_source.h>
+#include <cfg/dvbcfg_source.h>
 
 /**
  * dvbcfg_diseqc defines DISEQC command sequences to use for DVBS channels.

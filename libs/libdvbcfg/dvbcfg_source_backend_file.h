@@ -24,8 +24,8 @@
 #ifndef DVBCFG_SOURCE_BACKEND_FILE_H
 #define DVBCFG_SOURCE_BACKEND_FILE_H 1
 
-#include <dvbcfg_common.h>
-#include <dvbcfg_source.h>
+#include <cfg/dvbcfg_common.h>
+#include <cfg/dvbcfg_source.h>
 
 /**
  * The file backend stores sources in a file on disk as follows:
