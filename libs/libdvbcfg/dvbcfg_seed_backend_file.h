@@ -45,15 +45,17 @@
  * Create an instance of the file backend. This stores the seeds in a file
  * on disk.
  *
- * @param filename Pathname to the seeds file. Pass an absolute path to a seed
- * file, OR, a path relative to <DVBCFG_DEFAULT_DIR>/seed/.
+ * @param basedir Base pathname to seeds storage area (pass NULL to use the
+ * system default basedir).
+ * @param filename Pathname to the seeds file relative to basedir.
  * @param long_delivery If 1, the long format for delivery lines will be used
  * (human readable strings). If 0, the short format will be used (integers only).
  * @param source_type source_type of the deliveries in this seed file.
  * @param backend Will be updated to point to the backend API instance.
  * @return 0 on success, nonzero on error.
  */
-int dvbcfg_seed_backend_file_create(const char* filename,
+int dvbcfg_seed_backend_file_create(const char* basedir,
+                                    const char* filename,
                                     int long_delivery,
                                     enum dvbcfg_sourcetype source_type,
                                     struct dvbcfg_seed_backend** backend);

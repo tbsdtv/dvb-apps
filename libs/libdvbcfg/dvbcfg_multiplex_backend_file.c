@@ -468,6 +468,7 @@ static int put_multiplex(struct dvbcfg_multiplex_backend* backend,
                                       sizeof(tmp)))
                 return -ENOMEM;
         fprintf(fbackend->outhandle, "%s\n", tmp);
+        fprintf(fbackend->outhandle, "\n");
 
         return 0;
 }
@@ -496,10 +497,12 @@ static int put_service(struct dvbcfg_multiplex_backend* backend,
                 fprintf(fbackend->outhandle, "sname=%s\n", service->short_name);
         if (service->provider_name)
                 fprintf(fbackend->outhandle, "pname=%s\n", service->provider_name);
-        fprintf(fbackend->outhandle, "flags=");
-        if (service->service_flags & DVBCFG_SERVICE_FLAG_IGNOREPMT)
-                fprintf(fbackend->outhandle, "nopmt ");
-        fprintf(fbackend->outhandle, "\n");
+        if (service->service_flags != 0) {
+                fprintf(fbackend->outhandle, "flags=");
+                if (service->service_flags & DVBCFG_SERVICE_FLAG_IGNOREPMT)
+                        fprintf(fbackend->outhandle, "nopmt ");
+                fprintf(fbackend->outhandle, "\n");
+        }
 
         if (service->ca_systems_count) {
                 fprintf(fbackend->outhandle, "ca=");
@@ -509,8 +512,10 @@ static int put_service(struct dvbcfg_multiplex_backend* backend,
                 fprintf(fbackend->outhandle, "\n");
         }
 
-        format_pids(fbackend->outhandle, "zap", service->zap_pids_count, service->zap_pids);
-        format_pids(fbackend->outhandle, "pmt", service->pmt_extra_count, service->pmt_extra);
+        if (service->zap_pids_count != 0)
+                format_pids(fbackend->outhandle, "zap", service->zap_pids_count, service->zap_pids);
+        if (service->pmt_extra_count != 0)
+                format_pids(fbackend->outhandle, "pmt", service->pmt_extra_count, service->pmt_extra);
         fprintf(fbackend->outhandle, "\n");
 
         return 0;

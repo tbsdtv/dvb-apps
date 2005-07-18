@@ -754,7 +754,7 @@ int dvbcfg_delivery_to_string(enum dvbcfg_sourcetype source_type,
                 }
 
                 if (long_delivery) {
-                        if (snprintf(dest, destsz, "%i %s %c %i %s\n",
+                        if (snprintf(dest, destsz, "%i %s %c %i %s",
                                     delivery->u.dvb.fe_params.frequency,
                                     dvbcfg_lookupsetting(delivery->u.dvb.fe_params.inversion,
                                                           inversion_list),
@@ -764,7 +764,7 @@ int dvbcfg_delivery_to_string(enum dvbcfg_sourcetype source_type,
                                                           fec_list)) >= destsz)
                                 return -ENOMEM;
                 } else {
-                        if (snprintf(dest, destsz, "%i %i %c %i %i\n",
+                        if (snprintf(dest, destsz, "%i %i %c %i %i",
                                     delivery->u.dvb.fe_params.frequency,
                                     delivery->u.dvb.fe_params.inversion,
                                     polarization,
@@ -776,7 +776,7 @@ int dvbcfg_delivery_to_string(enum dvbcfg_sourcetype source_type,
 
         case DVBCFG_SOURCETYPE_DVBC:
                 if (long_delivery) {
-                        if (snprintf(dest, destsz, "%i %s %i %s %s\n",
+                        if (snprintf(dest, destsz, "%i %s %i %s %s",
                                     delivery->u.dvb.fe_params.frequency,
                                     dvbcfg_lookupsetting(delivery->u.dvb.fe_params.inversion,
                                                           inversion_list),
@@ -787,7 +787,7 @@ int dvbcfg_delivery_to_string(enum dvbcfg_sourcetype source_type,
                                                           qam_modulation_list)) >= destsz)
                                 return -ENOMEM;
                 } else {
-                        if (snprintf(dest, destsz, "%i %i %i %i %i\n",
+                        if (snprintf(dest, destsz, "%i %i %i %i %i",
                                      delivery->u.dvb.fe_params.frequency,
                                      delivery->u.dvb.fe_params.inversion,
                                      delivery->u.dvb.fe_params.u.qpsk.symbol_rate,
@@ -799,7 +799,7 @@ int dvbcfg_delivery_to_string(enum dvbcfg_sourcetype source_type,
 
         case DVBCFG_SOURCETYPE_DVBT:
                 if (long_delivery) {
-                        if (snprintf(dest, destsz, "%i %s %s %s %s %s %s %s %s\n",
+                        if (snprintf(dest, destsz, "%i %s %s %s %s %s %s %s %s",
                                     delivery->u.dvb.fe_params.frequency,
                                     dvbcfg_lookupsetting(delivery->u.dvb.fe_params.inversion,
                                                           inversion_list),
@@ -819,7 +819,7 @@ int dvbcfg_delivery_to_string(enum dvbcfg_sourcetype source_type,
                                                           hierarchy_information_list)) >= destsz)
                                 return -ENOMEM;
                 } else {
-                        if (snprintf(dest, destsz, "%i %i %i %i %i %i %i %i %i\n",
+                        if (snprintf(dest, destsz, "%i %i %i %i %i %i %i %i %i",
                                     delivery->u.dvb.fe_params.frequency,
                                     delivery->u.dvb.fe_params.inversion,
                                     delivery->u.dvb.fe_params.u.ofdm.bandwidth,
@@ -835,7 +835,7 @@ int dvbcfg_delivery_to_string(enum dvbcfg_sourcetype source_type,
 
         case DVBCFG_SOURCETYPE_ATSC:
                 if (long_delivery) {
-                        if (snprintf(dest, destsz, "%i %s %s\n",
+                        if (snprintf(dest, destsz, "%i %s %s",
                                     delivery->u.dvb.fe_params.frequency,
                                     dvbcfg_lookupsetting(delivery->u.dvb.fe_params.inversion,
                                                          inversion_list),
@@ -843,7 +843,7 @@ int dvbcfg_delivery_to_string(enum dvbcfg_sourcetype source_type,
                                                          atsc_modulation_list)) >= destsz)
                                 return -ENOMEM;
                 } else {
-                        if (snprintf(dest, destsz, "%i %i %i\n",
+                        if (snprintf(dest, destsz, "%i %i %i",
                                      delivery->u.dvb.fe_params.frequency,
                                      delivery->u.dvb.fe_params.inversion,
                                      delivery->u.dvb.fe_params.u.vsb.modulation) >= destsz)

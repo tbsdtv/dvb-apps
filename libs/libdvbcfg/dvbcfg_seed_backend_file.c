@@ -45,7 +45,8 @@ static int get_delivery(struct dvbcfg_seed_backend* backend,
 static int put_delivery(struct dvbcfg_seed_backend* backend,
                         struct dvbcfg_delivery* delivery);
 
-int dvbcfg_seed_backend_file_create(const char* filename,
+int dvbcfg_seed_backend_file_create(const char* basename,
+                                    const char* filename,
                                     int long_delivery,
                                     enum dvbcfg_sourcetype source_type,
                                     struct dvbcfg_seed_backend** backend)
@@ -61,13 +62,13 @@ int dvbcfg_seed_backend_file_create(const char* filename,
         fbackend->api.get = get_delivery;
         fbackend->api.put = put_delivery;
 
-        if (filename[0] == '/') {
-                fbackend->filename = strdup(filename);
-        } else {
-                if (snprintf(tmp, sizeof(tmp), "%s/%s", DVBCFG_DEFAULT_SEED_DIRECTORY, filename) >= sizeof(tmp))
-                        return -ENOMEM;
-                fbackend->filename = strdup(tmp);
-        }
+        if (basename == NULL)
+                basename = DVBCFG_DEFAULT_SEED_DIRECTORY;
+
+        if (snprintf(tmp, sizeof(tmp), "%s/%s", basename, filename) >= sizeof(tmp))
+                return -ENOMEM;
+
+        fbackend->filename = strdup(tmp);
         if (fbackend->filename == NULL) {
                 free(fbackend);
                 return -ENOMEM;
