@@ -28,14 +28,14 @@ INCLUDES = 	dvbcfg_common.h \
 		dvbcfg_vdrchannel.h \
 		dvbcfg_zapchannel.h
 
-DVBCFG_DEFAULT_DIR = /tmp
+DVBCFG_DEFAULT_DIR = /etc/dvb
 
 CFLAGS ?= -O2 -g -Wall -Wstrict-prototypes -Wshadow -Wpointer-arith -DDVBCFG_DEFAULT_DIR=$(DVBCFG_DEFAULT_DIR)
 CPPFLAGS = -I. -I../../include
 
 LIB = libdvbcfg.a
 RANLIB = ranlib
-INSTDIR=/tmp
+INSTDIR=/usr/local
 
 libdvbcfg.a: $(OBJS)
 	$(AR) rc $(LIB) $(OBJS)
@@ -46,9 +46,9 @@ test: $(LIB)
 
 install: $(LIB) $(INCLUDES)
 	mkdir -p $(INSTDIR)/lib
-	mkdir -p $(INSTDIR)/include
+	mkdir -p $(INSTDIR)/include/dvb/cfg
 	cp -f $(LIB) $(INSTDIR)/lib
-	cp -f $(INCLUDES) $(INSTDIR)/include
+	cp -f $(INCLUDES) $(INSTDIR)/include/dvb/cfg
 
 clean:
 	rm -f *~ *# *.o *.a
