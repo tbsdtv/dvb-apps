@@ -11,29 +11,34 @@ INC = 	common.h \
 CC = gcc
 CFLAGS = -Wall -Wpointer-arith -g -fPIC
 CPPFLAGS = -MD -I. $(DEFS)
-LDFLAGS = -r -Lmpeg -Ldvb -Latsc -lmpeg -ldvb # -latsc
+LDFLAGS = -shared
+RANLIB = ranlib
 
-TARGET = libsi2.a
+STATICLIB = libsi2.a
+SHAREDLIB = libsi2.so
 INSTDIR= /usr/local
 
 .PHONY: symlink all mpeg dvb atsc
 
-all: symlink $(TARGET)
+all: symlink $(STATICLIB) $(SHAREDLIB)
 
 symlink:
 	@rm -f si
 	@ln -s . si
 
-$(TARGET): $(OBJ) mpeg dvb # atsc
-	$(LD) $(LDFLAGS) $(OBJ) -o $(TARGET)
+$(SHAREDLIB): $(OBJ) mpeg dvb # atsc
+	$(LD) $(LDFLAGS) -o $(SHAREDLIB) $(OBJ) mpeg/libmpeg.a dvb/libdvb.a # atsc/libatsc.a
 
-install: $(LIB) $(INC)
-	#$(MAKE) INSTDIR=$(INSTDIR) -C atsc install
-	$(MAKE) INSTDIR=$(INSTDIR) -C dvb install
-	$(MAKE) INSTDIR=$(INSTDIR) -C mpeg install
+$(STATICLIB): $(OBJ) mpeg dvb # atsc
+	$(AR) rc $(STATICLIB) $(OBJ) mpeg/*.o dvb/*.o # atsc/*.o
+	$(RANLIB) $(STATICLIB)
+
+install: $(SHAREDLIB) $(STATICLIB) $(INC)
 	mkdir -p $(INSTDIR)/lib
 	mkdir -p $(INSTDIR)/include/dvb/si
-	cp -f $(TARGET) $(INSTDIR)/lib
+	cp -f $(STATICLIB) $(INSTDIR)/lib
+	cp -f $(SHAREDLIB) $(INSTDIR)/lib
+	strip $(INSTDIR)/lib/$(SHAREDLIB)
 	cp -f $(INC) $(INSTDIR)/include/dvb/si
 
 mpeg:
@@ -49,7 +54,7 @@ clean:
 	$(MAKE) -C atsc clean
 	$(MAKE) -C dvb clean
 	$(MAKE) -C mpeg clean
-	rm -f *.d *.o $(TARGET) test
+	rm -f *.d *.o *.a test
 
 -include $(wildcard *.d) dummy
 
