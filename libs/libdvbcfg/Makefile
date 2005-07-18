@@ -30,7 +30,7 @@ INCLUDES = 	dvbcfg_common.h \
 
 DVBCFG_DEFAULT_DIR = /etc/dvb
 
-CFLAGS ?= -fPIC -O2 -g -Wall -Wstrict-prototypes -Wshadow -Wpointer-arith -DDVBCFG_DEFAULT_DIR=$(DVBCFG_DEFAULT_DIR)
+CFLAGS ?= -fPIC -O2 -g -Wall -Wstrict-prototypes -Wshadow -Wpointer-arith -DDVBCFG_DEFAULT_DIR=\"$(DVBCFG_DEFAULT_DIR)\"
 CPPFLAGS = -I.
 LDFLAGS = -shared -lc
 

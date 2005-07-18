@@ -27,7 +27,7 @@
 #include "dvbcfg_multiplex_backend_file.h"
 #include "dvbcfg_util.h"
 
-#define DVBCFG_DEFAULT_MULTIPLEX_FILENAME ("DVBCFG_DEFAULT_DIR" "/multiplexes.conf")
+#define DVBCFG_DEFAULT_MULTIPLEX_FILENAME (DVBCFG_DEFAULT_DIR "/multiplexes.conf")
 
 #define LOCATION_SOF 0
 #define LOCATION_DVBMULTIPLEXES 1

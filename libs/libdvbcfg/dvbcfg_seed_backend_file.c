@@ -27,7 +27,7 @@
 #include "dvbcfg_source.h"
 #include "dvbcfg_util.h"
 
-#define DVBCFG_DEFAULT_SEED_DIRECTORY ("DVBCFG_DEFAULT_DIR" "/seed/")
+#define DVBCFG_DEFAULT_SEED_DIRECTORY (DVBCFG_DEFAULT_DIR "/seed/")
 
 struct dvbcfg_seed_backend_file {
         struct dvbcfg_seed_backend api;
