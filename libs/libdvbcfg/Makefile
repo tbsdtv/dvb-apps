@@ -30,28 +30,38 @@ INCLUDES = 	dvbcfg_common.h \
 
 DVBCFG_DEFAULT_DIR = /etc/dvb
 
-CFLAGS ?= -O2 -g -Wall -Wstrict-prototypes -Wshadow -Wpointer-arith -DDVBCFG_DEFAULT_DIR=$(DVBCFG_DEFAULT_DIR)
-CPPFLAGS = -I. -I../../include
+CFLAGS ?= -fPIC -O2 -g -Wall -Wstrict-prototypes -Wshadow -Wpointer-arith -DDVBCFG_DEFAULT_DIR=$(DVBCFG_DEFAULT_DIR)
+CPPFLAGS = -I.
+LDFLAGS = -shared -lc
 
-LIB = libdvbcfg.a
+STATICLIB = libdvbcfg.a
+SHAREDLIB = libdvbcfg.so
 RANLIB = ranlib
+STRIP = strip
 INSTDIR=/usr/local
 
-libdvbcfg.a: $(OBJS)
-	$(AR) rc $(LIB) $(OBJS)
-	$(RANLIB) $(LIB)
+all: $(STATICLIB) $(SHAREDLIB)
+
+$(STATICLIB): $(OBJS)
+	$(AR) rc $(STATICLIB) $(OBJS)
+	$(RANLIB) $(STATICLIB)
+
+$(SHAREDLIB): $(OBJS)
+	$(LD) $(LDFLAGS) $(OBJS) -o $(SHAREDLIB)
 
 test: $(LIB)
 	make -C test
 
-install: $(LIB) $(INCLUDES)
+install: $(STATICLIB) $(SHAREDLIB) $(INCLUDES)
 	mkdir -p $(INSTDIR)/lib
 	mkdir -p $(INSTDIR)/include/dvb/cfg
-	cp -f $(LIB) $(INSTDIR)/lib
+	cp -f $(STATICLIB) $(INSTDIR)/lib
+	cp -f $(SHAREDLIB) $(INSTDIR)/lib
+	$(STRIP) $(INSTDIR)/lib/$(SHAREDLIB)
 	cp -f $(INCLUDES) $(INSTDIR)/include/dvb/cfg
 
 clean:
-	rm -f *~ *# *.o *.a
+	rm -f *~ *# *.o *.a *.so
 	make -C test clean
 
-.PHONY: clean test
+.PHONY: clean test all
