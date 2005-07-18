@@ -34,6 +34,9 @@ $(STATICLIB): $(OBJ) mpeg dvb # atsc
 	$(RANLIB) $(STATICLIB)
 
 install: $(SHAREDLIB) $(STATICLIB) $(INC)
+	make -C mpeg install INSTDIR=$(INSTDIR)
+	make -C dvb install INSTDIR=$(INSTDIR)
+	make -C atsc install INSTDIR=$(INSTDIR)
 	mkdir -p $(INSTDIR)/lib
 	mkdir -p $(INSTDIR)/include/dvb/si
 	cp -f $(STATICLIB) $(INSTDIR)/lib
