@@ -57,7 +57,7 @@ clean:
 	$(MAKE) -C atsc clean
 	$(MAKE) -C dvb clean
 	$(MAKE) -C mpeg clean
-	rm -f *.d *.o *.a test
+	rm -f *.d *.o *.a *.so *~ *# si test
 
 -include $(wildcard *.d) dummy
 
