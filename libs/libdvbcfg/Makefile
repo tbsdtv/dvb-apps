@@ -65,7 +65,7 @@ install: $(STATICLIB) $(SHAREDLIB) $(INCLUDES)
 	cp -f $(INCLUDES) $(INSTDIR)/include/dvb/cfg
 
 clean:
-	rm -f *~ *# *.o *.a *.so
+	rm -f *~ *# *.o *.a *.so cfg
 	make -C test clean
 
 .PHONY: clean test all
