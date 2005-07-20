@@ -2,13 +2,15 @@
 OBJ =	crc32.o \
 	descriptor.o \
 	section.o \
-	section_buf.o
+	section_buf.o \
+	transport_packet.o
 
 INC = 	common.h \
 	crc32.h \
 	descriptor.h \
 	section.h \
-	section_buf.h
+	section_buf.h \
+	transport_packet.h
 
 CC = gcc
 CFLAGS = -Wall -Wpointer-arith -g -fPIC
