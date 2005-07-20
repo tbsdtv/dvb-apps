@@ -24,6 +24,22 @@
 #include <stdint.h>
 #include <byteswap.h>
 
+#define packed __attribute__((packed))
+
+#if 0
+#define EBIT2(x1,x2) x1 x2
+#define EBIT3(x1,x2,x3) x1 x2 x3
+#define EBIT4(x1,x2,x3,x4) x1 x2 x3 x4
+#define EBIT5(x1,x2,x3,x4,x5) x1 x2 x3 x4 x5
+#define EBIT6(x1,x2,x3,x4,x5,x6) x1 x2 x3 x4 x5 x6
+#else
+#define EBIT2(x1,x2) x2 x1
+#define EBIT3(x1,x2,x3) x3 x2 x1
+#define EBIT4(x1,x2,x3,x4) x4 x3 x2 x1
+#define EBIT5(x1,x2,x3,x4,x5) x5 x4 x3 x2 x1
+#define EBIT6(x1,x2,x3,x4,x5,x6) x6 x5 x4 x3 x2 x1
+#endif
+
 static inline void bswap16(uint8_t * buf) {
 	*((uint16_t*)buf) = bswap_16((*(uint16_t*)buf));
 }
