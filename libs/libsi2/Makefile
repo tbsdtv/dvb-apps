@@ -2,11 +2,13 @@
 OBJ =	crc32.o \
 	descriptor.o \
 	section.o \
+	section_buf.o
 
 INC = 	common.h \
 	crc32.h \
 	descriptor.h \
 	section.h \
+	section_buf.h
 
 CC = gcc
 CFLAGS = -Wall -Wpointer-arith -g -fPIC
