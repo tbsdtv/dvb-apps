@@ -25,38 +25,50 @@
 #include "descriptor.h"
 
 #define TRANSPORT_PACKET_LENGTH 188
+#define TRANSPORT_PACKET_SYNC 0x47
 
 
 /**
  * Enumeration of adaptation field control values.
  */
 enum transport_adaptation_field_control {
-	transport_adaptation_field_control_payload_only   = 0x01,
-	transport_adaptation_field_control_adaptation_only  = 0x02,
-	transport_adaptation_field_control_adaptation_payload = 0x03,
+	transport_adaptation_field_control_reserved		= 0x00,
+	transport_adaptation_field_control_payload_only		= 0x01,
+	transport_adaptation_field_control_adaptation_only	= 0x02,
+	transport_adaptation_field_control_adaptation_payload	= 0x03,
+};
+
+/**
+ * Enumeration of scrambling control values.
+ */
+enum transport_scrambling_control {
+	transport_scrambling_control_unscrambled   		= 0x00,
+	transport_scrambling_control_user_1			= 0x01,
+	transport_scrambling_control_user_2			= 0x02,
+	transport_scrambling_control_user_3			= 0x03,
 };
 
 /**
  * Enumeration of adaptation flags.
  */
 enum transport_adaptation_flags {
-	transport_adaptation_flag_discontinuity     = 0x80,
-	transport_adaptation_flag_random_access     = 0x40,
-	transport_adaptation_flag_es_priority       = 0x20,
-	transport_adaptation_flag_pcr       = 0x10,
-	transport_adaptation_flag_opcr        = 0x08,
-	transport_adaptation_flag_splicing_point    = 0x04,
-	transport_adaptation_flag_private_data      = 0x02,
-	transport_adaptation_flag_extension     = 0x01,
+	transport_adaptation_flag_discontinuity			= 0x80,
+	transport_adaptation_flag_random_access			= 0x40,
+	transport_adaptation_flag_es_priority			= 0x20,
+	transport_adaptation_flag_pcr				= 0x10,
+	transport_adaptation_flag_opcr				= 0x08,
+	transport_adaptation_flag_splicing_point		= 0x04,
+	transport_adaptation_flag_private_data			= 0x02,
+	transport_adaptation_flag_extension			= 0x01,
 };
 
 /**
  * Enumeration of adaptation extension flags.
  */
 enum transport_adaptation_extension_flags {
-	transport_adaptation_extension_flag_ltw     = 0x80,
-	transport_adaptation_extension_flag_piecewise_rate  = 0x40,
-	transport_adaptation_extension_flag_seamless_splice = 0x20,
+	transport_adaptation_extension_flag_ltw			= 0x80,
+	transport_adaptation_extension_flag_piecewise_rate	= 0x40,
+	transport_adaptation_extension_flag_seamless_splice	= 0x20,
 };
 
 /**
@@ -65,15 +77,15 @@ enum transport_adaptation_extension_flags {
  */
 enum transport_value {
 	/* normal adaptation */
-	transport_value_pcr       = 0x0001,
-	transport_value_opcr      = 0x0002,
-	transport_value_splice_countdown  = 0x0004,
-	transport_value_private_data    = 0x0008,
+	transport_value_pcr					= 0x0001,
+	transport_value_opcr					= 0x0002,
+	transport_value_splice_countdown			= 0x0004,
+	transport_value_private_data				= 0x0008,
 
 	/* extension adaptation */
-	transport_value_ltw       = 0x0100,
-	transport_value_piecewise_rate    = 0x0101,
-	transport_value_seamless_splice   = 0x0102,
+	transport_value_ltw					= 0x0100,
+	transport_value_piecewise_rate				= 0x0101,
+	transport_value_seamless_splice				= 0x0102,
 };
 
 /**
@@ -81,13 +93,13 @@ enum transport_value {
  */
 struct transport_packet {
 	uint8_t sync_byte;
-  EBIT3(uint8_t transport_error_indicator : 1; ,
-	uint8_t payload_unit_start_indicator  : 1; ,
-	uint8_t pid_hi        : 6; );
+  EBIT3(uint8_t transport_error_indicator 	: 1; ,
+	uint8_t payload_unit_start_indicator	: 1; ,
+	uint8_t pid_hi				: 6; );
 	uint8_t pid_lo;
-  EBIT3(uint8_t transport_scrambling_control  : 2; ,
-	uint8_t adaptation_field_control  : 2; ,
-	uint8_t continuity_counter    : 4; );
+  EBIT3(uint8_t transport_scrambling_control	: 2; ,
+	uint8_t adaptation_field_control	: 2; ,
+	uint8_t continuity_counter		: 4; );
 	/* values */
 } packed;
 
