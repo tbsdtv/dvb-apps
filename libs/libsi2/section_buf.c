@@ -23,6 +23,7 @@
 #include "section_buf.h"
 
 #define SECTION_HDR_SIZE 3
+#define SECTION_PAD 0xff
 
 int section_buf_init(struct section_buf *section, int max)
 {
@@ -39,12 +40,25 @@ int section_buf_init(struct section_buf *section, int max)
 int section_buf_add(struct section_buf *section, uint8_t* frag, int len)
 {
 	int copy;
+	int used = 0;
 	uint8_t *data;
 	uint8_t *pos = (uint8_t*) section + sizeof(struct section_buf) + section->count;
 
 	/* have we finished? */
 	if (section->header && (section->len == section->count))
 		return 0;
+
+	/* skip over section padding bytes */
+	if (section->count == 0) {
+		while(len && (*frag == SECTION_PAD)) {
+			len--;
+			used++;
+			frag++;
+		}
+
+		if (len == 0)
+			return used;
+	}
 
 	/* grab the header to get the section length */
 	if (!section->header) {
@@ -70,6 +84,7 @@ int section_buf_add(struct section_buf *section, uint8_t* frag, int len)
 		pos += copy;
 		frag += copy;
 		len -= copy;
+		used += copy;
 	}
 
 	/* accumulate frag */
@@ -78,7 +93,8 @@ int section_buf_add(struct section_buf *section, uint8_t* frag, int len)
 		copy = len;
 	memcpy(pos, frag, copy);
 	section->count += copy;
+	used += copy;
 
 	/* return number of bytes used */
-	return copy;
+	return used;
 }
