@@ -98,3 +98,47 @@ int section_buf_add(struct section_buf *section, uint8_t* frag, int len)
 	/* return number of bytes used */
 	return used;
 }
+
+int section_buf_add_transport_payload(struct section_buf *section,
+				      uint8_t* payload, int len,
+				      int pdu_start)
+{
+	int used;
+	int tmp;
+
+	/* sanity catch */
+	if (len == 0)
+		return 0;
+
+	/* if we're at a PDU start, we need extra handling for the extra first
+	 * byte giving the offset to the start of the next section. */
+	if (pdu_start) {
+		/* work out the offset to the _next_ payload */
+		int offset = payload[0];
+		if ((offset+1) > len)
+			return -EINVAL;
+
+		/* accumulate the end if we need to */
+		if (section->count != 0) {
+			/* add the final fragment. */
+			tmp = section_buf_add(section, payload + 1, offset);
+			if (tmp < 0)
+				return tmp;
+
+			/* since the stream said this was the final fragment
+			 * (PDU START bit), we check that it really was */
+			if ((tmp != offset) || section_buf_remaining(section))
+				return -ERANGE;
+
+			/* ok, return the number of bytes we used */
+			return 1 + tmp;
+		}
+
+		/* otherwise, we skip the end of the previous section, and
+		 * start accumulating the new data. */
+		used = 1 + offset;
+	}
+
+	/* ok, just accumulate the data as normal */
+	return section_buf_add(section, payload+used, len - used);
+}

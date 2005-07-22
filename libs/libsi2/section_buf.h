@@ -23,6 +23,8 @@
 
 #include <stdint.h>
 
+#define DVB_MAX_SECTION_BYTES 4096
+
 /**
  * Buffer used to keep track of  section fragments.
  */
@@ -49,12 +51,35 @@ extern int section_buf_init(struct section_buf *section, int max);
  * @param section section_buf to add to.
  * @param frag Pointer to data fragment.
  * @param len Number of bytes of data.
- * @return 0 If section is complete. >0 indicates how many bytes were consumed.
- * -ERANGE indicates that the section is larger than section->max. Note in this
- * case, section->len is still updated, so you know how much data needs to be
- * skipped.
+ * @return 0 If section was already complete. >0 indicates how many bytes were
+ * consumed.
+ * -ERANGE indicates that the section is larger than section->max.
+ * Note in this case, section->len is still updated, so you know how much data
+ * needs to be skipped.
  */
 extern int section_buf_add(struct section_buf *section, uint8_t* frag, int len);
+
+/**
+ * Add a transport packet PSI payload to a section_buf. This takes into account
+ * the extra byte present in PDU_START flagged packets.
+ *
+ * @param section section_buf to add to.
+ * @param payload Pointer to packet payload data.
+ * @param len Number of bytes of data.
+ * @param pdu_start True if the payload_unit_start_indicator flag was set in the
+ * TS packet.
+ * @return 0 If section was already complete. >0 indicates how many bytes were
+ * consumed.
+ * -ERANGE indicates that the section is larger than section->max.
+ * Note in this case, section->len is still updated, so you know how much data
+ * needs to be skipped. Or else the combination of pointer_field/pdu_start
+ * meant either the complete data was never received, or too much data was
+ * received.
+ * -EINVAL indicates the pointer_field was completely invalid (too large).
+ */
+extern int section_buf_add_transport_payload(struct section_buf *section,
+					     uint8_t* payload, int len,
+					     int pdu_start);
 
 /**
  * Get the number of bytes left to be received in a section_buf.
