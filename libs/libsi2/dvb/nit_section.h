@@ -33,6 +33,7 @@ struct dvb_nit_section {
 	/* struct dvb_nit_section_part2 part2 */
 };
 
+/* TODO: remove this and add accessor to reserved_2 */
 struct dvb_nit_section_part2 {
   EBIT2(uint16_t reserved_2			: 4; ,
 	uint16_t transport_stream_loop_length	:12; );
@@ -64,7 +65,7 @@ static inline struct dvb_nit_section_part2 *dvb_nit_section_part2(struct dvb_nit
 #define dvb_nit_section_transports_for_each(nit, part2, pos) \
 	for ((pos) = dvb_nit_section_transports_first(nit, part2); \
 	     (pos); \
-	     (pos) = dvb_nit_section_transports_next(nit, pos))
+	     (pos) = dvb_nit_section_transports_next(part2, pos))
 
 #define dvb_nit_transport_descriptors_for_each(transport, pos) \
 	for ((pos) = dvb_nit_transport_descriptors_first(transport); \

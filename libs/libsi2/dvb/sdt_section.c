@@ -24,13 +24,13 @@
 struct dvb_sdt_section * dvb_sdt_section_parse(struct section_ext * ext)
 {
 	uint8_t * buf = (uint8_t *) ext;
-	unsigned int pos = sizeof(struct section_ext);
+	unsigned int pos = 0;
 	unsigned int len = section_ext_length(ext);
 
 	if (len < sizeof(struct dvb_sdt_section))
 		return NULL;
 
-	bswap16(buf + pos);
+	bswap16(buf + sizeof(struct section_ext));
 	pos += sizeof(struct dvb_sdt_section);
 
 	while (pos < len) {
