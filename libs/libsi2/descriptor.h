@@ -77,6 +77,21 @@ static inline int
 
 
 /******************************** PRIVATE CODE ********************************/
-extern int verify_descriptors(uint8_t * buf, int len);
+static inline int verify_descriptors(uint8_t * buf, int len)
+{
+	int pos = 0;
+
+	while (pos < len) {
+		if ((pos + 2) > len)
+			return -1;
+
+		pos += 2 + buf[pos+1];
+	}
+
+	if (pos != len)
+		return -1;
+
+	return 0;
+}
 
 #endif

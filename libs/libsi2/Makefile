@@ -1,6 +1,5 @@
 
 OBJ =	crc32.o \
-	descriptor.o \
 	section_buf.o \
 	transport_packet.o
 
