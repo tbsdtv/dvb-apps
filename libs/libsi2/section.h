@@ -23,8 +23,8 @@
 
 #include <si/common.h>
 #include <si/descriptor.h>
-
 #include <stdint.h>
+#include "si/crc32.h"
 
 #define CRC_SIZE 4
 
@@ -59,8 +59,48 @@ struct section_ext {
  * structures retrived using this pointer.
  */
 
-struct section * parse_section(uint8_t * buf, int len);
-struct section_ext * parse_section_ext(struct section *, int check_crc);
+static inline struct section * parse_section(uint8_t * buf, int len)
+{
+	struct section * ret = (struct section *)buf;
+
+	if (len < 3)
+		return NULL;
+
+	bswap16(buf+1);
+
+	if (len != ret->length + 3)
+		return NULL;
+
+	return ret;
+}
+
+static inline struct section_ext * parse_section_ext(struct section * section,
+					      	     int check_crc)
+{
+	if (section->syntax_indicator == 0)
+		return NULL;
+
+	if (check_crc) {
+		uint8_t * buf = (uint8_t *) section;
+		int len = sizeof(struct section) + section->length;
+		uint32_t crc;
+
+		/* the crc check has to be performed on the unswapped data */
+		bswap16(buf+1);
+		crc = crc32(CRC32_INIT, buf, len);
+		bswap16(buf+1);
+
+		/* the crc check includes the crc value,
+		* the result should therefore be zero.
+		*/
+		if (crc)
+			return NULL;
+	}
+
+	bswap16((uint8_t *)section + sizeof(struct section));
+
+	return (struct section_ext *)section;
+}
 
 static inline int section_length(struct section *section)
 {
