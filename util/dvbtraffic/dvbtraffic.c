@@ -1,3 +1,5 @@
+/* This file is released into the public domain by its authors */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/ioctl.h>
