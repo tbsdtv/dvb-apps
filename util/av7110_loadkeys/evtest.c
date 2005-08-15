@@ -1,5 +1,5 @@
 /*
- * $Id: evtest.c,v 1.2 2004/07/15 12:48:08 js Exp $
+ * $Id: evtest.c,v 1.3 2005/08/15 20:43:52 js Exp $
  *
  *  Copyright (c) 1999-2000 Vojtech Pavlik
  *
@@ -34,8 +34,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-char *events[EV_MAX + 1] = { "Reset", "Key", "Relative", "Absolute", NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-NULL, NULL, NULL, "LED", "Sound", NULL, "Repeat", "ForceFeedback", NULL, "ForceFeedbackStatus"};
+char *events[EV_MAX + 1] = { "Sync", "Key", "Relative", "Absolute", "Misc", NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+NULL, NULL, NULL, "LED", "Sound", NULL, "Repeat", "ForceFeedback", "Power", "ForceFeedbackStatus"};
+char *syncs[2] = { "Sync", "Config"};
 char *keys[KEY_MAX + 1] = {
   // 0x000
   "Reserved", "Esc", "1", "2", "3", "4", "5", "6", 
@@ -158,7 +159,7 @@ char *leds[LED_MAX + 1] = { "NumLock", "CapsLock", "ScrollLock", "Compose", "Kan
 char *repeats[REP_MAX + 1] = { "Delay", "Period" };
 char *sounds[SND_MAX + 1] = { "Bell", "Click" };
 
-char **names[EV_MAX + 1] = { events, keys, relatives, absolutes, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+char **names[EV_MAX + 1] = { syncs, keys, relatives, absolutes, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 NULL, NULL, leds, sounds, NULL, repeats, NULL, NULL, NULL };
 
 #define BITS_PER_LONG (sizeof(long) * 8)
