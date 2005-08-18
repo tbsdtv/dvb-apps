@@ -53,7 +53,7 @@ struct dvb_nit_section * dvb_nit_section_parse(struct section_ext *);
 #define dvb_nit_section_descriptors_for_each(nit, pos) \
 	for ((pos) = dvb_nit_section_descriptors_first(nit); \
 	     (pos); \
-	     (pos) = dvb_nit_section_descriptors_first(nit, pos))
+	     (pos) = dvb_nit_section_descriptors_next(nit, pos))
 
 static inline struct dvb_nit_section_part2 *dvb_nit_section_part2(struct dvb_nit_section * nit)
 {

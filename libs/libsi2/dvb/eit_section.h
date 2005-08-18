@@ -41,7 +41,7 @@ struct dvb_eit_event {
 	uint64_t running_status		: 3;  ,
 	uint64_t free_ca_mode		: 1;  ,
 	uint64_t descriptors_loop_length:12; );
-  	/* struct descriptor descriptors[] */
+	/* struct descriptor descriptors[] */
 } packed;
 
 struct dvb_eit_section *dvb_eit_section_parse(struct section_ext *);

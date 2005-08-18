@@ -29,14 +29,14 @@ struct dvb_bat_section {
 
   EBIT2(uint16_t reserved_1			: 4; ,
 	uint16_t bouquet_descriptors_length	:12; );
-  	/* struct descriptor descriptors[] */
+	/* struct descriptor descriptors[] */
 	/* struct dvb_bat_section_part2 part2 */
 };
 
 struct dvb_bat_section_part2 {
   EBIT2(uint16_t reserved_2			: 4; ,
 	uint16_t transport_stream_loop_length	:12; );
-  	/* struct dvb_bat_transport transports[] */
+	/* struct dvb_bat_transport transports[] */
 } packed;
 
 struct dvb_bat_transport {
@@ -44,7 +44,7 @@ struct dvb_bat_transport {
 	uint16_t original_network_id;
   EBIT2(uint16_t reserved			: 4; ,
 	uint16_t transport_descriptors_length	:12; );
-  	/* struct descriptor descriptors[] */
+	/* struct descriptor descriptors[] */
 };
 
 struct dvb_bat_section *dvb_bat_section_parse(struct section_ext *);

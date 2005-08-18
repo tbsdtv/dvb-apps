@@ -27,7 +27,7 @@
 struct dvb_sit_section {
 	struct section_ext head;
 
-  EBIT2(uint16_t reserved     			: 4; ,
+  EBIT2(uint16_t reserved			: 4; ,
 	uint16_t transmission_info_loop_length  :12; );
 	/* struct descriptor descriptors[] */
 	/* struct dvb_sit_service services[] */
@@ -35,8 +35,8 @@ struct dvb_sit_section {
 
 struct dvb_sit_service {
 	uint16_t service_id;
-  EBIT3(uint16_t reserved     		: 1; ,
-	uint16_t running_status     	: 3; ,
+  EBIT3(uint16_t reserved		: 1; ,
+	uint16_t running_status		: 3; ,
 	uint16_t service_loop_length    :12; );
 	/* struct descriptor descriptors[] */
 };

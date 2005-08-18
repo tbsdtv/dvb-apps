@@ -42,11 +42,11 @@ struct section_ext {
 	uint8_t	table_id;
   EBIT4(uint16_t syntax_indicator	: 1; ,
 	uint16_t private_indicator	: 1; , /* 2.4.4.10 */
-	uint16_t reserved 		: 2; ,
+	uint16_t reserved		: 2; ,
 	uint16_t length			:12; );
 
 	uint16_t table_id_ext;
-  EBIT3(uint8_t reserved1 		: 2; ,
+  EBIT3(uint8_t reserved1		: 2; ,
 	uint8_t version_number		: 5; ,
 	uint8_t current_next_indicator	: 1; );
 	uint8_t section_number;
@@ -75,7 +75,7 @@ static inline struct section * parse_section(uint8_t * buf, int len)
 }
 
 static inline struct section_ext * parse_section_ext(struct section * section,
-					      	     int check_crc)
+						     int check_crc)
 {
 	if (section->syntax_indicator == 0)
 		return NULL;

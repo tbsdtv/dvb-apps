@@ -40,7 +40,7 @@ struct dvb_sdt_service {
   EBIT3(uint16_t running_status			: 3; ,
 	uint16_t free_ca_mode			: 1; ,
 	uint16_t descriptors_loop_length	:12; );
-  	/* struct descriptor descriptors[] */
+	/* struct descriptor descriptors[] */
 } packed;
 
 struct dvb_sdt_section * dvb_sdt_section_parse(struct section_ext * section);

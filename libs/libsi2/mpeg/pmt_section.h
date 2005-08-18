@@ -31,8 +31,8 @@ struct mpeg_pmt_section {
 	uint16_t pcr_pid		:13; );
   EBIT2(uint16_t reserved_2		: 4; ,
 	uint16_t program_info_length	:12; );
-  	/* struct descriptor descriptors[] */
-  	/* struct mpeg_pmt_stream streams[] */
+	/* struct descriptor descriptors[] */
+	/* struct mpeg_pmt_stream streams[] */
 } packed;
 
 struct mpeg_pmt_stream {
@@ -40,9 +40,9 @@ struct mpeg_pmt_stream {
   EBIT2(uint16_t reserved_1		: 3; ,
 	uint16_t pid			:13; );
   EBIT2(uint16_t reserved_2		: 4; ,
-	uint16_t es_info_length 	:12; );
+	uint16_t es_info_length		:12; );
 
-  	/* struct descriptor descriptors[] */
+	/* struct descriptor descriptors[] */
 } packed;
 
 extern struct mpeg_pmt_section *mpeg_pmt_section_parse(struct section_ext *);

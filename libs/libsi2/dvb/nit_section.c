@@ -52,7 +52,7 @@ struct dvb_nit_section *dvb_nit_section_parse(struct section_ext * ext)
 		struct dvb_nit_transport *transport =
 			(struct dvb_nit_transport *)(buf + pos);
 
-                if ((pos + sizeof(struct dvb_nit_transport)) > len)
+		if ((pos + sizeof(struct dvb_nit_transport)) > len)
 			return NULL;
 
 		bswap16(buf + pos);
@@ -65,7 +65,7 @@ struct dvb_nit_section *dvb_nit_section_parse(struct section_ext * ext)
 			return NULL;
 
 		if (verify_descriptors(buf + pos,
-		    			transport->transport_descriptors_length))
+					transport->transport_descriptors_length))
 			return NULL;
 
 		pos += transport->transport_descriptors_length;
