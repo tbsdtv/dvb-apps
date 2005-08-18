@@ -7,6 +7,7 @@ LDFLAGS = -r
 OBJ = bat_section.o \
       eit_section.o \
       dit_section.o \
+      int_section.o \
       nit_section.o \
       rst_section.o \
       sdt_section.o \
@@ -19,6 +20,7 @@ INC = section.h \
       bat_section.h \
       dit_section.h \
       eit_section.h \
+      int_sectio.h \
       nit_section.h \
       rst_section.h \
       sdt_section.h \

@@ -32,6 +32,7 @@
 #include <si/dvb/st_section.h>
 #include <si/dvb/tdt_section.h>
 #include <si/dvb/tot_section.h>
+#include <si/dvb/int_section.h>
 
 enum dvb_section_tag {
 	sct_network_information_actual			= 0x40,
@@ -41,6 +42,8 @@ enum dvb_section_tag {
 	sct_service_description_other			= 0x46,
 
 	sct_bouquet_association				= 0x4a,
+
+	sct_ip_mac_notification				= 0x4c,
 
 	sct_event_information_actual			= 0x4e,
 	sct_event_information_other			= 0x4f,
