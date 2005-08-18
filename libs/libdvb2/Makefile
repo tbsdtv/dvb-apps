@@ -34,7 +34,7 @@ LDFLAGS = -shared -lc -lpthread -lrt -ldl
 TARGET = libdvb2.so
 INSTDIR = /usr/local
 DVBLIBS = -Lci -L../libsi2 -lci2 -lsi2
-TESTLIBS = -L. -ldvb2
+TESTLIBS = -L. -L../libsi2 -ldvb2 -lsi2
 
 .PHONY: all ci plugins
 
