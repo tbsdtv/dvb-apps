@@ -35,7 +35,7 @@ uint32_t dvb_ci_get_session_resource_id(const struct dvb_ci_session * session)
 	return session->resid;
 }
 
-int dvb_ci_create_spdu(uint8_t tag, int len, const char * data,
+int dvb_ci_create_spdu(uint8_t tag, int len, const uint8_t * data,
 		       struct dvb_ci_spdu ** ptr)
 {
 	struct dvb_ci_spdu * spdu;

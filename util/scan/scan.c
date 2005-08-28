@@ -545,7 +545,7 @@ static void parse_service_descriptor (const unsigned char *buf, struct service *
 	/* remove control characters (FIXME: handle short/long name) */
 	/* FIXME: handle character set correctly (e.g. via iconv)
 	 * c.f. EN 300 468 annex A */
-	for (src = dest = s->provider_name; *src; src++)
+	for (src = dest = (unsigned char *) s->provider_name; *src; src++)
 		if (*src >= 0x20 && (*src < 0x80 || *src > 0x9f))
 			*dest++ = *src;
 	*dest = '\0';
@@ -569,7 +569,7 @@ static void parse_service_descriptor (const unsigned char *buf, struct service *
 	/* remove control characters (FIXME: handle short/long name) */
 	/* FIXME: handle character set correctly (e.g. via iconv)
 	 * c.f. EN 300 468 annex A */
-	for (src = dest = s->service_name; *src; src++)
+	for (src = dest = (unsigned char *) s->service_name; *src; src++)
 		if (*src >= 0x20 && (*src < 0x80 || *src > 0x9f))
 			*dest++ = *src;
 	*dest = '\0';

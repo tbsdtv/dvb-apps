@@ -266,6 +266,7 @@ int parse(const char *fname, const char *channel,
 {
 	int fd;
 	int err;
+	int tmp;
 
 	if ((fd = open(fname, O_RDONLY | O_NONBLOCK)) < 0) {
 		PERROR ("could not open file '%s'", fname);
@@ -278,8 +279,9 @@ int parse(const char *fname, const char *channel,
 		return -2;
 	}
 
-	if ((err = try_parse_int(fd, &frontend->frequency, "frequency")))
+	if ((err = try_parse_int(fd, &tmp, "frequency")))
 		return -3;
+	frontend->frequency = tmp;
 
 	if ((err = try_parse_param(fd,
 				   inversion_list, LIST_SIZE(inversion_list),

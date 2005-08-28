@@ -82,7 +82,7 @@ static void process_data(int dvrfd, int tsfd)
 		fprintf(stderr, "got %d bytes (%llu total)\n", bytes, total_bytes);
 }
 
-static int add_filter(unsigned int pid, const unsigned char* dmxdev)
+static int add_filter(unsigned int pid, const char* dmxdev)
 {
 	int fd;
 	struct dmx_pes_filter_params f;

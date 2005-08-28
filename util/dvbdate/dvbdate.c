@@ -156,7 +156,7 @@ int do_options(int arg_count, char **arg_strings)
  * return the TDT time in UNIX time_t format
  */
 
-time_t convert_date(char *dvb_buf)
+time_t convert_date(unsigned char *dvb_buf)
 {
 	int i;
 	int year, month, day, hour, min, sec;

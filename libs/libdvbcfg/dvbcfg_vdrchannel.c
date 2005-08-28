@@ -639,6 +639,7 @@ static int parse_fe_setting(char *string, char **nextptr,
         default:
                 return -1;
         }
+	return -1;
 }
 
 static int set_fe_setting(struct dvbcfg_vdrchannel *channel, int code,

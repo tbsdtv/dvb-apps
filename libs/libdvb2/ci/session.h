@@ -66,7 +66,7 @@ struct dvb_ci_spdu {
 	struct list_entry apdu;
 };
 
-int dvb_ci_create_spdu(uint8_t tag, int len, const char * data,
+int dvb_ci_create_spdu(uint8_t tag, int len, const uint8_t * data,
 		       struct dvb_ci_spdu ** ptr);
 
 int dvb_ci_create_session(struct dvb_ci_connection * connection,
