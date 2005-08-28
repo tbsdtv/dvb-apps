@@ -65,6 +65,7 @@ static int ca_select = 1;
 static int serv_select = 7;
 static int vdr_version = 2;
 static struct lnb_types_st lnb_type;
+static int unique_anon_services;
 
 static enum fe_spectral_inversion spectral_inversion = INVERSION_AUTO;
 
@@ -1905,6 +1906,7 @@ static void dump_lists (void)
 	struct service *s;
 	int n = 0, i;
 	char sn[20];
+        int anon_services = 0;
 
 	list_for_each(p1, &scanned_transponders) {
 		t = list_entry(p1, struct transponder, list);
@@ -1925,8 +1927,14 @@ static void dump_lists (void)
 
 			if (!s->service_name) {
 				/* not in SDT */
-				snprintf(sn, sizeof(sn), "[%04x]", s->service_id);
+				if (unique_anon_services)
+					snprintf(sn, sizeof(sn), "[%03x-%04x]",
+						 anon_services, s->service_id);
+				else
+					snprintf(sn, sizeof(sn), "[%04x]", 
+						 s->service_id);
 				s->service_name = strdup(sn);
+				anon_services++;
 			}
 			/* ':' is field separator in szap and vdr service lists */
 			for (i = 0; s->service_name[i]; i++) {
@@ -2055,7 +2063,8 @@ static const char *usage = "\n"
 	"	-u      UK DVB-T Freeview channel numbering for VDR\n\n"
 	"	-P do not use ATSC PSIP tables for scanning\n"
 	"	    (but only PAT and PMT) (applies for ATSC only)\n"
-	"	-A N	check for ATSC 1=Terrestrial [default], 2=Cable or 3=both\n";
+	"	-A N	check for ATSC 1=Terrestrial [default], 2=Cable or 3=both\n"
+	"	-U	Uniquely name unknown services\n";
 
 void
 bad_usage(char *pname, int problem)
@@ -2103,7 +2112,7 @@ int main (int argc, char **argv)
 
 	/* start with default lnb type */
 	lnb_type = *lnb_enum(0);
-	while ((opt = getopt(argc, argv, "5cnpa:f:d:s:o:x:e:t:i:l:vquPA:")) != -1) {
+	while ((opt = getopt(argc, argv, "5cnpa:f:d:s:o:x:e:t:i:l:vquPA:U")) != -1) {
 		switch (opt) {
 		case 'a':
 			adapter = strtoul(optarg, NULL, 0);
@@ -2177,6 +2186,9 @@ int main (int argc, char **argv)
 				return -1;
 			}
 
+			break;
+		case 'U':
+			unique_anon_services = 1;
 			break;
 		default:
 			bad_usage(argv[0], 0);
