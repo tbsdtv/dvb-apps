@@ -3,7 +3,7 @@ CC = gcc
 LD = gcc
 
 CFLAGS = -Wall -g -fPIC
-CPPFLAGS = -MD -I. -I.. -I../../libsi2 $(DEFS)
+CPPFLAGS = -MD -I../../../include -I. -I.. -I../../libsi2 $(DEFS)
 LDFLAGS = -lc -L../ -ldvb2 -L../ci -lci2 -shared
 PLUGINS = ci_linklayer.so ci_highlevel.so
 

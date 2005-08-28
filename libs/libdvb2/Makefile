@@ -28,7 +28,7 @@ CC = gcc
 LD = gcc
 
 CFLAGS = -Wall -Wformat -Wpointer-arith -g -fPIC
-CPPFLAGS = -MD -I. -I../libsi2 $(DEFS)
+CPPFLAGS = -MD -I../../include -I. -I../libsi2 $(DEFS)
 LDFLAGS = -shared -lc -lpthread -lrt -ldl
 
 TARGET = libdvb2.so

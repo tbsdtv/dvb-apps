@@ -14,7 +14,7 @@ dst_test: $(OBJS)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o dst_test dst_test.o $(LD_FLAGS)
 
 clean:
-	$(RM) $(TARGETS) *.o dst_test
+	$(RM) $(TARGETS) *.o *.d dst_test
 
 install:
 

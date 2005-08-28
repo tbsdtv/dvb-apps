@@ -15,7 +15,7 @@ INCLUDES = 	ca.h \
 
 CC = gcc
 CFLAGS = -Wall -Wpointer-arith -g -fPIC
-CPPFLAGS = -MD -I. -I.. -I../../libsi2 $(DEFS)
+CPPFLAGS = -MD -I../../../include -I. -I.. -I../../libsi2 $(DEFS)
 LDFLAGS = -r
 
 TARGET = libci2.a
