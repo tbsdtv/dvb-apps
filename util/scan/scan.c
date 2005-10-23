@@ -262,6 +262,7 @@ static struct service *alloc_service(struct transponder *tp, int service_id)
 	struct service *s = calloc(1, sizeof(*s));
 	INIT_LIST_HEAD(&s->list);
 	s->service_id = service_id;
+	s->transport_stream_id = tp->transport_stream_id;
 	list_add_tail(&s->list, &tp->services);
 	return s;
 }
