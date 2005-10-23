@@ -195,6 +195,11 @@ static int parse_cab_channel_list(struct channel_params *p_channel_params, char 
 		p_channel_params->video_pid = strtoul((strtok('\0', ":")), NULL, 0);
 		p_channel_params->audio_pid = strtoul((strtok('\0', ":")), NULL, 0);
 		p_channel_params->service_id = strtoul((strtok('\0', ":")), NULL, 0); // The old format does not have it !
+		if (!strcmp(channel_name, p_channel_params->channel)) {
+			printf("%s: Channel=[%s], Frequency=[%d], Video=[%d], Audio=[%d], Service=[%d]\n",
+				__FUNCTION__, p_channel_params->channel, p_channel_params->frequency, p_channel_params->video_pid, p_channel_params->audio_pid, p_channel_params->service_id);
+			break;
+		}
 	}
 
 	return 0;
