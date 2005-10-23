@@ -30,7 +30,7 @@
 #include "descriptor.h"
 
 uint16_t en50221_encode_header(struct ca_msg *p_ca_msg, struct en50221_pmt_object *p_en50221_pmt_object, uint16_t pos);
-uint16_t en50221_encode_descriptor(struct ca_msg *p_ca_msg, struct ca_descriptor *p_desc, uint16_t pos);
+uint16_t en50221_encode_descriptor(struct ca_msg *p_ca_msg, struct descriptor *p_desc, uint16_t pos);
 uint16_t en50221_encode_streams(struct ca_msg *p_ca_msg, struct en50221_stream *p_stream, uint16_t pos);
 uint16_t encode_ca_pmt_command(struct ca_msg *p_ca_msg, void *p_encode_object, uint16_t pos, uint8_t scrambling);
 

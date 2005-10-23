@@ -44,7 +44,8 @@ void usage(void)
 		" -t	frontend type, options: sat/cab/ter\n"
 		" -d	demux to use\n"
 		" -s	CA module (Slot to use)\n"
-		" -f	Frontend to use\n";
+		" -f	Frontend to use\n"
+		" -m    Move CA descriptors from stream to programme level if possible\n";
 
 	fprintf(stderr, "%s\n", usage);
 
@@ -66,11 +67,12 @@ int main(int argc, char *argv[])
 	char adapter[80], frontend_dev[80], demux_dev[80], ca_dev[80];
 	uint8_t dev = 0, fe_type = 0, demux = 0, ca = 0, frontend = 0;
 	int opt;
+	int move_to_programme = 0;
 
 	if (argc < 3)
 		usage();
 	// a = adapter, c = channels.conf, t = type (S/C/T), d = demux, s = CA device, f = frontend device n = channel name
-	while ((opt = getopt(argc, argv, "t:n:h:a:c:d:s:f:")) != -1) {
+	while ((opt = getopt(argc, argv, "t:n:h:a:c:d:s:f:m")) != -1) {
 		switch (opt) {
 			case 'a':
 				dev = strtoul(optarg, NULL, 0);
@@ -111,6 +113,10 @@ int main(int argc, char *argv[])
 				frontend = strtoul(optarg, NULL, 0);
 				break;
 
+			case 'm':
+				move_to_programme = 1;
+				break;
+
 			case 'h':
 			default:
 				usage();
@@ -133,7 +139,7 @@ int main(int argc, char *argv[])
 	parse_channel_list(p_channel_params, chanfile, channel_name, fe_type);
 	parse_si(p_si, p_channel_params, adapter, frontend_dev, demux_dev);
 	if (p_en50221_pmt_object != NULL) {
-		do_en50221_pmt_object(p_en50221_pmt_object, p_si, ONLY, OK_DESCRAMBLING);
+		do_en50221_pmt_object(p_en50221_pmt_object, p_si, ONLY, OK_DESCRAMBLING, move_to_programme);
 		write_en50221_pmt_object(p_en50221_pmt_object, ca_dev);
 
 	} else {

@@ -47,7 +47,7 @@ int parse_si(struct service_info *p_si, struct channel_params *p_params, char *a
 
 	/*		Initialize		*/
 	p_pat->p_program_descriptor = NULL;
-	p_pmt->p_descriptor = NULL;
+	p_pmt->p_descriptors = NULL;
 	p_pmt->p_streams = NULL;
 
 

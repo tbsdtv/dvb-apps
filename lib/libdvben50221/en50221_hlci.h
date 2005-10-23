@@ -79,7 +79,7 @@ struct en50221_stream {
 	unsigned ca_pmt_cmd_id: 8;
 
 	uint8_t streams_desc_count;
-	struct ca_descriptor *p_descriptor;
+	struct descriptor *p_descriptors;
 };
 
 struct en50221_pmt_object {
@@ -90,18 +90,18 @@ struct en50221_pmt_object {
 	unsigned reserved_1: 2;
 	unsigned version_number: 5;
 	unsigned current_next: 1;
-	unsigned reserved_2: 1;
+	unsigned reserved_2: 4;
 	unsigned program_info_length: 12;
 	unsigned ca_pmt_cmd_id: 8;
 
 	uint8_t program_desc_count;
-	struct ca_descriptor *p_en50221_prog_desc;
+	struct descriptor *p_en50221_prog_desc;
 
 	uint8_t stream_count;
 	struct en50221_stream *p_en50221_streams;
 };
 
-uint16_t do_en50221_pmt_object(struct en50221_pmt_object *p_en50221_pmt_object, struct service_info *p_si, uint8_t pmt_list_mgmt, uint8_t pmt_command);
+uint16_t do_en50221_pmt_object(struct en50221_pmt_object *p_en50221_pmt_object, struct service_info *p_si, uint8_t pmt_list_mgmt, uint8_t pmt_command, int move_to_programme);
 uint16_t write_en50221_pmt_object(struct en50221_pmt_object *p_en50221_pmt_object, char *ca_dev);
 
 #endif

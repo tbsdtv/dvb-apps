@@ -102,7 +102,6 @@ static const param transmission_mode_list [] = {
 static int parse_param(char *val, const param *p_list, int list_size)
 {
 	int i;
-
 	for (i = 0; i < list_size; i++) {
 		if (strcasecmp(p_list[i].name, val) == 0)
 			return p_list[i].value;
@@ -112,7 +111,7 @@ static int parse_param(char *val, const param *p_list, int list_size)
 
 static int parse_ter_channel_list(struct channel_params *p_channel_params, char *channel_list_file, char *channel_name, FILE *channel_list_fd)
 {
-	char buffer[80];
+	char buffer[200];
 	while ((fgets(buffer, sizeof (buffer), channel_list_fd)) != NULL) {
 		strcpy(p_channel_params->channel, (char *) strtok(buffer, ":"));
 		p_channel_params->frequency = strtoul(strtok('\0', ":"), NULL, 0 );
@@ -159,6 +158,11 @@ static int parse_ter_channel_list(struct channel_params *p_channel_params, char 
 		p_channel_params->video_pid = strtoul(strtok('\0', ":"), NULL, 0 );
 		p_channel_params->audio_pid = strtoul(strtok('\0', ":"), NULL, 0 );
 		p_channel_params->service_id = strtoul(strtok('\0', ":"), NULL, 0 );
+		if (!strcmp(channel_name, p_channel_params->channel)) {
+			printf("%s: Channel=[%s], Frequency=[%d], Video=[%d], Audio=[%d], Service=[%d]\n",
+				__FUNCTION__, p_channel_params->channel, p_channel_params->frequency, p_channel_params->video_pid, p_channel_params->audio_pid, p_channel_params->service_id);
+			break;
+		}
 	}
 
 	return 0;
@@ -167,7 +171,7 @@ static int parse_ter_channel_list(struct channel_params *p_channel_params, char 
 
 static int parse_cab_channel_list(struct channel_params *p_channel_params, char *channel_list_file, char *channel_name, FILE *channel_list_fd)
 {
-	char buffer[80];
+	char buffer[200];
 	while ((fgets(buffer, sizeof (buffer), channel_list_fd)) != NULL) {
 		strcpy(p_channel_params->channel, strtok(buffer, ":"));
 		p_channel_params->frequency = strtoul(strtok('\0', ":"), NULL, 0);
@@ -200,7 +204,7 @@ static int parse_cab_channel_list(struct channel_params *p_channel_params, char 
 static int parse_sat_channel_list(struct channel_params *p_channel_params, char *channel_list_file, char *channel_name, FILE *channel_list_fd)
 {
 	int i, entries = 0;
-	char buffer[80];
+	char buffer[200];
 	uint32_t service_id = 0;
 
 	i = 0, entries = 0;
@@ -250,6 +254,7 @@ uint16_t parse_channel_list(struct channel_params *p_channel_params, char *chann
 	}
 	else if (fe_type == 3) {
 		printf("Terrestrial frontend\n");
+		printf("Channel %s\n", channel_name);
 		parse_ter_channel_list(p_channel_params, channel_list_file, channel_name, channel_list_fd);
 		printf("Service ID=[%d]\n", p_channel_params->service_id);
 	}

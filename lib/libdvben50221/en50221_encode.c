@@ -24,13 +24,13 @@
 #include "en50221_encode.h"
 
 uint16_t en50221_encode_header(struct ca_msg * ca_msg,
-		               struct en50221_pmt_object * pmt, uint16_t pos)
+			       struct en50221_pmt_object * pmt, uint16_t pos)
 {
 	ca_msg->msg[pos + 0] = pmt->ca_pmt_list_mgmt;
 	ca_msg->msg[pos + 1] = pmt->program_number >> 8;
 	ca_msg->msg[pos + 2] = pmt->program_number;
 	ca_msg->msg[pos + 3] = pmt->reserved_1 << 6 |
-			       pmt->version_number << 2 |
+			       pmt->version_number << 1 |
 			       pmt->current_next;
 	ca_msg->msg[pos + 4] = pmt->reserved_2 << 4 |
 			     ((pmt->program_info_length >> 8) & 0x0f);
@@ -44,7 +44,7 @@ uint16_t en50221_encode_header(struct ca_msg * ca_msg,
 }
 
 uint16_t en50221_encode_descriptor(struct ca_msg * ca_msg,
-		                   struct ca_descriptor * desc, uint16_t pos)
+				   struct descriptor * desc, uint16_t pos)
 {
 	uint8_t i;
 	uint16_t temp = 0, private_bytes = 0;
@@ -52,23 +52,23 @@ uint16_t en50221_encode_descriptor(struct ca_msg * ca_msg,
 
 	ca_msg->msg[pos + 0] = desc->descriptor_tag;
 	ca_msg->msg[pos + 1] = desc->descriptor_length;
-	ca_msg->msg[pos + 2] = desc->ca_system_id >> 8;
-	ca_msg->msg[pos + 3] = desc->ca_system_id;
-	ca_msg->msg[pos + 4] = desc->reserved << 5 |
-		             ((desc->ca_pid >> 8) & 0x1f);
-	ca_msg->msg[pos + 5] = desc->ca_pid;
+	ca_msg->msg[pos + 2] = desc->ca.ca_system_id >> 8;
+	ca_msg->msg[pos + 3] = desc->ca.ca_system_id;
+	ca_msg->msg[pos + 4] = desc->ca.reserved << 5 |
+			     ((desc->ca.ca_pid >> 8) & 0x1f);
+	ca_msg->msg[pos + 5] = desc->ca.ca_pid;
 
 	pos += 6;
 	// parse private data
 	printf("%s: Tag=[%02x], length=[%02x], CA system id=[%02x], CA PID=[%02x]\n", __FUNCTION__,
-		desc->descriptor_tag, desc->descriptor_length, desc->ca_system_id, desc->ca_pid);
+		desc->descriptor_tag, desc->descriptor_length, desc->ca.ca_system_id, desc->ca.ca_pid);
 
 	if (desc->descriptor_length) {
 		private_bytes = desc->descriptor_length - 4;
 
 		printf("%s: Private Bytes=[%d] [ ", __FUNCTION__, private_bytes);
 		for (i = 0; i < private_bytes; i++) {
-			ca_msg->msg[pos + i] = desc->p_private_data_byte[i];
+			ca_msg->msg[pos + i] = desc->ca.p_private_data_byte[i];
 			printf("%02x ", ca_msg->msg[pos + i]);
 		}
 		printf("]\n");
@@ -107,7 +107,7 @@ uint16_t en50221_encode_streams(struct ca_msg * ca_msg,
 
 	ca_msg->msg[pos + 0] = stream->stream_type;
 	ca_msg->msg[pos + 1] = stream->reserved_1 << 5 |
-		             ((stream->elementary_pid >> 8) & 0x1f);
+			     ((stream->elementary_pid >> 8) & 0x1f);
 	ca_msg->msg[pos + 2] = stream->elementary_pid & 0xff;
 
 	es_info_len_pos = pos + 3;
@@ -117,16 +117,19 @@ uint16_t en50221_encode_streams(struct ca_msg * ca_msg,
 		stream->stream_type, stream->elementary_pid,
 		stream->es_info_length);
 
-	for (i = 0; i < stream->streams_desc_count; i++) {
-		struct ca_descriptor * stream_desc = &stream->p_descriptor[i];
+	if(stream->streams_desc_count) {
 		pos = encode_ca_pmt_command(ca_msg, stream, pos, STREAMS_SCRAMBLED);
+	}
+
+	for (i = 0; i < stream->streams_desc_count; i++) {
+		struct descriptor * stream_desc = &stream->p_descriptors[i];
 		pos = en50221_encode_descriptor(ca_msg, stream_desc, pos);
 	}
 
-	es_info_len = es_info_len_pos + 2 - pos;
+	es_info_len = pos - (es_info_len_pos + 2);
 
 	ca_msg->msg[es_info_len_pos+0] = stream->reserved_2 << 4 |
-		                       ((es_info_len >> 8) & 0x0f);
+				       ((es_info_len >> 8) & 0x0f);
 	ca_msg->msg[es_info_len_pos+1] = es_info_len & 0xff;
 
 	return pos;

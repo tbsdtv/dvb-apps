@@ -27,6 +27,7 @@
 
 
 #define MAX_STREAMS		20
+#define MAX_DESCRIPTORS		20
 
 #define PROGRAM_SCRAMBLED	0x01
 #define STREAMS_SCRAMBLED	0x02
@@ -42,7 +43,7 @@ struct streams {
 	unsigned es_info_length: 12;
 
 	uint8_t streams_desc_count;
-	void *p_descriptor;
+	struct descriptor *p_descriptors;
 };
 
 struct pmt {
@@ -63,7 +64,7 @@ struct pmt {
 	unsigned program_info_length: 12;
 
 	uint8_t program_desc_count;
-	void *p_descriptor;
+	struct descriptor *p_descriptors;
 
 	uint8_t stream_count;
 	struct streams *p_streams;

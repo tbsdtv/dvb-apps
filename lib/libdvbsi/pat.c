@@ -49,9 +49,9 @@ uint16_t parse_pat(struct pat *p_pat, uint8_t *buf, uint32_t pat_pid, int bytes)
 
 	/*	PAT Header	*/
 	p_pat->table_id = buf[pos + 0];
-	p_pat->section_syntax =	buf[pos + 1] & 0x01;
+	p_pat->section_syntax =	(buf[pos + 1] & 0x80) >> 7;
 	p_pat->reserved_1 = (buf[pos + 1] & 0xf0) >> 4;
-	p_pat->section_length =	((buf[pos + 1] & 0x3f) << 8) | buf[pos + 2];
+	p_pat->section_length =	((buf[pos + 1] & 0x0f) << 8) | buf[pos + 2];
 	p_pat->transport_stream_id = (buf[pos + 3] << 8) | buf[pos + 4];
 	p_pat->reserved_2 = buf[pos + 5] >> 6;
 	p_pat->version_number =	(buf[pos + 5] >> 1) & 0x1f;
