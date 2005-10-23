@@ -16,6 +16,7 @@
 
 static char FRONTEND_DEV [80];
 static char DEMUX_DEV [80];
+static int exit_after_tuning;
 
 #define CHANNEL_FILE "channels.conf"
 
@@ -246,13 +247,16 @@ int check_frontend (int fe_fd)
 		usleep(1000000);
 
 		printf("\n");
+
+		if (exit_after_tuning && (status & FE_HAS_LOCK))
+			break;
 	} while (1);
 
 	return 0;
 }
 
 
-static const char *usage = "\nusage: %s [-a adapter_num] [-f frontend_id] [-d demux_id] [-c conf_file] {<channel name>| -n channel_num}\n"
+static const char *usage = "\nusage: %s [-a adapter_num] [-f frontend_id] [-d demux_id] [-c conf_file] {<channel name>| -n channel_num} [-x]\n"
 	"   or: %s [-c conf_file]  -l\n\n";
 
 
@@ -267,53 +271,56 @@ int main(int argc, char **argv)
 	int frontend_fd, video_fd, audio_fd;
 	int opt, list_channels = 0, chan_no = 0;
 
-        while ((opt = getopt(argc, argv, "ln:hrn:a:f:d:c:")) != -1) {
-                switch (opt) {
-                case 'a':
-                        adapter = strtoul(optarg, NULL, 0);
-                        break;
-                case 'f':
-                        frontend = strtoul(optarg, NULL, 0);
-                        break;
-                case 'd':
-                        demux = strtoul(optarg, NULL, 0);
-                        break;
-                case 'r':
-                        dvr = 1;
-                        break;
-                case 'l':
-                        list_channels = 1;
-                        break;
-                case 'n':
-                        chan_no = strtoul(optarg, NULL, 0);
-                        break;
-                case 'c':
-                        confname = optarg;
-                        break;
-                case '?':
-                case 'h':
-                default:
-                        fprintf (stderr, usage, argv[0], argv[0]);
-                        return -1;
-                };
-        }
-	
-        if (optind < argc)
-                channel = argv[optind];
+	while ((opt = getopt(argc, argv, "ln:hrn:a:f:d:c:x")) != -1) {
+		switch (opt) {
+		case 'a':
+			adapter = strtoul(optarg, NULL, 0);
+			break;
+		case 'f':
+			frontend = strtoul(optarg, NULL, 0);
+			break;
+		case 'd':
+			demux = strtoul(optarg, NULL, 0);
+			break;
+		case 'r':
+			dvr = 1;
+			break;
+		case 'l':
+			list_channels = 1;
+			break;
+		case 'n':
+			chan_no = strtoul(optarg, NULL, 0);
+			break;
+		case 'x':
+			exit_after_tuning = 1;
+			break;
+		case 'c':
+			confname = optarg;
+			break;
+		case '?':
+		case 'h':
+		default:
+			fprintf (stderr, usage, argv[0], argv[0]);
+			return -1;
+		};
+	}
 
-        if (!channel && chan_no <= 0 && !list_channels) {
-                fprintf (stderr, usage, argv[0], argv[0]);
-                return -1;
-        }
+	if (optind < argc)
+		channel = argv[optind];
+
+	if (!channel && chan_no <= 0 && !list_channels) {
+		fprintf (stderr, usage, argv[0], argv[0]);
+		return -1;
+	}
 
 	if (!homedir)
 		ERROR("$HOME not set");
 
-        snprintf (FRONTEND_DEV, sizeof(FRONTEND_DEV),
-                  "/dev/dvb/adapter%i/frontend%i", adapter, frontend);
+	snprintf (FRONTEND_DEV, sizeof(FRONTEND_DEV),
+		  "/dev/dvb/adapter%i/frontend%i", adapter, frontend);
 
-        snprintf (DEMUX_DEV, sizeof(DEMUX_DEV),
-                  "/dev/dvb/adapter%i/demux%i", adapter, demux);
+	snprintf (DEMUX_DEV, sizeof(DEMUX_DEV),
+		  "/dev/dvb/adapter%i/demux%i", adapter, demux);
 
 	printf ("using '%s' and '%s'\n", FRONTEND_DEV, DEMUX_DEV);
 
@@ -370,4 +377,3 @@ int main(int argc, char **argv)
 
 	return 0;
 }
-
