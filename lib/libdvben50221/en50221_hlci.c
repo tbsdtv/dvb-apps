@@ -66,7 +66,7 @@ static uint16_t copy_en50221_descriptor_object(struct descriptor *p_en50221_desc
 	p_en50221_descriptor->descriptor_tag = p_descriptor->descriptor_tag;
 	p_en50221_descriptor->descriptor_length = p_descriptor->descriptor_length;
 
-	if(p_descriptor->descriptor_tag != 0x09) {
+	if(p_descriptor->descriptor_tag != TAG_CA_DESCRIPTOR) {
 		printf("ERROR::Trying to copy a CA descriptor with incorrect tag [%d]. Bailing out.\n",
 		       p_descriptor->descriptor_tag);
 		return 16;
@@ -129,7 +129,7 @@ static uint16_t copy_en50221_stream_object(struct en50221_stream *p_en50221_stre
 				&p_en50221_streams_desc[p_en50221_stream->streams_desc_count];
 			struct descriptor *p_stream_desc = &p_streams->p_descriptors[descriptor_count];
 
-			if (p_stream_desc && p_stream_desc->descriptor_tag == 0x09) {	// Copy only CA descriptors
+			if (p_stream_desc && p_stream_desc->descriptor_tag == TAG_CA_DESCRIPTOR) {	// Copy only CA descriptors
 				object_length += copy_en50221_descriptor_object(p_en50221_stream_desc, p_stream_desc);
 				p_en50221_stream->streams_desc_count++;
 			}
@@ -168,7 +168,7 @@ static void try_move_ca_descriptors(struct service_info *p_si)
 		p_stream1 = &p_si->p_pmt->p_streams[i];
 		for(j = 0; j < p_stream1->streams_desc_count; j++) {
 			p_desc1 = &p_stream1->p_descriptors[j];
-			if (p_desc1->descriptor_tag == 0x09) {
+			if (p_desc1->descriptor_tag == TAG_CA_DESCRIPTOR) {
 				ca_descriptors++;
 			}
 		}
@@ -187,7 +187,7 @@ static void try_move_ca_descriptors(struct service_info *p_si)
 		num_ca1 = 0;
 		for(j = 0; j < p_stream1->streams_desc_count; j++) {
 			p_desc1 = &p_stream1->p_descriptors[j];
-			if(p_desc1->descriptor_tag == 0x09) {
+			if(p_desc1->descriptor_tag == TAG_CA_DESCRIPTOR) {
 				num_ca1++;
 			}
 		}
@@ -198,7 +198,7 @@ static void try_move_ca_descriptors(struct service_info *p_si)
 			num_ca2 = 0;
 			for(j = 0; j < p_stream2->streams_desc_count; j++) {
 				p_desc2 = &p_stream2->p_descriptors[j];
-				if(p_desc2->descriptor_tag == 0x09) {
+				if(p_desc2->descriptor_tag == TAG_CA_DESCRIPTOR) {
 					num_ca2++;
 				}
 			}
@@ -207,7 +207,7 @@ static void try_move_ca_descriptors(struct service_info *p_si)
 			if(num_ca1 == num_ca2) {
 				for(j = 0; j < p_stream1->streams_desc_count; j++) {
 					p_desc1 = &p_stream1->p_descriptors[j];
-					if(p_desc1->descriptor_tag == 0x09) {
+					if(p_desc1->descriptor_tag == TAG_CA_DESCRIPTOR) {
 						found_match = 0;
 						for(l = 0; l < p_stream2->streams_desc_count; l++) {
 							p_desc2 = &p_stream2->p_descriptors[l];
@@ -242,7 +242,7 @@ static void try_move_ca_descriptors(struct service_info *p_si)
 				p_desc1 = &p_stream1->p_descriptors[j];
 
 				// Copy only CA descriptors
-				if (p_desc1->descriptor_tag == 0x09) {
+				if (p_desc1->descriptor_tag == TAG_CA_DESCRIPTOR) {
 					// Check that this descriptor has not already been copied
 					found = 0;
 					for(k = 0; k < p_si->p_pmt->program_desc_count; k++) {
@@ -326,7 +326,7 @@ static uint16_t copy_en50221_pmt_object(struct service_info *p_si, struct en5022
 		printf("%s: CA descriptor=[%02x] found, @ [%p], descriptor length=[%02x]\n", __FUNCTION__,
 				p_prog_desc->descriptor_tag, &p_prog_desc, p_prog_desc->descriptor_length);
 
-		if (p_prog_desc->descriptor_tag == 0x09) {	// Copy only CA descriptors
+		if (p_prog_desc->descriptor_tag == TAG_CA_DESCRIPTOR) {	// Copy only CA descriptors
 			p_en50221_descriptor = (struct descriptor *) &p_descriptor_objects[ca_descriptors];
 			object_length += copy_en50221_descriptor_object(p_en50221_descriptor, p_prog_desc);
 			printf("%s: [%d] CA descriptor copied\n", __FUNCTION__, ca_descriptors);

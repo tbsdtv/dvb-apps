@@ -1531,193 +1531,193 @@ void deallocate_descriptor_storage(struct descriptor *p_descriptor)
 {
 
 	switch(p_descriptor->descriptor_tag) {
-		case 0x02:
+		case TAG_VIDEO_STREAM_DESCRIPTOR:
 				deallocate_video_stream_descriptor(p_descriptor);
 			break;
-		case 0x03:
+		case TAG_AUDIO_STREAM_DESCRIPTOR:
 				deallocate_audio_stream_descriptor(p_descriptor);
 			break;
-		case 0x04:
+		case TAG_HIERARCHY_DESCRIPTOR:
 				deallocate_hierarchy_descriptor(p_descriptor);
 			break;
-		case 0x05:
+		case TAG_REGISTRATION_DESCRIPTOR:
 				deallocate_registration_descriptor(p_descriptor);
 			break;
-		case 0x06:
+		case TAG_DATA_STREAM_ALIGNMENT_DESCRIPTOR:
 				deallocate_data_stream_alignment_descriptor(p_descriptor);
 			break;
-		case 0x07:
+		case TAG_TARGET_BACKGROUND_GRID_DESCRIPTOR:
 				deallocate_target_background_grid_descriptor(p_descriptor);
 			break;
-		case 0x08:
+		case TAG_VIDEO_WINDOW_DESCRIPTOR:
 				deallocate_video_window_descriptor(p_descriptor);
 			break;
-		case 0x09:	/*	CA descriptor		*/
+		case TAG_CA_DESCRIPTOR:	/*	CA descriptor		*/
 				deallocate_ca_descriptor(p_descriptor);
 			break;
-		case 0x0a:
+		case TAG_ISO_639_LANGUAGE_DESCRIPTOR:
 				deallocate_iso_639_language_descriptor(p_descriptor);
 			break;
-		case 0x0b:
+		case TAG_SYSTEM_CLOCK_DESCRIPTOR:
 				deallocate_system_clock_descriptor(p_descriptor);
 			break;
-		case 0x0c:
+		case TAG_MULTIPLEX_BUFFER_UTILIZATION_DESCRIPTOR:
 				deallocate_multiplex_buffer_utilization_descriptor(p_descriptor);
 			break;
-		case 0x0d:
+		case TAG_COPYRIGHT_DESCRIPTOR:
 				deallocate_copyright_descriptor(p_descriptor);
 			break;
-		case 0x0e:
+		case TAG_MAXIMUM_BITRATE_DESCRIPTOR:
 				deallocate_maximum_bitrate_descriptor(p_descriptor);
 			break;
-		case 0x0f:
+		case TAG_PRIVATE_DATA_INDICATOR_DESCRIPTOR:
 				deallocate_private_data_indicator_descriptor(p_descriptor);
 			break;
-		case 0x10:
+		case TAG_SMOOTHING_BUFFER_DESCRIPTOR:
 				deallocate_smoothing_buffer_descriptor(p_descriptor);
 			break;
-		case 0x11:
+		case TAG_STD_DESCRIPTOR:
 				deallocate_std_descriptor(p_descriptor);
 			break;
-		case 0x12:
+		case TAG_IBP_DESCRIPTOR:
 				deallocate_ibp_descriptor(p_descriptor);
 			break;
-		case 0x1b:
+		case TAG_MPEG_4_VIDEO_DESCRIPTOR:
 				deallocate_mpeg_4_video_descriptor(p_descriptor);
 			break;
-		case 0x1c:
+		case TAG_MPEG_4_AUDIO_DESCRIPTOR:
 				deallocate_mpeg_4_audio_descriptor(p_descriptor);
 			break;
-		case 0x1d:
+		case TAG_IOD_DESCRIPTOR:
 				deallocate_iod_descriptor(p_descriptor);
 			break;
-		case 0x1e:
+		case TAG_SL_DESCRIPTOR:
 				deallocate_sl_descriptor(p_descriptor);
 			break;
-		case 0x1f:
+		case TAG_FMC_DESCRIPTOR:
 				deallocate_fmc_descriptor(p_descriptor);
 			break;
-		case 0x20:
+		case TAG_EXTERNAL_ES_ID_DESCRIPTOR:
 				deallocate_external_es_id_descriptor(p_descriptor);
 			break;
-		case 0x21:
+		case TAG_MUXCODE_DESCRIPTOR:
 				deallocate_muxcode_descriptor(p_descriptor);
 			break;
-		case 0x22:
+		case TAG_FMX_BUFFER_SIZE_DESCRIPTOR:
 				deallocate_fmxbuffer_size_descriptor(p_descriptor);
 			break;
-		case 0x23:
+		case TAG_MULTIPLEX_BUFFER_DESCRIPTOR:
 				deallocate_multiplex_buffer_descriptor(p_descriptor);
 			break;
-		case 0x40:
+		case TAG_NETWORK_NAME_DESCRIPTOR:
 				deallocate_network_name_descriptor(p_descriptor);
 			break;
-		case 0x41:
+		case TAG_SERVICE_LIST_DESCRIPTOR:
 				deallocate_service_list_descriptor(p_descriptor);
 			break;
-		case 0x42:
+		case TAG_STUFFING_DESCRIPTOR:
 				deallocate_stuffing_descriptor(p_descriptor);
 			break;
-		case 0x43:
+		case TAG_SATTELITE_DELIVERY_SYSTEM_DESCRIPTOR:
 				deallocate_satellite_delivery_system(p_descriptor);
 			break;
-		case 0x44:
+		case TAG_CABLE_DELIVERY_SYSTEM_DESCRIPTOR:
 				deallocate_cable_delivery_system(p_descriptor);
 			break;
-		case 0x47:
+		case TAG_BOUQUET_NAME_DESCRIPTOR:
 				deallocate_bouquet_name_descriptor(p_descriptor);
 			break;
-		case 0x48:
+		case TAG_SERVICE_DESCRIPTOR:
 				deallocate_service_descriptor(p_descriptor);
 			break;
-		case 0x49:
+		case TAG_COUNTRY_AVAILABILITY_DESCRIPTOR:
 				deallocate_country_availability_descriptor(p_descriptor);
 			break;
-		case 0x4a:
+		case TAG_LINKAGE_DESCRIPTOR:
 				deallocate_linkage_descriptor(p_descriptor);
 			break;
-		case 0x4b:
+		case TAG_NVOD_REFERENCE_DESCRIPTOR:
 				deallocate_nvod_reference_descriptor(p_descriptor);
 			break;
-		case 0x4c:
+		case TAG_TIME_SHIFTED_SERVICE_DESCRIPTOR:
 				deallocate_time_shifted_service_descriptor(p_descriptor);
 			break;
-		case 0x4d:
+		case TAG_SHORT_EVENT_DESCRIPTOR:
 				deallocate_short_event_descriptor(p_descriptor);
 			break;
-		case 0x4e:
+		case TAG_EXTENDED_EVENT_DESCRIPTOR:
 				deallocate_extended_event_descriptor(p_descriptor);
 			break;
-		case 0x4f:
+		case TAG_TIME_SHIFTED_EVENT_DESCRIPTOR:
 				deallocate_time_shifted_event_descriptor(p_descriptor);
 			break;
-		case 0x50:
+		case TAG_COMPONENT_DESCRIPTOR:
 				deallocate_component_descriptor(p_descriptor);
 			break;
-		case 0x51:
+		case TAG_MOSAIC_DESCRIPTOR:
 				deallocate_mosaic_descriptor(p_descriptor);
 			break;
-		case 0x52:
+		case TAG_STREAM_IDENTIFIER_DESCRIPTOR:
 				deallocate_stream_identifier_descriptor(p_descriptor);
 			break;
-		case 0x53:
+		case TAG_CA_IDENTIFIER_DESCRIPTOR:
 				deallocate_ca_identifier_descriptor(p_descriptor);
 			break;
-		case 0x54:
+		case TAG_CONTENT_DESCRIPTOR:
 				deallocate_content_descriptor(p_descriptor);
 			break;
-		case 0x55:
+		case TAG_PARENTAL_RATING_DESCRIPTOR:
 				deallocate_parental_rating_descriptor(p_descriptor);
 			break;
-		case 0x56:
+		case TAG_TELETEXT_DESCRIPTOR:
 				deallocate_teletext_descriptor(p_descriptor);
 			break;
-		case 0x57:
+		case TAG_TELEPHONE_DESCRIPTOR:
 				deallocate_telephone_descriptor(p_descriptor);
 			break;
-		case 0x58:
+		case TAG_LOCAL_TIME_OFFSET_DESCRIPTOR:
 				deallocate_local_time_offset_descriptor(p_descriptor);
 			break;
-		case 0x59:
+		case TAG_SUBTITLING_DESCRIPTOR:
 				deallocate_subtitling_descriptor(p_descriptor);
 			break;
-		case 0x5a:
+		case TAG_TERRESTRIAL_DELIVERY_SYSTEM_DESCRIPTOR:
 				deallocate_terrestrial_delivery_system(p_descriptor);
 			break;
-		case 0x5b:
+		case TAG_MULTILINGUAL_NETWORK_NAME_DESCRIPTOR:
 				deallocate_multilingual_network_name_descriptor(p_descriptor);
 			break;
-		case 0x5c:
+		case TAG_MULTILINGUAL_BOUQUET_NAME_DESCRIPTOR:
 				deallocate_multilingual_bouquet_name_descriptor(p_descriptor);
 			break;
-/*	case 0x5d: */
+/*	case TAG_MULTILINGUAL_SERVICE_NAME_DESCRIPTOR: */
 /*		deallocate_multilingual_service_name_descriptor(p_descriptor); */
 /*		break; */
-/*	case 0x5e: */
+/*	case TAG_MULTILINGUAL_COMPONENT_DESCRIPTOR: */
 /*		deallocate_multilingual_component_descriptor(p_descriptor); */
 /*		break; */
-/*	case 0x5f: */
+/*	case TAG_PRIVATE_DATA_SPECIFIER_DESCRIPTOR: */
 /*		deallocate_private_data_specifier_descriptor(p_descriptor); */
 /*		break; */
-/*	case 0x60: */
+/*	case TAG_SERVICE_MOVE_DESCRIPTOR: */
 /*		deallocate_service_move_descriptor(p_descriptor); */
 /*		break; */
-/*	case 0x61: */
+/*	case TAG_SHORT_SMOOTHING_BUFFER_DESCRIPTOR: */
 /*		deallocate_short_smoothing_buffer_descriptor(p_descriptor); */
 /*		break; */
-/*	case 0x62: */
+/*	case TAG_FREQUENCY_LIST_DESCRIPTOR: */
 /*		deallocate_frequency_list_descriptor(p_descriptor); */
 /*		break; */
-/*	case 0x63: */
+/*	case TAG_PARTIAL_TRANSPORT_DESCRIPTOR: */
 /*		dealloc_partial_transport_stream(p_descriptor); */
 /*		break; */
-/*	case 0x64: */
+/*	case TAG_DATA_BROADCAST_DESCRIPTOR: */
 /*		deallocate_data_broadcast_descriptor(p_descriptor); */
 /*		break; */
-/*	case 0x65: */
+/*	case TAG_CA_SYSTEM_DESCRIPTOR: */
 /*		dealloc_ca_system_descriptor(p_descriptor); */
 /*		break; */
-/*	case 0x66: */
+/*	case TAG_DATA_BROADCAST_ID_DESCRIPTOR: */
 /*		deallocate_data_broadcast_id_descriptor(p_descriptor); */
 /*		break; */
 		default:	/*	parse an unknown	*/
@@ -1739,193 +1739,193 @@ uint16_t parse_descriptor(struct descriptor *p_descriptor, uint8_t *buf, uint16_
 	       p_descriptor->descriptor_tag, p_descriptor->descriptor_length);
 
 	switch (p_descriptor->descriptor_tag) {
-		case 0x02:
+		case TAG_VIDEO_STREAM_DESCRIPTOR:
 		pos = parse_video_stream_descriptor(p_descriptor, buf, pos);
 			break;
-		case 0x03:
+		case TAG_AUDIO_STREAM_DESCRIPTOR:
 		pos = parse_audio_stream_descriptor(p_descriptor, buf, pos);
 			break;
-		case 0x04:
+		case TAG_HIERARCHY_DESCRIPTOR:
 		pos = parse_hierarchy_descriptor(p_descriptor, buf, pos);
 			break;
-		case 0x05:
+		case TAG_REGISTRATION_DESCRIPTOR:
 		pos = parse_registration_descriptor(p_descriptor, buf, pos);
 			break;
-		case 0x06:
+		case TAG_DATA_STREAM_ALIGNMENT_DESCRIPTOR:
 		pos = parse_data_stream_alignment_descriptor(p_descriptor, buf, pos);
 			break;
-		case 0x07:
+		case TAG_TARGET_BACKGROUND_GRID_DESCRIPTOR:
 		pos = parse_target_background_grid_descriptor(p_descriptor, buf, pos);
 			break;
-		case 0x08:
+		case TAG_VIDEO_WINDOW_DESCRIPTOR:
 		pos = parse_video_window_descriptor(p_descriptor, buf, pos);
 			break;
-		case 0x09:	/*	CA descriptor		*/
+		case TAG_CA_DESCRIPTOR:	/*	CA descriptor		*/
 		pos = parse_ca_descriptor(p_descriptor, buf, pos);
 			break;
-		case 0x0a:
+		case TAG_ISO_639_LANGUAGE_DESCRIPTOR:
 		pos = parse_iso_639_language_descriptor(p_descriptor, buf, pos);
 			break;
-		case 0x0b:
+		case TAG_SYSTEM_CLOCK_DESCRIPTOR:
 		pos = parse_system_clock_descriptor(p_descriptor, buf, pos);
 			break;
-		case 0x0c:
+		case TAG_MULTIPLEX_BUFFER_UTILIZATION_DESCRIPTOR:
 		pos = parse_multiplex_buffer_utilization_descriptor(p_descriptor, buf, pos);
 			break;
-		case 0x0d:
+		case TAG_COPYRIGHT_DESCRIPTOR:
 		pos = parse_copyright_descriptor(p_descriptor, buf, pos);
 			break;
-		case 0x0e:
+		case TAG_MAXIMUM_BITRATE_DESCRIPTOR:
 		pos = parse_maximum_bitrate_descriptor(p_descriptor, buf, pos);
 			break;
-		case 0x0f:
+		case TAG_PRIVATE_DATA_INDICATOR_DESCRIPTOR:
 		pos = parse_private_data_indicator_descriptor(p_descriptor, buf, pos);
 			break;
-		case 0x10:
+		case TAG_SMOOTHING_BUFFER_DESCRIPTOR:
 		pos = parse_smoothing_buffer_descriptor(p_descriptor, buf, pos);
 			break;
-		case 0x11:
+		case TAG_STD_DESCRIPTOR:
 		pos = parse_std_descriptor(p_descriptor, buf, pos);
 			break;
-		case 0x12:
+		case TAG_IBP_DESCRIPTOR:
 		pos = parse_ibp_descriptor(p_descriptor, buf, pos);
 			break;
-		case 0x1b:
+		case TAG_MPEG_4_VIDEO_DESCRIPTOR:
 		pos = parse_mpeg_4_video_descriptor(p_descriptor, buf, pos);
 			break;
-		case 0x1c:
+		case TAG_MPEG_4_AUDIO_DESCRIPTOR:
 		pos = parse_mpeg_4_audio_descriptor(p_descriptor, buf, pos);
 			break;
-		case 0x1d:
+		case TAG_IOD_DESCRIPTOR:
 		pos = parse_iod_descriptor(p_descriptor, buf, pos);
 			break;
-		case 0x1e:
+		case TAG_SL_DESCRIPTOR:
 		pos = parse_sl_descriptor(p_descriptor, buf, pos);
 			break;
-		case 0x1f:
+		case TAG_FMC_DESCRIPTOR:
 		pos = parse_fmc_descriptor(p_descriptor, buf, pos);
 			break;
-		case 0x20:
+		case TAG_EXTERNAL_ES_ID_DESCRIPTOR:
 		pos = parse_external_es_id_descriptor(p_descriptor, buf, pos);
 			break;
-		case 0x21:
+		case TAG_MUXCODE_DESCRIPTOR:
 		pos = parse_muxcode_descriptor(p_descriptor, buf, pos);
 			break;
-		case 0x22:
+		case TAG_FMX_BUFFER_SIZE_DESCRIPTOR:
 		pos = parse_fmxbuffer_size_descriptor(p_descriptor, buf, pos);
 			break;
-		case 0x23:
+		case TAG_MULTIPLEX_BUFFER_DESCRIPTOR:
 		pos = parse_multiplex_buffer_descriptor(p_descriptor, buf, pos);
 			break;
-		case 0x40:
+		case TAG_NETWORK_NAME_DESCRIPTOR:
 		pos = parse_network_name_descriptor(p_descriptor, buf, pos);
 			break;
-		case 0x41:
+		case TAG_SERVICE_LIST_DESCRIPTOR:
 		pos = parse_service_list_descriptor(p_descriptor, buf, pos);
 			break;
-		case 0x42:
+		case TAG_STUFFING_DESCRIPTOR:
 		pos = parse_stuffing_descriptor(p_descriptor, buf, pos);
 			break;
-		case 0x43:
+		case TAG_SATTELITE_DELIVERY_SYSTEM_DESCRIPTOR:
 		pos = parse_satellite_delivery_system(p_descriptor, buf, pos);
 			break;
-		case 0x44:
+		case TAG_CABLE_DELIVERY_SYSTEM_DESCRIPTOR:
 		pos = parse_cable_delivery_system(p_descriptor, buf, pos);
 			break;
-		case 0x47:
+		case TAG_BOUQUET_NAME_DESCRIPTOR:
 		pos = parse_bouquet_name_descriptor(p_descriptor, buf, pos);
 			break;
-		case 0x48:
+		case TAG_SERVICE_DESCRIPTOR:
 		pos = parse_service_descriptor(p_descriptor, buf, pos);
 			break;
-		case 0x49:
+		case TAG_COUNTRY_AVAILABILITY_DESCRIPTOR:
 		pos = parse_country_availability_descriptor(p_descriptor, buf, pos);
 			break;
-		case 0x4a:
+		case TAG_LINKAGE_DESCRIPTOR:
 		pos = parse_linkage_descriptor(p_descriptor, buf, pos);
 			break;
-		case 0x4b:
+		case TAG_NVOD_REFERENCE_DESCRIPTOR:
 		pos = parse_nvod_reference_descriptor(p_descriptor, buf, pos);
 			break;
-		case 0x4c:
+		case TAG_TIME_SHIFTED_SERVICE_DESCRIPTOR:
 		pos = parse_time_shifted_service_descriptor(p_descriptor, buf, pos);
 			break;
-		case 0x4d:
+		case TAG_SHORT_EVENT_DESCRIPTOR:
 		pos = parse_short_event_descriptor(p_descriptor, buf, pos);
 			break;
-		case 0x4e:
+		case TAG_EXTENDED_EVENT_DESCRIPTOR:
 		pos = parse_extended_event_descriptor(p_descriptor, buf, pos);
 			break;
-		case 0x4f:
+		case TAG_TIME_SHIFTED_EVENT_DESCRIPTOR:
 		pos = parse_time_shifted_event_descriptor(p_descriptor, buf, pos);
 			break;
-		case 0x50:
+		case TAG_COMPONENT_DESCRIPTOR:
 		pos = parse_component_descriptor(p_descriptor, buf, pos);
 			break;
-		case 0x51:
+		case TAG_MOSAIC_DESCRIPTOR:
 		pos = parse_mosaic_descriptor(p_descriptor, buf, pos);
 			break;
-		case 0x52:
+		case TAG_STREAM_IDENTIFIER_DESCRIPTOR:
 		pos = parse_stream_identifier_descriptor(p_descriptor, buf, pos);
 			break;
-		case 0x53:
+		case TAG_CA_IDENTIFIER_DESCRIPTOR:
 		pos = parse_ca_identifier_descriptor(p_descriptor, buf, pos);
 			break;
-		case 0x54:
+		case TAG_CONTENT_DESCRIPTOR:
 		pos = parse_content_descriptor(p_descriptor, buf, pos);
 			break;
-		case 0x55:
+		case TAG_PARENTAL_RATING_DESCRIPTOR:
 		pos = parse_parental_rating_descriptor(p_descriptor, buf, pos);
 			break;
-		case 0x56:
+		case TAG_TELETEXT_DESCRIPTOR:
 		pos = parse_teletext_descriptor(p_descriptor, buf, pos);
 			break;
-		case 0x57:
+		case TAG_TELEPHONE_DESCRIPTOR:
 		pos = parse_telephone_descriptor(p_descriptor, buf, pos);
 			break;
-		case 0x58:
+		case TAG_LOCAL_TIME_OFFSET_DESCRIPTOR:
 		pos = parse_local_time_offset_descriptor(p_descriptor, buf, pos);
 			break;
-		case 0x59:
+		case TAG_SUBTITLING_DESCRIPTOR:
 		pos = parse_subtitling_descriptor(p_descriptor, buf, pos);
 			break;
-		case 0x5a:
+		case TAG_TERRESTRIAL_DELIVERY_SYSTEM_DESCRIPTOR:
 		pos = parse_terrestrial_delivery_system(p_descriptor, buf, pos);
 			break;
-		case 0x5b:
+		case TAG_MULTILINGUAL_NETWORK_NAME_DESCRIPTOR:
 		pos = parse_multilingual_network_name_descriptor(p_descriptor, buf, pos);
 			break;
-		case 0x5c:
+		case TAG_MULTILINGUAL_BOUQUET_NAME_DESCRIPTOR:
 		pos = parse_multilingual_bouquet_name_descriptor(p_descriptor, buf, pos);
 			break;
-/*	case 0x5d: */
+/*	case TAG_MULTILINGUAL_SERVICE_NAME_DESCRIPTOR: */
 /*		pos = parse_multilingual_service_name_descriptor(p_descriptor, buf, pos); */
 /*		break; */
-/*	case 0x5e: */
+/*	case TAG_MULTILINGUAL_COMPONENT_DESCRIPTOR: */
 /*		pos = parse_multilingual_component_descriptor(p_descriptor, buf, pos); */
 /*		break; */
-/*	case 0x5f: */
+/*	case TAG_PRIVATE_DATA_SPECIFIER_DESCRIPTOR: */
 /*		pos = parse_private_data_specifier_descriptor(p_descriptor, buf, pos); */
 /*		break; */
-/*	case 0x60: */
+/*	case TAG_SERVICE_MOVE_DESCRIPTOR: */
 /*		pos = parse_service_move_descriptor(p_descriptor, buf, pos); */
 /*		break; */
-/*	case 0x61: */
+/*	case TAG_SHORT_SMOOTHING_BUFFER_DESCRIPTOR: */
 /*		pos = parse_short_smoothing_buffer_descriptor(p_descriptor, buf, pos); */
 /*		break; */
-/*	case 0x62: */
+/*	case TAG_FREQUENCY_LIST_DESCRIPTOR: */
 /*		pos = parse_frequency_list_descriptor(p_descriptor, buf, pos); */
 /*		break; */
-/*	case 0x63: */
+/*	case TAG_PARTIAL_TRANSPORT_DESCRIPTOR: */
 /*		pos = pars_partial_transport_stream(p_descriptor, buf, pos); */
 /*		break; */
-/*	case 0x64: */
+/*	case TAG_DATA_BROADCAST_DESCRIPTOR: */
 /*		pos = parse_data_broadcast_descriptor(p_descriptor, buf, pos); */
 /*		break; */
-/*	case 0x65: */
+/*	case TAG_CA_SYSTEM_DESCRIPTOR: */
 /*		pos = parse_ca_system_descriptor(p_descriptor, buf, pos); */
 /*		break; */
-/*	case 0x66: */
+/*	case TAG_DATA_BROADCAST_ID_DESCRIPTOR: */
 /*		pos = parse_data_broadcast_id_descriptor(p_descriptor, buf, pos); */
 /*		break; */
 		default:	/*	parse an unknown	*/
