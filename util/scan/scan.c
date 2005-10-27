@@ -1235,7 +1235,7 @@ static int read_sections (struct section_buf *s)
 static LIST_HEAD(running_filters);
 static LIST_HEAD(waiting_filters);
 static int n_running;
-#define MAX_RUNNING 32
+#define MAX_RUNNING 27
 static struct pollfd poll_fds[MAX_RUNNING];
 static struct section_buf* poll_section_bufs[MAX_RUNNING];
 
