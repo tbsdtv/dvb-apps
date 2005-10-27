@@ -344,7 +344,7 @@ static void parse_terrestrial_uk_channel_number (const unsigned char *buf, void 
 	buf += 2;
 	for (i = 0; i < n; i++) {
 		service_id = (buf[0]<<8)|(buf[1]&0xff);
-		channel_num = (buf[2]&0x03<<8)|(buf[3]&0xff);
+		channel_num = ((buf[2]&0x03)<<8)|(buf[3]&0xff);
 		debug("Service ID 0x%x has channel number %d ", service_id, channel_num);
 		list_for_each(p1, &scanned_transponders) {
 			t = list_entry(p1, struct transponder, list);
