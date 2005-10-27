@@ -402,7 +402,7 @@ static void parse_cable_delivery_system_descriptor (const unsigned char *buf,
 	t->param.inversion = spectral_inversion;
 
 	if (verbosity >= 5) {
-		debug("0x%#04x/0x%#04x ", t->network_id, t->transport_stream_id);
+		debug("%#04x/%#04x ", t->network_id, t->transport_stream_id);
 		dump_dvb_parameters (stderr, t);
 		if (t->scan_done)
 			dprintf(5, " (done)");
@@ -434,7 +434,7 @@ static void parse_satellite_delivery_system_descriptor (const unsigned char *buf
 	t->we_flag = buf[8] >> 7;
 
 	if (verbosity >= 5) {
-		debug("0x%#04x/0x%#04x ", t->network_id, t->transport_stream_id);
+		debug("%#04x/%#04x ", t->network_id, t->transport_stream_id);
 		dump_dvb_parameters (stderr, t);
 		if (t->scan_done)
 			dprintf(5, " (done)");
@@ -488,7 +488,7 @@ static void parse_terrestrial_delivery_system_descriptor (const unsigned char *b
 	t->other_frequency_flag = (buf[8] & 0x01);
 
 	if (verbosity >= 5) {
-		debug("0x%#04x/0x%#04x ", t->network_id, t->transport_stream_id);
+		debug("%#04x/%#04x ", t->network_id, t->transport_stream_id);
 		dump_dvb_parameters (stderr, t);
 		if (t->scan_done)
 			dprintf(5, " (done)");
