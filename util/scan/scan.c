@@ -1969,7 +1969,7 @@ static void dump_lists (void)
 						    s->video_pid,
 						    s->pcr_pid,
 						    s->audio_pid,
-						    //FIXME: s->audio_lang
+						    s->audio_lang,
 						    s->audio_num,
 						    s->teletext_pid,
 						    s->scrambled,

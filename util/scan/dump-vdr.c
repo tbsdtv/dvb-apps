@@ -120,6 +120,7 @@ void vdr_dump_service_parameter_set (FILE *f,
 				 int video_pid,
 				 int pcr_pid,
 				 uint16_t *audio_pid,
+				 char audio_lang[][4],
                                  int audio_num,
 				 int teletext_pid,
 				 int scrambled,
@@ -138,6 +139,11 @@ void vdr_dump_service_parameter_set (FILE *f,
         int i;
 
 	if ((video_pid || audio_pid[0]) && ((ca_select > 0) || ((ca_select == 0) && (scrambled == 0)))) {
+		if (vdr_version <= 2) {
+			audio_lang = NULL;
+			network_id = 0;
+			transport_stream_id = 0;
+		}
 		if ((dump_channum == 1) && (channel_num > 0))
 			fprintf(f, ":@%i\n", channel_num);
 		if (vdr_version >= 3)
@@ -154,15 +160,21 @@ void vdr_dump_service_parameter_set (FILE *f,
 		else
 			fprintf (f, "%i:", video_pid);
 		fprintf (f, "%i", audio_pid[0]);
+		if (audio_lang && audio_lang[0][0])
+			fprintf (f, "=%.4s", audio_lang[0]);
 	        for (i = 1; i < audio_num; i++)
+	        {
 			fprintf (f, ",%i", audio_pid[i]);
-		if (ac3_pid)
-			fprintf (f, ";%i", ac3_pid);
-		if (scrambled == 1) scrambled = ca_select;
-		if (vdr_version == 2) {
-			network_id = 0;
-			transport_stream_id = 0;
+			if (audio_lang && audio_lang[i][0])
+				fprintf (f, "=%.4s", audio_lang[i]);
 		}
+		if (ac3_pid)
+	        {
+			fprintf (f, ";%i", ac3_pid);
+			if (audio_lang && audio_lang[0][0])
+				fprintf (f, "=%.4s", audio_lang[0]);
+ 		}
+		if (scrambled == 1) scrambled = ca_select;
 		fprintf (f, ":%d:%d:%d:%d:%d:0", teletext_pid, scrambled,
 				service_id, network_id, transport_stream_id);
 		fprintf (f, "\n");
