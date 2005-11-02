@@ -20,7 +20,7 @@ INC = section.h \
       bat_section.h \
       dit_section.h \
       eit_section.h \
-      int_sectio.h \
+      int_section.h \
       nit_section.h \
       rst_section.h \
       sdt_section.h \
