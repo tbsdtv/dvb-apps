@@ -238,7 +238,7 @@ int dvb_close_ci(struct dvb_ci * ci)
 	struct list_entry * pos, * next;
 	struct dvb_ci_slot * slot;
 
-	for(pos = ci->slots.next; pos != NULL; pos = next) {
+	for (pos = ci->slots.next; pos != NULL; pos = next) {
 		next = pos->next;
 		slot = list_get_entry(pos, struct dvb_ci_slot, list);
 
@@ -274,7 +274,7 @@ static int dvb_ci_session_release(struct dvb_ci_session * session)
 	struct dvb_ci_spdu * spdu;
 	struct list_entry * pos, * next;
 
-	for(pos = session->outqueue.next; pos != NULL; pos = next) {
+	for (pos = session->outqueue.next; pos != NULL; pos = next) {
 		next = pos->next;
 		spdu = list_get_entry(pos, struct dvb_ci_spdu, list);
 
@@ -282,7 +282,7 @@ static int dvb_ci_session_release(struct dvb_ci_session * session)
 		free(spdu); /* XXX */
 	}
 
-	for(pos = session->inqueue.next; pos != NULL; pos = next) {
+	for (pos = session->inqueue.next; pos != NULL; pos = next) {
 		next = pos->next;
 		spdu = list_get_entry(pos, struct dvb_ci_spdu, list);
 
@@ -299,7 +299,7 @@ static int dvb_ci_connection_release(struct dvb_ci_connection * conn)
 	struct dvb_ci_tpdu * tpdu;
 	struct list_entry * pos, * next;
 
-	for(pos = conn->sessions.next; pos != NULL; pos = next) {
+	for (pos = conn->sessions.next; pos != NULL; pos = next) {
 		next = pos->next;
 		session = list_get_entry(pos, struct dvb_ci_session, list);
 
@@ -308,7 +308,7 @@ static int dvb_ci_connection_release(struct dvb_ci_connection * conn)
 		free(session);
 	}
 
-	for(pos = conn->outqueue.next; pos != NULL; pos = next) {
+	for (pos = conn->outqueue.next; pos != NULL; pos = next) {
 		next = pos->next;
 		tpdu = list_get_entry(pos, struct dvb_ci_tpdu, list);
 
@@ -317,7 +317,7 @@ static int dvb_ci_connection_release(struct dvb_ci_connection * conn)
 		free(tpdu);
 	}
 
-	for(pos = conn->inqueue.next; pos != NULL; pos = next) {
+	for (pos = conn->inqueue.next; pos != NULL; pos = next) {
 		next = pos->next;
 		tpdu = list_get_entry(pos, struct dvb_ci_tpdu, list);
 
@@ -337,7 +337,7 @@ static int dvb_ci_slot_release(struct dvb_ci_slot * slot)
 	slot->reset(slot);
 	slot->state = dvb_ci_slot_state_released;
 
-	for(pos = slot->connections.next; pos != NULL; pos = next) {
+	for (pos = slot->connections.next; pos != NULL; pos = next) {
 		next = pos->next;
 		conn = list_get_entry(pos, struct dvb_ci_connection, list);
 

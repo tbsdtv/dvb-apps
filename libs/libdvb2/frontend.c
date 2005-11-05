@@ -125,7 +125,7 @@ struct dvb_frontend * dvb_find_frontend(struct dvb_adapter * adapter, int num)
 	struct list_entry * pos;
 	struct dvb_frontend * frontend;
 
-	for(pos = adapter->frontends.next; pos != NULL; pos = pos->next) {
+	for (pos = adapter->frontends.next; pos != NULL; pos = pos->next) {
 		frontend = list_get_entry(pos, struct dvb_frontend, list);
 		if (frontend->num == num)
 			return frontend;
@@ -139,7 +139,7 @@ int dvb_close_frontends(struct dvb_adapter * adapter)
 	struct list_entry * pos, * next;
 	struct dvb_frontend * frontend;
 
-	for(pos = adapter->frontends.next; pos != NULL; pos = next) {
+	for (pos = adapter->frontends.next; pos != NULL; pos = next) {
 		next = pos->next;
 		frontend = list_get_entry(pos, struct dvb_frontend, list);
 
@@ -192,7 +192,7 @@ int dvb_update_frontends(struct dvb_adapter * adapter)
 	if (adapter == NULL)
 		return -EINVAL;
 
-	for(pos = adapter->frontends.next; pos != NULL; pos = pos->next) {
+	for (pos = adapter->frontends.next; pos != NULL; pos = pos->next) {
 		frontend = list_get_entry(pos, struct dvb_frontend, list);
 
 		if ((ret = dvb_update_frontend(frontend)) < 0)

@@ -244,7 +244,7 @@ static inline int do_scheduled_task(struct dvb * dvb)
 
 	clock_gettime(CLOCK_MONOTONIC, &data->ts);
 
-	for(pos = data->taskqueue.next; pos != NULL; pos = pos->next) {
+	for (pos = data->taskqueue.next; pos != NULL; pos = pos->next) {
 		task = list_get_entry(pos, struct dvb_task, list);
 
 		int diff = (data->ts.tv_sec - task->ts.tv_sec) * 1000000 +

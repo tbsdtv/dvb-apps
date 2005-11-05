@@ -1432,7 +1432,7 @@ uint16_t parse_registration_descriptor(struct descriptor *p_descriptor, uint8_t 
 
 	p_descriptor->registration.format_identifier =
 		((((((buf[pos + 0] << 8) | buf[pos + 1])) << 8) | buf[pos + 2]) << 8) | buf[pos + 3];
-	if(p_descriptor->descriptor_length - 4 > 0) {
+	if (p_descriptor->descriptor_length - 4 > 0) {
 
 		p_descriptor->registration.p_additional_id_info = (uint8_t *)
 			malloc(sizeof (uint8_t) * (p_descriptor->descriptor_length - 4));
@@ -1530,7 +1530,7 @@ void deallocate_video_stream_descriptor(struct descriptor *p_descriptor)
 void deallocate_descriptor_storage(struct descriptor *p_descriptor)
 {
 
-	switch(p_descriptor->descriptor_tag) {
+	switch (p_descriptor->descriptor_tag) {
 		case TAG_VIDEO_STREAM_DESCRIPTOR:
 				deallocate_video_stream_descriptor(p_descriptor);
 			break;

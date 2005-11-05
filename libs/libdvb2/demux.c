@@ -462,7 +462,7 @@ int dvb_add_pid(struct dvb_filter * filter, int pid)
 
 	demux = filter->demux;
 
-	for(pos = demux->devices.next; pos != NULL; pos = pos->next) {
+	for (pos = demux->devices.next; pos != NULL; pos = pos->next) {
 		device = list_get_entry(pos, struct dvb_device, list);
 
 		if ((device->section != 1) && (device->pid == pid)) {
@@ -522,7 +522,7 @@ int dvb_add_section_pid(struct dvb_filter * filter, int pid)
 
 	demux = filter->demux;
 
-	for(pos = demux->devices.next; pos != NULL; pos = pos->next) {
+	for (pos = demux->devices.next; pos != NULL; pos = pos->next) {
 		device = list_get_entry(pos, struct dvb_device, list);
 
 		if ((device->section != 0) && (device->pid == pid)) {
@@ -625,7 +625,7 @@ static void read_demux(void * opaque)
 	struct list_entry * pos;
 	struct dvb_filter * filter;
 
-	for(pos = demux->filters.next; pos != NULL; pos = pos->next) {
+	for (pos = demux->filters.next; pos != NULL; pos = pos->next) {
 		filter = list_get_entry(pos, struct dvb_filter, list);
 
 		if (!dvb_read_filter(filter)) {

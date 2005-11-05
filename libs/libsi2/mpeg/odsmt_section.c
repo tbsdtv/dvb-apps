@@ -52,7 +52,7 @@ struct mpeg_odsmt_section *mpeg_odsmt_section_parse(struct section_ext * ext)
 
 		pos += stream->u.single.es_info_length;
 	} else {
-		for(i=0; i< odsmt->stream_count; i++) {
+		for (i=0; i< odsmt->stream_count; i++) {
 			struct mpeg_odsmt_stream * stream =
 				(struct mpeg_odsmt_stream *)(buf + pos);
 

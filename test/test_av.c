@@ -424,7 +424,7 @@ int videoStillPicture(int fd, char *arg)
 	sp.size = st.st_size;
 	printf("I-frame size: %d\n", sp.size);
 
-	if(!sp.iFrame) {
+	if (!sp.iFrame) {
 		printf("No memory for I-Frame\n");
 		return 0;
 	}
@@ -555,11 +555,11 @@ int main(void)
 	printf("using audio device '%s'\n", audiodev);
 	printf("enter command or h + enter for help\n");
 
-	if((vfd = open(videodev, O_RDWR | O_NONBLOCK)) < 0) {
+	if ((vfd = open(videodev, O_RDWR | O_NONBLOCK)) < 0) {
 		perror("open video device");
 		return 1;
 	}
-	if((afd = open(audiodev, O_RDWR | O_NONBLOCK)) < 0) {
+	if ((afd = open(audiodev, O_RDWR | O_NONBLOCK)) < 0) {
 		perror("open audio device");
 		return 1;
 	}

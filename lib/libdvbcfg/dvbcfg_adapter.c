@@ -115,7 +115,7 @@ int dvbcfg_adapter_remove_source(struct dvbcfg_adapter* adapter, struct dvbcfg_s
         if (adapter->sources == NULL)
                 return -EINVAL;
 
-        for(i=0; i< adapter->sources_count; i++) {
+        for (i=0; i< adapter->sources_count; i++) {
                 if (adapter->sources[i] == source)
                         break;
         }
@@ -167,7 +167,7 @@ int dvbcfg_adapter_supports_source(struct dvbcfg_adapter *adapter, struct dvbcfg
 {
         int i;
 
-        for(i=0; i< adapter->sources_count; i++) {
+        for (i=0; i< adapter->sources_count; i++) {
                 if (source == adapter->sources[i])
                         return 1;
         }

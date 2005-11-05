@@ -291,11 +291,11 @@ int main(int argc, char **argv)
 		perror("File open:");
 		return -1;
 	}
-	if((vfd = open(videodev,O_RDWR|O_NONBLOCK)) < 0){
+	if ((vfd = open(videodev,O_RDWR|O_NONBLOCK)) < 0){
 		perror("VIDEO DEVICE: ");
 		return -1;
 	}
-	if((afd = open(audiodev,O_RDWR|O_NONBLOCK)) < 0){
+	if ((afd = open(audiodev,O_RDWR|O_NONBLOCK)) < 0){
 		perror("AUDIO DEVICE: ");
 		return -1;
 	}

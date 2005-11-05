@@ -45,7 +45,7 @@ int dvbcfg_seed_save(struct dvbcfg_seed_backend *backend,
         int status;
         int i;
 
-        for(i=0; i< seed->deliveries_count; i++) {
+        for (i=0; i< seed->deliveries_count; i++) {
                 if ((status = backend->put(backend, &seed->deliveries[i])) != 0)
                         return status;
         }

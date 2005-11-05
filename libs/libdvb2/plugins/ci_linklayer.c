@@ -212,7 +212,7 @@ static int ci_slot_reset(struct dvb_ci_slot * slot)
 	struct dvb_ci_connection * conn;
 	struct list_entry * pos, * next;
 
-	for(pos = slot->connections.next; pos != NULL; pos = pos->next) {
+	for (pos = slot->connections.next; pos != NULL; pos = pos->next) {
 		next = pos->next;
 		conn = list_get_entry(pos, struct dvb_ci_connection, list);
 		conn->close(conn);
@@ -332,7 +332,7 @@ static struct dvb_ci_connection * dvb_ci_connection_by_id(struct dvb_ci_slot * s
 	struct list_entry * pos;
 	struct dvb_ci_connection * ret = NULL;
 
-	for(pos = slot->connections.next; pos != NULL; pos = pos->next) {
+	for (pos = slot->connections.next; pos != NULL; pos = pos->next) {
 		ret = list_get_entry(pos, struct dvb_ci_connection, list);
 		if (ret->id == id)
 			break;
@@ -400,13 +400,13 @@ static int ll_process_connections(struct dvb_ci_slot * slot)
 	struct linklayer * ll = slot->opaque;
 	struct list_entry * pos, * pos2;
 
-	for(pos = slot->connections.next; pos != NULL; pos = pos->next) {
+	for (pos = slot->connections.next; pos != NULL; pos = pos->next) {
 		conn = list_get_entry(pos, struct dvb_ci_connection, list);
 
 		if (slot->state != dvb_ci_slot_state_idle)
 			continue;
 
-		for(pos2 = conn->outqueue.next; pos2 != NULL; pos2 = pos->next) {
+		for (pos2 = conn->outqueue.next; pos2 != NULL; pos2 = pos->next) {
 			tpdu = list_get_entry(pos2, struct dvb_ci_tpdu, list);
 			slot->state = dvb_ci_slot_state_reply;
 
@@ -456,7 +456,7 @@ static int ll_poll(struct linklayer * ll)
 		if (slot->state != dvb_ci_slot_state_idle)
 			continue;
 
-		for(pos = slot->connections.next; pos != NULL; pos = pos->next) {
+		for (pos = slot->connections.next; pos != NULL; pos = pos->next) {
 			conn = list_get_entry(pos, struct dvb_ci_connection, list);
 
 			if (conn->state != dvb_ci_tpconn_active)

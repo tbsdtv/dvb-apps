@@ -315,7 +315,7 @@ void load_iframe(int filefd, int fd)
 	sp.size = st.st_size;
 	printf("I-frame size: %d\n", sp.size);
 	
-	if(!sp.iFrame) {
+	if (!sp.iFrame) {
 		printf("No memory for I-Frame\n");
 		return;
 	}
@@ -338,7 +338,7 @@ main(int argc, char **argv)
 		perror("File open:");
 		return -1;
 	}
-	if((fd = open("/dev/ost/video1",O_RDWR|O_NONBLOCK)) < 0){
+	if ((fd = open("/dev/ost/video1",O_RDWR|O_NONBLOCK)) < 0){
 		perror("VIDEO DEVICE: ");
 		return -1;
 	}

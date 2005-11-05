@@ -117,7 +117,7 @@ uint16_t en50221_encode_streams(struct ca_msg * ca_msg,
 		stream->stream_type, stream->elementary_pid,
 		stream->es_info_length);
 
-	if(stream->streams_desc_count) {
+	if (stream->streams_desc_count) {
 		pos = encode_ca_pmt_command(ca_msg, stream, pos, STREAMS_SCRAMBLED);
 	}
 

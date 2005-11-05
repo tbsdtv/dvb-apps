@@ -116,7 +116,7 @@ static int handle_spdu_session_number(struct dvb_ci_session * session,
 	struct dvb_ci_apdu * apdu;
 	struct list_entry * pos;
 
-	for(pos = spdu->apdu.next; pos != NULL; pos = pos->next) {
+	for (pos = spdu->apdu.next; pos != NULL; pos = pos->next) {
 		apdu = list_get_entry(pos, struct dvb_ci_apdu, list);
 
 		fprintf(stderr, "[%.2i:%.2i:%.2i] <<<< apdu: %s\n",
@@ -175,7 +175,7 @@ static int send_spdu_generic(struct dvb_ci_session * session,
 	      session->conn->slot->num, session->conn->id,
 	      session ? session->id : 0, sot_name(spdu->tag));
 
-	for(lpos = spdu->apdu.next; lpos != NULL; lpos = lpos->next) {
+	for (lpos = spdu->apdu.next; lpos != NULL; lpos = lpos->next) {
 		apdu = list_get_entry(lpos, struct dvb_ci_apdu, list);
 
 		assert(apdu->len < 0x80);
@@ -192,7 +192,7 @@ static int send_spdu_generic(struct dvb_ci_session * session,
 	memcpy(buf + pos, spdu->data, spdu->len);
 	pos += spdu->len;
 
-	for(lpos = spdu->apdu.next; lpos != NULL; lpos = lpos->next) {
+	for (lpos = spdu->apdu.next; lpos != NULL; lpos = lpos->next) {
 		apdu = list_get_entry(lpos, struct dvb_ci_apdu, list);
 
 		buf[pos++] = apdu->tag >> 16;

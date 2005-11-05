@@ -506,7 +506,7 @@ static int put_service(struct dvbcfg_multiplex_backend* backend,
 
         if (service->ca_systems_count) {
                 fprintf(fbackend->outhandle, "ca=");
-                for(i=0; i< service->ca_systems_count; i++) {
+                for (i=0; i< service->ca_systems_count; i++) {
                         fprintf(fbackend->outhandle, "0x%x ", service->ca_systems[i]);
                 }
                 fprintf(fbackend->outhandle, "\n");
@@ -709,7 +709,7 @@ static void format_pids(FILE* out, char*key, int count, struct dvbcfg_pid* pids)
 
         if (count) {
                 fprintf(out, "%s=", key);
-                for(i=0; i< count; i++) {
+                for (i=0; i< count; i++) {
                         fprintf(out, "0x%x:", pids[i].pid);
 
                         if ((pids[i].type & 0xff00) == 0) {

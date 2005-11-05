@@ -192,7 +192,7 @@ static int put_adapter(struct dvbcfg_adapter_backend* backend,
 
         fprintf(fbackend->outhandle, "%s ", adapter->adapter_id);
 
-        for(i=0; i< adapter->sources_count; i++) {
+        for (i=0; i< adapter->sources_count; i++) {
                 source_id = dvbcfg_source_id_to_string(&adapter->sources[i]->source_id);
                 if (source_id) {
                         fprintf(fbackend->outhandle, "%s ", source_id);

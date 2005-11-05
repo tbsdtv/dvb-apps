@@ -385,7 +385,7 @@ int setup_frontend (int fe_fd, struct dvb_frontend_parameters *frontend)
 		return -1;
 	}
 
-	if(silent<2)
+	if (silent<2)
 		fprintf (stderr,"tuning to %i Hz\n", frontend->frequency);
 
 	if (ioctl(fe_fd, FE_SET_FRONTEND, frontend) < 0) {
@@ -399,7 +399,7 @@ int setup_frontend (int fe_fd, struct dvb_frontend_parameters *frontend)
 static void
 do_timeout(int x)
 {
-	if(timeout_flag==0)
+	if (timeout_flag==0)
 	{
 		timeout_flag=1;
 		alarm(2);
@@ -477,7 +477,7 @@ void copy_to_file(int in_fd, int out_fd)
 		}
 		rc+=r;
 	}
-	if(silent<2)
+	if (silent<2)
 	{
 		fprintf(stderr, "copied %lld bytes (%lld Kbytes/sec)\n",rc,rc/(1024*timeout));
 	}
@@ -576,7 +576,7 @@ int main(int argc, char **argv)
 	snprintf (DVR_DEV, sizeof(DVR_DEV),
 		  "/dev/dvb/adapter%i/dvr%i", adapter, demux);
 
-	if(silent<2)
+	if (silent<2)
 		fprintf (stderr,"using '%s' and '%s'\n", FRONTEND_DEV, DEMUX_DEV);
 
 	if (!confname)
@@ -614,7 +614,7 @@ int main(int argc, char **argv)
                 return -1;
         }
 
-	if(silent<2)
+	if (silent<2)
 		fprintf (stderr,"video pid 0x%04x, audio pid 0x%04x\n", vpid, apid);
 
 	if (set_pesfilter (video_fd, vpid, DMX_PES_VIDEO, dvr) < 0)
@@ -629,18 +629,18 @@ int main(int argc, char **argv)
 		return -1;
 
 	signal(SIGALRM,do_timeout);
-	if(timeout>0)
+	if (timeout>0)
 		alarm(timeout);
 
 
-	if(record)
+	if (record)
 	{
-		if(filename!=NULL)
+		if (filename!=NULL)
 		{
-			if(strcmp(filename,"-")!=0)
+			if (strcmp(filename,"-")!=0)
 			{
 				file_fd = open (filename,O_WRONLY|O_LARGEFILE|O_CREAT,0644);
-				if(file_fd<0)
+				if (file_fd<0)
 				{
 					PERROR("open of '%s' failed",filename);
 					return -1;
@@ -661,17 +661,17 @@ int main(int argc, char **argv)
 	                PERROR("failed opening '%s'", DVR_DEV);
 	                return -1;
 	        }
-		if(ioctl(dvr_fd, DMX_SET_BUFFER_SIZE, 1024 * 1024)<0)
+		if (ioctl(dvr_fd, DMX_SET_BUFFER_SIZE, 1024 * 1024)<0)
 		{
 			PERROR("DMX_SET_BUFFER_SIZE failed");
 			return -1;
 		}
-		if(silent<2)
+		if (silent<2)
 			print_frontend_stats (frontend_fd);
 
 		copy_to_file(dvr_fd,file_fd);
 
-		if(silent<2)
+		if (silent<2)
 			print_frontend_stats (frontend_fd);
 	}
 	else {

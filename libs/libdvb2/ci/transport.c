@@ -217,7 +217,7 @@ static struct dvb_ci_session * find_session(struct dvb_ci_connection * conn,
 	id = spdu->data[spdu->len - 2] << 8 |
 	     spdu->data[spdu->len - 1];
 
-	for(pos = conn->sessions.next; pos != NULL; pos = pos->next) {
+	for (pos = conn->sessions.next; pos != NULL; pos = pos->next) {
 		session = list_get_entry(pos, struct dvb_ci_session, list);
 
 		if (session->id == id)
@@ -296,7 +296,7 @@ static int handle_tpdu_more_last(struct dvb_ci_tpdu * tpdu)
 	if (tpdu->tag == dvb_ci_tct_data_more)
 		return 0;
 
-	for(pos = conn->data.next; pos != NULL; pos = pos->next) {
+	for (pos = conn->data.next; pos != NULL; pos = pos->next) {
 		tpdu = list_get_entry(pos, struct dvb_ci_tpdu, list);
 
 		assert(conn->id == tpdu->data[0]);
@@ -307,7 +307,7 @@ static int handle_tpdu_more_last(struct dvb_ci_tpdu * tpdu)
 	if (data == NULL)
 		return -ENOMEM;
 
-	for(pos = conn->data.next; pos != NULL; pos = next) {
+	for (pos = conn->data.next; pos != NULL; pos = next) {
 		next = pos->next;
 		tpdu = list_get_entry(pos, struct dvb_ci_tpdu, list);
 

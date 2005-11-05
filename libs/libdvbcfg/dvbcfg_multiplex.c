@@ -232,7 +232,7 @@ int dvbcfg_multiplex_add_ca_system(struct dvbcfg_service* service,
         int i;
 
         /* check it isn't already there */
-        for(i=0; i< service->ca_systems_count; i++) {
+        for (i=0; i< service->ca_systems_count; i++) {
                 if (service->ca_systems[i] == ca_system_id)
                         return 0;
         }
@@ -266,7 +266,7 @@ int dvbcfg_multiplex_remove_ca_system(struct dvbcfg_service* service,
         if (service->ca_systems == NULL)
                 return -EINVAL;
 
-        for(i=0; i< service->ca_systems_count; i++) {
+        for (i=0; i< service->ca_systems_count; i++) {
                 if (service->ca_systems[i] == ca_system_id)
                         break;
         }
@@ -321,7 +321,7 @@ static int add_pid(int* count, struct dvbcfg_pid** pids, int pid, int type) {
         int i;
 
         /* check it isn't already there */
-        for(i=0; i< *count; i++) {
+        for (i=0; i< *count; i++) {
                 if (((*pids)[i].pid == pid) && ((*pids[i]).type == type))
                         return 0;
         }
@@ -366,7 +366,7 @@ static int remove_pid(int* count, struct dvbcfg_pid** pids, int pid, int type)
         /* we keep removing until there are no more matches */
         while(1) {
                 /* does the pid/type combo exist? */
-                for(i=0; i< *count; i++) {
+                for (i=0; i< *count; i++) {
                         if (((pid == -1) || ((*pids)[i].pid == pid)) &&
                             ((type == -1) || ((*pids)[i].type == type)))
                                 break;

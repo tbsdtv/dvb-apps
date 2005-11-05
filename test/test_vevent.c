@@ -73,7 +73,7 @@ int main(void)
 
 	printf("using video device '%s'\n", videodev);
 
-	if((vfd = open(videodev, O_RDONLY | O_NONBLOCK)) < 0) {
+	if ((vfd = open(videodev, O_RDONLY | O_NONBLOCK)) < 0) {
 		perror("open video device");
 		return 1;
 	}

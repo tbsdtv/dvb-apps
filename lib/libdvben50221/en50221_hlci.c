@@ -37,7 +37,7 @@ static int compare_en50221_descriptor_object(struct descriptor* p_descriptor1,
 	int i;
 
 	// Check basic fields
-	if(p_descriptor1->descriptor_tag != 9 ||
+	if (p_descriptor1->descriptor_tag != TAG_CA_DESCRIPTOR ||
 	   p_descriptor2->descriptor_tag != p_descriptor2->descriptor_tag ||
 	   p_descriptor1->descriptor_length != p_descriptor2->descriptor_length ||
 	   p_descriptor1->ca.ca_system_id != p_descriptor2->ca.ca_system_id ||
@@ -47,8 +47,8 @@ static int compare_en50221_descriptor_object(struct descriptor* p_descriptor1,
 	}
 
 	// Check private data
-	for(i = 0; i < p_descriptor1->descriptor_length - 4; i++) {
-		if(p_descriptor1->ca.p_private_data_byte[i] != p_descriptor2->ca.p_private_data_byte[i]) {
+	for (i = 0; i < p_descriptor1->descriptor_length - 4; i++) {
+		if (p_descriptor1->ca.p_private_data_byte[i] != p_descriptor2->ca.p_private_data_byte[i]) {
 			return 0;
 		}
 	}
@@ -66,7 +66,7 @@ static uint16_t copy_en50221_descriptor_object(struct descriptor *p_en50221_desc
 	p_en50221_descriptor->descriptor_tag = p_descriptor->descriptor_tag;
 	p_en50221_descriptor->descriptor_length = p_descriptor->descriptor_length;
 
-	if(p_descriptor->descriptor_tag != TAG_CA_DESCRIPTOR) {
+	if (p_descriptor->descriptor_tag != TAG_CA_DESCRIPTOR) {
 		printf("ERROR::Trying to copy a CA descriptor with incorrect tag [%d]. Bailing out.\n",
 		       p_descriptor->descriptor_tag);
 		return 16;
@@ -147,26 +147,14 @@ static uint16_t copy_en50221_stream_object(struct en50221_stream *p_en50221_stre
 
 static void try_move_ca_descriptors(struct service_info *p_si)
 {
-	int i;
-	int j;
-	int k;
-	int l;
-	struct streams *p_stream1;
-	struct streams *p_stream2;
-	struct descriptor *p_desc1;
-	struct descriptor *p_desc2;
-	int movable = 1;
-	int ca_descriptors = 0;
-	int num_ca1;
-	int num_ca2;
-	int found_match;
-	int found;
-	struct descriptor *p_new_descriptors;
+	int i,j,k,l, movable = 1, ca_descriptors = 0, num_ca1, num_ca2, found_match, found;
+	struct streams *p_stream1, *p_stream2;
+	struct descriptor *p_desc1, *p_desc2, *p_new_descriptors;
 
 	// First, check how many CA descriptors that we have on stream level
-	for(i = 0; i < p_si->p_pmt->stream_count; i++) {
+	for (i = 0; i < p_si->p_pmt->stream_count; i++) {
 		p_stream1 = &p_si->p_pmt->p_streams[i];
-		for(j = 0; j < p_stream1->streams_desc_count; j++) {
+		for (j = 0; j < p_stream1->streams_desc_count; j++) {
 			p_desc1 = &p_stream1->p_descriptors[j];
 			if (p_desc1->descriptor_tag == TAG_CA_DESCRIPTOR) {
 				ca_descriptors++;
@@ -175,59 +163,59 @@ static void try_move_ca_descriptors(struct service_info *p_si)
 	}
 
 	// Check that we have CA descriptors on stream level only
-	if(p_si->p_pmt->program_desc_count != 0 || ca_descriptors == 0) {
+	if (p_si->p_pmt->program_desc_count != 0 || ca_descriptors == 0) {
 		movable = 0;
 	}
 
 	// Check that all streams with CA descriptors have exactly the same CA descriptors
-	for(i = 0; i < p_si->p_pmt->stream_count; i++) {
+	for (i = 0; i < p_si->p_pmt->stream_count; i++) {
 		p_stream1 = &p_si->p_pmt->p_streams[i];
 
 		// Get number of CA descriptors for stream1
 		num_ca1 = 0;
-		for(j = 0; j < p_stream1->streams_desc_count; j++) {
+		for (j = 0; j < p_stream1->streams_desc_count; j++) {
 			p_desc1 = &p_stream1->p_descriptors[j];
-			if(p_desc1->descriptor_tag == TAG_CA_DESCRIPTOR) {
+			if (p_desc1->descriptor_tag == TAG_CA_DESCRIPTOR) {
 				num_ca1++;
 			}
 		}
-		for(k = 0; k < p_si->p_pmt->stream_count; k++) {
+		for (k = 0; k < p_si->p_pmt->stream_count; k++) {
 			p_stream2 = &p_si->p_pmt->p_streams[k];
 
 			// Get number of CA descriptors for stream2
 			num_ca2 = 0;
-			for(j = 0; j < p_stream2->streams_desc_count; j++) {
+			for (j = 0; j < p_stream2->streams_desc_count; j++) {
 				p_desc2 = &p_stream2->p_descriptors[j];
-				if(p_desc2->descriptor_tag == TAG_CA_DESCRIPTOR) {
+				if (p_desc2->descriptor_tag == TAG_CA_DESCRIPTOR) {
 					num_ca2++;
 				}
 			}
 
 			// If they have the same number of CA descriptors, check that they are EXACTLY the same
-			if(num_ca1 == num_ca2) {
-				for(j = 0; j < p_stream1->streams_desc_count; j++) {
+			if (num_ca1 == num_ca2) {
+				for (j = 0; j < p_stream1->streams_desc_count; j++) {
 					p_desc1 = &p_stream1->p_descriptors[j];
-					if(p_desc1->descriptor_tag == TAG_CA_DESCRIPTOR) {
+					if (p_desc1->descriptor_tag == TAG_CA_DESCRIPTOR) {
 						found_match = 0;
-						for(l = 0; l < p_stream2->streams_desc_count; l++) {
+						for (l = 0; l < p_stream2->streams_desc_count; l++) {
 							p_desc2 = &p_stream2->p_descriptors[l];
-							if(compare_en50221_descriptor_object(p_desc1, p_desc2)) {
+							if (compare_en50221_descriptor_object(p_desc1, p_desc2)) {
 								found_match = 1;
 							}
 						}
-						if(found_match == 0) {
+						if (found_match == 0) {
 							movable = 0;
 						}
 					}
 				}
-			} else if(num_ca1 && num_ca2) {
+			} else if (num_ca1 && num_ca2) {
 				// If the number of CAs are not the same (and neither are zero) we can't move
 				movable = 0;
 			}
 		}
 	}
 
-	if(movable) {
+	if (movable) {
 		printf("%s: Moving all (%d) common CA descriptors from stream to programme level\n", __FUNCTION__, ca_descriptors);
 
 		// Allocate space for the new descriptors, at most <ca_descriptors> number
@@ -236,22 +224,22 @@ static void try_move_ca_descriptors(struct service_info *p_si)
 		p_si->p_pmt->p_descriptors = p_new_descriptors;
 
 		// Copy stream level descriptor to programme level
-		for(i = 0; i < p_si->p_pmt->stream_count; i++) {
+		for (i = 0; i < p_si->p_pmt->stream_count; i++) {
 			p_stream1 = &p_si->p_pmt->p_streams[i];
-			for(j = 0; j < p_stream1->streams_desc_count; j++) {
+			for (j = 0; j < p_stream1->streams_desc_count; j++) {
 				p_desc1 = &p_stream1->p_descriptors[j];
 
 				// Copy only CA descriptors
 				if (p_desc1->descriptor_tag == TAG_CA_DESCRIPTOR) {
 					// Check that this descriptor has not already been copied
 					found = 0;
-					for(k = 0; k < p_si->p_pmt->program_desc_count; k++) {
+					for (k = 0; k < p_si->p_pmt->program_desc_count; k++) {
 						p_desc2 = &p_si->p_pmt->p_descriptors[k];
-						if(compare_en50221_descriptor_object(p_desc1, p_desc2)) {
+						if (compare_en50221_descriptor_object(p_desc1, p_desc2)) {
 							found++;
 						}
 					}
-					if(found == 0) {
+					if (found == 0) {
 						printf("%s: Adding common CA descriptor to programme level\n", __FUNCTION__);
 
 						struct descriptor *p_dest_desc =
@@ -263,16 +251,16 @@ static void try_move_ca_descriptors(struct service_info *p_si)
 		}
 
 		// Now remove the copied descriptors from stream level
-		for(i = 0; i < p_si->p_pmt->stream_count; i++) {
+		for (i = 0; i < p_si->p_pmt->stream_count; i++) {
 			p_stream1 = &p_si->p_pmt->p_streams[i];
-			for(j = 0; j < p_stream1->streams_desc_count; j++) {
+			for (j = 0; j < p_stream1->streams_desc_count; j++) {
 				p_desc1 = &p_stream1->p_descriptors[j];
-				for(k = 0; k < p_si->p_pmt->program_desc_count; k++) {
+				for (k = 0; k < p_si->p_pmt->program_desc_count; k++) {
 					p_desc2 = &p_si->p_pmt->p_descriptors[k];
-					if(compare_en50221_descriptor_object(p_desc1, p_desc2)) {
+					if (compare_en50221_descriptor_object(p_desc1, p_desc2)) {
 						// Remove from stream level
 						printf("%s: Removing common CA descriptor from stream level\n", __FUNCTION__);
-						for(l = j; l < p_stream1->streams_desc_count - 1; l++) {
+						for (l = j; l < p_stream1->streams_desc_count - 1; l++) {
 							copy_en50221_descriptor_object(&p_stream1->p_descriptors[j],
 										       &p_stream1->p_descriptors[j + 1]);
 						}
@@ -288,7 +276,6 @@ static void try_move_ca_descriptors(struct service_info *p_si)
 static uint16_t copy_en50221_pmt_object(struct service_info *p_si, struct en50221_pmt_object *p_en50221_pmt_object)
 {
 	int i, stream_count = 0, ca_descriptors = 0, object_length = 0;
-	//int j, k, l, i2, j2;
 
 	p_en50221_pmt_object->p_en50221_prog_desc = NULL;
 
@@ -374,10 +361,10 @@ uint16_t set_pmt_command(struct en50221_pmt_object *p_en50221_pmt_object, uint8_
 		if (p_en50221_pmt_object->p_en50221_streams[i].streams_desc_count > 0) {
 			printf("%s: CA descriptor(s) found @ STREAMS Level, Setting CA PMT command=[%02x]\n",
 			       __FUNCTION__, pmt_command);
-				p_en50221_pmt_object->p_en50221_streams[i].ca_pmt_cmd_id = pmt_command;
-				object_length += 8;
-			}
+			p_en50221_pmt_object->p_en50221_streams[i].ca_pmt_cmd_id = pmt_command;
+			object_length += 8;
 		}
+	}
 
 	return object_length;
 }
@@ -390,7 +377,7 @@ uint16_t do_en50221_pmt_object(struct en50221_pmt_object *p_en50221_pmt_object, 
 	uint32_t asn_1_words = 0;
 	uint8_t i;
 
-	if(move_to_programme) {
+	if (move_to_programme) {
 		try_move_ca_descriptors(p_si);
 	}
 
@@ -443,7 +430,7 @@ uint16_t debug_message(struct ca_msg *p_ca_msg, uint16_t pos)
 	return 0;
 }
 
-uint16_t debug_parse_message(struct ca_msg *p_ca_msg, uint16_t length)
+void debug_parse_message(struct ca_msg *p_ca_msg, uint16_t length)
 {
 	const char* type;
 	uint16_t pos = 0;
@@ -461,7 +448,7 @@ uint16_t debug_parse_message(struct ca_msg *p_ca_msg, uint16_t length)
 		ptr[pos + 2];
 	pos += 3;
 
-	switch(type_id) {
+	switch (type_id) {
 	case CA_APP_INFO_ENQUIRY:
 		type = "CA_APP_INFO_ENQUIRY";
 		break;
@@ -547,8 +534,8 @@ uint16_t debug_parse_message(struct ca_msg *p_ca_msg, uint16_t length)
 	sprintf(temp, ":Program={");
 	strcat(message, temp);
 	int end_program = pos + program_info_length;
-	if(program_info_length) {
-		switch(ptr[pos++]) {
+	if (program_info_length) {
+		switch (ptr[pos++]) {
 		case 1:
 			sprintf(temp, "Command=OK_Descrambling");
 			strcat(message, temp);
@@ -570,13 +557,13 @@ uint16_t debug_parse_message(struct ca_msg *p_ca_msg, uint16_t length)
 			strcat(message, temp);
 		}
 
-		while(pos < end_program) {
+		while (pos < end_program) {
 			pos = parse_ca_descriptor(&desc, ptr, pos);
 			sprintf(temp, ":CA={System=%d:PID=%d:PrivateData={", desc.ca.ca_system_id,
 				desc.ca.ca_pid);
 			strcat(message, temp);
-			for(i = 0; i < desc.descriptor_length - 4; i++) {
-				if(i == 0)
+			for (i = 0; i < desc.descriptor_length - 4; i++) {
+				if (i == 0)
 					sprintf(temp, "%02x", desc.ca.p_private_data_byte[i]);
 				else
 					sprintf(temp, ",%02x", desc.ca.p_private_data_byte[i]);
@@ -590,10 +577,10 @@ uint16_t debug_parse_message(struct ca_msg *p_ca_msg, uint16_t length)
 	strcat(message, temp);
 
 	// Do streams
-	while(pos < length) {
+	while (pos < length) {
 		sprintf(temp, ":Stream={Type=");
 		strcat(message, temp);
-		switch(ptr[pos++]) {
+		switch (ptr[pos++]) {
 		case 2:
 			sprintf(temp, "Video");
 			break;
@@ -621,8 +608,8 @@ uint16_t debug_parse_message(struct ca_msg *p_ca_msg, uint16_t length)
 
 		sprintf(temp, ":ES_Info={");
 		strcat(message, temp);
-		if(es_info_length) {
-			switch(ptr[pos++]) {
+		if (es_info_length) {
+			switch (ptr[pos++]) {
 			case 1:
 				sprintf(temp, "Command=OK_Descrambling");
 				strcat(message, temp);
@@ -647,8 +634,8 @@ uint16_t debug_parse_message(struct ca_msg *p_ca_msg, uint16_t length)
 			sprintf(temp, ":CA={System=%d:PID=%d:PrivateData={", desc.ca.ca_system_id,
 				desc.ca.ca_pid);
 			strcat(message, temp);
-			for(i = 0; i < desc.descriptor_length - 4; i++) {
-				if(i == 0)
+			for (i = 0; i < desc.descriptor_length - 4; i++) {
+				if (i == 0)
 					sprintf(temp, "%02x", desc.ca.p_private_data_byte[i]);
 				else
 					sprintf(temp, ",%02x", desc.ca.p_private_data_byte[i]);
@@ -665,8 +652,6 @@ uint16_t debug_parse_message(struct ca_msg *p_ca_msg, uint16_t length)
 	strcat(message, temp);
 
 	printf(message);
-
-	return 0;
 }
 
 uint16_t write_en50221_pmt_object(struct en50221_pmt_object *p_en50221_pmt_object, char *ca_dev)
@@ -704,7 +689,7 @@ uint16_t write_en50221_pmt_object(struct en50221_pmt_object *p_en50221_pmt_objec
 	}
 
 	// Calculate program_info_length
-	if(p_en50221_pmt_object->program_desc_count) {
+	if (p_en50221_pmt_object->program_desc_count) {
 		// Set length to one
 		p_en50221_pmt_object->program_info_length = 1;
 		// Add length of all CA descriptors
@@ -721,7 +706,7 @@ uint16_t write_en50221_pmt_object(struct en50221_pmt_object *p_en50221_pmt_objec
 	pos = en50221_encode_header(p_ca_msg, p_en50221_pmt_object, pos);
 	printf("%s: EN50221 header encoded\n", __FUNCTION__);
 
-	if(p_en50221_pmt_object->program_desc_count) {
+	if (p_en50221_pmt_object->program_desc_count) {
 		// Put ca_pmt_cmd_id only once
 		pos = encode_ca_pmt_command(p_ca_msg, p_en50221_pmt_object, pos, PROGRAM_SCRAMBLED);
 	} else {

@@ -68,7 +68,7 @@ char *cp, *np;
 	while(*cp && isspace(*cp))
 		cp++;
 	if (isalpha(*cp)) {
-		for(i = 0; i < (sizeof(lnbs) / sizeof(lnbs[0])); i++) {
+		for (i = 0; i < (sizeof(lnbs) / sizeof(lnbs[0])); i++) {
 			if (!strcasecmp(lnbs[i].name, cp)) {
 				*lnbp = lnbs[i];
 				return 1;

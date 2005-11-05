@@ -109,7 +109,7 @@ int dvb_enqueue_event(struct dvb * dvb, struct dvb_event * event)
 
 	data = dvb->event;
 
-	for(pos = data->event_hooks.next; pos != NULL; pos = pos->next) {
+	for (pos = data->event_hooks.next; pos != NULL; pos = pos->next) {
 		struct event_entry * entry;
 		struct event_hook * hook = list_get_entry(pos, struct event_hook, list);
 
@@ -158,7 +158,7 @@ int dvb_send_event(struct dvb * dvb, struct dvb_event * event)
 	data = dvb->event;
 
 	/* XXX: lock thread */
-	for(pos = data->event_hooks.next; pos != NULL; pos = pos->next) {
+	for (pos = data->event_hooks.next; pos != NULL; pos = pos->next) {
 		struct event_hook * hook = list_get_entry(pos, struct event_hook, list);
 
 		hook->func(hook->dvb, event, hook->opaque);
@@ -207,7 +207,7 @@ int dvb_remove_event_hook(struct dvb * dvb,
 
 	data = dvb->event;
 
-	for(pos = data->event_hooks.next; pos != NULL; pos = next) {
+	for (pos = data->event_hooks.next; pos != NULL; pos = next) {
 		next = pos->next;
 		struct event_hook * hook = list_get_entry(pos, struct event_hook, list);
 
@@ -230,7 +230,7 @@ int dvb_send_one_event(struct dvb * dvb)
 
 	data = dvb->event;
 
-	for(pos = data->event_hooks.next; pos != NULL; pos = pos->next) {
+	for (pos = data->event_hooks.next; pos != NULL; pos = pos->next) {
 		struct event_hook * hook = list_get_entry(pos, struct event_hook, list);
 
 		if (__send_event(hook) == 0) {
@@ -251,7 +251,7 @@ int __flush_events(struct event_hook * hook)
 	if (hook == NULL)
 		return -EINVAL;
 
- 	for(pos = hook->events.next; pos != NULL; pos = next) {
+ 	for (pos = hook->events.next; pos != NULL; pos = next) {
  		next = pos->next;
  		entry = list_get_entry(pos, struct event_entry, list);
 
@@ -271,7 +271,7 @@ int __clear_events(struct event_hook * hook)
 	if (hook == NULL)
 		return -EINVAL;
 
- 	for(pos = hook->events.next; pos != NULL; pos = next) {
+ 	for (pos = hook->events.next; pos != NULL; pos = next) {
  		next = pos->next;
  		entry = list_get_entry(pos, struct event_entry, list);
 
@@ -291,7 +291,7 @@ int dvb_flush_events(struct dvb * dvb)
 
 	data = dvb->event;
 
-	for(pos = data->event_hooks.next; pos != NULL; pos = pos->next) {
+	for (pos = data->event_hooks.next; pos != NULL; pos = pos->next) {
 		struct event_hook * hook = list_get_entry(pos, struct event_hook, list);
 
 		__flush_events(hook);
@@ -310,7 +310,7 @@ int dvb_clear_events(struct dvb * dvb)
 
 	data = dvb->event;
 
-	for(pos = data->event_hooks.next; pos != NULL; pos = pos->next) {
+	for (pos = data->event_hooks.next; pos != NULL; pos = pos->next) {
 		struct event_hook * hook = list_get_entry(pos, struct event_hook, list);
 
 		__clear_events(hook);

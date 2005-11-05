@@ -37,7 +37,7 @@ static inline uint32_t crc32(uint32_t crc, uint8_t* buf, int len)
 {
 	int i;
 
-	for(i=0; i< len; i++) {
+	for (i=0; i< len; i++) {
 		crc = (crc << 8) ^ crc32tbl[((crc >> 24) ^ buf[i]) & 0xff];
 	}
 

@@ -299,11 +299,11 @@ main(int argc, char **argv)
 	struct qpskFrontendInfo info;
 	struct secStatus sec_state;
 
-	if((fd = open("/dev/ost/qpskfe",O_RDWR)) < 0){
+	if ((fd = open("/dev/ost/qpskfe",O_RDWR)) < 0){
 		perror("FRONTEND DEVICE: ");
 		return -1;
 	}
-	if((fd_sec = open("/dev/ost/sec",O_RDWR)) < 0){
+	if ((fd_sec = open("/dev/ost/sec",O_RDWR)) < 0){
 		perror("SEC DEVICE: ");
 		return -1;
 	}

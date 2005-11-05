@@ -313,7 +313,7 @@ main(int argc, char **argv)
 		return -1;
 	}
 	    
-	if((fd = open("/dev/ost/audio",O_RDWR|O_NONBLOCK)) < 0){
+	if ((fd = open("/dev/ost/audio",O_RDWR|O_NONBLOCK)) < 0){
 		perror("AUDIO DEVICE: ");
 		return -1;
 	}
