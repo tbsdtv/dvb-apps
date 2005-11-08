@@ -21,7 +21,7 @@
 #ifndef DVBCFG_ADAPTER_BACKEND_FILE_H
 #define DVBCFG_ADAPTER_BACKEND_FILE_H 1
 
-#include <dvbcfg_adapter.h>
+#include <cfg/dvbcfg_adapter.h>
 
 /**
  * The file backend consists of multiple lines as follows:
@@ -45,9 +45,9 @@
  * to the end of the line.
  *
  * Examples:
- * DVBS0.0 S5E S7E
+ * DVBS0.0 S-5E S-7E
  * DVBC1.0
- * DVBT2.0 Tuk-BlackHill
+ * DVBT2.0 T-uk-BlackHill
  */
 
 /**

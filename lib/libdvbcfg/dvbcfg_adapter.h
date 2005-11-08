@@ -21,7 +21,7 @@
 #ifndef DVBCFG_ADAPTER_H
 #define DVBCFG_ADAPTER_H 1
 
-#include <dvbcfg_source.h>
+#include <cfg/dvbcfg_source.h>
 
 /**
  * dvbcfg_adapter describes each DVB adapter in a system, and indicates what

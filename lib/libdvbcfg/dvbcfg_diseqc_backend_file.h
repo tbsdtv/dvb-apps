@@ -25,7 +25,7 @@
 #define DVBCFG_DISEQC_BACKEND_FILE_H 1
 
 #include <stdint.h>
-#include <dvbcfg_diseqc.h>
+#include <cfg/dvbcfg_diseqc.h>
 
 /**
  * The dvbcfg_diseqc file backend consists of a set of lines as follows:
@@ -61,10 +61,10 @@
  * to the end of the line.
  *
  * Examples:
- * S19.2E  11700 V  9750  t v W15 [E0 10 38 F0] W15 A W15 t
- * S19.2E  99999 V 10600  t v W15 [E0 10 38 F1] W15 A W15 T
- * S19.2E  11700 H  9750  t V W15 [E0 10 38 F2] W15 A W15 t
- * S19.2E  99999 H 10600  t V W15 [E0 10 38 F3] W15 A W15 T
+ * S-19.2E  11700 V  9750  t v W15 [E0 10 38 F0] W15 A W15 t
+ * S-19.2E  99999 V 10600  t v W15 [E0 10 38 F1] W15 A W15 T
+ * S-19.2E  11700 H  9750  t V W15 [E0 10 38 F2] W15 A W15 t
+ * S-19.2E  99999 H 10600  t V W15 [E0 10 38 F3] W15 A W15 T
  */
 
 

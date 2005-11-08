@@ -27,7 +27,7 @@
 #include "dvbcfg_source.h"
 #include "dvbcfg_util.h"
 
-#define DVBCFG_DEFAULT_ADAPTER_FILENAME ("DVBCFG_DEFAULT_DIR" "/adapters.conf")
+#define DVBCFG_DEFAULT_ADAPTER_FILENAME (DVBCFG_DEFAULT_DIR "/adapters.conf")
 
 struct dvbcfg_adapter_backend_file {
         struct dvbcfg_adapter_backend api;

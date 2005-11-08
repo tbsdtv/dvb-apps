@@ -21,8 +21,8 @@
 #ifndef DVBCFG_MULTIPLEX_BACKEND_FILE_H
 #define DVBCFG_MULTIPLEX_BACKEND_FILE_H 1
 
-#include <dvbcfg_multiplex.h>
-#include <dvbcfg_common.h>
+#include <cfg/dvbcfg_multiplex.h>
+#include <cfg/dvbcfg_common.h>
 
 /**
  * The file backend consists of multiple sections, each describing a
@@ -93,8 +93,8 @@
  * date=5798475834
  *
  * [m]
- * gmid=S5E:0x0001:0x002:0x000
- * d= 12345 0 H 27500000 9
+ * gmid=S-5E:0x0001:0x002:0x000
+ * d=12345 0 H 27500000 9
  *
  * [s]
  * usid=0x0001:0x000
@@ -109,7 +109,7 @@
  * pmt=0x100:_dts 0x101:_tt 0x102:0x76
  *
  * [m]
- * gmid=Cde-de-Berlin:0x0001:0x002:0x000
+ * gmid=C-de-de-Berlin:0x0001:0x002:0x000
  * d = 12345 0 27500000 9 4
  */
 

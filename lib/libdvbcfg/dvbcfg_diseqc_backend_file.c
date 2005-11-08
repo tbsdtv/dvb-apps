@@ -27,7 +27,7 @@
 #include "dvbcfg_common.h"
 #include "dvbcfg_util.h"
 
-#define DVBCFG_DEFAULT_DISEQC_FILENAME ("DVBCFG_DEFAULT_DIR" "/diseqcs.conf")
+#define DVBCFG_DEFAULT_DISEQC_FILENAME (DVBCFG_DEFAULT_DIR "/diseqcs.conf")
 
 struct dvbcfg_diseqc_backend_file {
         struct dvbcfg_diseqc_backend api;

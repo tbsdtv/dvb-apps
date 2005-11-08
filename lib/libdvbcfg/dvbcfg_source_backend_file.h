@@ -24,8 +24,8 @@
 #ifndef DVBCFG_SOURCE_BACKEND_FILE_H
 #define DVBCFG_SOURCE_BACKEND_FILE_H 1
 
-#include <dvbcfg_common.h>
-#include <dvbcfg_source.h>
+#include <cfg/dvbcfg_common.h>
+#include <cfg/dvbcfg_source.h>
 
 /**
  * The file backend stores sources in a file on disk as follows:
@@ -36,10 +36,10 @@
  * end of the line.
  *
  * Examples:
- * S5E     Sirius 2/3
- * S13E    Hotbird 1-(5)-6
- * Tau-au-Adelaide A DVB-T transmitter in Australia serving the Adelaide area.
- * Tuk-scottish-BlackHill A DVB-T transmitter in the UK serving the central belt of scotland.
+ * S-5E     Sirius 2/3
+ * S-13E    Hotbird 1-(5)-6
+ * T-au-au-Adelaide A DVB-T transmitter in Australia serving the Adelaide area.
+ * T-uk-scottish-BlackHill A DVB-T transmitter in the UK serving the central belt of scotland.
  */
 
 /**

@@ -27,7 +27,7 @@
 #include "dvbcfg_multiplex_backend_file.h"
 #include "dvbcfg_util.h"
 
-#define DVBCFG_DEFAULT_MULTIPLEX_FILENAME ("DVBCFG_DEFAULT_DIR" "/multiplexes.conf")
+#define DVBCFG_DEFAULT_MULTIPLEX_FILENAME (DVBCFG_DEFAULT_DIR "/multiplexes.conf")
 
 #define LOCATION_SOF 0
 #define LOCATION_DVBMULTIPLEXES 1
@@ -56,90 +56,6 @@ struct dvbcfg_multiplex_backend_file {
         char* tmpca_systems;
         char* tmpzap_pids;
         char* tmppmt_extra;
-};
-
-static const struct dvbcfg_setting bandwidth_list [] = {
-        { "BANDWIDTH_6_MHZ", BANDWIDTH_6_MHZ },
-        { "BANDWIDTH_7_MHZ", BANDWIDTH_7_MHZ },
-        { "BANDWIDTH_8_MHZ", BANDWIDTH_8_MHZ },
-        { "BANDWIDTH_AUTO",  BANDWIDTH_AUTO },
-        { NULL, -1 },
-};
-
-static const struct dvbcfg_setting guard_interval_list [] = {
-        {"GUARD_INTERVAL_1_16", GUARD_INTERVAL_1_16},
-        {"GUARD_INTERVAL_1_32", GUARD_INTERVAL_1_32},
-        {"GUARD_INTERVAL_1_4",  GUARD_INTERVAL_1_4},
-        {"GUARD_INTERVAL_1_8",  GUARD_INTERVAL_1_8},
-        {"GUARD_INTERVAL_AUTO", GUARD_INTERVAL_AUTO},
-        { NULL, -1 },
-};
-
-static const struct dvbcfg_setting hierarchy_information_list [] = {
-        { "HIERARCHY_NONE", HIERARCHY_NONE },
-        { "HIERARCHY_1",    HIERARCHY_1 },
-        { "HIERARCHY_2",    HIERARCHY_2 },
-        { "HIERARCHY_4",    HIERARCHY_4 },
-        { "HIERARCHY_AUTO", HIERARCHY_AUTO },
-        { NULL, -1 },
-};
-
-static const struct dvbcfg_setting constellation_list [] = {
-        { "QPSK",     QPSK },
-        { "QAM_16",   QAM_16 },
-        { "QAM_32",   QAM_32 },
-        { "QAM_64",   QAM_64 },
-        { "QAM_128",  QAM_128 },
-        { "QAM_256",  QAM_256 },
-        { "QAM_AUTO", QAM_AUTO },
-        { NULL, -1 },
-};
-
-static const struct dvbcfg_setting transmission_mode_list [] = {
-        { "TRANSMISSION_MODE_2K",   TRANSMISSION_MODE_2K },
-        { "TRANSMISSION_MODE_8K",   TRANSMISSION_MODE_8K },
-        { "TRANSMISSION_MODE_AUTO", TRANSMISSION_MODE_AUTO },
-        { NULL, -1 },
-};
-
-static const struct dvbcfg_setting inversion_list[] = {
-        { "INVERSION_OFF",  INVERSION_OFF },
-        { "INVERSION_ON",   INVERSION_ON },
-        { "INVERSION_AUTO", INVERSION_AUTO },
-        { NULL, -1 },
-};
-
-static const struct dvbcfg_setting fec_list[] = {
-        { "FEC_NONE", FEC_NONE },
-        { "FEC_1_2",  FEC_1_2 },
-        { "FEC_2_3",  FEC_2_3 },
-        { "FEC_3_4",  FEC_3_4 },
-        { "FEC_4_5",  FEC_4_5 },
-        { "FEC_5_6",  FEC_5_6 },
-        { "FEC_6_7",  FEC_6_7 },
-        { "FEC_7_8",  FEC_7_8 },
-        { "FEC_8_9",  FEC_8_9 },
-        { "FEC_AUTO", FEC_AUTO },
-        { NULL, -1 },
-};
-
-static const struct dvbcfg_setting qam_modulation_list[] = {
-        { "QAM_16",   QAM_16 },
-        { "QAM_32",   QAM_32 },
-        { "QAM_64",   QAM_64 },
-        { "QAM_128",  QAM_128 },
-        { "QAM_256",  QAM_256 },
-        { "QAM_AUTO", QAM_AUTO },
-        { NULL, -1 },
-};
-
-static const struct dvbcfg_setting atsc_modulation_list[] = {
-        { "VSB_8",    VSB_8 },
-        { "VSB_16",   VSB_16 },
-        { "QAM_64",   QAM_64 },
-        { "QAM_256",  QAM_256 },
-        { "QAM_AUTO", QAM_AUTO },
-        { NULL, -1 },
 };
 
 static int get_multiplex(struct dvbcfg_multiplex_backend* backend,
@@ -356,6 +272,8 @@ static int get_multiplex(struct dvbcfg_multiplex_backend* backend,
                         if ((value = dvbcfg_iskey(linepos, "version")) != NULL) {
                                 if (strcmp(value, "0.1"))
                                         return -EINVAL;
+                        } else if ((value = dvbcfg_iskey(linepos, "date")) != NULL) {
+                                /* ignore this */
                         } else {
                                 return -EINVAL;
                         }
@@ -550,6 +468,7 @@ static int put_multiplex(struct dvbcfg_multiplex_backend* backend,
                                       sizeof(tmp)))
                 return -ENOMEM;
         fprintf(fbackend->outhandle, "%s\n", tmp);
+        fprintf(fbackend->outhandle, "\n");
 
         return 0;
 }
@@ -578,10 +497,12 @@ static int put_service(struct dvbcfg_multiplex_backend* backend,
                 fprintf(fbackend->outhandle, "sname=%s\n", service->short_name);
         if (service->provider_name)
                 fprintf(fbackend->outhandle, "pname=%s\n", service->provider_name);
-        fprintf(fbackend->outhandle, "flags=");
-        if (service->service_flags & DVBCFG_SERVICE_FLAG_IGNOREPMT)
-                fprintf(fbackend->outhandle, "nopmt ");
-        fprintf(fbackend->outhandle, "\n");
+        if (service->service_flags != 0) {
+                fprintf(fbackend->outhandle, "flags=");
+                if (service->service_flags & DVBCFG_SERVICE_FLAG_IGNOREPMT)
+                        fprintf(fbackend->outhandle, "nopmt ");
+                fprintf(fbackend->outhandle, "\n");
+        }
 
         if (service->ca_systems_count) {
                 fprintf(fbackend->outhandle, "ca=");
@@ -591,8 +512,10 @@ static int put_service(struct dvbcfg_multiplex_backend* backend,
                 fprintf(fbackend->outhandle, "\n");
         }
 
-        format_pids(fbackend->outhandle, "zap", service->zap_pids_count, service->zap_pids);
-        format_pids(fbackend->outhandle, "pmt", service->pmt_extra_count, service->pmt_extra);
+        if (service->zap_pids_count != 0)
+                format_pids(fbackend->outhandle, "zap", service->zap_pids_count, service->zap_pids);
+        if (service->pmt_extra_count != 0)
+                format_pids(fbackend->outhandle, "pmt", service->pmt_extra_count, service->pmt_extra);
         fprintf(fbackend->outhandle, "\n");
 
         return 0;

@@ -26,7 +26,7 @@
 #include "dvbcfg_source_backend_file.h"
 #include "dvbcfg_util.h"
 
-#define DVBCFG_DEFAULT_SOURCE_FILENAME ("DVBCFG_DEFAULT_DIR" "/sources.conf")
+#define DVBCFG_DEFAULT_SOURCE_FILENAME (DVBCFG_DEFAULT_DIR "/sources.conf")
 
 struct dvbcfg_source_backend_file {
         struct dvbcfg_source_backend api;
