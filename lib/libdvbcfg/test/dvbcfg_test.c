@@ -24,6 +24,7 @@
 #include "dvbcfg_diseqc_backend_file.h"
 #include "dvbcfg_adapter_backend_file.h"
 #include "dvbcfg_multiplex_backend_file.h"
+#include "dvbcfg_seed_backend_file.h"
 #include "dvbcfg_vdrchannel.h"
 #include "dvbcfg_zapchannel.h"
 
@@ -37,6 +38,7 @@ int main(int argc, char *argv[])
         struct dvbcfg_diseqc_backend* diseqc_backend;
         struct dvbcfg_adapter_backend* adapter_backend;
         struct dvbcfg_multiplex_backend* multiplex_backend;
+        struct dvbcfg_seed_backend* seed_backend;
 
         if (argc != 5) {
                 syntax();
@@ -137,6 +139,21 @@ int main(int argc, char *argv[])
                 dvbcfg_multiplex_free_all(multiplexes);
                 dvbcfg_source_free_all(sources);
 
+        } else if (!strcmp(argv[1], "-seed")) {
+                struct dvbcfg_seed seed;
+
+                dvbcfg_seed_init(&seed);
+
+                dvbcfg_seed_backend_file_create(".", argv[2], 1, DVBCFG_SOURCETYPE_DVBS, &seed_backend);
+                dvbcfg_seed_load(seed_backend, &seed);
+                dvbcfg_seed_backend_file_destroy(seed_backend);
+
+                dvbcfg_seed_backend_file_create(".", argv[3], 1, DVBCFG_SOURCETYPE_DVBS, &seed_backend);
+                dvbcfg_seed_save(seed_backend, &seed);
+                dvbcfg_seed_backend_file_destroy(seed_backend);
+
+                dvbcfg_seed_clear(&seed);
+
         } else {
                 syntax();
         }
@@ -147,6 +164,6 @@ int main(int argc, char *argv[])
 void syntax()
 {
         fprintf(stderr,
-                "Syntax: dvcfg_test <-source|-diseqc|-vdrchannel|-zapchannel|-adapter|-multiplex-long|-multiplex-short> <input filename> <output filename> <sources filename>\n");
+                "Syntax: dvcfg_test <-source|-diseqc|-vdrchannel|-zapchannel|-adapter|-multiplex-long|-multiplex-short|-seed> <input filename> <output filename> <sources filename>\n");
         exit(1);
 }
