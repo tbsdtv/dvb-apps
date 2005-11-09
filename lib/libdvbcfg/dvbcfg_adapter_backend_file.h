@@ -30,10 +30,8 @@
  *
  * <adapter_id> identifies a DVB adapter in the system. The following adapter_ids are supported:
  *
- *   DVB<dvb_type><adapter_number>.<frontend_number>
- *   ATSC<adapter_number>.<frontend_number>
+ *   <adapter_number>.<frontend_number>
  *
- *   <dvb_type> is one of 'S', 'T', or 'C'(DVBS, DVBT, and DVBC respectively)
  *   <adapter_number> is the number allocated to the DVB device by the OS (i.e. /dev/dvb/adapterX)
  *   <frontend_number> is the frontend ID on a particular DVB device (i.e. /dev/dvb/adapterX/frontendY)
  *
@@ -45,9 +43,9 @@
  * to the end of the line.
  *
  * Examples:
- * DVBS0.0 S-5E S-7E
- * DVBC1.0
- * DVBT2.0 T-uk-BlackHill
+ * 0.0 S-5E S-7E
+ * 1.0
+ * 2.0 T-uk-BlackHill
  */
 
 /**
