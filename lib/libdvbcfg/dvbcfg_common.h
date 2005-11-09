@@ -56,10 +56,10 @@ enum dvbcfg_sourcetype {
  *   DVBC: "C"
  *   ATSC: "A"
  *
- * For DVBS, <source_network> is a unique identifier for a satellite cluster. It is defined to
- * be "S"<longitude><"E"|"W"> - i.e. the orbital position of the cluster. <source_region> and
- * <source_node> have no meaning for a DVBS source, and are omitted from the string representation,
- * and will be set to NULL in the below structure.
+ * For DVBS, <source_network> is a unique identifier for a satellite cluster - currently we
+ * are using the orbital position of the cluster - but there is no restriction in the library
+ * code enforcing this. <source_region> and <source_node> have no meaning for a DVBS source, and are
+ * omitted from the string representation, and will be set to NULL in the below structure.
  *
  * All other DVB types have a complication. Unlike DVBS, these consist of multiple <source_locale>s
  * (e.g. DVBT transmitters) spaced over a geographical <source_region>. Finally, all the
