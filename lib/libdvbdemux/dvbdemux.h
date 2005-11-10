@@ -139,7 +139,7 @@ extern int dvbdemux_set_pes_filter(int fd, int pid,
  * Create a pid filter - this will deliver raw transport stream packets for a
  * specified PID.
  *
- * Note: The wildcard PID can only be used on budget cards.
+ * Note: The wildcard PID can only be used on "budget" cards.
  *
  * @param fd FD as opened with dvbdemux_open_demux() above.
  * @param pid PID to retrieve, or use -1 as a wildcard for ALL PIDs.
@@ -170,7 +170,8 @@ extern int dvbdemux_start(int fd);
 extern int dvbdemux_stop(int fd);
 
 /**
- * Retrieve the current STC from the demux.
+ * Retrieve the current STC from the demux. This call can only used for cards
+ * equipped with a hardware decoder.
  *
  * @param fd FD as opened with dvbdemux_open_demux() above.
  * @param stc Where to put the retrieved STC value (in 90kHz clock).
@@ -180,7 +181,7 @@ extern int dvbdemux_get_stc(int fd, uint64_t *stc);
 
 /**
  * Change the internal buffer size used by the demuxer. The default buffer size
- * is 8192 bytes.
+ * is 8192 bytes. Can only be used if the demux in question is stopped.
  *
  * @param fd FD as opened with dvbdemux_open_demux() above.
  * @param bufsize New buffer size to use.
