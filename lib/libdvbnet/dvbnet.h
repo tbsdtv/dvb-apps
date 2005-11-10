@@ -61,7 +61,7 @@ extern int dvbnet_add_interface(int fd, uint16_t pid, int encapsulation);
  * @param info Place to put the information.
  * @return 0 on success, nonzero on failure.
  */
-extern int dvbnet_get_interface(int fd, int ifnum, struct dvb_net_if* info);
+extern int dvbnet_get_interface(int fd, int ifnum, struct dvb_net_if *info);
 
 /**
  * Remove a DVBNET interface.
