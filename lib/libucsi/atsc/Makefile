@@ -22,7 +22,7 @@ install: $(LIB) $(INC)
 	cp -f $(INC) $(INSTDIR)/include/dvb/si/atsc
 
 clean:
-	rm -f *.d *.o $(TARGET) test
+	rm -f *.d *.o $(TARGET) test *~ *#
 
 -include $(wildcard *.d) dummy
 
