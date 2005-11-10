@@ -30,7 +30,7 @@
 #include <errno.h>
 #include "dvbfe.h"
 
-int libdvbfe_open(int adapter, int frontend, int readonly)
+int dvbfe_open(int adapter, int frontend, int readonly)
 {
 	char filename[PATH_MAX+1];
 
@@ -43,50 +43,50 @@ int libdvbfe_open(int adapter, int frontend, int readonly)
 	}
 }
 
-int libdvbfe_get_info(int fd, struct dvb_frontend_info *info)
+int dvbfe_get_info(int fd, struct dvb_frontend_info *info)
 {
 	return ioctl(fd, FE_GET_INFO, info);
 }
 
-int libdvbfe_get_status(int fd, int statusmask, struct libdvbfe_status *result)
+int dvbfe_get_status(int fd, int statusmask, struct dvbfe_status *result)
 {
 	int returnval = 0;
 
-	if (statusmask & LIBDVBFE_STATUS_FE) {
+	if (statusmask & DVBFE_STATUS_FE) {
 		if (!ioctl(fd, FE_READ_STATUS, &result->status))
-			returnval |= LIBDVBFE_STATUS_FE;
+			returnval |= DVBFE_STATUS_FE;
 	}
-	if (statusmask & LIBDVBFE_STATUS_BER) {
+	if (statusmask & DVBFE_STATUS_BER) {
 		if (!ioctl(fd, FE_READ_BER, &result->ber))
-			returnval |= LIBDVBFE_STATUS_BER;
+			returnval |= DVBFE_STATUS_BER;
 	}
-	if (statusmask & LIBDVBFE_STATUS_SIGNAL_STRENGTH) {
+	if (statusmask & DVBFE_STATUS_SIGNAL_STRENGTH) {
 		if (!ioctl(fd, FE_READ_SIGNAL_STRENGTH, &result->signal_strength))
-			returnval |= LIBDVBFE_STATUS_SIGNAL_STRENGTH;
+			returnval |= DVBFE_STATUS_SIGNAL_STRENGTH;
 	}
-	if (statusmask & LIBDVBFE_STATUS_SNR) {
+	if (statusmask & DVBFE_STATUS_SNR) {
 		if (!ioctl(fd, FE_READ_SNR, &result->snr))
-			returnval |= LIBDVBFE_STATUS_SNR;
+			returnval |= DVBFE_STATUS_SNR;
 	}
-	if (statusmask & LIBDVBFE_STATUS_UNCORRECTED_BLOCKS) {
+	if (statusmask & DVBFE_STATUS_UNCORRECTED_BLOCKS) {
 		if (!ioctl(fd, FE_READ_UNCORRECTED_BLOCKS, &result->ucblocks))
-			returnval |= LIBDVBFE_STATUS_UNCORRECTED_BLOCKS;
+			returnval |= DVBFE_STATUS_UNCORRECTED_BLOCKS;
 	}
 
 	return returnval;
 }
 
-int libdvbfe_set_frontend(int fd, struct dvb_frontend_parameters *params)
+int dvbfe_set_frontend(int fd, struct dvb_frontend_parameters *params)
 {
 	return ioctl(fd, FE_SET_FRONTEND, params);
 }
 
-int libdvbfe_get_frontend(int fd, struct dvb_frontend_parameters *params)
+int dvbfe_get_frontend(int fd, struct dvb_frontend_parameters *params)
 {
 	return ioctl(fd, FE_GET_FRONTEND, params);
 }
 
-int libdvbfe_diseqc_command(int fd, char *command)
+int dvbfe_diseqc_command(int fd, char *command)
 {
 	int i = 0;
 	int waittime;
@@ -186,7 +186,7 @@ int libdvbfe_diseqc_command(int fd, char *command)
 	return 0;
 }
 
-int libdvbfe_diseqc_read(int fd, int timeout, unsigned char *buf, unsigned int len)
+int dvbfe_diseqc_read(int fd, int timeout, unsigned char *buf, unsigned int len)
 {
 	struct dvb_diseqc_slave_reply reply;
 	int result;

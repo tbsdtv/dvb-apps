@@ -32,7 +32,7 @@ extern "C"
 /**
  * The maximum allowed number of dvb network devices per adapter netdevice.
  */
-#define LIBDVBNET_MAX_INTERFACES 10
+#define DVBNET_MAX_INTERFACES 10
 
 /**
  * Open a DVB net interface.
@@ -41,7 +41,7 @@ extern "C"
  * @param netdeviceid Network control interface of that adapter to open.
  * @return A unix file descriptor on success, or -1 on failure.
  */
-extern int libdvbnet_open(int adapter, int netdeviceid);
+extern int dvbnet_open(int adapter, int netdeviceid);
 
 /**
  * Create a new DVBNET interface.
@@ -51,7 +51,7 @@ extern int libdvbnet_open(int adapter, int netdeviceid);
  * @param encapsulation Encapsulation type of the stream (one of DVB_NET_FEEDTYPE_*).
  * @return 0 on success, nonzero on failure.
  */
-extern int libdvbnet_add_interface(int fd, uint16_t pid, int encapsulation);
+extern int dvbnet_add_interface(int fd, uint16_t pid, int encapsulation);
 
 /**
  * Get details of a DVBNET interface.
@@ -61,7 +61,7 @@ extern int libdvbnet_add_interface(int fd, uint16_t pid, int encapsulation);
  * @param info Place to put the information.
  * @return 0 on success, nonzero on failure.
  */
-extern int libdvbnet_get_interface(int fd, int ifnum, struct dvb_net_if* info);
+extern int dvbnet_get_interface(int fd, int ifnum, struct dvb_net_if* info);
 
 /**
  * Remove a DVBNET interface.
@@ -70,7 +70,7 @@ extern int libdvbnet_get_interface(int fd, int ifnum, struct dvb_net_if* info);
  * @param ifnum Index of interface to remove.
  * @return 0 on success, nonzero on failure.
  */
-extern int libdvbnet_remove_interface(int fd, int ifnum);
+extern int dvbnet_remove_interface(int fd, int ifnum);
 
 #ifdef __cplusplus
 }

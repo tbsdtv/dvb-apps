@@ -27,7 +27,7 @@
 #include <sys/ioctl.h>
 #include "dvbnet.h"
 
-int libdvbnet_open(int adapter, int netdeviceid)
+int dvbnet_open(int adapter, int netdeviceid)
 {
 	char filename[PATH_MAX+1];
 
@@ -36,7 +36,7 @@ int libdvbnet_open(int adapter, int netdeviceid)
 	return open(filename, O_RDWR);
 }
 
-int libdvbnet_add_interface(int fd, uint16_t pid, int encapsulation)
+int dvbnet_add_interface(int fd, uint16_t pid, int encapsulation)
 {
 	struct dvb_net_if params;
 
@@ -46,14 +46,14 @@ int libdvbnet_add_interface(int fd, uint16_t pid, int encapsulation)
 	return ioctl(fd, NET_ADD_IF, &params);
 }
 
-int libdvbnet_get_interface(int fd, int ifnum, struct dvb_net_if* info)
+int dvbnet_get_interface(int fd, int ifnum, struct dvb_net_if* info)
 {
 	memset(info, 0, sizeof(struct dvb_net_if));
 	info->if_num = ifnum;
 	return ioctl(fd, NET_GET_IF, info);
 }
 
-int libdvbnet_remove_interface(int fd, int ifnum)
+int dvbnet_remove_interface(int fd, int ifnum)
 {
 	return ioctl(fd, NET_REMOVE_IF, ifnum);
 }

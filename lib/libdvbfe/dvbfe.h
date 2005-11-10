@@ -31,18 +31,18 @@ extern "C"
 #include <stdint.h>
 
 /**
- * Mask of values used in the libdvbfe_get_status() call.
+ * Mask of values used in the dvbfe_get_status() call.
  */
-#define LIBDVBFE_STATUS_FE                 0x01
-#define LIBDVBFE_STATUS_BER                0x02
-#define LIBDVBFE_STATUS_SIGNAL_STRENGTH    0x04
-#define LIBDVBFE_STATUS_SNR                0x08
-#define LIBDVBFE_STATUS_UNCORRECTED_BLOCKS 0x10
+#define DVBFE_STATUS_FE                 0x01
+#define DVBFE_STATUS_BER                0x02
+#define DVBFE_STATUS_SIGNAL_STRENGTH    0x04
+#define DVBFE_STATUS_SNR                0x08
+#define DVBFE_STATUS_UNCORRECTED_BLOCKS 0x10
 
 /**
- * Structure containing values used by the libdvbfe_get_status() call.
+ * Structure containing values used by the dvbfe_get_status() call.
  */
-struct libdvbfe_status {
+struct dvbfe_status {
         fe_status_t status;
 	uint32_t ber;
 	uint16_t signal_strength;
@@ -58,7 +58,7 @@ struct libdvbfe_status {
  * @param readonly If 1, frontend will be opened in readonly mode only.
  * @return A unix file descriptor on success, or -1 on failure.
  */
-extern int libdvbfe_open(int adapter, int frontend, int readonly);
+extern int dvbfe_open(int adapter, int frontend, int readonly);
 
 /**
  * Retrieve information on the frontend.
@@ -67,17 +67,17 @@ extern int libdvbfe_open(int adapter, int frontend, int readonly);
  * @param info Place to put extracted information.
  * @return 0 on success, nonzero on failure.
  */
-extern int libdvbfe_get_info(int fd, struct dvb_frontend_info *info);
+extern int dvbfe_get_info(int fd, struct dvb_frontend_info *info);
 
 /**
  * Retrieve status of frontend.
  *
  * @param fd FD opened with libdvbfe_open().
- * @param statusmask ORed bitmask of desired LIBDVBFE_STATUS_* values.
+ * @param statusmask ORed bitmask of desired DVBFE_STATUS_* values.
  * @param result Where to put the retrieved results.
- * @return ORed bitmask of LIBDVBFE_STATUS_* indicating which values were read successfully.
+ * @return ORed bitmask of DVBFE_STATUS_* indicating which values were read successfully.
  */
-extern int libdvbfe_get_status(int fd, int statusmask, struct libdvbfe_status *result);
+extern int dvbfe_get_status(int fd, int statusmask, struct dvbfe_status *result);
 
 /**
  * Set the frontend tuning parameters.
@@ -86,7 +86,7 @@ extern int libdvbfe_get_status(int fd, int statusmask, struct libdvbfe_status *r
  * @param params Params to set.
  * @return 0 on success, nonzero on failure.
  */
-extern int libdvbfe_set_frontend(int fd, struct dvb_frontend_parameters *params);
+extern int dvbfe_set_frontend(int fd, struct dvb_frontend_parameters *params);
 
 /**
  * Read the current frontend tuning parameters from the hardware.
@@ -95,7 +95,7 @@ extern int libdvbfe_set_frontend(int fd, struct dvb_frontend_parameters *params)
  * @param params Where to put the parameters.
  * @return 0 on success, nonzero on failure.
  */
-extern int libdvbfe_get_frontend(int fd, struct dvb_frontend_parameters *params);
+extern int dvbfe_get_frontend(int fd, struct dvb_frontend_parameters *params);
 
 /**
  * Execute a DISEQC command string (format as specified in libdvbcfg diseqc.conf).
@@ -104,7 +104,7 @@ extern int libdvbfe_get_frontend(int fd, struct dvb_frontend_parameters *params)
  * @param command Command to execute.
  * @return 0 on success, nonzero on failure.
  */
-extern int libdvbfe_diseqc_command(int fd, char *command);
+extern int dvbfe_diseqc_command(int fd, char *command);
 
 /**
  * Read a DISEQC response from the frontend.
@@ -115,7 +115,7 @@ extern int libdvbfe_diseqc_command(int fd, char *command);
  * @param len Number of bytes in buffer.
  * @return >= 0 on success (number of received bytes), <0 on failure.
  */
-extern int libdvbfe_diseqc_read(int fd, int timeout, unsigned char *buf, unsigned int len);
+extern int dvbfe_diseqc_read(int fd, int timeout, unsigned char *buf, unsigned int len);
 
 #ifdef __cplusplus
 }
