@@ -78,18 +78,34 @@ extern int dvbdemux_open_demux(int adapter, int demuxdevice);
 extern int dvbdemux_open_dvr(int adapter, int dvrdevice, int readonly);
 
 /**
- * Set filter for capturing decoded SI table sections. This allows filtering by
- * a combination of table/tablemask. Conceptually, the driver computes:
- * (table & tablemask) == (sectionid & tablemask). Any sections not meeting this
- * will be discarded.
+ * Set filter for capturing decoded SI table sections. This allows filtering on up
+ * to the first 16 bytes of a section header. Conceptually, the driver computes
+ * the following for each bit.
+ *
+ * (filter[X].bit[Y] & mask[X].bit[Y]) TESTOPERATION (header[X].bit[Y] & mask[X].bit[Y]).
+ *
+ * testtype can be either "==", or "!=" - the exact operation used is determined
+ * as follows:
+ *
+ * if (testtype[X].bit[Y] == 0) then TESTOPERATION='==' else TESTOPERATION='!='.
+ *
+ * So it is possible to test that selected bits of a section header match the
+ * filter AND that they DO NOT match. Any sections which do not match this
+ * criteria for every bit will be discarded.
  *
  * The SI data is always read from the frontend, and is always returned by
  * read()ing the demux fd. FIXME: check this statement!
  *
  * @param fd FD as opened with dvbdemux_open_demux() above.
  * @param pid PID of the stream.
- * @param table ID of the SI table to capture.
- * @param tablemask Mask bits for the SI table id.
+ * @param filter The filter values of the first 16 bytes of the desired sections.
+ * @param mask Bitmask indicating which bits in values array should be tested
+ * (if a bit is 1, it will be tested).
+ * @param testtype Bitmask indicating the type of test to be applied to bit in
+ * the values array. Note this is only applied to bits which have a '1' in the
+ * mask array. If a testtype bit is 0, the corresponding bit in the section header
+ * MUST match the value of the bit in filter. If a testtype bit is 1, it *MUST NOT*
+ * match the value of the bit in filter.
  * @param start If 1, the filter will be started immediately. Otherwise you must
  * call dvbdemux_start() manually.
  * @param checkcrc If 1, the driver will check the CRC on the table sections.
@@ -97,7 +113,7 @@ extern int dvbdemux_open_dvr(int adapter, int dvrdevice, int readonly);
  * @return 0 on success, nonzero on failure.
  */
 extern int dvbdemux_set_section_filter(int fd, int pid,
-                                       int table, int tablemask,
+                                       uint8_t filter[16], uint8_t mask[16], uint8_t testtype[16],
                                        int start, int checkcrc);
 
 /**

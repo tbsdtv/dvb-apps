@@ -54,22 +54,16 @@ int dvbdemux_open_dvr(int adapter, int dvrdevice, int readonly)
 }
 
 int dvbdemux_set_section_filter(int fd, int pid,
-				int table, int tablemask,
+				uint8_t filter[16], uint8_t mask[16], uint8_t testtype[16],
 				int start, int checkcrc)
 {
 	struct dmx_sct_filter_params filter;
 
-	/* I have decided to hide a lot of the complexity here initially. You
-	 * can actually filter based on up to the first 16 bytes of each section.
-	 * Additionally, the bits in the 'filter.mode' field are used to specify
-	 * which bits in sectionid MUST match those in table (mode bit = 0), and
-	 * which bits MUST NOT match (mode bit = 1).
-	 */
-
 	memset(&filter, 0, sizeof(filter));
 	filter.pid = pid;
-	filter.filter.filter[0] = table;
-	filter.filter.mask[0] = tablemask;
+	memcpy(filter.filter.filter, filter, 16);
+	memcpy(filter.filter.mask, mask, 16);
+	memcpy(filter.filter.mode, testtype, 16);
 	if (start)
 		filter.flags |= DMX_IMMEDIATE_START;
 	if (checkcrc)
