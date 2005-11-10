@@ -25,6 +25,9 @@
 #include <ucsi/descriptor.h>
 #include <ucsi/common.h>
 
+/**
+ * mpeg_smoothing_buffer_descriptor structure.
+ */
 struct mpeg_smoothing_buffer_descriptor {
 	struct descriptor d;
 
@@ -34,8 +37,14 @@ struct mpeg_smoothing_buffer_descriptor {
 	uint64_t sb_size		:22; );
 } packed;
 
+/**
+ * Process an mpeg_smoothing_buffer_descriptor.
+ *
+ * @param d The generic descriptor structure.
+ * @return Pointer to mpeg_smoothing_buffer_descriptor, or NULL on error.
+ */
 static inline struct mpeg_smoothing_buffer_descriptor*
-	mpeg_smoothing_buffer_descriptor_parse(struct descriptor* d)
+	mpeg_smoothing_buffer_descriptor_codec(struct descriptor* d)
 {
 	if (d->len != (sizeof(struct mpeg_smoothing_buffer_descriptor) - 2))
 		return NULL;

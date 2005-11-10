@@ -25,6 +25,9 @@
 #include <ucsi/descriptor.h>
 #include <ucsi/common.h>
 
+/**
+ * mpeg_iod_descriptor structure.
+ */
 struct mpeg_iod_descriptor {
 	struct descriptor d;
 
@@ -33,8 +36,14 @@ struct mpeg_iod_descriptor {
 	/* uint8_t iod[] */
 } packed;
 
+/**
+ * Process an mpeg_iod_descriptor.
+ *
+ * @param d Generic descriptor structure.
+ * @return Pointer to an mpeg_iod_descriptor structure, or NULL on error.
+ */
 static inline struct mpeg_iod_descriptor*
-	mpeg_iod_descriptor_parse(struct descriptor* d)
+	mpeg_iod_descriptor_codec(struct descriptor* d)
 {
 	if (d->len < (sizeof(struct mpeg_iod_descriptor) - 2))
 		return NULL;
@@ -42,12 +51,24 @@ static inline struct mpeg_iod_descriptor*
 	return (struct mpeg_iod_descriptor*) d;
 }
 
+/**
+ * Retrieve pointer to iod field of an mpeg_iod_descriptor structure.
+ *
+ * @param d Pointer to mpeg_iod_descriptor structure.
+ * @return Pointer to the iod field, or NULL on error.
+ */
 static inline uint8_t *
 	mpeg_iod_descriptor_iod(struct mpeg_iod_descriptor *d)
 {
 	return (uint8_t *) d + sizeof(struct mpeg_iod_descriptor);
 }
 
+/**
+ * Calculate the length of the iod field of an mpeg_iod_descriptor structure.
+ *
+ * @param d Pointer to mpeg_iod_descriptor structure.
+ * @return The number of bytes.
+ */
 static inline int
 	mpeg_iod_descriptor_iod_length(struct mpeg_iod_descriptor *d)
 {

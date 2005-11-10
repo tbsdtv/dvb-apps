@@ -25,6 +25,9 @@
 #include <ucsi/descriptor.h>
 #include <ucsi/common.h>
 
+/**
+ * mpeg_audio_stream_descriptor structure
+ */
 struct mpeg_audio_stream_descriptor {
 	struct descriptor d;
 
@@ -35,8 +38,14 @@ struct mpeg_audio_stream_descriptor {
 	uint8_t reserved			: 3; );
 } packed;
 
+/**
+ * Process an mpeg_audio_stream_descriptor.
+ *
+ * @param d Pointer to the generic descriptor structure.
+ * @return Pointer to the mpeg_audio_stream_descriptor structure, or NULL on error.
+ */
 static inline struct mpeg_audio_stream_descriptor*
-	mpeg_audio_stream_descriptor_parse(struct descriptor* d)
+	mpeg_audio_stream_descriptor_codec(struct descriptor *d)
 {
 	if (d->len != (sizeof(struct mpeg_audio_stream_descriptor) - 2))
 		return NULL;

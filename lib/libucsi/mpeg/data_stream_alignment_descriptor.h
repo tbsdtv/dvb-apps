@@ -25,14 +25,23 @@
 #include <ucsi/descriptor.h>
 #include <ucsi/common.h>
 
+/**
+ * mpeg_data_stream_alignment_descriptor structure.
+ */
 struct mpeg_data_stream_alignment_descriptor {
 	struct descriptor d;
 
 	uint8_t alignment_type;
 } packed;
 
+/**
+ * Process an mpeg_data_stream_alignment_descriptor.
+ *
+ * @param d Pointer to generic descriptor structure.
+ * @return Pointer to mpeg_data_stream_alignment_descriptor, or NULL on error.
+ */
 static inline struct mpeg_data_stream_alignment_descriptor*
-	mpeg_data_stream_alignment_descriptor_parse(struct descriptor* d)
+	mpeg_data_stream_alignment_descriptor_codec(struct descriptor* d)
 {
 	if (d->len != (sizeof(struct mpeg_data_stream_alignment_descriptor) - 2))
 		return NULL;

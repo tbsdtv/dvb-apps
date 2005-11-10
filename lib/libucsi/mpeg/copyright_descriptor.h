@@ -25,6 +25,9 @@
 #include <ucsi/descriptor.h>
 #include <ucsi/common.h>
 
+/**
+ * mpeg_copyright_descriptor structure.
+ */
 struct mpeg_copyright_descriptor {
 	struct descriptor d;
 
@@ -32,8 +35,14 @@ struct mpeg_copyright_descriptor {
 	/* uint8_t data[] */
 } packed;
 
+/**
+ * Process an mpeg_copyright_descriptor.
+ *
+ * @param d Generic descriptor.
+ * @return mpeg_copyright_descriptor pointer, or NULL on error.
+ */
 static inline struct mpeg_copyright_descriptor*
-	mpeg_copyright_descriptor_parse(struct descriptor* d)
+	mpeg_copyright_descriptor_codec(struct descriptor* d)
 {
 	if (d->len < (sizeof(struct mpeg_copyright_descriptor) - 2))
 		return NULL;
@@ -43,12 +52,25 @@ static inline struct mpeg_copyright_descriptor*
 	return (struct mpeg_copyright_descriptor*) d;
 }
 
+/**
+ * Retrieve pointer to data field of an mpeg_copyright_descriptor.
+ *
+ * @param d mpeg_copyright_descriptor pointer.
+ * @return Pointer to the field, or NULL on error.
+ */
 static inline uint8_t *
 	mpeg_copyright_descriptor_data(struct mpeg_copyright_descriptor *d)
 {
 	return (uint8_t *) d + sizeof(struct mpeg_copyright_descriptor);
 }
 
+
+/**
+ * Determine length of the data field of an mpeg_copyright_descriptor.
+ *
+ * @param d mpeg_copyright_descriptor pointer.
+ * @return Length of field in bytes.
+ */
 static inline int
 	mpeg_copyright_descriptor_data_length(struct mpeg_copyright_descriptor *d)
 {

@@ -21,7 +21,7 @@
 
 #include <ucsi/mpeg/cat_section.h>
 
-struct mpeg_cat_section * mpeg_cat_section_parse(struct section_ext * ext)
+struct mpeg_cat_section * mpeg_cat_section_codec(struct section_ext * ext)
 {
 	uint8_t * buf = (uint8_t *)ext;
 	int pos = sizeof(struct section_ext);

@@ -25,14 +25,23 @@
 #include <ucsi/descriptor.h>
 #include <ucsi/common.h>
 
+/**
+ * mpeg_external_es_id_descriptor structure.
+ */
 struct mpeg_external_es_id_descriptor {
 	struct descriptor d;
 
 	uint16_t external_es_id;
 } packed;
 
+/**
+ * Process an mpeg_external_es_id_descriptor structure.
+ *
+ * @param d Generic descriptor structure.
+ * @return mpeg_external_es_id_descriptor pointer, or NULL on error.
+ */
 static inline struct mpeg_external_es_id_descriptor*
-	mpeg_external_es_id_descriptor_parse(struct descriptor* d)
+	mpeg_external_es_id_descriptor_codec(struct descriptor* d)
 {
 	if (d->len != (sizeof(struct mpeg_external_es_id_descriptor) - 2))
 		return NULL;

@@ -25,19 +25,31 @@
 #include <ucsi/descriptor.h>
 #include <ucsi/common.h>
 
+/**
+ * mpeg_fmc_descriptor structure.
+ */
 struct mpeg_fmc_descriptor {
 	struct descriptor d;
 
 	/* struct mpeg_flex_mux muxes[] */
 } packed;
 
+/**
+ * An entry in the muxes field of an mpeg_fmc_descriptor structure.
+ */
 struct mpeg_flex_mux {
 	uint16_t es_id;
 	uint8_t flex_mux_channel;
 } packed;
 
+/**
+ * Process an mpeg_fmc_descriptor structure.
+ *
+ * @param d Generic descriptor structure.
+ * @return Pointer to an mpeg_fmc_descriptor structure, or NULL on error.
+ */
 static inline struct mpeg_fmc_descriptor*
-	mpeg_fmc_descriptor_parse(struct descriptor* d)
+	mpeg_fmc_descriptor_codec(struct descriptor* d)
 {
 	uint8_t* buf = (uint8_t*) d + 2;
 	int pos = 0;
@@ -54,6 +66,12 @@ static inline struct mpeg_fmc_descriptor*
 	return (struct mpeg_fmc_descriptor*) d;
 }
 
+/**
+ * Convenience iterator for the muxes field of an mpeg_fmc_descriptor structure.
+ *
+ * @param d Generic descriptor structure.
+ * @param pos Variable holding a pointer to the the current entry within the muxes field.
+ */
 #define mpeg_fmc_descriptor_muxes_for_each(d, pos) \
 	for ((pos) = mpeg_fmc_descriptor_muxes_first(d); \
 	     (pos); \

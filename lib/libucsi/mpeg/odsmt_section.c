@@ -21,7 +21,7 @@
 
 #include <ucsi/mpeg/odsmt_section.h>
 
-struct mpeg_odsmt_section *mpeg_odsmt_section_parse(struct section_ext * ext)
+struct mpeg_odsmt_section *mpeg_odsmt_section_codec(struct section_ext * ext)
 {
 	struct mpeg_odsmt_section * odsmt = (struct mpeg_odsmt_section *)ext;
 	uint8_t * buf = (uint8_t *)ext;

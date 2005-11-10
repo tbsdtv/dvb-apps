@@ -25,14 +25,23 @@
 #include <ucsi/descriptor.h>
 #include <ucsi/common.h>
 
+/**
+ * mpeg_sl_descriptor structure.
+ */
 struct mpeg_sl_descriptor {
 	struct descriptor d;
 
 	uint16_t es_id;
 } packed;
 
+/**
+ * Process an mpeg_sl_descriptor.
+ *
+ * @param d The generic descriptor structure.
+ * @return Pointer to an mpeg_sl_descriptor structure, or NULL on error.
+ */
 static inline struct mpeg_sl_descriptor*
-	mpeg_sl_descriptor_parse(struct descriptor* d)
+	mpeg_sl_descriptor_codec(struct descriptor* d)
 {
 	if (d->len != (sizeof(struct mpeg_sl_descriptor) - 2))
 		return NULL;

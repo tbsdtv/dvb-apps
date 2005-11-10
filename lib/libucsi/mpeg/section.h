@@ -28,6 +28,9 @@
 #include <ucsi/mpeg/pmt_section.h>
 #include <ucsi/mpeg/tsdt_section.h>
 
+/**
+ * Enumeration of MPEG section tags.
+ */
 enum mpeg_section_tag {
 	sct_mpeg_program_association			= 0x00,
 	sct_mpeg_conditional_access			= 0x01,

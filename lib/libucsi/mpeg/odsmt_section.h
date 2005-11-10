@@ -24,6 +24,9 @@
 
 #include <ucsi/section.h>
 
+/**
+ * mpeg_odsmt_section structure.
+ */
 struct mpeg_odsmt_section {
 	struct section_ext head;
 
@@ -33,6 +36,9 @@ struct mpeg_odsmt_section {
 	/* uint8_t object_descriptors[] */
 } packed;
 
+/**
+ * Structure describing the stream information held in an mpeg_odsmt_section.
+ */
 struct mpeg_odsmt_stream {
 	union {
 		struct mpeg_odsmt_stream_single {
@@ -50,18 +56,45 @@ struct mpeg_odsmt_stream {
 	} u packed;
 } packed;
 
-extern struct mpeg_odsmt_section *mpeg_odsmt_section_parse(struct section_ext *);
+/**
+ * Process an mpeg_odsmt_section.
+ *
+ * @param section Pointer to the generic section_ext structure.
+ * @return Pointer to a mpeg_odsmt_section structure, or NULL on error.
+ */
+extern struct mpeg_odsmt_section *mpeg_odsmt_section_codec(struct section_ext *section);
 
+/**
+ * Convenience iterator for the streams field of an mpeg_odsmt_section.
+ *
+ * @param osdmt Pointer to the mpeg_odsmt_section structure.
+ * @param pos Variable holding pointer to the current mpeg_odsmt_stream structure.
+ * @param index Variable holding the stream index.
+ */
 #define mpeg_odsmt_section_streams_for_each(osdmt, pos, index) \
 	for (index=0, (pos) = mpeg_odsmt_section_streams_first(odsmt); \
 	     (pos); \
 	     (pos) = mpeg_odsmt_section_streams_next(odsmt, pos, ++index))
 
+/**
+ * Convenience iterator for the descriptors field of an mpeg_odsmt_stream.
+ *
+ * @param osdmt Pointer to the mpeg_odsmt_section structure.
+ * @param stream Pointer to the mpeg_odsmt_stream structure.
+ * @param pos Variable holding pointer to the current descriptor structure.
+ */
 #define mpeg_odsmt_stream_descriptors_for_each(osdmt, stream, pos) \
 	for ((pos) = mpeg_odsmt_stream_descriptors_first(odsmt, stream); \
 	     (pos); \
 	     (pos) = mpeg_odsmt_stream_descriptors_next(odsmt, stream, pos))
 
+/**
+ * Retrieve a pointer to the object_descriptors field of an mpeg_odsmt_section.
+ *
+ * @param osdmt Pointer to the mpeg_odsmt_section structure.
+ * @param len On return, will contain the number of bytes in the object descriptors field.
+ * @return Pointer to the object_descriptors field, or NULL on error.
+ */
 static inline uint8_t*
 	mpeg_odsmt_section_object_descriptors(struct mpeg_odsmt_section * odsmt,
 					      uint32_t* len);

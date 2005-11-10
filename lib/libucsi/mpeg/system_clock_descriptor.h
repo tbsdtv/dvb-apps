@@ -25,6 +25,9 @@
 #include <ucsi/descriptor.h>
 #include <ucsi/common.h>
 
+/**
+ * mpeg_system_clock_descriptor structure.
+ */
 struct mpeg_system_clock_descriptor {
 	struct descriptor d;
 
@@ -35,8 +38,14 @@ struct mpeg_system_clock_descriptor {
 	uint8_t reserved_2				: 5; );
 } packed;
 
+/**
+ * Process an mpeg_system_clock_descriptor.
+ *
+ * @param d The generic descriptor structure.
+ * @return Pointer to a mpeg_system_clock_descriptor structure, or NULL on error.
+ */
 static inline struct mpeg_system_clock_descriptor*
-	mpeg_system_clock_descriptor_parse(struct descriptor* d)
+	mpeg_system_clock_descriptor_codec(struct descriptor* d)
 {
 	if (d->len != (sizeof(struct mpeg_system_clock_descriptor) - 2))
 		return NULL;

@@ -21,7 +21,7 @@
 
 #include <ucsi/mpeg/pmt_section.h>
 
-struct mpeg_pmt_section * mpeg_pmt_section_parse(struct section_ext * ext)
+struct mpeg_pmt_section * mpeg_pmt_section_codec(struct section_ext * ext)
 {
 	uint8_t * buf = (uint8_t *) ext;
 	struct mpeg_pmt_section * pmt = (struct mpeg_pmt_section *) ext;

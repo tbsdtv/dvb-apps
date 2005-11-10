@@ -25,6 +25,9 @@
 #include <ucsi/descriptor.h>
 #include <ucsi/common.h>
 
+/**
+ * mpeg_registration_descriptor structure.
+ */
 struct mpeg_registration_descriptor {
 	struct descriptor d;
 
@@ -32,8 +35,14 @@ struct mpeg_registration_descriptor {
 	/* uint8_t additional_id_info[] */
 } packed;
 
+/**
+ * Process an mpeg_registration_descriptor.
+ *
+ * @param d Pointer to the generic descriptor structure.
+ * @return Pointer to the mpeg_registration_descriptor structure, or NULL on error.
+ */
 static inline struct mpeg_registration_descriptor*
-	mpeg_registration_descriptor_parse(struct descriptor* d)
+	mpeg_registration_descriptor_codec(struct descriptor* d)
 {
 	if (d->len < (sizeof(struct mpeg_registration_descriptor) - 2))
 		return NULL;
@@ -43,11 +52,26 @@ static inline struct mpeg_registration_descriptor*
 	return (struct mpeg_registration_descriptor*) d;
 }
 
+/**
+ * Retrieve a pointer to the additional_id_info field of the
+ * mpeg_registration_descriptor structure.
+ *
+ * @param d Pointer to the mpeg_registration_descriptor structure.
+ * @return Pointer to the field, or NULL on error.
+ */
 static inline uint8_t *
 	mpeg_registration_descriptor_additional_id_info(struct mpeg_registration_descriptor *d)
 {
 	return (uint8_t *) d + sizeof(struct mpeg_registration_descriptor);
 }
+
+/**
+ * Determine number of bytes in the additional_id_info field of the
+ * mpeg_registration_descriptor structure.
+ *
+ * @param d Pointer to the mpeg_registration_descriptor structure.
+ * @return Number of bytes.
+ */
 
 static inline int
 	mpeg_registration_descriptor_additional_id_info_length(struct mpeg_registration_descriptor *d)

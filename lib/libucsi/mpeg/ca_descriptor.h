@@ -25,6 +25,9 @@
 #include <ucsi/descriptor.h>
 #include <ucsi/common.h>
 
+/**
+ * mpeg_ca_descriptor structure
+ */
 struct mpeg_ca_descriptor {
 	struct descriptor d;
 
@@ -34,8 +37,14 @@ struct mpeg_ca_descriptor {
 	/* uint8_t  data[] */
 } packed;
 
+/**
+ * Process an mpeg_ca_descriptor.
+ *
+ * @param d Generic descriptor.
+ * @return Pointer to an mpeg_ca_descriptor, or NULL on error.
+ */
 static inline struct mpeg_ca_descriptor*
-	mpeg_ca_descriptor_parse(struct descriptor* d)
+	mpeg_ca_descriptor_codec(struct descriptor* d)
 {
 	if (d->len < (sizeof(struct mpeg_ca_descriptor) - 2))
 		return NULL;
@@ -46,12 +55,24 @@ static inline struct mpeg_ca_descriptor*
 	return (struct mpeg_ca_descriptor*) d;
 }
 
+/**
+ * Accessor for pointer to data field of an mpeg_ca_descriptor.
+ *
+ * @param d The mpeg_ca_descriptor structure.
+ * @return Pointer to the field, or NULL on error.
+ */
 static inline uint8_t *
 	mpeg_ca_descriptor_data(struct mpeg_ca_descriptor *d)
 {
 	return (uint8_t *) d + sizeof(struct mpeg_ca_descriptor);
 }
 
+/**
+ * Determine length of data field of an mpeg_ca_descriptor.
+ *
+ * @param d The mpeg_ca_descriptor structure.
+ * @return Length of the field in bytes.
+ */
 static inline int
 	mpeg_ca_descriptor_data_length(struct mpeg_ca_descriptor *d)
 {

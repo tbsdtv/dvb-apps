@@ -25,6 +25,9 @@
 #include <ucsi/descriptor.h>
 #include <ucsi/common.h>
 
+/**
+ * The mpeg_video_stream_descriptor structure
+ */
 struct mpeg_video_stream_descriptor {
 	struct descriptor d;
 
@@ -36,6 +39,9 @@ struct mpeg_video_stream_descriptor {
 	/* if (mpeg_1_only_flag == 0) struct mpeg_video_stream_extra extra */
 } packed;
 
+/**
+ * The mpeg_video_stream_extra - only present in non-MPEG1-only streams.
+ */
 struct mpeg_video_stream_extra {
 	uint8_t profile_and_level_indication;
   EBIT3(uint8_t chroma_format			: 2; ,
@@ -43,8 +49,14 @@ struct mpeg_video_stream_extra {
 	uint8_t reserved			: 5; );
 } packed;
 
+/**
+ * Process an mpeg_video_stream_descriptor structure.
+ *
+ * @param d Pointer to the generic descriptor structure.
+ * @return Pointer to the mpeg_video_stream_descriptor, or NULL on error.
+ */
 static inline struct mpeg_video_stream_descriptor*
-	mpeg_video_stream_descriptor_parse(struct descriptor* d)
+	mpeg_video_stream_descriptor_codec(struct descriptor* d)
 {
 	struct mpeg_video_stream_descriptor* vsd =
 			(struct mpeg_video_stream_descriptor*) d;
@@ -61,6 +73,12 @@ static inline struct mpeg_video_stream_descriptor*
 	return (struct mpeg_video_stream_descriptor*) d;
 }
 
+/**
+ * Get a pointer to the mpeg_video_stream_extra structure.
+ *
+ * @param d Pointer to the mpeg_video_stream_descriptor structure.
+ * @return Pointer to the mpeg_video_stream_extra structure, or NULL on error.
+ */
 static inline struct mpeg_video_stream_extra*
 	mpeg_video_stream_descriptor_extra(struct mpeg_video_stream_descriptor* d)
 {

@@ -25,6 +25,9 @@
 #include <ucsi/descriptor.h>
 #include <ucsi/common.h>
 
+/**
+ * mpeg_target_background_grid_descriptor structure.
+ */
 struct mpeg_target_background_grid_descriptor {
 	struct descriptor d;
 
@@ -33,8 +36,15 @@ struct mpeg_target_background_grid_descriptor {
 	uint32_t aspect_ratio_information	: 4;  );
 } packed;
 
+/**
+ * Process an mpeg_target_background_grid_descriptor structure.
+ *
+ * @param d Pointer to the generic descriptor structure.
+ * @return Pointer to the mpeg_target_background_grid_descriptor structure, or
+ * NULL on error.
+ */
 static inline struct mpeg_target_background_grid_descriptor*
-	mpeg_target_background_grid_descriptor_parse(struct descriptor* d)
+	mpeg_target_background_grid_descriptor_codec(struct descriptor* d)
 {
 	if (d->len != (sizeof(struct mpeg_target_background_grid_descriptor) - 2))
 		return NULL;

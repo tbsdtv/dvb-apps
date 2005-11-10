@@ -50,6 +50,9 @@
 #include <ucsi/mpeg/video_window_descriptor.h>
 #include <ucsi/common.h>
 
+/**
+ * Enumeration of MPEG descriptor tags.
+ */
 enum mpeg_descriptor_tag {
 	dtag_mpeg_video_stream			= 0x02,
 	dtag_mpeg_audio_stream			= 0x03,

@@ -25,14 +25,23 @@
 #include <ucsi/descriptor.h>
 #include <ucsi/common.h>
 
+/**
+ * mpeg4_video_descriptor structure.
+ */
 struct mpeg4_video_descriptor {
 	struct descriptor d;
 
 	uint8_t mpeg4_visual_profile_and_level;
 } packed;
 
+/**
+ * Process an mpeg4_video_descriptor structure.
+ *
+ * @param d Pointer to generic descriptor structure.
+ * @return Pointer to mpeg4_video_descriptor structure, or NULL on error.
+ */
 static inline struct mpeg4_video_descriptor*
-	mpeg4_video_descriptor_parse(struct descriptor* d)
+	mpeg4_video_descriptor_codec(struct descriptor* d)
 {
 	if (d->len != (sizeof(struct mpeg4_video_descriptor) - 2))
 		return NULL;

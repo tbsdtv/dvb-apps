@@ -25,6 +25,9 @@
 #include <ucsi/descriptor.h>
 #include <ucsi/common.h>
 
+/**
+ * mpeg_ibp_descriptor structure.
+ */
 struct mpeg_ibp_descriptor {
 	struct descriptor d;
 
@@ -33,8 +36,14 @@ struct mpeg_ibp_descriptor {
 	uint16_t max_gop_length		: 14; );
 } packed;
 
+/**
+ * Process an mpeg_ibp_descriptor structure.
+ *
+ * @param d Generic descriptor structure.
+ * @return Pointer to the mpeg_ibp_descriptor structure, or NULL on error.
+ */
 static inline struct mpeg_ibp_descriptor*
-	mpeg_ibp_descriptor_parse(struct descriptor* d)
+	mpeg_ibp_descriptor_codec(struct descriptor* d)
 {
 	if (d->len != (sizeof(struct mpeg_ibp_descriptor) - 2))
 		return NULL;

@@ -24,20 +24,38 @@
 
 #include <ucsi/section.h>
 
+/**
+ * mpeg_pat_section structure.
+ */
 struct mpeg_pat_section {
 	struct section_ext head;
 
 	/* struct mpeg_pat_program programs[] */
 } packed;
 
+/**
+ * A program within an mpeg_pat_section.
+ */
 struct mpeg_pat_program {
 	uint16_t program_number;
   EBIT2(uint16_t reserved	: 3; ,
 	uint16_t pid		:13; );
 } packed;
 
-extern struct mpeg_pat_section *mpeg_pat_section_parse(struct section_ext *);
+/**
+ * Process an mpeg_pat_section.
+ *
+ * @param section Pointer to the generic section_ext structure.
+ * @return Pointer to the mpeg_pat_section structure, or NULL on error.
+ */
+extern struct mpeg_pat_section *mpeg_pat_section_codec(struct section_ext *section);
 
+/**
+ * Conveience iterator for the programs field of an mpeg_pat_section.
+ *
+ * @param pat Pointer to the mpeg_pat_section structure.
+ * @param pos Variable holding a pointer to the current mpeg_pat_program structure.
+ */
 #define mpeg_pat_section_programs_for_each(pat, pos) \
 	for ((pos) = mpeg_pat_section_programs_first(pat); \
 	     (pos); \

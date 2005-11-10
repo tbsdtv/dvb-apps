@@ -25,14 +25,23 @@
 #include <ucsi/descriptor.h>
 #include <ucsi/common.h>
 
+/**
+ * mpeg_private_data_indicator_descriptor structure
+ */
 struct mpeg_private_data_indicator_descriptor {
 	struct descriptor d;
 
 	uint32_t private_data_indicator;
 } packed;
 
+/**
+ * Process an mpeg_private_data_indicator_descriptor structure.
+ *
+ * @param d Pointer to the generic descriptor structure.
+ * @return Pointer to the mpeg_private_data_indicator_descriptor, or NULL on error.
+ */
 static inline struct mpeg_private_data_indicator_descriptor*
-	mpeg_private_data_indicator_descriptor_parse(struct descriptor* d)
+	mpeg_private_data_indicator_descriptor_codec(struct descriptor* d)
 {
 	if (d->len != (sizeof(struct mpeg_private_data_indicator_descriptor) - 2))
 		return NULL;

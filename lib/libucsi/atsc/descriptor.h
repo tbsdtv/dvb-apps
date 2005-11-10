@@ -24,6 +24,9 @@
 
 #include <ucsi/common.h>
 
+/**
+ * Enumeration of ATSC descriptor tags.
+ */
 enum atsc_descriptor_tag {
 
 /* A 52/A describes a

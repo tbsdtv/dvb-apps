@@ -35,7 +35,7 @@ struct mpeg_multiplex_buffer_utilization_descriptor {
 } packed;
 
 static inline struct mpeg_multiplex_buffer_utilization_descriptor*
-	mpeg_multiplex_buffer_utilization_descriptor_parse(struct descriptor* d)
+	mpeg_multiplex_buffer_utilization_descriptor_codec(struct descriptor* d)
 {
 	if (d->len != (sizeof(struct mpeg_multiplex_buffer_utilization_descriptor) - 2))
 		return NULL;

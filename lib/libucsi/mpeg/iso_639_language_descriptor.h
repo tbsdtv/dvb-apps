@@ -25,19 +25,32 @@
 #include <ucsi/descriptor.h>
 #include <ucsi/common.h>
 
+/**
+ * mpeg_iso_639_language_descriptor structure.
+ */
 struct mpeg_iso_639_language_descriptor {
 	struct descriptor d;
 
 	/* struct mpeg_iso_639_language_code languages[] */
 } packed;
 
+/**
+ * An entry in the mpeg_iso_639_language_descriptor languages field.
+ */
 struct mpeg_iso_639_language_code {
 	uint8_t iso_639_language_code[3];
 	uint8_t audio_type;
 } packed;
 
+/**
+ * Process an mpeg_iso_639_language_descriptor.
+ *
+ * @param d Generic descriptor structure.
+ * @return Pointer to an mpeg_iso_639_language_descriptor structure, or NULL
+ * on error.
+ */
 static inline struct mpeg_iso_639_language_descriptor*
-	mpeg_iso_639_language_descriptor_parse(struct descriptor* d)
+	mpeg_iso_639_language_descriptor_codec(struct descriptor* d)
 {
 	if (d->len % sizeof(struct mpeg_iso_639_language_code))
 		return NULL;
@@ -45,6 +58,12 @@ static inline struct mpeg_iso_639_language_descriptor*
 	return (struct mpeg_iso_639_language_descriptor*) d;
 }
 
+/**
+ * Convenience iterator for the languages field of an mpeg_iso_639_language_descriptor
+ *
+ * @param d Pointer to the mpeg_iso_639_language_descriptor structure.
+ * @param pos Variable holding a pointer to the current entry.
+ */
 #define mpeg_iso_639_language_descriptor_languages_for_each(d, pos) \
 	for ((pos) = mpeg_iso_639_language_descriptor_languages_first(d); \
 	     (pos); \

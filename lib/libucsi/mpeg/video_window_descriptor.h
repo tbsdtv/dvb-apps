@@ -24,6 +24,9 @@
 
 #include <ucsi/descriptor.h>
 
+/**
+ * mpeg_video_window_descriptor structure.
+ */
 struct mpeg_video_window_descriptor {
 	struct descriptor d;
 
@@ -32,8 +35,14 @@ struct mpeg_video_window_descriptor {
 	uint32_t window_priority		: 4;  );
 } packed;
 
+/**
+ * Process an mpeg_video_window_descriptor.
+ *
+ * @param d Pointer to the generic descriptor structure.
+ * @return Pointer to the mpeg_video_window_descriptor structure, or NULL on error.
+ */
 static inline struct mpeg_video_window_descriptor*
-	mpeg_video_window_descriptor_parse(struct descriptor* d)
+	mpeg_video_window_descriptor_codec(struct descriptor* d)
 {
 	if (d->len != (sizeof(struct mpeg_video_window_descriptor) - 2))
 		return NULL;

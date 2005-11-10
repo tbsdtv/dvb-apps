@@ -22,7 +22,9 @@
 #ifndef _UCSI_ATSC_SECTION_H
 #define _UCSI_ATSC_SECTION_H 1
 
-/* Tables specified in the ATSC docs , this is probably not complete */
+/**
+ * Enumeration of ATSC section tags.
+ */
 enum atsc_section_tag {
 /* 0xC0-0xC6   [ATSC coordinated values which are defined in other standards.] */
 	sct_master_guide				= 0xc7,

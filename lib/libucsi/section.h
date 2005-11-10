@@ -28,8 +28,10 @@
 
 #define CRC_SIZE 4
 
-/* section heads */
 
+/**
+ * Generic section header.
+ */
 struct section {
 	uint8_t	table_id;
   EBIT4(uint16_t syntax_indicator	: 1; ,
@@ -38,6 +40,9 @@ struct section {
 	uint16_t length			:12; );
 } packed;
 
+/**
+ * Generic extended section header structure.
+ */
 struct section_ext {
 	uint8_t	table_id;
   EBIT4(uint16_t syntax_indicator	: 1; ,
@@ -54,12 +59,13 @@ struct section_ext {
 } packed;
 
 /**
- * All parsers relies on this entry point, where the buffer must be
- * valid throughout the use of struct section * and any other
- * structures retrived using this pointer.
+ * Process a section structure in-place.
+ *
+ * @param buf Pointer to the data.
+ * @param len Length of data.
+ * @return Pointer to the section structure, or NULL if invalid.
  */
-
-static inline struct section * parse_section(uint8_t * buf, int len)
+static inline struct section * section_codec(uint8_t * buf, int len)
 {
 	struct section * ret = (struct section *)buf;
 
@@ -74,7 +80,14 @@ static inline struct section * parse_section(uint8_t * buf, int len)
 	return ret;
 }
 
-static inline struct section_ext * parse_section_ext(struct section * section,
+/**
+ * Parse an extended section structure in-place.
+ *
+ * @param buf Pointer to the parsed section structure.
+ * @param check_crc If 1, the CRC of the section will also be checked.
+ * @return Pointer to the parsed section_ext structure, or NULL if invalid.
+ */
+static inline struct section_ext * section_ext_parse(struct section * section,
 						     int check_crc)
 {
 	if (section->syntax_indicator == 0)
@@ -102,11 +115,26 @@ static inline struct section_ext * parse_section_ext(struct section * section,
 	return (struct section_ext *)section;
 }
 
+// FIXME: write matching section_ext_update() function
+
+/**
+ * Determine the total length of a section, including the header.
+ *
+ * @param section The parsed section structure.
+ * @return The length.
+ */
 static inline int section_length(struct section *section)
 {
 	return section->length + sizeof(struct section);
 }
 
+/**
+ * Determine the total length of an extended section, including the header,
+ * but omitting the CRC.
+ *
+ * @param section The parsed section_ext structure.
+ * @return The length.
+ */
 static inline int section_ext_length(struct section_ext * section)
 {
 	return section->length + sizeof(struct section) - CRC_SIZE;

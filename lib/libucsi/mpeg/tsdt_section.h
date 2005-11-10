@@ -24,14 +24,29 @@
 
 #include <ucsi/section.h>
 
+/**
+ * mpeg_tsdt_section structure.
+ */
 struct mpeg_tsdt_section {
 	struct section_ext head;
 
 	/* struct descriptor descriptors[] */
 } packed;
 
-extern struct mpeg_tsdt_section *mpeg_tsdt_section_parse(struct section_ext *);
+/**
+ * Process an mpeg_tsdt_section structure.
+ *
+ * @param section Pointer to the section_ext structure.
+ * @return Pointer to the mpeg_tsdt_section structure, or NULL on error.
+ */
+extern struct mpeg_tsdt_section *mpeg_tsdt_section_codec(struct section_ext *section);
 
+/**
+ * Convenience iterator for descriptors field.
+ *
+ * @param tsdt Pointer to the mpeg_tsdt_section structure.
+ * @param pos Iterator variable holding the current position.
+ */
 #define mpeg_tsdt_section_descriptors_for_each(tsdt, pos) \
 	for ((pos) = mpeg_tsdt_section_descriptors_first(tsdt); \
 	     (pos); \

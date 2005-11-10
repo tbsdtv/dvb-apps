@@ -25,6 +25,9 @@
 #include <ucsi/descriptor.h>
 #include <ucsi/common.h>
 
+/**
+ * mpeg_std_descriptor structure.
+ */
 struct mpeg_std_descriptor {
 	struct descriptor d;
 
@@ -32,8 +35,14 @@ struct mpeg_std_descriptor {
 	uint8_t leak_valid_flag	: 1; );
 } packed;
 
+/**
+ * Process an mpeg_std_descriptor.
+ *
+ * @param d Pointer to the generic descriptor structure.
+ * @return Pointer to the mpeg_std_descriptor, or NULL on error.
+ */
 static inline struct mpeg_std_descriptor*
-	mpeg_std_descriptor_parse(struct descriptor* d)
+	mpeg_std_descriptor_codec(struct descriptor* d)
 {
 	if (d->len != (sizeof(struct mpeg_std_descriptor) - 2))
 		return NULL;

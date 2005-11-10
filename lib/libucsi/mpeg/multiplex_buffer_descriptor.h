@@ -25,6 +25,9 @@
 #include <ucsi/descriptor.h>
 #include <ucsi/common.h>
 
+/**
+ * mpeg_multiplex_buffer_descriptor descriptor.
+ */
 struct mpeg_multiplex_buffer_descriptor {
 	struct descriptor d;
 
@@ -32,8 +35,15 @@ struct mpeg_multiplex_buffer_descriptor {
 	uint64_t tb_leak_rate	: 24;  );
 } packed;
 
+/**
+ * Process an mpeg_multiplex_buffer_descriptor.
+ *
+ * @param d Pointer to generic descriptor structure.
+ * @return Pointer to an mpeg_multiplex_buffer_descriptor structure, or NULL on
+ * error.
+ */
 static inline struct mpeg_multiplex_buffer_descriptor*
-	mpeg_multiplex_buffer_descriptor_parse(struct descriptor* d)
+	mpeg_multiplex_buffer_descriptor_codec(struct descriptor* d)
 {
 	if (d->len != (sizeof(struct mpeg_multiplex_buffer_descriptor) - 2))
 		return NULL;

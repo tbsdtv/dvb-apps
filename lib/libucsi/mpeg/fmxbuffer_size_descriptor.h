@@ -25,24 +25,46 @@
 #include <ucsi/descriptor.h>
 #include <ucsi/common.h>
 
+
+/**
+ * mpeg_fmxbuffer_size_descriptor structure.
+ */
 struct mpeg_fmxbuffer_size_descriptor {
 	struct descriptor d;
 
 	/* uint8_t descriptors[] */
 } packed;
 
+/**
+ * Process an mpeg_fmxbuffer_size_descriptor structure.
+ *
+ * @param d Pointer to a generic descriptor structure.
+ * @return Pointer to an mpeg_fmxbuffer_size_descriptor structure, or NULL on error.
+ */
 static inline struct mpeg_fmxbuffer_size_descriptor*
-	mpeg_fmxbuffer_size_descriptor_parse(struct descriptor* d)
+	mpeg_fmxbuffer_size_descriptor_codec(struct descriptor* d)
 {
 	return (struct mpeg_fmxbuffer_size_descriptor*) d;
 }
 
+/**
+ * Retrieve pointer to descriptors field of mpeg_fmxbuffer_size_descriptor structure.
+ *
+ * @param d mpeg_fmxbuffer_size_descriptor structure pointer.
+ * @return Pointer to the descriptors, or NULL on error.
+ */
 static inline uint8_t *
 	mpeg_fmxbuffer_size_descriptor_descriptors(struct mpeg_fmxbuffer_size_descriptor *d)
 {
 	return (uint8_t *) d + sizeof(struct mpeg_fmxbuffer_size_descriptor);
 }
 
+/**
+ * Calculate the length of the descriptors field of an mpeg_fmxbuffer_size_descriptor structure.
+ *
+ * @param d mpeg_fmxbuffer_size_descriptor structure pointer.
+ * @return Length of descriptors in bytes.
+ */
 static inline int
 	mpeg_fmxbuffer_size_descriptor_descriptors_length(struct mpeg_fmxbuffer_size_descriptor *d)
 {

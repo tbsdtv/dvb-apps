@@ -25,6 +25,9 @@
 #include <ucsi/descriptor.h>
 #include <ucsi/common.h>
 
+/**
+ * mpeg_hierarchy_descriptor structure.
+ */
 struct mpeg_hierarchy_descriptor {
 	struct descriptor d;
 
@@ -38,8 +41,14 @@ struct mpeg_hierarchy_descriptor {
 	uint8_t hierarchy_channel		: 6; );
 } packed;
 
+/**
+ * Process an mpeg_hierarchy_descriptor.
+ *
+ * @param d Generic descriptor structure.
+ * @return Pointer to mpeg_hierarchy_descriptor structure, or NULL on error.
+ */
 static inline struct mpeg_hierarchy_descriptor*
-	mpeg_hierarchy_descriptor_parse(struct descriptor* d)
+	mpeg_hierarchy_descriptor_codec(struct descriptor* d)
 {
 	if (d->len != (sizeof(struct mpeg_hierarchy_descriptor) - 2))
 		return NULL;

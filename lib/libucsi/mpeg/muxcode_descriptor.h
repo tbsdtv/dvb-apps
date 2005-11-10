@@ -25,24 +25,45 @@
 #include <ucsi/descriptor.h>
 #include <ucsi/common.h>
 
+/**
+ * mpeg_muxcode_descriptor structure
+ */
 struct mpeg_muxcode_descriptor {
 	struct descriptor d;
 
 	/* uint8_t entries[] */
 } packed;
 
+/**
+ * Process an mpeg_muxcode_descriptor.
+ *
+ * @param d Pointer to a generic descriptor structure.
+ * @return Pointer to an mpeg_muxcode_descriptor structure, or NULL on error.
+ */
 static inline struct mpeg_muxcode_descriptor*
-	mpeg_muxcode_descriptor_parse(struct descriptor* d)
+	mpeg_muxcode_descriptor_codec(struct descriptor* d)
 {
 	return (struct mpeg_muxcode_descriptor*) d;
 }
 
+/**
+ * Retrieve pointer to entries field of an mpeg_muxcode_descriptor structure.
+ *
+ * @param d Generic descriptor structure.
+ * @return Pointer to the entries field, or NULL on error.
+ */
 static inline uint8_t *
 	mpeg_muxcode_descriptor_entries(struct mpeg_muxcode_descriptor *d)
 {
 	return (uint8_t *) d + sizeof(struct mpeg_muxcode_descriptor);
 }
 
+/**
+ * Determine length of entries field of an mpeg_muxcode_descriptor structure.
+ *
+ * @param d Generic descriptor structure.
+ * @return Number of bytes in the entries field.
+ */
 static inline int
 	mpeg_muxcode_descriptor_entries_length(struct mpeg_muxcode_descriptor *d)
 {

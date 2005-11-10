@@ -25,14 +25,23 @@
 #include <ucsi/descriptor.h>
 #include <ucsi/common.h>
 
+/**
+ * mpeg4_audio_descriptor structure.
+ */
 struct mpeg4_audio_descriptor {
 	struct descriptor d;
 
 	uint8_t mpeg4_audio_profile_and_level;
 } packed;
 
+/**
+ * Process an mpeg4_audio_descriptor.
+ *
+ * @param d Generic descriptor structure.
+ * @return Pointer to an mpeg4_audio_descriptor structure, or NULL on error.
+ */
 static inline struct mpeg4_audio_descriptor*
-	mpeg4_audio_descriptor_parse(struct descriptor* d)
+	mpeg4_audio_descriptor_codec(struct descriptor* d)
 {
 	if (d->len != (sizeof(struct mpeg4_audio_descriptor) - 2))
 		return NULL;

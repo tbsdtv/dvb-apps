@@ -26,11 +26,22 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+/**
+ * Generic descriptor header.
+ */
 struct descriptor {
 	uint8_t tag;
 	uint8_t len;
 } packed;
 
+/**
+ * Retreive pointer to the next descriptor structure.
+ *
+ * @param buf The buffer of descriptors.
+ * @param len Size of the buffer.
+ * @param pos Current descriptor.
+ * @return Pointer to next descriptor, or NULL if there are none.
+ */
 static inline struct descriptor *
 	next_descriptor(uint8_t * buf, int len, struct descriptor * pos)
 {
@@ -47,20 +58,33 @@ static inline struct descriptor *
 }
 
 
-
-
+/**
+ * The unknown descriptor.
+ */
 struct unknown_descriptor {
 	struct descriptor d;
 
 	/* uint8_t data [] */
 } packed;
 
+/**
+ * Retrieve pointer to the unknown descriptor's data field.
+ *
+ * @param d The descriptor.
+ * @return Pointer to the data field.
+ */
 static inline uint8_t *
 	unknown_descriptor_data(struct unknown_descriptor *d)
 {
 	return (uint8_t *) d + sizeof(struct unknown_descriptor);
 }
 
+/**
+ * Retrieve size of unknown descriptor's data field.
+ *
+ * @param d The descriptor.
+ * @return Size of data field in bytes.
+ */
 static inline int
 	unknown_descriptor_data_size(struct unknown_descriptor *d)
 {

@@ -24,6 +24,9 @@
 
 #include <ucsi/section.h>
 
+/**
+ * mpeg_pmt_section structure.
+ */
 struct mpeg_pmt_section {
 	struct section_ext head;
 
@@ -35,6 +38,9 @@ struct mpeg_pmt_section {
 	/* struct mpeg_pmt_stream streams[] */
 } packed;
 
+/**
+ * A stream within an mpeg_pmt_section.
+ */
 struct mpeg_pmt_stream {
 	uint8_t stream_type;
   EBIT2(uint16_t reserved_1		: 3; ,
@@ -45,19 +51,42 @@ struct mpeg_pmt_stream {
 	/* struct descriptor descriptors[] */
 } packed;
 
-extern struct mpeg_pmt_section *mpeg_pmt_section_parse(struct section_ext *);
+/**
+ * Process an mpeg_pmt_section section.
+ *
+ * @param section Pointer to the generic section header.
+ * @return Pointer to the mpeg_pmt_section structure, or NULL on error.
+ */
+extern struct mpeg_pmt_section *mpeg_pmt_section_codec(struct section_ext *section);
 
+/**
+ * Convenience iterator for the descriptors field of the mpeg_pmt_section structure.
+ *
+ * @param pmt Pointer to the mpeg_pmt_section structure.
+ * @param pos Variable holding a pointer to the current descriptor.
+ */
 #define mpeg_pmt_section_descriptors_for_each(pmt, pos) \
 	for ((pos) = mpeg_pmt_section_descriptors_first(pmt); \
 	     (pos); \
 	     (pos) = mpeg_pmt_section_descriptors_next(pmt, pos))
 
+/**
+ * Convenience iterator for the streams field of the mpeg_pmt_section structure.
+ *
+ * @param pmt Pointer to the mpeg_pmt_section structure.
+ * @param pos Variable holding a pointer to the current mpeg_pmt_stream.
+ */
 #define mpeg_pmt_section_streams_for_each(pmt, pos) \
 	for ((pos) = mpeg_pmt_section_streams_first(pmt); \
 	     (pos); \
 	     (pos) = mpeg_pmt_section_streams_next(pmt, pos))
 
-
+/**
+ * Convenience iterator for the descriptors field of an mpeg_pmt_stream structure.
+ *
+ * @param stream Pointer to the mpeg_pmt_stream structure.
+ * @param pos Variable holding a pointer to the current descriptor.
+ */
 #define mpeg_pmt_stream_descriptors_for_each(stream, pos) \
 	for ((pos) = mpeg_pmt_stream_descriptors_first(stream); \
 	     (pos); \

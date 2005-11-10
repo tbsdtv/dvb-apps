@@ -24,14 +24,29 @@
 
 #include <ucsi/section.h>
 
+/**
+ * mpeg_cat_section structure.
+ */
 struct mpeg_cat_section {
 	struct section_ext head;
 
 	/* struct descriptor descriptors[] */
 } packed;
 
-extern struct mpeg_cat_section *mpeg_cat_section_parse(struct section_ext *);
+/**
+ * Process an mpeg_cat_section.
+ *
+ * @param section The generic section_ext structure.
+ * @return Pointer to an mpeg_cat_section structure, or NULL on error.
+ */
+extern struct mpeg_cat_section *mpeg_cat_section_codec(struct section_ext *section);
 
+/**
+ * Convenience iterator for descriptors field of an mpeg_cat_section.
+ *
+ * @param cat The mpeg_cat_section pointer.
+ * @param pos Variable holding a pointer to the current descriptor.
+ */
 #define mpeg_cat_section_descriptors_for_each(cat, pos) \
 	for ((pos) = mpeg_cat_section_descriptors_first(cat); \
 	     (pos); \

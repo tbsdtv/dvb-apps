@@ -21,7 +21,7 @@
 
 #include <ucsi/mpeg/pat_section.h>
 
-struct mpeg_pat_section *mpeg_pat_section_parse(struct section_ext * ext)
+struct mpeg_pat_section *mpeg_pat_section_codec(struct section_ext * ext)
 {
 	uint8_t *buf = (uint8_t *)ext;
 	int pos = sizeof(struct section_ext);

@@ -25,6 +25,9 @@
 #include <ucsi/descriptor.h>
 #include <ucsi/common.h>
 
+/**
+ * mpeg_maximum_bitrate_descriptor structure.
+ */
 struct mpeg_maximum_bitrate_descriptor {
 	struct descriptor d;
 
@@ -32,8 +35,14 @@ struct mpeg_maximum_bitrate_descriptor {
 	uint32_t maximum_bitrate	:22;  );
 } packed;
 
+/**
+ * Process an mpeg_maximum_bitrate_descriptor.
+ *
+ * @param d Pointer to generic descriptor structure.
+ * @return Pointer to mpeg_maximum_bitrate_descriptor, or NULL on error.
+ */
 static inline struct mpeg_maximum_bitrate_descriptor*
-	mpeg_maximum_bitrate_descriptor_parse(struct descriptor* d)
+	mpeg_maximum_bitrate_descriptor_codec(struct descriptor* d)
 {
 	if (d->len != (sizeof(struct mpeg_maximum_bitrate_descriptor) - 2))
 		return NULL;

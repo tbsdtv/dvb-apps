@@ -21,7 +21,7 @@
 
 #include <ucsi/mpeg/tsdt_section.h>
 
-struct mpeg_tsdt_section * mpeg_tsdt_section_parse(struct section_ext * ext)
+struct mpeg_tsdt_section * mpeg_tsdt_section_codec(struct section_ext * ext)
 {
 	uint8_t * buf = (uint8_t *)ext;
 	int pos = sizeof(struct section_ext);
