@@ -99,7 +99,7 @@ extern int dvbdemux_open_dvr(int adapter, int dvrdevice, int readonly);
  * @param fd FD as opened with dvbdemux_open_demux() above.
  * @param pid PID of the stream.
  * @param filter The filter values of the first 16 bytes of the desired sections.
- * @param mask Bitmask indicating which bits in values array should be tested
+ * @param mask Bitmask indicating which bits in the filter array should be tested
  * (if a bit is 1, it will be tested).
  * @param testtype Bitmask indicating the type of test to be applied to bit in
  * the values array. Note this is only applied to bits which have a '1' in the
