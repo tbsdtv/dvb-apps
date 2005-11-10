@@ -59,11 +59,11 @@ int dvbdemux_set_section_filter(int fd, int pid,
 {
 	struct dmx_sct_filter_params filter;
 
-	/* I have decided to hide a lot of the complexity here. You can actually
-	 * filter based on up to the first 16 bytes of each section. Additionally,
-	 * the bits in the 'filter.mode' field are used to specify which bits in
-	 * a sectionid MUST match those in table (mode bit = 0), and which bits
-	 * MUST NOT match (mode bit = 1).
+	/* I have decided to hide a lot of the complexity here initially. You
+	 * can actually filter based on up to the first 16 bytes of each section.
+	 * Additionally, the bits in the 'filter.mode' field are used to specify
+	 * which bits in sectionid MUST match those in table (mode bit = 0), and
+	 * which bits MUST NOT match (mode bit = 1).
 	 */
 
 	memset(&filter, 0, sizeof(filter));
