@@ -73,9 +73,9 @@ int dvbdemux_set_section_filter(int fd, int pid,
 }
 
 int dvbdemux_set_pes_filter(int fd, int pid,
-			int input, int output,
-			int pestype,
-			int start)
+			    int input, int output,
+			    int pestype,
+			    int start)
 {
 	struct dmx_pes_filter_params filter;
 
@@ -144,8 +144,8 @@ int dvbdemux_set_pes_filter(int fd, int pid,
 }
 
 int dvbdemux_set_pid_filter(int fd, int pid,
-				int input, int output,
-				int start)
+			    int input, int output,
+			    int start)
 {
 	struct dmx_pes_filter_params filter;
 
@@ -177,6 +177,9 @@ int dvbdemux_set_pid_filter(int fd, int pid,
 	case DVBDEMUX_OUTPUT_DVR:
 		filter.output = DMX_OUT_TS_TAP;
 		break;
+
+	default:
+		return -EINVAL;
 	}
 
 	filter.pes_type = DMX_PES_OTHER;
