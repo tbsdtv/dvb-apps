@@ -21,7 +21,12 @@
 #ifndef DVBCFG_SEED_BACKEND_FILE_H
 #define DVBCFG_SEED_BACKEND_FILE_H 1
 
-#include <cfg/dvbcfg_seed.h>
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+#include <dvbcfg/dvbcfg_seed.h>
 
 /**
  * The file backend consists of multiple lines as follows:
@@ -66,5 +71,9 @@ int dvbcfg_seed_backend_file_create(const char* basedir,
  * @param backend Pointer to the backend API instance to destroy.
  */
 extern void dvbcfg_seed_backend_file_destroy(struct dvbcfg_seed_backend* backend);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

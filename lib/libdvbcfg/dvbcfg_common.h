@@ -21,6 +21,11 @@
 #ifndef DVBCFG_COMMON_H
 #define DVBCFG_COMMON_H 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <stdint.h>
 #include <linux/dvb/frontend.h>
 
@@ -361,5 +366,9 @@ extern int dvbcfg_delivery_to_string(enum dvbcfg_sourcetype source_type,
                                      struct dvbcfg_delivery *delivery,
                                      char* dest,
                                      int destsz);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

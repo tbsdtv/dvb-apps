@@ -43,8 +43,8 @@ INSTDIR=/usr/local
 all: symlink $(STATICLIB) $(SHAREDLIB)
 
 symlink:
-	@rm -f cfg
-	@ln -s . cfg
+	@rm -f dvbcfg
+	@ln -s . dvbcfg
 
 $(STATICLIB): $(OBJS)
 	$(AR) rc $(STATICLIB) $(OBJS)
@@ -58,14 +58,14 @@ test: $(LIB)
 
 install: $(STATICLIB) $(SHAREDLIB) $(INCLUDES)
 	mkdir -p $(INSTDIR)/lib
-	mkdir -p $(INSTDIR)/include/dvb/cfg
+	mkdir -p $(INSTDIR)/include/dvbcfg
 	cp -f $(STATICLIB) $(INSTDIR)/lib
 	cp -f $(SHAREDLIB) $(INSTDIR)/lib
 	$(STRIP) $(INSTDIR)/lib/$(SHAREDLIB)
-	cp -f $(INCLUDES) $(INSTDIR)/include/dvb/cfg
+	cp -f $(INCLUDES) $(INSTDIR)/include/dvbcfg
 
 clean:
-	rm -f *~ *# *.o *.a *.so cfg
+	rm -f *~ *# *.o *.a *.so dvbcfg
 	make -C test clean
 
 .PHONY: clean test all

@@ -21,6 +21,11 @@
 #ifndef DVBCFG_UTIL_H
 #define DVBCFG_UTIL_H 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 struct dvbcfg_setting {
         char *name;
         int value;
@@ -115,5 +120,9 @@ extern int dvbcfg_parsesetting(char* text, const struct dvbcfg_setting* settings
  * @return The text for that setting if found, or NULL if not.
  */
 extern char* dvbcfg_lookupsetting(int setting, const struct dvbcfg_setting* settings);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

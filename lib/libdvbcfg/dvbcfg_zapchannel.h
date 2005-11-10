@@ -21,6 +21,11 @@
 #ifndef DVBCFG_ZAPCHANNEL_H
 #define DVBCFG_ZAPCHANNEL_H 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <stdint.h>
 #include <linux/dvb/frontend.h>
 
@@ -85,5 +90,9 @@ extern void dvbcfg_zapchannel_free(struct dvbcfg_zapchannel **channels,
  * @param sources Pointer to list of dvbcfg_zapchannels to free.
  */
 extern void dvbcfg_zapchannel_free_all(struct dvbcfg_zapchannel *channels);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

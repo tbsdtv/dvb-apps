@@ -21,6 +21,11 @@
 #ifndef DVBCFG_VDRCHANNEL_H
 #define DVBCFG_VDRCHANNEL_H 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <stdint.h>
 #include <linux/dvb/frontend.h>
 
@@ -88,5 +93,9 @@ extern void dvbcfg_vdrchannel_free(struct dvbcfg_vdrchannel **channels,
  * @param sources Pointer to list of dvbcfg_vdrchannels to free.
  */
 extern void dvbcfg_vdrchannel_free_all(struct dvbcfg_vdrchannel *channels);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

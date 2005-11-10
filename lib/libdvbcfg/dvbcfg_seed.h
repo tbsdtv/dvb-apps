@@ -21,7 +21,12 @@
 #ifndef DVBCFG_SEED_H
 #define DVBCFG_SEED_H 1
 
-#include <cfg/dvbcfg_common.h>
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+#include <dvbcfg/dvbcfg_common.h>
 
 /**
  * dvbcfg_seed describes a list of known deliveries which are used to scan and
@@ -113,5 +118,9 @@ extern int dvbcfg_seed_remove_delivery(struct dvbcfg_seed* seed, int idx);
  * @param seed The seed whose contents are to be freed.
  */
 extern void dvbcfg_seed_clear(struct dvbcfg_seed *tofree);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

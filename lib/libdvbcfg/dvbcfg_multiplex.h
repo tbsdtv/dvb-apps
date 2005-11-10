@@ -21,8 +21,13 @@
 #ifndef DVBCFG_MULTIPLEX_H
 #define DVBCFG_MULTIPLEX_H 1
 
-#include <cfg/dvbcfg_common.h>
-#include <cfg/dvbcfg_source.h>
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+#include <dvbcfg/dvbcfg_common.h>
+#include <dvbcfg/dvbcfg_source.h>
 #include <stdint.h>
 
 /**
@@ -384,5 +389,9 @@ extern void dvbcfg_multiplex_postprocess(struct dvbcfg_multiplex** multiplexes);
  * @return The differentiator value.
  */
 extern uint32_t dvbcfg_multiplex_calculate_differentiator(struct dvbcfg_multiplex* multiplex);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

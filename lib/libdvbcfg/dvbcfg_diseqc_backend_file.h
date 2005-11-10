@@ -24,8 +24,13 @@
 #ifndef DVBCFG_DISEQC_BACKEND_FILE_H
 #define DVBCFG_DISEQC_BACKEND_FILE_H 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <stdint.h>
-#include <cfg/dvbcfg_diseqc.h>
+#include <dvbcfg/dvbcfg_diseqc.h>
 
 /**
  * The dvbcfg_diseqc file backend consists of a set of lines as follows:
@@ -91,5 +96,9 @@ int dvbcfg_diseqc_backend_file_create(const char* filename,
  * @param backend Pointer to the backend API instance to destroy.
  */
 extern void dvbcfg_diseqc_backend_file_destroy(struct dvbcfg_diseqc_backend* backend);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

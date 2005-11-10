@@ -24,8 +24,13 @@
 #ifndef DVBCFG_DISEQC_H
 #define DVBCFG_DISEQC_H 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <stdint.h>
-#include <cfg/dvbcfg_source.h>
+#include <dvbcfg/dvbcfg_source.h>
 
 /**
  * dvbcfg_diseqc defines DISEQC command sequences to use for DVBS channels.
@@ -182,5 +187,9 @@ extern void dvbcfg_diseqc_free(struct dvbcfg_diseqc **diseqcs,
  * @param diseqcs Pointer to list of diseqcs to free.
  */
 extern void dvbcfg_diseqc_free_all(struct dvbcfg_diseqc *diseqcs);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

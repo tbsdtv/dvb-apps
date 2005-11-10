@@ -24,7 +24,12 @@
 #ifndef DVBCFG_SOURCE_H
 #define DVBCFG_SOURCE_H 1
 
-#include <cfg/dvbcfg_common.h>
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+#include <dvbcfg/dvbcfg_common.h>
 
 /**
  * dvbcfg_source are standardised unique IDs defined for all DVB transmitters
@@ -161,5 +166,9 @@ extern void dvbcfg_source_free(struct dvbcfg_source **sources,
  * @param sources Pointer to list of sources to free.
  */
 extern void dvbcfg_source_free_all(struct dvbcfg_source *sources);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

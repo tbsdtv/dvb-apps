@@ -21,8 +21,13 @@
 #ifndef DVBCFG_MULTIPLEX_BACKEND_FILE_H
 #define DVBCFG_MULTIPLEX_BACKEND_FILE_H 1
 
-#include <cfg/dvbcfg_multiplex.h>
-#include <cfg/dvbcfg_common.h>
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+#include <dvbcfg/dvbcfg_multiplex.h>
+#include <dvbcfg/dvbcfg_common.h>
 
 /**
  * The file backend consists of multiple sections, each describing a
@@ -140,5 +145,9 @@ extern int dvbcfg_multiplex_backend_file_create(const char* filename,
  * @param backend Pointer to the backend API instance to destroy.
  */
 extern void dvbcfg_multiplex_backend_file_destroy(struct dvbcfg_multiplex_backend* backend);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

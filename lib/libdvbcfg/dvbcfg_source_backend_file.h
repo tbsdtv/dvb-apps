@@ -24,8 +24,13 @@
 #ifndef DVBCFG_SOURCE_BACKEND_FILE_H
 #define DVBCFG_SOURCE_BACKEND_FILE_H 1
 
-#include <cfg/dvbcfg_common.h>
-#include <cfg/dvbcfg_source.h>
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+#include <dvbcfg/dvbcfg_common.h>
+#include <dvbcfg/dvbcfg_source.h>
 
 /**
  * The file backend stores sources in a file on disk as follows:
@@ -60,5 +65,9 @@ extern int dvbcfg_source_backend_file_create(const char* filename,
  * @param backend Pointer to the backend API instance to destroy.
  */
 extern void dvbcfg_source_backend_file_destroy(struct dvbcfg_source_backend* backend);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
