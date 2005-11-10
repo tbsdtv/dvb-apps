@@ -30,12 +30,27 @@ extern "C"
 
 /**
  * Source of the data to be demuxed.
+ *
+ * FRONTEND. The data will be read from the frontend on the adapter.
+ *
+ * DVR. The data will be read from the DVR device of the adapter (of course,
+ * you need to write data TO the DVR device as well).
  */
 #define DVBDEMUX_INPUT_FRONTEND 0
 #define DVBDEMUX_INPUT_DVR 1
 
 /**
  * Destination of the demuxed data.
+ *
+ * DECODER. Sends the data directly to a hardware decoder (if present).
+ *
+ * DEMUX. Sends the PID stream to the current demux file descriptor. HOWEVER, the
+ * data will be the payload *only* - transport stream headers will be stripped.
+ *
+ * DVR sends the data to the DVR device. The data will be the complete transport
+ * stream packets with headers intact. Note: if multiple filters specify
+ * DVBDEMUX_OUTPUT_DVR, the individual PID streams will be re-multiplexed
+ * together.
  */
 #define DVBDEMUX_OUTPUT_DECODER 0
 #define DVBDEMUX_OUTPUT_DEMUX 1
@@ -84,7 +99,7 @@ extern int dvbdemux_open_dvr(int adapter, int dvrdevice, int readonly);
  *
  * (filter[X].bit[Y] & mask[X].bit[Y]) TESTOPERATION (header[X].bit[Y] & mask[X].bit[Y]).
  *
- * testtype can be either "==", or "!=" - the exact operation used is determined
+ * TESTOPERATION can be either "==", or "!=" - the exact operation used is determined
  * as follows:
  *
  * if (testtype[X].bit[Y] == 0) then TESTOPERATION='==' else TESTOPERATION='!='.
@@ -117,7 +132,7 @@ extern int dvbdemux_set_section_filter(int fd, int pid,
                                        int start, int checkcrc);
 
 /**
- * Set filter for capturing PES data. This call can only used for cards
+ * Set filter for a stream of PES data. This call can only used for cards
  * equipped with a hardware decoder.
  *
  * @param fd FD as opened with dvbdemux_open_demux() above.
@@ -136,7 +151,7 @@ extern int dvbdemux_set_pes_filter(int fd, int pid,
                                    int start);
 
 /**
- * Create a pid filter - this will deliver raw transport stream packets for a
+ * Create a pid filter - this will extract transport stream packets for a
  * specified PID.
  *
  * Note: The wildcard PID can only be used on "budget" cards.

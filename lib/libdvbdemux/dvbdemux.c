@@ -150,7 +150,10 @@ int dvbdemux_set_pid_filter(int fd, int pid,
 	struct dmx_pes_filter_params filter;
 
 	memset(&filter, 0, sizeof(filter));
-	filter.pid = pid;
+	if (pid == -1)
+		filter.pid = 0x2000;
+	else
+		filter.pid = pid;
 
 	switch(input) {
 	case DVBDEMUX_INPUT_FRONTEND:
