@@ -22,6 +22,11 @@
 #ifndef LIBDVBFE_H
 #define LIBDVBFE_H 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <linux/dvb/frontend.h>
 #include <stdint.h>
 
@@ -111,5 +116,9 @@ extern int libdvbfe_diseqc_command(int fd, char *command);
  * @return >= 0 on success (number of received bytes), <0 on failure.
  */
 extern int libdvbfe_diseqc_read(int fd, int timeout, unsigned char *buf, unsigned int len);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // LIBDVBFE_H
