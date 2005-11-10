@@ -32,12 +32,12 @@
  * Enumeration of MPEG section tags.
  */
 enum mpeg_section_tag {
-	sct_mpeg_program_association			= 0x00,
-	sct_mpeg_conditional_access			= 0x01,
-	sct_mpeg_program_map				= 0x02,
-	sct_mpeg_transport_stream_description		= 0x03,
-	sct_mpeg_iso14496_scene_description		= 0x04,
-	sct_mpeg_iso14496_object_description		= 0x05,
+	stag_mpeg_program_association			= 0x00,
+	stag_mpeg_conditional_access			= 0x01,
+	stag_mpeg_program_map				= 0x02,
+	stag_mpeg_transport_stream_description		= 0x03,
+	stag_mpeg_iso14496_scene_description		= 0x04,
+	stag_mpeg_iso14496_object_description		= 0x05,
 };
 
 #endif

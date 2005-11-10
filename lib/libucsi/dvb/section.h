@@ -34,21 +34,24 @@
 #include <ucsi/dvb/tot_section.h>
 #include <ucsi/dvb/int_section.h>
 
+/**
+ * Enumeration of DVB section tags.
+ */
 enum dvb_section_tag {
-	sct_network_information_actual			= 0x40,
-	sct_network_information_other			= 0x41,
+	stag_dvb_network_information_actual			= 0x40,
+	stag_dvb_network_information_other			= 0x41,
 
-	sct_service_description_actual			= 0x42,
-	sct_service_description_other			= 0x46,
+	stag_dvb_service_description_actual			= 0x42,
+	stag_dvb_service_description_other			= 0x46,
 
-	sct_bouquet_association				= 0x4a,
+	stag_dvb_bouquet_association				= 0x4a,
 
-	sct_ip_mac_notification				= 0x4c,
+	stag_dvb_ip_mac_notification				= 0x4c,
 
-	sct_event_information_actual			= 0x4e,
-	sct_event_information_other			= 0x4f,
-	sct_event_information_actual_schedule		= 0x50,
-	sct_event_information_other_schdule		= 0x60,
+	stag_dvb_event_information_actual			= 0x4e,
+	stag_dvb_event_information_other			= 0x4f,
+	stag_dvb_event_information_actual_schedule		= 0x50,
+	stag_dvb_event_information_other_schdule		= 0x60,
 };
 
 #endif

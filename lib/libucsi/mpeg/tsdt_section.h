@@ -45,7 +45,7 @@ extern struct mpeg_tsdt_section *mpeg_tsdt_section_codec(struct section_ext *sec
  * Convenience iterator for descriptors field.
  *
  * @param tsdt Pointer to the mpeg_tsdt_section structure.
- * @param pos Iterator variable holding the current position.
+ * @param pos Variable holding a pointer to the current descriptor.
  */
 #define mpeg_tsdt_section_descriptors_for_each(tsdt, pos) \
 	for ((pos) = mpeg_tsdt_section_descriptors_first(tsdt); \

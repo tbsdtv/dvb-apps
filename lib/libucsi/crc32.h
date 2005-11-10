@@ -25,6 +25,8 @@
 
 extern uint32_t crc32tbl[];
 
+// FIXME: this is not endian aware
+
 /**
  * Calculate a CRC32 over a piece of data.
  *

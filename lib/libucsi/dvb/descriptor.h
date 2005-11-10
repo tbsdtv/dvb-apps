@@ -71,6 +71,9 @@
 #include <ucsi/dvb/vbi_teletext_descriptor.h>
 #include <si/common.h>
 
+/**
+ * Enumeration of DVB descriptor tags.
+ */
 enum dvb_descriptor_tag {
 	dtag_dvb_network_name			= 0x40,
 	dtag_dvb_service_list			= 0x41,
