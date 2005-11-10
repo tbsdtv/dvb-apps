@@ -24,11 +24,11 @@ $(SHAREDLIB): $(OBJS)
 
 install: $(STATICLIB) $(SHAREDLIB) $(INCLUDES)
 	mkdir -p $(INSTDIR)/lib
-	mkdir -p $(INSTDIR)/include
+	mkdir -p $(INSTDIR)/include/dvbfe
 	cp -f $(STATICLIB) $(INSTDIR)/lib
 	cp -f $(SHAREDLIB) $(INSTDIR)/lib
 	$(STRIP) $(INSTDIR)/lib/$(SHAREDLIB)
-	cp -f $(INCLUDES) $(INSTDIR)/include
+	cp -f $(INCLUDES) $(INSTDIR)/include/dvbfe
 
 clean:
 	rm -f *~ *# *.o *.a *.so
