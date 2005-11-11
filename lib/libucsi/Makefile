@@ -22,13 +22,16 @@ STATICLIB = libucsi.a
 SHAREDLIB = libucsi.so
 INSTDIR= /usr/local
 
-.PHONY: symlink all mpeg dvb atsc
+.PHONY: symlink all mpeg dvb atsc test
 
-all: symlink $(STATICLIB) $(SHAREDLIB)
+all: symlink $(STATICLIB) $(SHAREDLIB) test
 
 symlink:
 	@rm -f ucsi
 	@ln -s . ucsi
+	
+test: symlink $(SHAREDLIB) $(STATICLIB)
+	$(MAKE) -C test
 
 $(SHAREDLIB): $(OBJ) mpeg dvb # atsc
 	$(LD) $(LDFLAGS) -o $(SHAREDLIB) $(OBJ) mpeg/libmpeg.a dvb/libdvb.a # atsc/libatsc.a
@@ -61,7 +64,8 @@ clean:
 	$(MAKE) -C atsc clean
 	$(MAKE) -C dvb clean
 	$(MAKE) -C mpeg clean
-	rm -f *.d *.o *.a *.so *~ *# ucsi test
+	$(MAKE) -C test clean
+	rm -f *.d *.o *.a *.so *~ *# ucsi
 
 -include $(wildcard *.d) dummy
 

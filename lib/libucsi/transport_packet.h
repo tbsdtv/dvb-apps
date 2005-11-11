@@ -30,7 +30,10 @@ extern "C"
 #include "descriptor.h"
 
 #define TRANSPORT_PACKET_LENGTH 188
-#define TRANSPORT_PACKET_SYNC 0x47
+#define TRANSPORT_PACKET_SYNC   0x47
+#define TRANSPORT_MAX_PIDS      0x2000
+#define TRANSPORT_PAT_PID       0
+#define TRANSPORT_NULL_PID      0x1fff
 
 
 /**
@@ -160,9 +163,10 @@ static inline int transport_packet_pid(struct transport_packet *pkt)
  *
  * @param pkt transport_packet to check.
  * @param discontinuity_indicator Set to 1 if the packet's discontinuity_indicator flag is set.
- * @param cstate Pointer to a single character, used to store state for validating
+ * @param cstate Pointer to a single 8 bit character, used to store state for validating
  * continuity. To initialise the state, simply set it to 0 before the first call.
- * @return 0 If continuity was correct, or nonzero on error.
+ * @return 0 if the continuity was correct, or nonzero on error. cstate will not be updated on error,
+ * it is up to the caller to clear it to accept the next packet.
  */
 extern int transport_packet_continuity_check(struct transport_packet *pkt,
 					     int discontinuity_indicator, unsigned char *cstate);

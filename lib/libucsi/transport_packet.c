@@ -214,7 +214,7 @@ int transport_packet_continuity_check(struct transport_packet *pkt,
 	unsigned char nextcontinuity;
 
 	/* NULL packets have undefined continuity */
-	if (transport_packet_pid(pkt) == 0x1fff)
+	if (transport_packet_pid(pkt) == TRANSPORT_NULL_PID)
 		return 0;
 
 	/* is the state valid? */
