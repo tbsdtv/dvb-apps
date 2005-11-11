@@ -31,7 +31,9 @@ extern "C"
 #define DVB_MAX_SECTION_BYTES 4096
 
 /**
- * Buffer used to keep track of  section fragments.
+ * Buffer used to keep track of  section fragments. You should allocate an
+ * area of memory of size (sizeof(section_buf) + <maxsectionsize>), and pass that area
+ * to section_buf_init() to set it up.
  */
 struct section_buf {
 	uint32_t max;
