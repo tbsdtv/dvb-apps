@@ -22,6 +22,11 @@
 #ifndef _UCSI_DVB_MULTILINGUAL_NETWORK_NAME_DESCRIPTOR
 #define _UCSI_DVB_MULTILINGUAL_NETWORK_NAME_DESCRIPTOR 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <ucsi/descriptor.h>
 #include <ucsi/endianops.h>
 
@@ -131,5 +136,9 @@ static inline struct dvb_multilingual_network_name*
 
 	return (struct dvb_multilingual_network_name *) next;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

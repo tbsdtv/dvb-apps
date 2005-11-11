@@ -22,6 +22,11 @@
 #ifndef _UCSI_DVB_MOSAIC_DESCRIPTOR
 #define _UCSI_DVB_MOSAIC_DESCRIPTOR 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <ucsi/descriptor.h>
 #include <ucsi/endianops.h>
 
@@ -306,5 +311,9 @@ static inline struct dvb_mosaic_elementary_cell_field*
 
 	return (struct dvb_mosaic_elementary_cell_field *) next;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

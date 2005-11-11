@@ -22,6 +22,11 @@
 #ifndef _UCSI_DVB_NVOD_REFERENCE_DESCRIPTOR
 #define _UCSI_DVB_NVOD_REFERENCE_DESCRIPTOR 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <ucsi/descriptor.h>
 #include <ucsi/endianops.h>
 
@@ -112,5 +117,9 @@ static inline struct dvb_nvod_reference*
 
 	return (struct dvb_nvod_reference *) next;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

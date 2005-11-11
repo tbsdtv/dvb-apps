@@ -22,6 +22,11 @@
 #ifndef _UCSI_ATSC_DESCRIPTOR_H
 #define _UCSI_ATSC_DESCRIPTOR_H 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <ucsi/endianops.h>
 
 /**
@@ -57,5 +62,9 @@ enum atsc_descriptor_tag {
 	dtag_atsc_crc32				= 0xb5,
 	dtag_atsc_group_link			= 0xb8,
 };
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

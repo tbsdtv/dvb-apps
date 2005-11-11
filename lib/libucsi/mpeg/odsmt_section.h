@@ -22,6 +22,11 @@
 #ifndef _UCSI_MPEG_ODSMT_SECTION_H
 #define _UCSI_MPEG_ODSMT_SECTION_H 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <ucsi/section.h>
 
 /**
@@ -195,5 +200,9 @@ static inline uint8_t*
 	*len = section_ext_length(&odsmt->head) - size;
 	return (uint8_t*) odsmt + size;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

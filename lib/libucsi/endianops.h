@@ -21,6 +21,11 @@
 #ifndef _UCSI_COMMON_H
 #define _UCSI_COMMON_H 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <stdint.h>
 #include <byteswap.h>
 #include <endian.h>
@@ -105,5 +110,9 @@ static inline void bswap48(uint8_t * buf) {
 }
 
 #endif // __BYTE_ORDER
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

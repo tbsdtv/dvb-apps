@@ -22,6 +22,11 @@
 #ifndef _UCSI_MPEG_TSDT_SECTION_H
 #define _UCSI_MPEG_TSDT_SECTION_H 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <ucsi/section.h>
 
 /**
@@ -81,5 +86,9 @@ static inline struct descriptor *
 			      section_ext_length(&tsdt->head) - sizeof(struct mpeg_tsdt_section),
 			      pos);
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

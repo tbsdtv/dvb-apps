@@ -22,6 +22,11 @@
 #ifndef _UCSI_MPEG_VIDEO_WINDOW_DESCRIPTOR
 #define _UCSI_MPEG_VIDEO_WINDOW_DESCRIPTOR 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <ucsi/descriptor.h>
 
 /**
@@ -51,5 +56,9 @@ static inline struct mpeg_video_window_descriptor*
 
 	return (struct mpeg_video_window_descriptor*) d;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

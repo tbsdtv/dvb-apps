@@ -22,6 +22,11 @@
 #ifndef _UCSI_MPEG_IOD_DESCRIPTOR
 #define _UCSI_MPEG_IOD_DESCRIPTOR 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <ucsi/descriptor.h>
 #include <ucsi/endianops.h>
 
@@ -74,5 +79,9 @@ static inline int
 {
 	return d->d.len - 2;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

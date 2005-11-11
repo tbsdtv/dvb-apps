@@ -22,6 +22,11 @@
 #ifndef _UCSI_MPEG_FMC_DESCRIPTOR
 #define _UCSI_MPEG_FMC_DESCRIPTOR 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <ucsi/descriptor.h>
 #include <ucsi/endianops.h>
 
@@ -109,5 +114,9 @@ static inline struct mpeg_flex_mux*
 
 	return (struct mpeg_flex_mux *) next;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -22,6 +22,11 @@
 #ifndef _UCSI_DVB_FREQUENCY_LIST_DESCRIPTOR
 #define _UCSI_DVB_FREQUENCY_LIST_DESCRIPTOR 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <ucsi/descriptor.h>
 #include <ucsi/endianops.h>
 
@@ -85,5 +90,9 @@ static inline int
 {
 	return (d->d.len - 1) >> 2;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

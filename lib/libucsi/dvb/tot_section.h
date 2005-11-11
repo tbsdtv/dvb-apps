@@ -22,6 +22,11 @@
 #ifndef _UCSI_DVB_TOT_SECTION_H
 #define _UCSI_DVB_TOT_SECTION_H 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <ucsi/section.h>
 
 /**
@@ -83,5 +88,9 @@ static inline struct descriptor *
 			       tot->descriptors_loop_length,
 			       pos);
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

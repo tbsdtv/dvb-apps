@@ -22,6 +22,11 @@
 #ifndef _UCSI_DVB_PARENTAL_RATING_DESCRIPTOR
 #define _UCSI_DVB_PARENTAL_RATING_DESCRIPTOR 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <ucsi/descriptor.h>
 #include <ucsi/endianops.h>
 
@@ -100,5 +105,9 @@ static inline struct dvb_parental_rating*
 
 	return (struct dvb_parental_rating *) next;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

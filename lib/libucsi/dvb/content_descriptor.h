@@ -22,6 +22,11 @@
 #ifndef _UCSI_DVB_CONTENT_DESCRIPTOR
 #define _UCSI_DVB_CONTENT_DESCRIPTOR 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <ucsi/descriptor.h>
 #include <ucsi/endianops.h>
 
@@ -101,5 +106,9 @@ static inline struct dvb_content_nibble*
 
 	return (struct dvb_content_nibble *) next;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

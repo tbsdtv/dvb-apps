@@ -22,6 +22,11 @@
 #ifndef _UCSI_DVB_PARTIAL_TRANSPORT_STREAM_DESCRIPTOR
 #define _UCSI_DVB_PARTIAL_TRANSPORT_STREAM_DESCRIPTOR 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <ucsi/descriptor.h>
 #include <ucsi/endianops.h>
 
@@ -55,5 +60,9 @@ static inline struct dvb_partial_transport_stream_descriptor*
 
 	return (struct dvb_partial_transport_stream_descriptor*) d;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

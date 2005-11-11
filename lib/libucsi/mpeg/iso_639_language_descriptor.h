@@ -22,6 +22,11 @@
 #ifndef _UCSI_MPEG_ISO_639_LANGUAGE_DESCRIPTOR
 #define _UCSI_MPEG_ISO_639_LANGUAGE_DESCRIPTOR 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <ucsi/descriptor.h>
 #include <ucsi/endianops.h>
 
@@ -101,5 +106,9 @@ static inline struct mpeg_iso_639_language_code*
 
 	return (struct mpeg_iso_639_language_code *) next;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -22,6 +22,11 @@
 #ifndef _UCSI_MPEG_PAT_SECTION_H
 #define _UCSI_MPEG_PAT_SECTION_H 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <ucsi/section.h>
 
 /**
@@ -94,5 +99,9 @@ static inline
 
 	return (struct mpeg_pat_program *) next;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

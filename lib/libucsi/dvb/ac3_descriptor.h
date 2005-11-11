@@ -22,6 +22,11 @@
 #ifndef _UCSI_DVB_AC3_DESCRIPTOR
 #define _UCSI_DVB_AC3_DESCRIPTOR 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <ucsi/descriptor.h>
 #include <ucsi/endianops.h>
 
@@ -75,5 +80,9 @@ static inline int dvb_ac3_descriptor_additional_info_length(struct dvb_ac3_descr
 {
 	return d->d.len - 1;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

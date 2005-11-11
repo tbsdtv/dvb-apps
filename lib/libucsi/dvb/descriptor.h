@@ -22,6 +22,11 @@
 #ifndef _UCSI_DVB_DESCRIPTOR_H
 #define _UCSI_DVB_DESCRIPTOR_H 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <ucsi/dvb/ac3_descriptor.h>
 #include <ucsi/dvb/ancillary_data_descriptor.h>
 #include <ucsi/dvb/announcement_support_descriptor.h>
@@ -126,5 +131,9 @@ enum dvb_descriptor_tag {
 	dtag_dvb_service_identifier		= 0x71,
 	dtag_dvb_service_availability		= 0x72,
 } packed;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

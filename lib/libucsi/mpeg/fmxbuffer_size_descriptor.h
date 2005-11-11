@@ -22,6 +22,11 @@
 #ifndef _UCSI_MPEG_FMXBUFFER_SIZE_DESCRIPTOR
 #define _UCSI_MPEG_FMXBUFFER_SIZE_DESCRIPTOR 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <ucsi/descriptor.h>
 #include <ucsi/endianops.h>
 
@@ -70,5 +75,9 @@ static inline int
 {
 	return d->d.len;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

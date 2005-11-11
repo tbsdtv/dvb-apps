@@ -22,6 +22,11 @@
 #ifndef _UCSI_DVB_SECTION_H
 #define _UCSI_DVB_SECTION_H 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <ucsi/dvb/bat_section.h>
 #include <ucsi/dvb/dit_section.h>
 #include <ucsi/dvb/eit_section.h>
@@ -53,5 +58,9 @@ enum dvb_section_tag {
 	stag_dvb_event_information_actual_schedule		= 0x50,
 	stag_dvb_event_information_other_schdule		= 0x60,
 };
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

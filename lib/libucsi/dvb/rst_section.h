@@ -22,6 +22,11 @@
 #ifndef _UCSI_DVB_RST_SECTION_H
 #define _UCSI_DVB_RST_SECTION_H 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <ucsi/section.h>
 
 /**
@@ -97,6 +102,10 @@ static inline struct dvb_rst_status *
 
 	return (struct dvb_rst_status *) next;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

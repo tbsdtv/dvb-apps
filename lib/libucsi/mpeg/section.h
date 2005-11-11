@@ -22,6 +22,11 @@
 #ifndef _UCSI_MPEG_SECTION_H
 #define _UCSI_MPEG_SECTION_H 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <ucsi/mpeg/cat_section.h>
 #include <ucsi/mpeg/odsmt_section.h>
 #include <ucsi/mpeg/pat_section.h>
@@ -39,5 +44,9 @@ enum mpeg_section_tag {
 	stag_mpeg_iso14496_scene_description		= 0x04,
 	stag_mpeg_iso14496_object_description		= 0x05,
 };
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

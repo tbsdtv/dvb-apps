@@ -21,6 +21,11 @@
 #ifndef _UCSI_CONVERT_H
 #define _UCSI_CONVERT_H 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <stdint.h>
 #include <time.h>
 
@@ -31,7 +36,7 @@
  * @param utc Pointer to 5 byte DVB date.
  * @return The unix timestamp, or -1 if the dvbdate was set to the 'undefined' value
  */
-extern time_t dvbdate_to_unixtime(char *utc);
+extern time_t dvbdate_to_unixtime(uint8_t *utc);
 
 /**
  * Convert from a unix timestemp to a 5 byte DVB UTC date.
@@ -41,7 +46,7 @@ extern time_t dvbdate_to_unixtime(char *utc);
  * @param unixtime The unix timestamp, or -1 for the 'undefined' value.
  * @param utc Pointer to 5 byte DVB date.
  */
-extern void unixtime_to_dvbdate(time_t unixtime, char *utc);
+extern void unixtime_to_dvbdate(time_t unixtime, uint8_t *utc);
 
 /**
  * Convert from a DVB BCD duration to a number of seconds.
@@ -49,7 +54,7 @@ extern void unixtime_to_dvbdate(time_t unixtime, char *utc);
  * @param dvbduration Pointer to 3 byte DVB duration.
  * @return Number of seconds.
  */
-extern int dvbduration_to_seconds(char *dvbduration);
+extern int dvbduration_to_seconds(uint8_t *dvbduration);
 
 /**
  * Convert from a number of seconds to a DVB 3 byte BCD duration.
@@ -57,6 +62,10 @@ extern int dvbduration_to_seconds(char *dvbduration);
  * @param seconds The number of seconds.
  * @param dvbduration Pointer to 3 byte DVB duration.
  */
-extern void seconds_to_dvbduration(int seconds, char *dvbduration);
+extern void seconds_to_dvbduration(int seconds, uint8_t *dvbduration);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

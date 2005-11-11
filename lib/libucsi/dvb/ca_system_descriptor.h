@@ -22,9 +22,18 @@
 #ifndef _UCSI_DVB_CA_SYSTEM_DESCRIPTOR
 #define _UCSI_DVB_CA_SYSTEM_DESCRIPTOR 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <ucsi/descriptor.h>
 #include <ucsi/endianops.h>
 
 // FIXME: implement this from the DAVIC specs when/if available.
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

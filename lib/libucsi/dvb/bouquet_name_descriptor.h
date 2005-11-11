@@ -22,6 +22,11 @@
 #ifndef _UCSI_DVB_BOUQUET_NAME_DESCRIPTOR
 #define _UCSI_DVB_BOUQUET_NAME_DESCRIPTOR 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <ucsi/descriptor.h>
 #include <ucsi/endianops.h>
 
@@ -69,5 +74,9 @@ static inline int
 {
 	return d->d.len;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

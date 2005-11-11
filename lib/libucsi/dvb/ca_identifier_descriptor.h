@@ -22,6 +22,11 @@
 #ifndef _UCSI_DVB_CA_IDENTIFIER_DESCRIPTOR
 #define _UCSI_DVB_CA_IDENTIFIER_DESCRIPTOR 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <ucsi/descriptor.h>
 #include <ucsi/endianops.h>
 
@@ -81,5 +86,9 @@ static inline int
 {
 	return d->d.len >> 1;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

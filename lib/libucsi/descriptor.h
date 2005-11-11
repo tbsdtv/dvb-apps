@@ -21,6 +21,11 @@
 #ifndef _UCSI_DESCRIPTOR_H
 #define _UCSI_DESCRIPTOR_H 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <ucsi/endianops.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -116,5 +121,9 @@ static inline int verify_descriptors(uint8_t * buf, int len)
 
 	return 0;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

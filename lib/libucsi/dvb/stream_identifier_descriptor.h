@@ -22,6 +22,11 @@
 #ifndef _UCSI_DVB_STREAM_IDENTIFIER_DESCRIPTOR
 #define _UCSI_DVB_STREAM_IDENTIFIER_DESCRIPTOR 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <ucsi/descriptor.h>
 #include <ucsi/endianops.h>
 
@@ -48,5 +53,9 @@ static inline struct dvb_stream_identifier_descriptor*
 
 	return (struct dvb_stream_identifier_descriptor*) d;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

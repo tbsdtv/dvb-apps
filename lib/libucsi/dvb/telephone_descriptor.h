@@ -22,6 +22,11 @@
 #ifndef _UCSI_DVB_TELEPHONE_DESCRIPTOR
 #define _UCSI_DVB_TELEPHONE_DESCRIPTOR 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <ucsi/descriptor.h>
 #include <ucsi/endianops.h>
 
@@ -137,5 +142,9 @@ static inline uint8_t*
 {
 	return dvb_telephone_descriptor_national_area_code(d) + d->national_area_code_length;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

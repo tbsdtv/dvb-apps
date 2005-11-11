@@ -22,6 +22,11 @@
 #ifndef _UCSI_DVB_TERRESTRIAL_DELIVERY_DESCRIPTOR
 #define _UCSI_DVB_TERRESTRIAL_DELIVERY_DESCRIPTOR 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <ucsi/descriptor.h>
 #include <ucsi/endianops.h>
 
@@ -61,5 +66,9 @@ static inline struct dvb_terrestrial_delivery_descriptor*
 
 	return (struct dvb_terrestrial_delivery_descriptor*) d;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

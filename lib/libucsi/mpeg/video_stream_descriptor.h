@@ -22,6 +22,11 @@
 #ifndef _UCSI_MPEG_VIDEO_STREAM_DESCRIPTOR
 #define _UCSI_MPEG_VIDEO_STREAM_DESCRIPTOR 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <ucsi/descriptor.h>
 #include <ucsi/endianops.h>
 
@@ -88,5 +93,9 @@ static inline struct mpeg_video_stream_extra*
 	return (struct mpeg_video_stream_extra*)
 		((uint8_t*) d + sizeof(struct mpeg_video_stream_descriptor));
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

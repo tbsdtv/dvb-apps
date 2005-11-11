@@ -22,6 +22,11 @@
 #ifndef _UCSI_DVB_ST_SECTION_H
 #define _UCSI_DVB_ST_SECTION_H 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <ucsi/section.h>
 
 /**
@@ -65,5 +70,8 @@ static inline int
 	return st->head.length;
 }
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif

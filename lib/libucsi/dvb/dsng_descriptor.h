@@ -22,6 +22,11 @@
 #ifndef _UCSI_DVB_DSNG_DESCRIPTOR
 #define _UCSI_DVB_DSNG_DESCRIPTOR 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <ucsi/descriptor.h>
 #include <ucsi/endianops.h>
 
@@ -67,5 +72,9 @@ static inline int dvb_dsng_descriptor_data_length(struct dvb_dsng_descriptor *d)
 {
 	return d->d.len;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

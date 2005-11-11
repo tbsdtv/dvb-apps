@@ -22,6 +22,11 @@
 #ifndef _UCSI_DVB_TELETEXT_DESCRIPTOR
 #define _UCSI_DVB_TELETEXT_DESCRIPTOR 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <ucsi/descriptor.h>
 #include <ucsi/endianops.h>
 
@@ -102,5 +107,9 @@ static inline struct dvb_teletext_entry*
 
 	return (struct dvb_teletext_entry *) next;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -21,6 +21,11 @@
 #ifndef _UCSI_SECTION_BUF_H
 #define _UCSI_SECTION_BUF_H 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <stdint.h>
 
 #define DVB_MAX_SECTION_BYTES 4096
@@ -102,5 +107,9 @@ static inline uint8_t* section_buf_data(struct section_buf *section)
 {
 	return (uint8_t*) section + sizeof(struct section_buf);
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

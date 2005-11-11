@@ -22,6 +22,11 @@
 #ifndef _UCSI_MPEG_PRIVATE_DATA_INDICATOR_DESCRIPTOR
 #define _UCSI_MPEG_PRIVATE_DATA_INDICATOR_DESCRIPTOR 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <ucsi/descriptor.h>
 #include <ucsi/endianops.h>
 
@@ -50,5 +55,9 @@ static inline struct mpeg_private_data_indicator_descriptor*
 
 	return (struct mpeg_private_data_indicator_descriptor*) d;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

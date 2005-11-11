@@ -22,6 +22,11 @@
 #ifndef _UCSI_DVB_CELL_FREQUENCY_LINK_DESCRIPTOR
 #define _UCSI_DVB_CELL_FREQUENCY_LINK_DESCRIPTOR 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <ucsi/descriptor.h>
 #include <ucsi/endianops.h>
 
@@ -177,5 +182,9 @@ static inline struct dvb_cell_frequency_link_cell_subcell*
 
 	return (struct dvb_cell_frequency_link_cell_subcell *) next;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -22,6 +22,11 @@
 #ifndef _UCSI_DVB_TIME_SHIFTED_SERVICE_DESCRIPTOR
 #define _UCSI_DVB_TIME_SHIFTED_SERVICE_DESCRIPTOR 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <ucsi/descriptor.h>
 #include <ucsi/endianops.h>
 
@@ -50,5 +55,9 @@ static inline struct dvb_time_shifted_service_descriptor*
 
 	return (struct dvb_time_shifted_service_descriptor*) d;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

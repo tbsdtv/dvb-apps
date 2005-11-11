@@ -24,12 +24,11 @@
 static int int_to_bcd(int intval);
 static int bcd_to_int(int bcdval);
 
-time_t dvbdate_to_unixtime(char *utc)
+time_t dvbdate_to_unixtime(uint8_t *utc)
 {
 	int k = 0;
 	struct tm tm;
 	double mjd;
-
 
 	/* check for the undefined value */
 	if ((utc[0] == 0xff) &&
@@ -56,7 +55,7 @@ time_t dvbdate_to_unixtime(char *utc)
 	return mktime(&tm);
 }
 
-void unixtime_to_dvbdate(time_t unixtime, char *utc)
+void unixtime_to_dvbdate(time_t unixtime, uint8_t *utc)
 {
 	struct tm tm;
 	double l = 0;
@@ -79,7 +78,7 @@ void unixtime_to_dvbdate(time_t unixtime, char *utc)
 	utc[4] = int_to_bcd(tm.tm_sec);
 }
 
-int dvbduration_to_seconds(char *dvbduration)
+int dvbduration_to_seconds(uint8_t *dvbduration)
 {
 	int seconds = 0;
 
@@ -90,7 +89,7 @@ int dvbduration_to_seconds(char *dvbduration)
 	return seconds;
 }
 
-void seconds_to_dvbduration(int seconds, char *dvbduration)
+void seconds_to_dvbduration(int seconds, uint8_t *dvbduration)
 {
 	int hours, mins;
 

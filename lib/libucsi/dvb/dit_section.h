@@ -22,6 +22,11 @@
 #ifndef _UCSI_DVB_DIT_SECTION_H
 #define _UCSI_DVB_DIT_SECTION_H 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <ucsi/section.h>
 
 /**
@@ -41,5 +46,9 @@ struct dvb_dit_section {
  * @return Pointer to a dvb_dit_section, or NULL on error.
  */
 struct dvb_dit_section * dvb_dit_section_codec(struct section *section);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

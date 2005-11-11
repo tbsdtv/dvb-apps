@@ -22,6 +22,11 @@
 #ifndef _UCSI_MPEG_DESCRIPTOR_H
 #define _UCSI_MPEG_DESCRIPTOR_H 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <ucsi/mpeg/mpeg4_audio_descriptor.h>
 #include <ucsi/mpeg/mpeg4_video_descriptor.h>
 #include <ucsi/mpeg/audio_stream_descriptor.h>
@@ -81,5 +86,9 @@ enum mpeg_descriptor_tag {
 	dtag_mpeg_fmxbuffer_size		= 0x22,
 	dtag_mpeg_multiplex_buffer		= 0x23,
 };
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

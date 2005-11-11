@@ -22,6 +22,11 @@
 #ifndef _UCSI_MPEG_IBP_DESCRIPTOR
 #define _UCSI_MPEG_IBP_DESCRIPTOR 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <ucsi/descriptor.h>
 #include <ucsi/endianops.h>
 
@@ -52,5 +57,9 @@ static inline struct mpeg_ibp_descriptor*
 
 	return (struct mpeg_ibp_descriptor*) d;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

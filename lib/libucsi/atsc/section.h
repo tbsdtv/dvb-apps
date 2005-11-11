@@ -22,6 +22,11 @@
 #ifndef _UCSI_ATSC_SECTION_H
 #define _UCSI_ATSC_SECTION_H 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 /**
  * Enumeration of ATSC section tags.
  */
@@ -56,5 +61,9 @@ enum atsc_section_tag {
 	/* 0xE0-0xE5   [Used in other systems] */
 	/* 0xE6-0xFE   [Reserved for future ATSC use] */
 };
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -21,6 +21,11 @@
 #ifndef _UCSI_CRC32_H
 #define _UCSI_CRC32_H 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #define CRC32_INIT (~0)
 
 extern uint32_t crc32tbl[];
@@ -45,5 +50,9 @@ static inline uint32_t crc32(uint32_t crc, uint8_t* buf, int len)
 
 	return crc;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

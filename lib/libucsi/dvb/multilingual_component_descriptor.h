@@ -22,6 +22,11 @@
 #ifndef _UCSI_DVB_MULTILINGUAL_COMPONENT_DESCRIPTOR
 #define _UCSI_DVB_MULTILINGUAL_COMPONENT_DESCRIPTOR 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <ucsi/descriptor.h>
 #include <ucsi/endianops.h>
 
@@ -135,5 +140,9 @@ static inline struct dvb_multilingual_component*
 
 	return (struct dvb_multilingual_component *) next;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

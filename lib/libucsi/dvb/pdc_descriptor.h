@@ -22,6 +22,11 @@
 #ifndef _UCSI_DVB_PDC_DESCRIPTOR
 #define _UCSI_DVB_PDC_DESCRIPTOR 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <ucsi/descriptor.h>
 #include <ucsi/endianops.h>
 
@@ -51,5 +56,9 @@ static inline struct dvb_pdc_descriptor*
 
 	return (struct dvb_pdc_descriptor*) d;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

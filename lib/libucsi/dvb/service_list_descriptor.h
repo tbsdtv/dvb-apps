@@ -22,6 +22,11 @@
 #ifndef _UCSI_DVB_SERVICE_LIST_DESCRIPTOR
 #define _UCSI_DVB_SERVICE_LIST_DESCRIPTOR 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <ucsi/descriptor.h>
 #include <ucsi/endianops.h>
 
@@ -109,5 +114,9 @@ static inline struct dvb_service_list_service*
 
 	return (struct dvb_service_list_service *) next;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

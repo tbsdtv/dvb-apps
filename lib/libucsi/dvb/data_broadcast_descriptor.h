@@ -22,6 +22,11 @@
 #ifndef _UCSI_DVB_DATA_BROADCAST_DESCRIPTOR
 #define _UCSI_DVB_DATA_BROADCAST_DESCRIPTOR 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <ucsi/descriptor.h>
 #include <ucsi/endianops.h>
 
@@ -125,5 +130,9 @@ static inline uint8_t *
 {
 	return (uint8_t *) d + sizeof(struct dvb_data_broadcast_descriptor_part2);
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

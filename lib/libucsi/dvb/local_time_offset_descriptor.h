@@ -22,6 +22,11 @@
 #ifndef _UCSI_DVB_LOCAL_TIME_OFFSET_DESCRIPTOR
 #define _UCSI_DVB_LOCAL_TIME_OFFSET_DESCRIPTOR 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <ucsi/descriptor.h>
 #include <ucsi/endianops.h>
 
@@ -116,5 +121,9 @@ static inline struct dvb_local_time_offset*
 
 	return (struct dvb_local_time_offset *) next;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

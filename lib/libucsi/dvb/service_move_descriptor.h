@@ -22,6 +22,11 @@
 #ifndef _UCSI_DVB_SERVICE_MOVE_DESCRIPTOR
 #define _UCSI_DVB_SERVICE_MOVE_DESCRIPTOR 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <ucsi/descriptor.h>
 #include <ucsi/endianops.h>
 
@@ -54,5 +59,9 @@ static inline struct dvb_service_move_descriptor*
 
 	return (struct dvb_service_move_descriptor*) d;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

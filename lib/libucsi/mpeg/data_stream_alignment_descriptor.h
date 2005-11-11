@@ -22,6 +22,11 @@
 #ifndef _UCSI_MPEG_DATA_STREAM_ALIGNMENT_DESCRIPTOR
 #define _UCSI_MPEG_DATA_STREAM_ALIGNMENT_DESCRIPTOR 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <ucsi/descriptor.h>
 #include <ucsi/endianops.h>
 
@@ -48,5 +53,9 @@ static inline struct mpeg_data_stream_alignment_descriptor*
 
 	return (struct mpeg_data_stream_alignment_descriptor*) d;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

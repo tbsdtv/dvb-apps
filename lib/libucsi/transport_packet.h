@@ -21,6 +21,11 @@
 #ifndef _UCSI_TRANSPORT_PACKET_H
 #define _UCSI_TRANSPORT_PACKET_H 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <stdint.h>
 #include "descriptor.h"
 
@@ -147,5 +152,9 @@ static inline int transport_packet_pid(struct transport_packet *pkt)
 extern int transport_packet_values_extract(struct transport_packet *pkt,
 					   struct transport_values *out,
 					   enum transport_value extract);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

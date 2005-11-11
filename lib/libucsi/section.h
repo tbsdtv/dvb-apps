@@ -21,6 +21,11 @@
 #ifndef _UCSI_SECTION_H
 #define _UCSI_SECTION_H 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <ucsi/endianops.h>
 #include <ucsi/descriptor.h>
 #include <ucsi/crc32.h>
@@ -173,5 +178,9 @@ static inline int section_ext_length(struct section_ext * section)
 {
 	return section->length + sizeof(struct section) - CRC_SIZE;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

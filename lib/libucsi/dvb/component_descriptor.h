@@ -22,6 +22,11 @@
 #ifndef _UCSI_DVB_COMPONENT_DESCRIPTOR
 #define _UCSI_DVB_COMPONENT_DESCRIPTOR 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <ucsi/descriptor.h>
 #include <ucsi/endianops.h>
 
@@ -77,5 +82,9 @@ static inline int
 {
 	return d->d.len - 6;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

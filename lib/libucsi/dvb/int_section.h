@@ -22,6 +22,11 @@
 #ifndef _UCSI_DVB_INT_SECTION_H
 #define _UCSI_DVB_INT_SECTION_H
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <ucsi/section.h>
 
 /**
@@ -218,5 +223,9 @@ static inline struct descriptor *
 		ol->operational_descriptors_length,
 		pos);
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
