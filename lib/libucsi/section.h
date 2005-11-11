@@ -151,6 +151,7 @@ static inline struct section_ext * section_ext_encode(struct section_ext* sectio
 
 		/* update the CRC */
 		*((uint32_t*) (buf+len-4)) = crc;
+		bswap32(buf+len-4);
 	}
 
 	return (struct section_ext *)section;
