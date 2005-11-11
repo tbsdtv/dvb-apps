@@ -29,7 +29,7 @@
  * Note: this functions expects the DVB date in network byte order.
  *
  * @param utc Pointer to 5 byte DVB date.
- * @return The unix timestamp.
+ * @return The unix timestamp, or -1 if the dvbdate was set to the 'undefined' value
  */
 extern time_t dvbdate_to_unixtime(char *utc);
 
@@ -38,7 +38,7 @@ extern time_t dvbdate_to_unixtime(char *utc);
  * Note: this function will always output the DVB date in
  * network byte order.
  *
- * @param unixtime The unix timestamp.
+ * @param unixtime The unix timestamp, or -1 for the 'undefined' value.
  * @param utc Pointer to 5 byte DVB date.
  */
 extern void unixtime_to_dvbdate(time_t unixtime, char *utc);

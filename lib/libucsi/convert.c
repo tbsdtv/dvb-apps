@@ -30,6 +30,16 @@ time_t dvbdate_to_unixtime(char *utc)
 	struct tm tm;
 	double mjd;
 
+
+	/* check for the undefined value */
+	if ((utc[0] == 0xff) &&
+	    (utc[1] == 0xff) &&
+	    (utc[2] == 0xff) &&
+	    (utc[3] == 0xff) &&
+	    (utc[4] == 0xff)) {
+		return -1;
+	}
+
 	memset(&tm, 0, sizeof(tm));
 	mjd = (utc[0] << 8) | utc[1];
 
@@ -51,6 +61,12 @@ void unixtime_to_dvbdate(time_t unixtime, char *utc)
 	struct tm tm;
 	double l = 0;
 	int mjd;
+
+	/* the undefined value */
+	if (unixtime == -1) {
+		memset(utc, 0xff, 5);
+		return;
+	}
 
 	gmtime_r(&unixtime, &tm);
 	if ((tm.tm_mon == 1) || (tm.tm_mon = 2)) l = 1;
