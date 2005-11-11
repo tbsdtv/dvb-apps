@@ -41,52 +41,94 @@ struct dvb_int_section {
   EBIT2(uint32_t platform_id				:24;  ,
 	uint32_t processing_order			: 8;  );
   EBIT2(uint16_t reserved2				: 4;  ,
-	uint16_t platform_descriptor_loop_length	:12;  );
-	/* platform_descriptor_loop[] */
-	/* loop of target_loop+operational_loop */
+	uint16_t platform_descriptors_length		:12;  );
+	/* struct descriptor platform_descriptors[] */
+	/* struct dvb_int_section_target_loop_entry target_loop[] */
 } packed;
 
-// FIXME: sort this
-struct dvb_int_section_target_loop {
+/**
+ * An entry in the target_loop field of a dvb_int_section.
+ */
+struct dvb_int_section_target_loop_entry {
   EBIT2(uint16_t reserved3			: 4;  ,
-	uint16_t target_descriptor_loop_length	:12;  );
-	/* target_descriptor_loop[] */
+	uint16_t target_descriptors_length	:12;  );
+	/* struct descriptor target_descriptors[] */
+	/* struct dvb_int_section_operational_loop operational_loop */
 } packed;
 
+/**
+ * The operational_loop field in a dvb_int_section_target_loop_entry.
+ */
 struct dvb_int_section_operational_loop {
   EBIT2(uint16_t reserved4				: 4;  ,
-	uint16_t operational_descriptor_loop_length	:12;  );
-	/* operational_descriptor_loop[] */
+	uint16_t operational_descriptors_length		:12;  );
+	/* struct descriptor operational_descriptors[] */
 } packed;
 
-extern struct dvb_int_section * dvb_int_section_codec(struct section_ext *);
+/**
+ * Process a dvb_int_section.
+ *
+ * @param section Generic section_ext pointer.
+ * @return dvb_int_section pointer, or NULL on error.
+ */
+extern struct dvb_int_section * dvb_int_section_codec(struct section_ext *section);
 
-#define dvb_platform_descriptor_for_each(first, pos) \
-	for ((pos) = dvb_platform_descriptor_first(first); \
+/**
+ * Iterator for platform_descriptors field in a dvb_int_section.
+ *
+ * @param first dvb_int_section pointer.
+ * @param pos Variable holding a pointer to the current descriptor.
+ */
+#define dvb_int_section_platform_descriptors_for_each(first, pos) \
+	for ((pos) = dvb_int_section_platform_descriptors_first(first); \
 	     (pos); \
-	     (pos) = dvb_platform_descriptor_next(first, pos))
+	     (pos) = dvb_int_section_platform_descriptors_next(first, pos))
 
-#define dvb_target_operational_loop_for_each(first,pos) \
-	for ((pos) = dvb_target_operational_loop_first(first); \
+/**
+ * Iterator for the target_loop field in a dvb_int_section.
+ *
+ * @param first dvb_int_section pointer.
+ * @param pos Variable holding a pointer to the current dvb_int_section_target_loop_entry.
+ */
+#define dvb_int_section_target_loop_for_each(first,pos) \
+	for ((pos) = dvb_int_section_target_loop_first(first); \
 	     (pos); \
-	     (pos) = dvb_target_operational_loop_next(first, pos))
+	     (pos) = dvb_int_section_target_loop_next(first, pos))
 
+/**
+ * Iterator for the target_descriptors field in a dvb_int_section_target_loop_entry.
+ *
+ * @param first dvb_int_section_target_loop_entry pointer.
+ * @param pos Variable holding a pointer to the current descriptor.
+ */
+#define dvb_int_section_target_loop_entry_target_descriptors_for_each(first, pos) \
+	for ((pos) = dvb_int_section_target_loop_entry_target_descriptors_first(first); \
+	     (pos); \
+	     (pos) = dvb_int_section_target_loop_entry_target_descriptors_next(first, pos))
+
+/**
+ * Accessor for the operational_loop field of a dvb_int_section_target_loop_entry.
+ *
+ * @param tl dvb_int_section_target_loop_entry pointer.
+ * @return Pointer to a dvb_int_section_operational_loop.
+ */
 static inline struct dvb_int_section_operational_loop *
-	dvb_int_section_operational_loop_get(struct dvb_int_section_target_loop *tl)
+	dvb_int_section_target_loop_entry_operational_loop(struct dvb_int_section_target_loop_entry *tl)
 {
 	return (struct dvb_int_section_operational_loop *)
-		((uint8_t *) tl + sizeof(struct dvb_int_section_target_loop) + tl->target_descriptor_loop_length);
+		((uint8_t *) tl + sizeof(struct dvb_int_section_target_loop_entry) + tl->target_descriptors_length);
 }
 
-#define dvb_target_descriptor_for_each(first, pos) \
-	for ((pos) = dvb_target_descriptor_first(first); \
+/**
+ * Iterator for the operational_descriptors field in a dvb_int_section_operational_loop.
+ *
+ * @param first dvb_int_section_operational_loop pointer.
+ * @param pos Variable holding a pointer to the current descriptor.
+ */
+#define dvb_int_section_operational_loop_operational_descriptors_for_each(first, pos) \
+	for ((pos) = dvb_int_section_operational_loop_operational_descriptors_first(first); \
 	     (pos); \
-	     (pos) = dvb_target_descriptor_next(first, pos))
-
-#define dvb_operational_descriptor_for_each(first, pos) \
-	for ((pos) = dvb_operational_descriptor_first(first); \
-	     (pos); \
-	     (pos) = dvb_operational_descriptor_next(first, pos))
+	     (pos) = dvb_int_section_operational_loop_operational_descriptors_next(first, pos))
 
 
 
@@ -94,9 +136,9 @@ static inline struct dvb_int_section_operational_loop *
 
 /******************************** PRIVATE CODE ********************************/
 static inline struct descriptor *
-	dvb_platform_descriptor_first(struct dvb_int_section *in)
+	dvb_int_section_platform_descriptors_first(struct dvb_int_section *in)
 {
-	if (in->platform_descriptor_loop_length == 0)
+	if (in->platform_descriptors_length == 0)
 		return NULL;
 
 	return (struct descriptor *)
@@ -104,33 +146,33 @@ static inline struct descriptor *
 }
 
 static inline struct descriptor *
-	dvb_platform_descriptor_next(struct dvb_int_section *in,
+	dvb_int_section_platform_descriptors_next(struct dvb_int_section *in,
 		struct descriptor* pos)
 {
 	return next_descriptor((uint8_t*) in + sizeof(struct dvb_int_section),
-		in->platform_descriptor_loop_length,
+		in->platform_descriptors_length,
 		pos);
 }
 
 static inline struct dvb_int_section_target_loop *
-	dvb_target_operational_loop_first(struct dvb_int_section *in)
+	dvb_int_section_target_loop_first(struct dvb_int_section *in)
 {
-	if (sizeof(struct dvb_int_section) + in->platform_descriptor_loop_length >= section_ext_length((struct section_ext *) in))
+	if (sizeof(struct dvb_int_section) + in->platform_descriptors_length >= section_ext_length((struct section_ext *) in))
 		return NULL;
 
 	return (struct dvb_int_section_target_loop *)
-		((uint8_t *) in + sizeof(struct dvb_int_section) + in->platform_descriptor_loop_length);
+		((uint8_t *) in + sizeof(struct dvb_int_section) + in->platform_descriptors_length);
 }
 
 static inline struct dvb_int_section_target_loop *
-	dvb_target_operational_loop_next(struct dvb_int_section *in,
-			struct dvb_int_section_target_loop *pos)
+	dvb_int_section_target_loop_next(struct dvb_int_section *in,
+			struct dvb_int_section_target_loop_entry *pos)
 {
-	struct dvb_int_section_operational_loop *ol = dvb_int_section_operational_loop_get(pos);
+	struct dvb_int_section_operational_loop *ol = dvb_int_section_target_loop_entry_operational_loop(pos);
 	struct dvb_int_section_target_loop *next =
 		(struct dvb_int_section_target_loop *) ( (uint8_t *) pos +
-			sizeof(struct dvb_int_section_target_loop) + pos->target_descriptor_loop_length +
-			sizeof(struct dvb_int_section_operational_loop) + ol->operational_descriptor_loop_length);
+			sizeof(struct dvb_int_section_target_loop_entry) + pos->target_descriptors_length +
+			sizeof(struct dvb_int_section_operational_loop) + ol->operational_descriptors_length);
 	struct dvb_int_section_target_loop *end =
 		(struct dvb_int_section_target_loop *) ((uint8_t *) in + section_ext_length((struct section_ext *) in) );
 
@@ -140,28 +182,28 @@ static inline struct dvb_int_section_target_loop *
 }
 
 static inline struct descriptor *
-	dvb_target_descriptor_first(struct dvb_int_section_target_loop *tl)
+	dvb_int_section_target_loop_entry_target_descriptors_first(struct dvb_int_section_target_loop_entry *tl)
 {
-	if (tl->target_descriptor_loop_length == 0)
+	if (tl->target_descriptors_length == 0)
 		return NULL;
 
 	return (struct descriptor *)
-		((uint8_t *) tl + sizeof(struct dvb_int_section_target_loop));
+		((uint8_t *) tl + sizeof(struct dvb_int_section_target_loop_entry));
 }
 
 static inline struct descriptor *
-	dvb_target_descriptor_next(struct dvb_int_section_target_loop *tl,
+	dvb_int_section_target_loop_entry_target_descriptors_next(struct dvb_int_section_target_loop_entry *tl,
 		struct descriptor* pos)
 {
-	return next_descriptor((uint8_t*) tl + sizeof(struct dvb_int_section_target_loop),
-		tl->target_descriptor_loop_length,
+	return next_descriptor((uint8_t*) tl + sizeof(struct dvb_int_section_target_loop_entry),
+		tl->target_descriptors_length,
 		pos);
 }
 
 static inline struct descriptor *
-	dvb_operational_descriptor_first(struct dvb_int_section_operational_loop *ol)
+	dvb_int_section_operational_loop_operational_descriptors_first(struct dvb_int_section_operational_loop *ol)
 {
-	if (ol->operational_descriptor_loop_length == 0)
+	if (ol->operational_descriptors_length == 0)
 		return NULL;
 
 	return (struct descriptor *)
@@ -169,11 +211,11 @@ static inline struct descriptor *
 }
 
 static inline struct descriptor *
-	dvb_operational_descriptor_next(struct dvb_int_section_operational_loop *ol,
+	dvb_int_section_operational_loop_operational_descriptors_next(struct dvb_int_section_operational_loop *ol,
 		struct descriptor* pos)
 {
 	return next_descriptor((uint8_t*) ol + sizeof(struct dvb_int_section_operational_loop),
-		ol->operational_descriptor_loop_length,
+		ol->operational_descriptors_length,
 		pos);
 }
 
