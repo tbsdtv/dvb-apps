@@ -129,6 +129,22 @@ struct transport_values {
 };
 
 /**
+ * Process a buffer into a transport packet.
+ *
+ * @param buf Raw buffer.
+ * @return transport_packet pointer, or NULL on error.
+ */
+static inline struct transport_packet *transport_packet_init(unsigned char *buf)
+{
+	struct transport_packet *pkt = (struct transport_packet*) buf;
+
+	if (pkt->sync_byte != TRANSPORT_PACKET_SYNC)
+		return NULL;
+
+	return pkt;
+}
+
+/**
  * Extract the PID from a transport packet.
  *
  * @param pkt The packet.
@@ -138,6 +154,18 @@ static inline int transport_packet_pid(struct transport_packet *pkt)
 {
 	return (pkt->pid_hi << 8) | (pkt->pid_lo);
 }
+
+/**
+ * Check the continuity counter for a packet in a PID stream.
+ *
+ * @param pkt transport_packet to check.
+ * @param discontinuity_indicator Set to 1 if the packet's discontinuity_indicator flag is set.
+ * @param cstate Pointer to a single character, used to store state for validating
+ * continuity. To initialise the state, simply set it to 0 before the first call.
+ * @return 0 If continuity was correct, or nonzero on error.
+ */
+extern int transport_packet_continuity_check(struct transport_packet *pkt,
+					     int discontinuity_indicator, unsigned char *cstate);
 
 /**
  * Extract selected fields from a transport packet.

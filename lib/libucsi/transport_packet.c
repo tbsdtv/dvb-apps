@@ -205,3 +205,46 @@ extract_payload:
 	out->flags = adapflags;
 	return extracted;
 }
+
+int transport_packet_continuity_check(struct transport_packet *pkt,
+				      int discontinuity_indicator, unsigned char *cstate)
+{
+	unsigned char pktcontinuity = pkt->continuity_counter;
+	unsigned char prevcontinuity = *cstate & 0x0f;
+	unsigned char nextcontinuity;
+
+	/* NULL packets have undefined continuity */
+	if (transport_packet_pid(pkt) == 0x1fff)
+		return 0;
+
+	/* is the state valid? */
+	if (!(*cstate & 0x20)) {
+		*cstate = pktcontinuity | 0x80;
+		return 0;
+	}
+
+	/* check for discontinuity_indicator */
+	if (discontinuity_indicator) {
+		*cstate = pktcontinuity | 0x80;
+		return 0;
+	}
+
+	/* only packets with a payload should increment the counter */
+	if (pkt->adaptation_field_control & 0x02)
+		nextcontinuity = (prevcontinuity + 1) & 0xf;
+
+	/* check for a normal continuity progression */
+	if (nextcontinuity == pktcontinuity) {
+		*cstate = pktcontinuity | 0x80;
+		return 0;
+	}
+
+	/* one dupe is allowed */
+	if ((prevcontinuity == pktcontinuity) && (!(*cstate & 0x40))) {
+		*cstate = pktcontinuity | 0xc0;
+		return 0;
+	}
+
+	/* continuity error */
+	return -1;
+}
