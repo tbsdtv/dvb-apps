@@ -23,25 +23,46 @@
 #define _UCSI_DVB_DSNG_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
+/**
+ * dvb_dsng_descriptor structure.
+ */
 struct dvb_dsng_descriptor {
 	struct descriptor d;
 
 	/* uint8_t data[] */
 } packed;
 
+/**
+ * Process a dvb_dsng_descriptor.
+ *
+ * @param d Generic descriptor structure.
+ * @return Pointer to a dvb_dsng_descriptor, or NULL on error.
+ */
 static inline struct dvb_dsng_descriptor*
-	dvb_dsng_descriptor_parse(struct descriptor* d)
+	dvb_dsng_descriptor_codec(struct descriptor* d)
 {
 	return (struct dvb_dsng_descriptor*) d;
 }
 
+/**
+ * Accessor for the data field in a dvb_dsng_descriptor.
+ *
+ * @param d dvb_dsng_descriptor pointer.
+ * @return Pointer to the field.
+ */
 static inline uint8_t *dvb_dsng_descriptor_data(struct dvb_dsng_descriptor *d)
 {
 	return (uint8_t *) d + sizeof(struct dvb_dsng_descriptor);
 }
 
+/**
+ * Determine the length of the data field in a dvb_dsng_descriptor.
+ *
+ * @param d dvb_dsng_descriptor pointer.
+ * @return Length of the field in bytes.
+ */
 static inline int dvb_dsng_descriptor_data_length(struct dvb_dsng_descriptor *d)
 {
 	return d->d.len;

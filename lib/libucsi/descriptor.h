@@ -21,8 +21,7 @@
 #ifndef _UCSI_DESCRIPTOR_H
 #define _UCSI_DESCRIPTOR_H 1
 
-#include <ucsi/common.h>
-
+#include <ucsi/endianops.h>
 #include <stdint.h>
 #include <stdlib.h>
 

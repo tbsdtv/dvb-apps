@@ -23,8 +23,11 @@
 #define _UCSI_DVB_FREQUENCY_LIST_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
+/**
+ * dvb_frequency_list_descriptor structure.
+ */
 struct dvb_frequency_list_descriptor {
 	struct descriptor d;
 
@@ -33,8 +36,14 @@ struct dvb_frequency_list_descriptor {
 	/* uint32_t centre_frequencies [] */
 } packed;
 
+/**
+ * Process a dvb_frequency_list_descriptor.
+ *
+ * @param d Pointer to a generic descriptor structure.
+ * @return dvb_frequency_list_descriptor pointer, or NULL on error.
+ */
 static inline struct dvb_frequency_list_descriptor*
-	dvb_frequency_list_descriptor_parse(struct descriptor* d)
+	dvb_frequency_list_descriptor_codec(struct descriptor* d)
 {
 	int pos = 0;
 	uint8_t* buf = (uint8_t*) d + 2;
@@ -53,12 +62,24 @@ static inline struct dvb_frequency_list_descriptor*
 	return (struct dvb_frequency_list_descriptor*) d;
 }
 
+/**
+ * Accessor for the centre_frequencies field of a dvb_frequency_list_descriptor.
+ *
+ * @param d dvb_frequency_list_descriptor pointer.
+ * @return Pointer to the field.
+ */
 static inline uint32_t *
 	dvb_frequency_list_descriptor_centre_frequencies(struct dvb_frequency_list_descriptor *d)
 {
 	return (uint32_t *) ((uint8_t *) d + sizeof(struct dvb_frequency_list_descriptor));
 }
 
+/**
+ * Determine the number of entries in the centre_frequencies field of a dvb_frequency_list_descriptor.
+ *
+ * @param d dvb_frequency_list_descriptor pointer.
+ * @return The number of entries.
+ */
 static inline int
 	dvb_frequency_list_descriptor_centre_frequencies_count(struct dvb_frequency_list_descriptor *d)
 {

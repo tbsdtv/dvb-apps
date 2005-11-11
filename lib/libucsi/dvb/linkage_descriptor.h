@@ -23,8 +23,11 @@
 #define _UCSI_DVB_LINKAGE_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
+/**
+ * dvb_linkage_descriptor structure.
+ */
 struct dvb_linkage_descriptor {
 	struct descriptor d;
 
@@ -35,6 +38,9 @@ struct dvb_linkage_descriptor {
 	/* uint8_t data[] */
 } packed;
 
+/**
+ * Data for a linkage_type of 0x08.
+ */
 struct dvb_linkage_data_08 {
   EBIT3(uint8_t hand_over_type		: 4;  ,
 	uint8_t reserved		: 3;  ,
@@ -43,33 +49,49 @@ struct dvb_linkage_data_08 {
 	/* uint8_t data[] */
 } packed;
 
-/* Linkage descriptor for an IP/MAC Notification Table */
+/**
+ * Data for an linkage_type of 0x0b (IP/MAC Notification Table).
+ */
 struct dvb_linkage_data_0b {
 	uint8_t platform_id_data_length;
-	/* struct platform_id[] */
+	/* struct platform_id ids[] */
 } packed;
 
+/**
+ * Entries in the ids field of a dvb_linkage_data_0b.
+ */
 struct dvb_platform_id {
   EBIT2(uint32_t platform_id			: 24; ,
 	uint32_t platform_name_loop_length	: 8;  );
-	/* struct platform_name[] */
+	/* struct platform_name names[] */
 } packed;
 
+/**
+ * Entries in the names field of a dvb_platform_id.
+ */
 struct dvb_platform_name {
 	uint8_t iso_639_language_code[3];
 	uint8_t platform_name_length;
-	/* uint8_t *text; */
+	/* uint8_t text[] */
 } packed;
 
-/* Deferred linkage descriptor for IP/MAC Notification Tables */
+/**
+ * Data for a linkage_type of 0x0c (IP/MAC Notification Table).
+ */
 struct dvb_linkage_data_0c {
 	uint8_t table_type;
 	/* bouquet_id if table_type == 0x02 */
 } packed;
 
 
+/**
+ * Process a dvb_linkage_descriptor.
+ *
+ * @param d Generic descriptor pointer.
+ * @return dvb_linkage_descriptor pointer, or NULL on error.
+ */
 static inline struct dvb_linkage_descriptor*
-	dvb_linkage_descriptor_parse(struct descriptor* d)
+	dvb_linkage_descriptor_codec(struct descriptor* d)
 {
 	int pos = 0;
 	uint8_t* buf = (uint8_t*) d + 2;
@@ -121,52 +143,111 @@ static inline struct dvb_linkage_descriptor*
 	return (struct dvb_linkage_descriptor*) d;
 }
 
+/**
+ * Accessor for the data field of a dvb_linkage_descriptor.
+ *
+ * @param d dvb_linkage_descriptor pointer.
+ * @return Pointer to the data field.
+ */
 static inline uint8_t *
 	dvb_linkage_descriptor_data(struct dvb_linkage_descriptor *d)
 {
 	return (uint8_t *) d + sizeof(struct dvb_linkage_descriptor);
 }
 
+/**
+ * Determine the length of the data field of a dvb_linkage_descriptor.
+ *
+ * @param d dvb_linkage_descriptor pointer.
+ * @return Length of the field in bytes.
+ */
 static inline int
 	dvb_linkage_descriptor_data_length(struct dvb_linkage_descriptor *d)
 {
 	return d->d.len - 7;
 }
 
+/**
+ * Accessor for the data field of a dvb_linkage_data_08.
+ *
+ * @param d dvb_linkage_data_08 pointer.
+ * @return Pointer to the data field.
+ */
 static inline uint8_t *
 	dvb_linkage_data_08_data(struct dvb_linkage_data_08 *d)
 {
 	return (uint8_t *) d + sizeof(struct dvb_linkage_data_08);
 }
 
+/**
+ * Determine the length of the data field of a dvb_linkage_data_08.
+ *
+ * @param d dvb_linkage_data_08 pointer.
+ * @return Length of the field in bytes.
+ */
 static inline int
 	dvb_linkage_data_08_data_length(struct dvb_linkage_descriptor *d)
 {
 	return dvb_linkage_descriptor_data_length(d) - sizeof(struct dvb_linkage_data_08);
 }
 
-#define dvb_platform_id_for_each(start, pos) \
-	for ((pos) = dvb_platform_id_first(start); \
+/**
+ * Iterator for the platform_id field of a dvb_linkage_data_0b.
+ *
+ * @param linkage dvb_linkage_data_0b pointer.
+ * @param pos Variable containing a pointer to the current dvb_platform_id.
+ */
+#define dvb_dvb_linkage_data_0b_platform_id_for_each(linkage, pos) \
+	for ((pos) = dvb_platform_id_first(linkage); \
 	     (pos); \
-	     (pos) = dvb_platform_id_next(start, pos))
+	     (pos) = dvb_platform_id_next(linkage, pos))
 
-#define dvb_platform_name_for_each(start, pos) \
-	for ((pos) = dvb_platform_name_first(start); \
+/**
+ * Iterator for the platform_name field of a dvb_platform_id.
+ *
+ * @param platid dvb_platform_id pointer.
+ * @param pos Variable containing a pointer to the current dvb_platform_name.
+ */
+#define dvb_platform_id_platform_name_for_each(platid, pos) \
+	for ((pos) = dvb_platform_name_first(platid); \
 	     (pos); \
-	     (pos) = dvb_platform_name_next(start, pos))
+	     (pos) = dvb_platform_name_next(platid, pos))
 
+/**
+ * Accessor for the text field of a dvb_platform_name.
+ *
+ * @param p dvb_platform_name pointer.
+ * @return Pointer to the field.
+ */
 static inline uint8_t *
 	dvb_platform_name_text(struct dvb_platform_name *p)
 {
 	return (uint8_t *) p + sizeof(struct dvb_platform_name);
 }
 
-static inline uint16_t
+/**
+ * Accessor for the bouquet_id field of a dvb_linkage_data_0c if table_id == 0x02.
+ *
+ * @param l_0c dvb_linkage_data_0c pointer.
+ * @return The bouquet field, or -1 on error.
+ */
+static inline int
 	dvb_linkage_data_0c_bouquet_id(struct dvb_linkage_data_0c *l_0c)
 {
-	uint8_t *b = (uint8_t *) l_0c + 1;
-	return (uint16_t) *b;
+	uint8_t *b;
+
+	if (l_0c->table_type != 0x02)
+		return -1;
+
+	b = (uint8_t *) l_0c + 1;
+	return (int) (uint16_t) *b;
 }
+
+
+
+
+
+
 
 /******************************** PRIVATE CODE ********************************/
 static inline struct dvb_platform_id *

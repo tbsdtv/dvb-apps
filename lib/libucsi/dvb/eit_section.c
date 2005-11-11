@@ -21,7 +21,7 @@
 
 #include <ucsi/dvb/eit_section.h>
 
-struct dvb_eit_section *dvb_eit_section_parse(struct section_ext * ext)
+struct dvb_eit_section *dvb_eit_section_codec(struct section_ext * ext)
 {
 	uint8_t * buf = (uint8_t *) ext;
 	unsigned int pos = sizeof(struct section_ext);

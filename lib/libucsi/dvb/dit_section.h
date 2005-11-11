@@ -24,6 +24,9 @@
 
 #include <ucsi/section.h>
 
+/**
+ * dvb_dit_section structure.
+ */
 struct dvb_dit_section {
 	struct section head;
 
@@ -31,6 +34,12 @@ struct dvb_dit_section {
 	uint8_t reserved 	: 7; );
 };
 
-struct dvb_dit_section * dvb_dit_section_parse(struct section *);
+/**
+ * Process a dvb_dit_section.
+ *
+ * @param section Pointer to a generic section header.
+ * @return Pointer to a dvb_dit_section, or NULL on error.
+ */
+struct dvb_dit_section * dvb_dit_section_codec(struct section *section);
 
 #endif

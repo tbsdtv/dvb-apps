@@ -23,14 +23,20 @@
 #define _UCSI_DVB_TELETEXT_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
+/**
+ * dvb_teletext_descriptor structure.
+ */
 struct dvb_teletext_descriptor {
 	struct descriptor d;
 
 	/* struct dvb_teletext_entry entries[] */
 } packed;
 
+/**
+ * An entry in the entries field of a dvb_teletext_descriptor.
+ */
 struct dvb_teletext_entry {
 	uint8_t iso_639_language_code[3];
   EBIT2(uint8_t teletext_type		: 5; ,
@@ -38,8 +44,14 @@ struct dvb_teletext_entry {
 	uint8_t teletext_page_number;
 } packed;
 
+/**
+ * Process a dvb_teletext_descriptor.
+ *
+ * @param d Generic descriptor.
+ * @return dvb_teletext_descriptor pointer, or NULL on error.
+ */
 static inline struct dvb_teletext_descriptor*
-	dvb_teletext_descriptor_parse(struct descriptor* d)
+	dvb_teletext_descriptor_codec(struct descriptor* d)
 {
 	if (d->len % sizeof(struct dvb_teletext_entry))
 		return NULL;
@@ -47,6 +59,12 @@ static inline struct dvb_teletext_descriptor*
 	return (struct dvb_teletext_descriptor*) d;
 }
 
+/**
+ * Iterator for entries field of a dvb_teletext_descriptor.
+ *
+ * @param d dvb_teletext_descriptor pointer.
+ * @param pos Variable holding a pointer to the current dvb_teletext_entry.
+ */
 #define dvb_teletext_descriptor_entries_for_each(d, pos) \
 	for ((pos) = dvb_teletext_descriptor_entries_first(d); \
 	     (pos); \

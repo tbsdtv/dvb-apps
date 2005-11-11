@@ -23,7 +23,7 @@
 #define _UCSI_MPEG_COPYRIGHT_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
 /**
  * mpeg_copyright_descriptor structure.
@@ -56,7 +56,7 @@ static inline struct mpeg_copyright_descriptor*
  * Retrieve pointer to data field of an mpeg_copyright_descriptor.
  *
  * @param d mpeg_copyright_descriptor pointer.
- * @return Pointer to the field, or NULL on error.
+ * @return Pointer to the field.
  */
 static inline uint8_t *
 	mpeg_copyright_descriptor_data(struct mpeg_copyright_descriptor *d)

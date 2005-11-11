@@ -23,8 +23,11 @@
 #define _UCSI_DVB_EXTENDED_EVENT_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
+/**
+ * dvb_extended_event_descriptor structure.
+ */
 struct dvb_extended_event_descriptor {
 	struct descriptor d;
 
@@ -36,24 +39,41 @@ struct dvb_extended_event_descriptor {
 	/* struct dvb_extended_event_descriptor_part2 part2 */
 } packed;
 
+/**
+ * An entry in the items field of a dvb_extended_event_descriptor.
+ */
 struct dvb_extended_event_item {
 	uint8_t item_description_length;
 	/* uint8_t item_description[] */
 	/* struct dvb_extended_event_item_part2 part2 */
 } packed;
 
+/**
+ * The second part of a dvb_extended_event_item, following the variable length
+ * description field.
+ */
 struct dvb_extended_event_item_part2 {
 	uint8_t item_length;
 	/* uint8_t item[] */
 } packed;
 
+/**
+ * The second part of a dvb_extended_event_descriptor, following the variable
+ * length items field.
+ */
 struct dvb_extended_event_descriptor_part2 {
 	uint8_t text_length;
 	/* uint8_t text[] */
 } packed;
 
+/**
+ * Process a dvb_extended_event_descriptor.
+ *
+ * @param d Generic descriptor structure.
+ * @return dvb_extended_event_descriptor pointer, or NULL on error.
+ */
 static inline struct dvb_extended_event_descriptor*
-	dvb_extended_event_descriptor_parse(struct descriptor* d)
+	dvb_extended_event_descriptor_codec(struct descriptor* d)
 {
 	uint8_t* buf = (uint8_t*) d + 2;
 	int pos = 0;
@@ -87,17 +107,35 @@ static inline struct dvb_extended_event_descriptor*
 	return p;
 }
 
+/**
+ * Iterator for the items field of a dvb_extended_event_descriptor.
+ *
+ * @param d dvb_extended_event_descriptor pointer.
+ * @param pos Variable containing a pointer to the current dvb_extended_event_item.
+ */
 #define dvb_extended_event_descriptor_items_for_each(d, pos) \
 	for ((pos) = dvb_extended_event_descriptor_items_first(d); \
 	     (pos); \
 	     (pos) = dvb_extended_event_descriptor_items_next(d, pos))
 
+/**
+ * Accessor for the description field of a dvb_extended_event_item.
+ *
+ * @param d dvb_extended_event_item pointer.
+ * @return Pointer to the field.
+ */
 static inline uint8_t*
-	dvb_extended_event_item_descripton(struct dvb_extended_event_item *d)
+	dvb_extended_event_item_description(struct dvb_extended_event_item *d)
 {
 	return (uint8_t*) d + sizeof(struct dvb_extended_event_item);
 }
 
+/**
+ * Accessor for the second part of a dvb_extended_event_item.
+ *
+ * @param dvb_extended_event_item pointer.
+ * @return dvb_extended_event_item_part2 pointer.
+ */
 static inline struct dvb_extended_event_item_part2*
 	dvb_extended_event_item_part2(struct dvb_extended_event_item *d)
 {
@@ -106,12 +144,24 @@ static inline struct dvb_extended_event_item_part2*
 		 d->item_description_length);
 }
 
+/**
+ * Accessor for the item field of a dvb_extended_event_item_part2.
+ *
+ * @param d dvb_extended_event_item_part2 pointer.
+ * @return Pointer to the item field.
+ */
 static inline uint8_t*
 	dvb_extended_event_item_item(struct dvb_extended_event_item_part2 *d)
 {
 	return (uint8_t*) d + sizeof(struct dvb_extended_event_item_part2);
 }
 
+/**
+ * Accessor for the second part of a dvb_extended_event_descriptor.
+ *
+ * @param d dvb_extended_event_descriptor pointer.
+ * @return dvb_extended_event_descriptor_part2 pointer.
+ */
 static inline struct dvb_extended_event_descriptor_part2*
 	dvb_extended_event_descriptor_part2(struct dvb_extended_event_descriptor *d)
 {

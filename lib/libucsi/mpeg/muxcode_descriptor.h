@@ -23,7 +23,7 @@
 #define _UCSI_MPEG_MUXCODE_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
 /**
  * mpeg_muxcode_descriptor structure
@@ -50,7 +50,7 @@ static inline struct mpeg_muxcode_descriptor*
  * Retrieve pointer to entries field of an mpeg_muxcode_descriptor structure.
  *
  * @param d Generic descriptor structure.
- * @return Pointer to the entries field, or NULL on error.
+ * @return Pointer to the entries field.
  */
 static inline uint8_t *
 	mpeg_muxcode_descriptor_entries(struct mpeg_muxcode_descriptor *d)

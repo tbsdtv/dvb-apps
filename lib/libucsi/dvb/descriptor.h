@@ -69,7 +69,7 @@
 #include <ucsi/dvb/transport_stream_descriptor.h>
 #include <ucsi/dvb/vbi_data_descriptor.h>
 #include <ucsi/dvb/vbi_teletext_descriptor.h>
-#include <si/common.h>
+#include <ucsi/endianops.h>
 
 /**
  * Enumeration of DVB descriptor tags.

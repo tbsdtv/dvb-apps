@@ -24,6 +24,9 @@
 
 #include <ucsi/section.h>
 
+/**
+ * dvb_tot_section structure.
+ */
 struct dvb_tot_section {
 	struct section head;
 
@@ -33,8 +36,20 @@ struct dvb_tot_section {
   	/* struct descriptor descriptors[] */
 } packed;
 
-struct dvb_tot_section * dvb_tot_section_parse(struct section *);
+/**
+ * Process a dvb_tot_section.
+ *
+ * @param section Pointer to generic section structure.
+ * @return dvb_tot_section pointer, or NULL on error.
+ */
+struct dvb_tot_section * dvb_tot_section_codec(struct section *section);
 
+/**
+ * Iterator for descriptors field of dvb_tot_section.
+ *
+ * @param tot dvb_tot_section pointer.
+ * @param pos Variable holding a pointer to the current descriptor.
+ */
 #define dvb_tot_section_descriptors_for_each(tot, pos) \
 	for ((pos) = dvb_tot_section_descriptors_first(tot); \
 	     (pos); \

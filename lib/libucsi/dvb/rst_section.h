@@ -24,12 +24,18 @@
 
 #include <ucsi/section.h>
 
+/**
+ * dvb_rst_section structure.
+ */
 struct dvb_rst_section {
 	struct section head;
 
 	/* struct dvb_rst_status statuses[] */
 };
 
+/**
+ * An entry in the statuses field of a dvb_rst_section structure.
+ */
 struct dvb_rst_status {
 	uint16_t transport_stream_id;
 	uint16_t original_network_id;
@@ -39,8 +45,20 @@ struct dvb_rst_status {
 	uint8_t running_status	: 3;  );
 };
 
-struct dvb_rst_section *dvb_rst_section_parse(struct section *);
+/**
+ * Process a dvb_rst_section.
+ *
+ * @param section Pointer to a generic section strcuture.
+ * @return dvb_rst_section pointer, or NULL on error.
+ */
+struct dvb_rst_section *dvb_rst_section_codec(struct section *section);
 
+/**
+ * Iterator for entries in the statuses field of a dvb_rst_section.
+ *
+ * @param rst dvb_rst_section pointer.
+ * @param pos Variable containing a pointer to the current dvb_rst_status.
+ */
 #define dvb_rst_section_statuses_for_each(rst, pos) \
 	for ((pos) = dvb_rst_section_statuses_first(rst); \
 	     (pos); \

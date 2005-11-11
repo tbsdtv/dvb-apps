@@ -23,7 +23,7 @@
 #define _UCSI_MPEG_AUDIO_STREAM_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
 /**
  * mpeg_audio_stream_descriptor structure

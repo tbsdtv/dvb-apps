@@ -23,8 +23,11 @@
 #define _UCSI_DVB_SERVICE_MOVE_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
+/**
+ * dvb_service_move_descriptor structure.
+ */
 struct dvb_service_move_descriptor {
 	struct descriptor d;
 
@@ -33,8 +36,14 @@ struct dvb_service_move_descriptor {
 	uint16_t new_service_id;
 } packed;
 
+/**
+ * Process a dvb_service_move_descriptor.
+ *
+ * @param d Generic descriptor structure.
+ * @return Pointer to dvb_service_move_descriptor, or NULL on error.
+ */
 static inline struct dvb_service_move_descriptor*
-	dvb_service_move_descriptor_parse(struct descriptor* d)
+	dvb_service_move_descriptor_codec(struct descriptor* d)
 {
 	if (d->len != (sizeof(struct dvb_service_move_descriptor) - 2))
 		return NULL;

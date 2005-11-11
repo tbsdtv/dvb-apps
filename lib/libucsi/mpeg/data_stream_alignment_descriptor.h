@@ -23,7 +23,7 @@
 #define _UCSI_MPEG_DATA_STREAM_ALIGNMENT_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
 /**
  * mpeg_data_stream_alignment_descriptor structure.

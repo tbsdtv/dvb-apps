@@ -24,6 +24,9 @@
 
 #include <ucsi/section.h>
 
+/**
+ * dvb_eit_section structure.
+ */
 struct dvb_eit_section {
 	struct section_ext head;
 
@@ -34,23 +37,44 @@ struct dvb_eit_section {
 	/* struct eit_event events[] */
 } packed;
 
+/**
+ * An entry in the events field of a dvb_eit_section.
+ */
 struct dvb_eit_event {
 	uint16_t event_id;
-	uint8_t start_time[5];
-  EBIT4(uint64_t duration		:24;  ,
-	uint64_t running_status		: 3;  ,
-	uint64_t free_ca_mode		: 1;  ,
-	uint64_t descriptors_loop_length:12; );
+	uint8_t start_time[5]; // DVBTIME
+	uint8_t duration[3];   // DVBDURATION
+  EBIT3(uint16_t running_status		: 3;  ,
+	uint16_t free_ca_mode		: 1;  ,
+	uint16_t descriptors_loop_length:12; );
 	/* struct descriptor descriptors[] */
 } packed;
 
-struct dvb_eit_section *dvb_eit_section_parse(struct section_ext *);
+/**
+ * Process a dvb_eit_section.
+ *
+ * @param section Pointer to a generic section_ext structure.
+ * @return Pointer to a dvb_eit_section, or NULL on error.
+ */
+struct dvb_eit_section *dvb_eit_section_codec(struct section_ext *section);
 
+/**
+ * Iterator for the events field of a dvb_eit_section.
+ *
+ * @param eit dvb_eit_section pointer.
+ * @param pos Variable containing a pointer to the current dvb_eit_event.
+ */
 #define dvb_eit_section_events_for_each(eit, pos) \
 	for ((pos) = dvb_eit_section_events_first(eit); \
 	     (pos); \
 	     (pos) = dvb_eit_section_events_next(eit, pos))
 
+/**
+ * Iterator for the descriptors field of a dvb_eit_event.
+ *
+ * @param eit dvb_eit_event pointer.
+ * @param pos Variable containing a pointer to the current descriptor.
+ */
 #define dvb_eit_event_descriptors_for_each(event, pos) \
 	for ((pos) = dvb_eit_event_descriptors_first(event); \
 	     (pos); \

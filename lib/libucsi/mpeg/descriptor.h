@@ -48,7 +48,7 @@
 #include <ucsi/mpeg/target_background_grid_descriptor.h>
 #include <ucsi/mpeg/video_stream_descriptor.h>
 #include <ucsi/mpeg/video_window_descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
 /**
  * Enumeration of MPEG descriptor tags.

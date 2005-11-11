@@ -27,6 +27,9 @@
 
 #define packed __attribute__((packed))
 
+
+
+
 #if __BYTE_ORDER == __BIG_ENDIAN
 #define EBIT2(x1,x2) x1 x2
 #define EBIT3(x1,x2,x3) x1 x2 x3

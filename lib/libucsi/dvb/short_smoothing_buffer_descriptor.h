@@ -23,8 +23,11 @@
 #define _UCSI_DVB_SHORT_SMOOTHING_BUFFER_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
+/**
+ * dvb_short_smoothing_buffer_descriptor structure.
+ */
 struct dvb_short_smoothing_buffer_descriptor {
 	struct descriptor d;
 
@@ -33,8 +36,14 @@ struct dvb_short_smoothing_buffer_descriptor {
 	/* uint8_t reserved [] */
 } packed;
 
+/**
+ * Process a dvb_short_smoothing_buffer_descriptor.
+ *
+ * @param d Generic descriptor structure.
+ * @return dvb_short_smoothing_buffer_descriptor pointer, or NULL on error.
+ */
 static inline struct dvb_short_smoothing_buffer_descriptor*
-	dvb_short_smoothing_buffer_descriptor_parse(struct descriptor* d)
+	dvb_short_smoothing_buffer_descriptor_codec(struct descriptor* d)
 {
 	if (d->len < (sizeof(struct dvb_short_smoothing_buffer_descriptor) - 2))
 		return NULL;
@@ -42,12 +51,24 @@ static inline struct dvb_short_smoothing_buffer_descriptor*
 	return (struct dvb_short_smoothing_buffer_descriptor*) d;
 }
 
+/**
+ * Accessor for reserved field in a dvb_short_smoothing_buffer_descriptor.
+ *
+ * @param d dvb_short_smoothing_buffer_descriptor pointer.
+ * @return Pointer to reserved field.
+ */
 static inline uint8_t *
 	dvb_short_smoothing_buffer_descriptor_reserved(struct dvb_short_smoothing_buffer_descriptor *d)
 {
 	return (uint8_t*) d + sizeof(struct dvb_short_smoothing_buffer_descriptor);
 }
 
+/**
+ * Calculate length of reserved field in a dvb_short_smoothing_buffer_descriptor.
+ *
+ * @param d dvb_short_smoothing_buffer_descriptor pointer.
+ * @return Length of the field in bytes.
+ */
 static inline int
 	dvb_short_smoothing_buffer_descriptor_reserved_length(struct dvb_short_smoothing_buffer_descriptor *d)
 {

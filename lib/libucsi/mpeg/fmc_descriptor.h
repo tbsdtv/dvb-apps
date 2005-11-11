@@ -23,7 +23,7 @@
 #define _UCSI_MPEG_FMC_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
 /**
  * mpeg_fmc_descriptor structure.

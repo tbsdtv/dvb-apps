@@ -23,8 +23,11 @@
 #define _UCSI_DVB_DATA_BROADCAST_ID_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
+/**
+ * dvb_data_broadcast_id_descriptor structure.
+ */
 struct dvb_data_broadcast_id_descriptor {
 	struct descriptor d;
 
@@ -32,8 +35,14 @@ struct dvb_data_broadcast_id_descriptor {
 	/* uint8_t id_selector_byte[] */
 } packed;
 
+/**
+ * Process a dvb_data_broadcast_id_descriptor.
+ *
+ * @param d Generic descriptor structure.
+ * @return dvb_data_broadcast_id_descriptor pointer, or NULL on error.
+ */
 static inline struct dvb_data_broadcast_id_descriptor*
-	dvb_data_broadcast_id_descriptor_parse(struct descriptor* d)
+	dvb_data_broadcast_id_descriptor_codec(struct descriptor* d)
 {
 	if (d->len < (sizeof(struct dvb_data_broadcast_id_descriptor) - 2))
 		return NULL;
@@ -43,12 +52,24 @@ static inline struct dvb_data_broadcast_id_descriptor*
 	return (struct dvb_data_broadcast_id_descriptor*) d;
 }
 
+/**
+ * Accessor for the selector_byte field of a dvb_data_broadcast_id_descriptor.
+ *
+ * @param d dvb_data_broadcast_id_descriptor pointer.
+ * @return Pointer to the field.
+ */
 static inline uint8_t *
 	dvb_data_broadcast_id_descriptor_id_selector_byte(struct dvb_data_broadcast_id_descriptor *d)
 {
 	return (uint8_t *) d + sizeof(struct dvb_data_broadcast_id_descriptor);
 }
 
+/**
+ * Determine the length of the selector_byte field of a dvb_data_broadcast_id_descriptor.
+ *
+ * @param d dvb_data_broadcast_id_descriptor pointer.
+ * @return Length of the field in bytes.
+ */
 static inline int
 	dvb_data_broadcast_id_descriptor_id_selector_byte_length(struct dvb_data_broadcast_id_descriptor *d)
 {

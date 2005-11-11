@@ -24,6 +24,9 @@
 
 #include <ucsi/section.h>
 
+/**
+ * dvb_int_section structure.
+ */
 struct dvb_int_section {
 	struct section head;
 
@@ -43,6 +46,7 @@ struct dvb_int_section {
 	/* loop of target_loop+operational_loop */
 } packed;
 
+// FIXME: sort this
 struct dvb_int_section_target_loop {
   EBIT2(uint16_t reserved3			: 4;  ,
 	uint16_t target_descriptor_loop_length	:12;  );
@@ -55,7 +59,7 @@ struct dvb_int_section_operational_loop {
 	/* operational_descriptor_loop[] */
 } packed;
 
-extern struct dvb_int_section * dvb_int_section_parse(struct section_ext *);
+extern struct dvb_int_section * dvb_int_section_codec(struct section_ext *);
 
 #define dvb_platform_descriptor_for_each(first, pos) \
 	for ((pos) = dvb_platform_descriptor_first(first); \
@@ -83,6 +87,9 @@ static inline struct dvb_int_section_operational_loop *
 	for ((pos) = dvb_operational_descriptor_first(first); \
 	     (pos); \
 	     (pos) = dvb_operational_descriptor_next(first, pos))
+
+
+
 
 
 /******************************** PRIVATE CODE ********************************/

@@ -23,7 +23,7 @@
 #define _UCSI_MPEG_TARGET_BACKGROUND_GRID_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
 /**
  * mpeg_target_background_grid_descriptor structure.

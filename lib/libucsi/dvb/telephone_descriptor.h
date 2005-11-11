@@ -23,8 +23,11 @@
 #define _UCSI_DVB_TELEPHONE_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
+/**
+ * dvb_telephone_descriptor stucture.
+ */
 struct dvb_telephone_descriptor {
 	struct descriptor d;
 
@@ -46,8 +49,14 @@ struct dvb_telephone_descriptor {
 } packed;
 
 
+/**
+ * Process a dvb_telephone_descriptor.
+ *
+ * @param d Generic descriptor.
+ * @return dvb_telephone_descriptor pointer, or NULL on error.
+ */
 static inline struct dvb_telephone_descriptor*
-	dvb_telephone_descriptor_parse(struct descriptor* d)
+	dvb_telephone_descriptor_codec(struct descriptor* d)
 {
 	struct dvb_telephone_descriptor* p =
 		(struct dvb_telephone_descriptor*) d;
@@ -69,30 +78,60 @@ static inline struct dvb_telephone_descriptor*
 	return p;
 }
 
+/**
+ * Retrieve pointer to country_prefix field of a dvb_telephone_descriptor.
+ *
+ * @param d dvb_telephone_descriptor pointer.
+ * @return Pointer to the field.
+ */
 static inline uint8_t*
 	dvb_telephone_descriptor_country_prefix(struct dvb_telephone_descriptor* d)
 {
 	return (uint8_t*) d + sizeof(struct dvb_telephone_descriptor);
 }
 
+/**
+ * Retrieve pointer to international_area_code field of a dvb_telephone_descriptor.
+ *
+ * @param d dvb_telephone_descriptor pointer.
+ * @return Pointer to the field.
+ */
 static inline uint8_t*
 	dvb_telephone_descriptor_international_area_code(struct dvb_telephone_descriptor* d)
 {
 	return dvb_telephone_descriptor_country_prefix(d) + d->country_prefix_length;
 }
 
+/**
+ * Retrieve pointer to operator_code field of a dvb_telephone_descriptor.
+ *
+ * @param d dvb_telephone_descriptor pointer.
+ * @return Pointer to the field.
+ */
 static inline uint8_t*
 	dvb_telephone_descriptor_operator_code(struct dvb_telephone_descriptor* d)
 {
 	return dvb_telephone_descriptor_international_area_code(d) + d->international_area_code_length;
 }
 
+/**
+ * Retrieve pointer to national_area_code field of a dvb_telephone_descriptor.
+ *
+ * @param d dvb_telephone_descriptor pointer.
+ * @return Pointer to the field.
+ */
 static inline uint8_t*
 	dvb_telephone_descriptor_national_area_code(struct dvb_telephone_descriptor* d)
 {
 	return dvb_telephone_descriptor_operator_code(d) + d->operator_code_length;
 }
 
+/**
+ * Retrieve pointer to core_number field of a dvb_telephone_descriptor.
+ *
+ * @param d dvb_telephone_descriptor pointer.
+ * @return Pointer to the field.
+ */
 static inline uint8_t*
 	dvb_telephone_descriptor_core_number(struct dvb_telephone_descriptor* d)
 {

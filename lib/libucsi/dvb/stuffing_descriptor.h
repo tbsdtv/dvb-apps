@@ -23,26 +23,47 @@
 #define _UCSI_DVB_STUFFING_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
+/**
+ * dvb_stuffing_descriptor.
+ */
 struct dvb_stuffing_descriptor {
 	struct descriptor d;
 
 	/* uint8_t data[] */
 } packed;
 
+/**
+ * Process a dvb_stuffing_descriptor.
+ *
+ * @param d Generic descriptor structure.
+ * @return dvb_stuffing_descriptor pointer, or NULL on error.
+ */
 static inline struct dvb_stuffing_descriptor*
-	dvb_stuffing_descriptor_parse(struct descriptor* d)
+	dvb_stuffing_descriptor_codec(struct descriptor* d)
 {
 	return (struct dvb_stuffing_descriptor*) d;
 }
 
+/**
+ * Retrieve a pointer to the data field of a dvb_stuffing_descriptor.
+ *
+ * @param d dvb_stuffing_descriptor pointer.
+ * @return Pointer to the field.
+ */
 static inline uint8_t *
 	dvb_stuffing_descriptor_data(struct dvb_stuffing_descriptor *d)
 {
 	return (uint8_t *) d + sizeof(struct dvb_stuffing_descriptor);
 }
 
+/**
+ * Calculate length of the data field of a dvb_stuffing_descriptor.
+ *
+ * @param d dvb_stuffing_descriptor pointer.
+ * @return The length in bytes.
+ */
 static inline int
 	dvb_stuffing_descriptor_data_length(struct dvb_stuffing_descriptor *d)
 {

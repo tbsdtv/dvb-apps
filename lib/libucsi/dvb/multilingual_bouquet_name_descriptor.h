@@ -23,22 +23,34 @@
 #define _UCSI_DVB_MULTILINGUAL_BOUQUET_NAME_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
+/**
+ * dvb_multilingual_bouquet_name_descriptor structure.
+ */
 struct dvb_multilingual_bouquet_name_descriptor {
 	struct descriptor d;
 
 	/* struct dvb_multilingual_bouquet_name names[]*/
 } packed;
 
+/**
+ * An entry in the names field of a dvb_multilingual_bouquet_name_descriptor.
+ */
 struct dvb_multilingual_bouquet_name {
 	uint8_t iso_639_language_code[3];
 	uint8_t bouquet_name_length;
 	/* uint8_t name[] */
 } packed;
 
+/**
+ * Process a dvb_multilingual_bouquet_name_descriptor.
+ *
+ * @param d Generic descriptor pointer.
+ * @return dvb_multilingual_bouquet_name_descriptor pointer, or NULL on error.
+ */
 static inline struct dvb_multilingual_bouquet_name_descriptor*
-	dvb_multilingual_bouquet_name_descriptor_parse(struct descriptor* d)
+	dvb_multilingual_bouquet_name_descriptor_codec(struct descriptor* d)
 {
 	uint8_t* buf = (uint8_t*) d + 2;
 	int pos = 0;
@@ -62,11 +74,23 @@ static inline struct dvb_multilingual_bouquet_name_descriptor*
 	return (struct dvb_multilingual_bouquet_name_descriptor*) d;
 }
 
+/**
+ * Iterator for entries in the names field of a dvb_multilingual_bouquet_name_descriptor.
+ *
+ * @param d dvb_multilingual_bouquet_name_descriptor pointer.
+ * @param pos Variable containing a pointer to the current dvb_multilingual_bouquet_name.
+ */
 #define dvb_multilingual_bouquet_name_descriptor_names_for_each(d, pos) \
 	for ((pos) = dvb_multilingual_bouquet_name_descriptor_names_first(d); \
 	     (pos); \
 	     (pos) = dvb_multilingual_bouquet_name_descriptor_names_next(d, pos))
 
+/**
+ * Accessor for the name field of a dvb_multilingual_bouquet_name.
+ *
+ * @param e dvb_multilingual_bouquet_name pointer.
+ * @return Pointer to the field.
+ */
 static inline uint8_t *
 	dvb_multilingual_bouquet_name_name(struct dvb_multilingual_bouquet_name *e)
 {

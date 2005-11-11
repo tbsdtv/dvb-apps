@@ -24,6 +24,9 @@
 
 #include <ucsi/section.h>
 
+/**
+ * dvb_sit_section structure.
+ */
 struct dvb_sit_section {
 	struct section_ext head;
 
@@ -33,6 +36,9 @@ struct dvb_sit_section {
 	/* struct dvb_sit_service services[] */
 };
 
+/**
+ * An entry in the services field of a dvb_sit_section.
+ */
 struct dvb_sit_service {
 	uint16_t service_id;
   EBIT3(uint16_t reserved		: 1; ,
@@ -41,18 +47,42 @@ struct dvb_sit_service {
 	/* struct descriptor descriptors[] */
 };
 
-struct dvb_sit_section * dvb_sit_section_parse(struct section_ext *);
+/**
+ * Process a dvb_sit_section.
+ *
+ * @param section Generic section_ext structure.
+ * @return dvb_sit_section pointer, or NULL on error.
+ */
+struct dvb_sit_section * dvb_sit_section_codec(struct section_ext *section);
 
+/**
+ * Iterator for descriptors field in a dvb_sit_section.
+ *
+ * @param sit dvb_sit_section Pointer.
+ * @param pos Variable holding pointer to current descriptor.
+ */
 #define dvb_sit_section_descriptors_for_each(sit, pos) \
 	for ((pos) = dvb_sit_descriptors_first(sit); \
 	     (pos); \
 	     (pos) = dvb_sit_descriptors_first(sit))
 
+/**
+ * Iterator for services field in a dvb_sit_section.
+ *
+ * @param sit dvb_sit_section Pointer.
+ * @param pos Variable holding pointer to current dvb_sit_service.
+ */
 #define dvb_sit_section_services_for_each(sit, pos) \
 	for ((pos) = dvb_sit_services_first(sit); \
 	     (pos); \
 	     (pos) = dvb_sit_services_next(sit, pos))
 
+/**
+ * Iterator for descriptors field in a dvb_sit_service.
+ *
+ * @param service dvb_sit_service Pointer.
+ * @param pos Variable holding pointer to current descriptor.
+ */
 #define dvb_sit_service_descriptors_for_each(service, pos) \
 	for ((pos) = dvb_sit_service_descriptors_first(service); \
 	     (pos); \

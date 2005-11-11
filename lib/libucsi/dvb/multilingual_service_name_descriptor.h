@@ -23,14 +23,20 @@
 #define _UCSI_DVB_MULTILINGUAL_SERVICE_NAME_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
+/**
+ * dvb_multilingual_service_name_descriptor structure.
+ */
 struct dvb_multilingual_service_name_descriptor {
 	struct descriptor d;
 
 	/* struct dvb_multilingual_service_name service_names[] */
 } packed;
 
+/**
+ * An entry in the service_names field of a dvb_multilingual_service_name_descriptor.
+ */
 struct dvb_multilingual_service_name {
 	uint8_t iso_639_language_code[3];
 	uint8_t service_provider_name_length;
@@ -38,13 +44,23 @@ struct dvb_multilingual_service_name {
 	/* struct dvb_multilingual_service_name_part2 part2 */
 } packed;
 
+/**
+ * Second part of a dvb_multilingual_service_name following the variable length
+ * service_provider_name.
+ */
 struct dvb_multilingual_service_name_part2 {
 	uint8_t service_name_length;
 	/* uint8_t service_name[] */
 } packed;
 
+/**
+ * Process a dvb_multilingual_service_name_descriptor.
+ *
+ * @param d Generic descriptor pointer.
+ * @return dvb_multilingual_service_name_descriptor pointer, or NULL on error.
+ */
 static inline struct dvb_multilingual_service_name_descriptor*
-	dvb_multilingual_service_name_descriptor_parse(struct descriptor* d)
+	dvb_multilingual_service_name_descriptor_codec(struct descriptor* d)
 {
 	uint8_t* buf = (uint8_t*) d + 2;
 	int pos = 0;
@@ -81,17 +97,36 @@ static inline struct dvb_multilingual_service_name_descriptor*
 	return (struct dvb_multilingual_service_name_descriptor*) d;
 }
 
+/**
+ * Iterator for entries in the service_name field of a dvb_multilingual_service_name_descriptor.
+ *
+ * @param d dvb_multilingual_service_name_descriptor pointer,
+ * @param pos Variable containing pointer to the current dvb_multilingual_service_name.
+ */
 #define dvb_multilingual_service_name_descriptor_for_each(d, pos) \
 	for ((pos) = dvb_multilingual_service_name_descriptor_names_first(d); \
 	     (pos); \
 	     (pos) = dvb_multilingual_service_name_descriptor_names_next(d, pos))
 
+/**
+ * Accessor for the service_provider_name field of a dvb_multilingual_service_name.
+ *
+ * @param e dvb_multilingual_service_name pointer.
+ * @return Pointer to the field.
+ */
 static inline uint8_t *
 	dvb_multilingual_service_name_service_provider_name(struct dvb_multilingual_service_name *e)
 {
 	return (uint8_t *) e + sizeof(struct dvb_multilingual_service_name);
 }
 
+/**
+ * Accessor for the dvb_multilingual_service_name_part2 - second part of a
+ * dvb_multilingual_service_name following the service_name field.
+ *
+ * @param e dvb_multilingual_service_name Pointer.
+ * @return dvb_multilingual_service_name_part2 pointer.
+ */
 static inline struct dvb_multilingual_service_name_part2 *
 	dvb_multilingual_service_name_part2(struct dvb_multilingual_service_name *e)
 {
@@ -100,6 +135,12 @@ static inline struct dvb_multilingual_service_name_part2 *
 		 e->service_provider_name_length);
 }
 
+/**
+ * Accessor for the service_name field of a dvb_multilingual_service_name_part2.
+ *
+ * @param e dvb_multilingual_service_name_part2 pointer.
+ * @return Pointer to the field.
+ */
 static inline uint8_t *
 	dvb_multilingual_service_name_service_name(struct dvb_multilingual_service_name_part2 *e)
 {

@@ -23,14 +23,20 @@
 #define _UCSI_DVB_CELL_LIST_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
+/**
+ * dvb_cell_list_descriptor structure.
+ */
 struct dvb_cell_list_descriptor {
 	struct descriptor d;
 
 	/* struct dvb_cell_list_entry cells[] */
 } packed;
 
+/**
+ * An entry in the cells field of a dvb_cell_list_descriptor.
+ */
 struct dvb_cell_list_entry {
 	uint16_t cell_id;
 	uint16_t cell_latitude;
@@ -41,6 +47,9 @@ struct dvb_cell_list_entry {
 	/* struct dvb_subcell_list_entry subcells[] */
 } packed;
 
+/**
+ * An entry in the subcells field of a dvb_cell_list_entry.
+ */
 struct dvb_subcell_list_entry {
 	uint8_t cell_id_extension;
 	uint16_t subcell_latitude;
@@ -49,8 +58,14 @@ struct dvb_subcell_list_entry {
 	uint32_t subcell_extend_of_longitude	:12; );
 } packed;
 
+/**
+ * Process a dvb_cell_list_descriptor.
+ *
+ * @param d Generic descriptor pointer.
+ * @return dvb_cell_list_descriptor pointer, or NULL on error.
+ */
 static inline struct dvb_cell_list_descriptor*
-	dvb_cell_list_descriptor_parse(struct descriptor* d)
+	dvb_cell_list_descriptor_codec(struct descriptor* d)
 {
 	int pos = 0;
 	int pos2 = 0;
@@ -92,11 +107,23 @@ static inline struct dvb_cell_list_descriptor*
 	return (struct dvb_cell_list_descriptor*) d;
 }
 
+/**
+ * Iterator for the cells field of a dvb_cell_list_descriptor.
+ *
+ * @param d dvb_cell_list_descriptor pointer.
+ * @param pos Variable holding a pointer to the current dvb_cell_list_entry.
+ */
 #define dvb_cell_list_descriptor_cells_for_each(d, pos) \
 	for ((pos) = dvb_cell_list_descriptor_cells_first(d); \
 	     (pos); \
 	     (pos) = dvb_cell_list_descriptor_cells_next(d, pos))
 
+/**
+ * Iterator for the subcells field of a dvb_cell_list_entry.
+ *
+ * @param cell dvb_cell_list_entry pointer.
+ * @param pos Variable holding a pointer to the current dvb_subcell_list_entry.
+ */
 #define dvb_cell_list_entry_subcells_for_each(cell, pos) \
 	for ((pos) = dvb_cell_list_entry_subcells_first(cell); \
 	     (pos); \

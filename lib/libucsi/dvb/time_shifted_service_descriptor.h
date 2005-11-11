@@ -23,16 +23,25 @@
 #define _UCSI_DVB_TIME_SHIFTED_SERVICE_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
+/**
+ * dvb_time_shifted_service_descriptor structure.
+ */
 struct dvb_time_shifted_service_descriptor {
 	struct descriptor d;
 
 	uint16_t reference_service_id;
 } packed;
 
+/**
+ * Process a dvb_time_shifted_service_descriptor.
+ *
+ * @param d Generic descriptor.
+ * @return Pointer to dvb_time_shifted_service_descriptor, or NULL on error.
+ */
 static inline struct dvb_time_shifted_service_descriptor*
-	dvb_time_shifted_service_descriptor_parse(struct descriptor* d)
+	dvb_time_shifted_service_descriptor_codec(struct descriptor* d)
 {
 	if (d->len != (sizeof(struct dvb_time_shifted_service_descriptor) - 2))
 		return NULL;

@@ -24,12 +24,21 @@
 
 #include <ucsi/section.h>
 
+/**
+ * dvb_tdt_section structure.
+ */
 struct dvb_tdt_section {
 	struct section head;
 
-	uint8_t utc_time[5];
+	uint8_t utc_time[5]; // DVBDATE
 } packed;
 
-struct dvb_tdt_section * dvb_tdt_section_parse(struct section *);
+/**
+ * Process a dvb_tdt_section.
+ *
+ * @param section Generic section header.
+ * @return dvb_tdt_section pointer, or NULL on error.
+ */
+struct dvb_tdt_section *dvb_tdt_section_codec(struct section *section);
 
 #endif

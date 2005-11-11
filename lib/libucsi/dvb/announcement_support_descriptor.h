@@ -23,8 +23,11 @@
 #define _UCSI_DVB_ANNOUNCEMENT_SUPPORT_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
+/**
+ * dvb_announcement_support_descriptor structure.
+ */
 struct dvb_announcement_support_descriptor {
 	struct descriptor d;
 
@@ -32,6 +35,9 @@ struct dvb_announcement_support_descriptor {
 	/* struct dvb_announcement_support_entry entries[] */
 } packed;
 
+/**
+ * An entry in the entries field of a dvb_announcement_support_descriptor.
+ */
 struct dvb_announcement_support_entry {
   EBIT3(uint8_t announcement_type		: 4; ,
 	uint8_t reserved			: 1; ,
@@ -40,6 +46,10 @@ struct dvb_announcement_support_entry {
 	 * struct dvb_announcement_support_reference reference */
 } packed;
 
+/**
+ * The optional reference field only present in a dvb_announcement_support_descriptor if
+ * its reference_type field is 1,2 or 3.
+ */
 struct dvb_announcement_support_reference {
 	uint16_t original_network_id;
 	uint16_t transport_stream_id;
@@ -47,9 +57,14 @@ struct dvb_announcement_support_reference {
 	uint8_t component_tag;
 } packed;
 
-
+/**
+ * Process a dvb_announcement_support_descriptor.
+ *
+ * @param d Generic descriptor pointer.
+ * @return dvb_announcement_support_descriptor pointer, or NULL on error.
+ */
 static inline struct dvb_announcement_support_descriptor*
-	dvb_announcement_support_descriptor_parse(struct descriptor* d)
+	dvb_announcement_support_descriptor_codec(struct descriptor* d)
 {
 	int pos = 0;
 	uint8_t* buf = (uint8_t*) d + 2;
@@ -88,11 +103,23 @@ static inline struct dvb_announcement_support_descriptor*
 	return (struct dvb_announcement_support_descriptor*) d;
 }
 
+/**
+ * Iterator for the entries field of a dvb_announcement_support_descriptor.
+ *
+ * @param d dvb_announcement_support_descriptor pointer.
+ * @param pod Variable holding a pointer to the current dvb_announcement_support_entry.
+ */
 #define dvb_announcement_support_descriptor_entries_for_each(d, pos) \
 	for ((pos) = dvb_announcement_support_descriptor_entries_first(d); \
 	     (pos); \
 	     (pos) = dvb_announcement_support_descriptor_entries_next(d, pos))
 
+/**
+ * Accessor for the reference field of a dvb_announcement_support_entry if present.
+ *
+ * @param entry dvb_announcement_support_entry pointer.
+ * @return dvb_announcement_support_reference pointer, or NULL on error.
+ */
 static inline struct dvb_announcement_support_reference*
 	dvb_announcement_support_entry_reference(struct dvb_announcement_support_entry* entry)
 {

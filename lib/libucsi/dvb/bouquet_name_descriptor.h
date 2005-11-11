@@ -23,26 +23,47 @@
 #define _UCSI_DVB_BOUQUET_NAME_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
+/**
+ * dvb_bouquet_name_descriptor  structure.
+ */
 struct dvb_bouquet_name_descriptor {
 	struct descriptor d;
 
 	/* uint8_t name[] */
 } packed;
 
+/**
+ * Process a dvb_bouquet_name_descriptor.
+ *
+ * @param d Generic descriptor pointer.
+ * @return dvb_bouquet_name_descriptor pointer, or NULL on error.
+ */
 static inline struct dvb_bouquet_name_descriptor*
-	dvb_bouquet_name_descriptor_parse(struct descriptor* d)
+	dvb_bouquet_name_descriptor_codec(struct descriptor* d)
 {
 	return (struct dvb_bouquet_name_descriptor*) d;
 }
 
+/**
+ * Accessor for the name field of a dvb_bouquet_name_descriptor.
+ *
+ * @param d dvb_bouquet_name_descriptor pointer.
+ * @return Pointer to the field.
+ */
 static inline uint8_t *
 	dvb_bouquet_name_descriptor_name(struct dvb_bouquet_name_descriptor *d)
 {
 	return (uint8_t *) d + sizeof(struct dvb_bouquet_name_descriptor);
 }
 
+/**
+ * Determine the length of the name field of a dvb_bouquet_name_descriptor in bytes.
+ *
+ * @param d dvb_bouquet_name_descriptor pointer.
+ * @return Length of the field in bytes.
+ */
 static inline int
 	dvb_bouquet_name_descriptor_name_size(struct dvb_bouquet_name_descriptor *d)
 {

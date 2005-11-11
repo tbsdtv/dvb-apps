@@ -23,7 +23,7 @@
 #define _UCSI_MPEG_CA_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
 /**
  * mpeg_ca_descriptor structure
@@ -59,7 +59,7 @@ static inline struct mpeg_ca_descriptor*
  * Accessor for pointer to data field of an mpeg_ca_descriptor.
  *
  * @param d The mpeg_ca_descriptor structure.
- * @return Pointer to the field, or NULL on error.
+ * @return Pointer to the field.
  */
 static inline uint8_t *
 	mpeg_ca_descriptor_data(struct mpeg_ca_descriptor *d)

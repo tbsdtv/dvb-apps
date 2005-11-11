@@ -21,7 +21,7 @@
 
 #include <ucsi/dvb/tdt_section.h>
 
-struct dvb_tdt_section * dvb_tdt_section_parse(struct section * section)
+struct dvb_tdt_section * dvb_tdt_section_codec(struct section * section)
 {
 	int len = section->length + sizeof(struct section);
 	struct dvb_tdt_section * ret = (struct dvb_tdt_section *) section;

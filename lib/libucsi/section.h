@@ -21,10 +21,11 @@
 #ifndef _UCSI_SECTION_H
 #define _UCSI_SECTION_H 1
 
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 #include <ucsi/descriptor.h>
-#include <stdint.h>
 #include <ucsi/crc32.h>
+#include <stdint.h>
+#include <string.h>
 
 #define CRC_SIZE 4
 
@@ -81,14 +82,14 @@ static inline struct section * section_codec(uint8_t * buf, int len)
 }
 
 /**
- * Parse an extended section structure in-place.
+ * Decode an extended section structure.
  *
- * @param buf Pointer to the parsed section structure.
+ * @param section Pointer to the processed section structure.
  * @param check_crc If 1, the CRC of the section will also be checked.
  * @return Pointer to the parsed section_ext structure, or NULL if invalid.
  */
-static inline struct section_ext * section_ext_parse(struct section * section,
-						     int check_crc)
+static inline struct section_ext * section_ext_decode(struct section * section,
+						      int check_crc)
 {
 	if (section->syntax_indicator == 0)
 		return NULL;
@@ -115,7 +116,40 @@ static inline struct section_ext * section_ext_parse(struct section * section,
 	return (struct section_ext *)section;
 }
 
-// FIXME: write matching section_ext_update() function
+/**
+ * Encode an extended section structure for transmission.
+ *
+ * @param section Pointer to the section_ext structure.
+ * @param update_crc If 1, the CRC of the section will also be updated.
+ * @return Pointer to the encoded section_ext structure, or NULL if invalid.
+ */
+static inline struct section_ext * section_ext_encode(struct section_ext* section,
+						      int update_crc)
+{
+	if (section->syntax_indicator == 0)
+		return NULL;
+
+	bswap16((uint8_t *)section + sizeof(struct section));
+
+	if (update_crc) {
+		uint8_t * buf = (uint8_t *) section;
+		int len = sizeof(struct section) + section->length;
+		uint32_t crc;
+
+		/* zap the current CRC value */
+		memset(buf+len-4, 0, 4);
+
+		/* the crc has to be performed on the swapped data */
+		bswap16(buf+1);
+		crc = crc32(CRC32_INIT, buf, len);
+		bswap16(buf+1);
+
+		/* update the CRC */
+		*((uint32_t*) (buf+len-4)) = crc;
+	}
+
+	return (struct section_ext *)section;
+}
 
 /**
  * Determine the total length of a section, including the header.

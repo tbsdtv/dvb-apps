@@ -23,7 +23,7 @@
 #define _UCSI_MPEG_FMXBUFFER_SIZE_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
 
 /**
@@ -51,7 +51,7 @@ static inline struct mpeg_fmxbuffer_size_descriptor*
  * Retrieve pointer to descriptors field of mpeg_fmxbuffer_size_descriptor structure.
  *
  * @param d mpeg_fmxbuffer_size_descriptor structure pointer.
- * @return Pointer to the descriptors, or NULL on error.
+ * @return Pointer to the descriptors.
  */
 static inline uint8_t *
 	mpeg_fmxbuffer_size_descriptor_descriptors(struct mpeg_fmxbuffer_size_descriptor *d)

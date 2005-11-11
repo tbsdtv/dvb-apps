@@ -23,8 +23,11 @@
 #define _UCSI_DVB_MOSAIC_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
+/**
+ * dvb_mosaic_descriptor structure.
+ */
 struct dvb_mosaic_descriptor {
 	struct descriptor d;
 
@@ -35,6 +38,9 @@ struct dvb_mosaic_descriptor {
 	/* struct dvb_mosaic_info infos[] */
 } packed;
 
+/**
+ * An entry in the infos field of a dvb_mosaic_descriptor.
+ */
 struct dvb_mosaic_info {
   EBIT3(uint16_t logical_cell_id		: 6; ,
 	uint16_t reserved			: 7; ,
@@ -45,15 +51,24 @@ struct dvb_mosaic_info {
 	/* struct dvb_mosaic_linkage linkage */
 } packed;
 
+/**
+ * An entry in the fields field of a dvb_mosaic_info.
+ */
 struct dvb_mosaic_elementary_cell_field {
   EBIT2(uint8_t reserved		: 2; ,
 	uint8_t elementary_cell_id	: 6; );
 } packed;
 
+/**
+ * Part2 of dvb_mosaic_info, following the variable length fields field.
+ */
 struct dvb_mosaic_info_part2 {
 	uint8_t cell_linkage_info;
 } packed;
 
+/**
+ * Structure describing the linkage field of a dvb_mosaic_info
+ */
 struct dvb_mosaic_linkage {
 	union {
 		struct dvb_mosaic_linkage_01 {
@@ -81,8 +96,13 @@ struct dvb_mosaic_linkage {
 	} u;
 } packed;
 
+/**
+ * Process a dvb_mosaic_descriptor.
+ *
+ * @param d Pointer to a generic descriptor structure.
+ */
 static inline struct dvb_mosaic_descriptor*
-	dvb_mosaic_descriptor_parse(struct descriptor* d)
+	dvb_mosaic_descriptor_codec(struct descriptor* d)
 {
 	uint8_t* buf = (uint8_t*) d + 2;
 	int pos = 0;
@@ -162,16 +182,34 @@ static inline struct dvb_mosaic_descriptor*
 	return p;
 }
 
+/**
+ * Iterator over the infos field of a dvb_mosaic_descriptor.
+ *
+ * @param d dvb_mosaic_descriptor pointer.
+ * @param pos Variable containing a pointer to the current dvb_mosaic_info.
+ */
 #define dvb_mosaic_descriptor_infos_for_each(d, pos) \
 	for ((pos) = dvb_mosaic_descriptor_infos_first(d); \
 	     (pos); \
 	     (pos) = dvb_mosaic_descriptor_infos_next(d, pos))
 
+/**
+ * Iterator over the fields field of a dvb_mosaic_info.
+ *
+ * @param info dvb_mosaic_info pointer.
+ * @param pos Variable containing a pointer to the current dvb_mosaic_elementary_cell_field.
+ */
 #define dvb_mosaic_info_fields_for_each(info, pos) \
 	for ((pos) = dvb_mosaic_info_fields_first(info); \
 	     (pos); \
 	     (pos) = dvb_mosaic_info_fields_next(info, pos))
 
+/**
+ * Accessor for the second part of the dvb_mosaic_info structure.
+ *
+ * @param entry dvb_mosaic_info pointer.
+ * @return dvb_mosaic_info_part2 pointer.
+ */
 static inline struct dvb_mosaic_info_part2*
 	dvb_mosaic_info_part2(struct dvb_mosaic_info* entry)
 {
@@ -180,6 +218,12 @@ static inline struct dvb_mosaic_info_part2*
 		 entry->elementary_cell_field_length);
 }
 
+/**
+ * Accessor for the linkage field a dvb_mosaic_info structure.
+ *
+ * @param entry dvb_mosaic_info_part2 pointer.
+ * @return dvb_mosaic_linkage pointer, or NULL on error.
+ */
 static inline struct dvb_mosaic_linkage*
 	dvb_mosaic_linkage(struct dvb_mosaic_info_part2* entry)
 {

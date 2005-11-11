@@ -23,21 +23,33 @@
 #define _UCSI_DVB_SERVICE_LIST_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
+/**
+ * dvb_service_list_descriptor structure.
+ */
 struct dvb_service_list_descriptor {
 	struct descriptor d;
 
 	/* struct dvb_service_list_service services[] */
 } packed;
 
+/**
+ * An entry in the services field of a dvb_service_list_descriptor.
+ */
 struct dvb_service_list_service {
 	uint16_t service_id;
 	uint8_t service_type;
 } packed;
 
+/**
+ * Process a dvb_service_list_descriptor.
+ *
+ * @param d Generic descriptor structure.
+ * @return dvb_service_list_descriptor pointer, or NULL on error.
+ */
 static inline struct dvb_service_list_descriptor*
-	dvb_service_list_descriptor_parse(struct descriptor* d)
+	dvb_service_list_descriptor_codec(struct descriptor* d)
 {
 	int pos = 0;
 	int len = d->len;
@@ -54,6 +66,12 @@ static inline struct dvb_service_list_descriptor*
 	return (struct dvb_service_list_descriptor*) d;
 }
 
+/**
+ * Iterator for services field in a dvb_service_list_descriptor.
+ *
+ * @param d dvb_service_list_descriptor pointer.
+ * @param pos Variable containing a pointer to the current dvb_service_list_service.
+ */
 #define dvb_service_list_descriptor_services_for_each(d, pos) \
 	for ((pos) = dvb_service_list_descriptor_services_first(d); \
 	     (pos); \

@@ -23,28 +23,43 @@
 #define _UCSI_DVB_VBI_DATA_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
+/**
+ * dvb_vbi_data_descriptor structure
+ */
 struct dvb_vbi_data_descriptor {
 	struct descriptor d;
 
 	/* struct dvb_vbi_data_entry entries[] */
 } packed;
 
+/**
+ * An entry in the dvb_vbi_data_descriptor entries field.
+ */
 struct dvb_vbi_data_entry {
 	uint8_t data_service_id;
 	uint8_t data_service_descriptor_length;
 	/* uint8_t data[] */
 } packed;
 
+/**
+ * Format of the dvb_vbi_data_entry data field, if data_service_id == 1.
+ */
 struct dvb_vbi_data_1 {
   EBIT3(uint8_t reserved 	: 2; ,
 	uint8_t field_parity 	: 1; ,
 	uint8_t line_offset	: 5; );
 } packed;
 
+/**
+ * Process a dvb_vbi_data_descriptor.
+ *
+ * @param d Generic descriptor structure.
+ * @return dvb_vbi_data_descriptor pointer, or NULL on error.
+ */
 static inline struct dvb_vbi_data_descriptor*
-	dvb_vbi_data_descriptor_parse(struct descriptor* d)
+	dvb_vbi_data_descriptor_codec(struct descriptor* d)
 {
 	uint8_t* p = (uint8_t*) d + 2;
 	int pos = 0;
@@ -72,11 +87,23 @@ static inline struct dvb_vbi_data_descriptor*
 	return (struct dvb_vbi_data_descriptor*) d;
 }
 
+/**
+ * Iterator for entries field in a dvb_vbi_data_descriptor structure.
+ *
+ * @param d Pointer to dvb_vbi_data_descriptor structure.
+ * @param pos Variable holding pointer to the current dvb_vbi_data_entry structure.
+ */
 #define dvb_vbi_data_descriptor_entries_for_each(d, pos) \
 	for ((pos) = dvb_vbi_data_descriptor_entries_first(d); \
 	     (pos); \
 	     (pos) = dvb_vbi_data_descriptor_entries_next(d, pos))
 
+/**
+ * Get a pointer to the data field of a dvb_vbi_data_entry.
+ *
+ * @param d dvb_vbi_data_entry structure.
+ * @return Pointer to the data field.
+ */
 static inline uint8_t *
 	dvb_vbi_data_entry_data(struct dvb_vbi_data_entry *d)
 {

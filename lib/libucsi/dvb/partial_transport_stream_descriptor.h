@@ -23,8 +23,11 @@
 #define _UCSI_DVB_PARTIAL_TRANSPORT_STREAM_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
+/**
+ * dvb_partial_transport_stream_descriptor structure.
+ */
 struct dvb_partial_transport_stream_descriptor {
 	struct descriptor d;
 
@@ -36,8 +39,14 @@ struct dvb_partial_transport_stream_descriptor {
 	uint64_t maximum_overall_smoothing_rate		:14;  );
 } packed;
 
+/**
+ * Process a dvb_partial_transport_stream_descriptor.
+ *
+ * @param d Generic descriptor pointer.
+ * @return dvb_partial_transport_stream_descriptor pointer, or NULL on error.
+ */
 static inline struct dvb_partial_transport_stream_descriptor*
-	dvb_partial_transport_stream_descriptor_parse(struct descriptor* d)
+	dvb_partial_transport_stream_descriptor_codec(struct descriptor* d)
 {
 	if (d->len != (sizeof(struct dvb_partial_transport_stream_descriptor) - 2))
 		return NULL;

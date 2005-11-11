@@ -23,26 +23,47 @@
 #define _UCSI_DVB_TRANSPORT_STREAM_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
+/**
+ * dvb_transport_stream_descriptor structure.
+ */
 struct dvb_transport_stream_descriptor {
 	struct descriptor d;
 
 	/* uint8_t data[] */
 } packed;
 
+/**
+ * Process dvb_transport_stream_descriptor structure.
+ *
+ * @param d Pointer to generic descriptor.
+ * @return dvb_transport_stream_descriptor structure or NULL on error.
+ */
 static inline struct dvb_transport_stream_descriptor*
-	dvb_transport_stream_descriptor_parse(struct descriptor* d)
+	dvb_transport_stream_descriptor_codec(struct descriptor* d)
 {
 	return (struct dvb_transport_stream_descriptor*) d;
 }
 
+/**
+ * Retrieve a pointer to the data field of a dvb_transport_stream_descriptor.
+ *
+ * @param d dvb_transport_stream_descriptor structure.
+ * @return Pointer to data field.
+ */
 static inline uint8_t *
 	dvb_transport_stream_descriptor_data(struct dvb_transport_stream_descriptor *d)
 {
 	return (uint8_t *) d + sizeof(struct dvb_transport_stream_descriptor);
 }
 
+/**
+ * Calculate the length of the data field of a dvb_transport_stream_descriptor.
+ *
+ * @param d dvb_transport_stream_descriptor structure.
+ * @return length of data field in bytes.
+ */
 static inline int
 	dvb_transport_stream_descriptor_data_length(struct dvb_transport_stream_descriptor *d)
 {

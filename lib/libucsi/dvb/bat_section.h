@@ -24,6 +24,9 @@
 
 #include <ucsi/section.h>
 
+/**
+ * dvb_bat_section structure.
+ */
 struct dvb_bat_section {
 	struct section_ext head;
 
@@ -33,12 +36,18 @@ struct dvb_bat_section {
 	/* struct dvb_bat_section_part2 part2 */
 };
 
+/**
+ * Second part of a dvb_bat_section, following the variable length descriptors field.
+ */
 struct dvb_bat_section_part2 {
   EBIT2(uint16_t reserved_2			: 4; ,
 	uint16_t transport_stream_loop_length	:12; );
 	/* struct dvb_bat_transport transports[] */
 } packed;
 
+/**
+ * An entry in the transports field of a dvb_bat_section_part2.
+ */
 struct dvb_bat_transport {
 	uint16_t transport_stream_id;
 	uint16_t original_network_id;
@@ -47,13 +56,31 @@ struct dvb_bat_transport {
 	/* struct descriptor descriptors[] */
 };
 
-struct dvb_bat_section *dvb_bat_section_parse(struct section_ext *);
+/**
+ * Process a dvb_bat_section.
+ *
+ * @param section Generic section  pointer.
+ * @return dvb_bat_section pointer, or NULL on error.
+ */
+struct dvb_bat_section *dvb_bat_section_codec(struct section_ext *section);
 
+/**
+ * Iterator for the descriptors field in a dvb_bat_section.
+ *
+ * @param bat dvb_bat_section pointer.
+ * @param pos Variable containing a pointer to the current descriptor.
+ */
 #define dvb_bat_section_descriptors_for_each(bat, pos) \
 	for ((pos) = dvb_bat_section_descriptors_first(bat); \
 	     (pos); \
 	     (pos) = dvb_bat_section_descriptors_next(bat, pos))
 
+/**
+ * Accessor for the second part of a dvb_bat_section.
+ *
+ * @param bat dvb_bat_section pointer.
+ * @return dvb_bat_section_part2 pointer.
+ */
 static inline struct dvb_bat_section_part2 *
 	dvb_bat_section_part2(struct dvb_bat_section *bat)
 {
@@ -64,11 +91,23 @@ static inline struct dvb_bat_section_part2 *
 
 }
 
+/**
+ * Iterator for the transports field of a dvb_bat_section_part2.
+ *
+ * @param part2 dvb_bat_section_part2 pointer.
+ * @param pos Variable containing a pointer to the current dvb_bat_transport.
+ */
 #define dvb_bat_section_transports_for_each(part2, pos) \
 	for ((pos) = dvb_bat_section_transports_first(part2); \
 	     (pos); \
 	     (pos) = dvb_bat_section_transports_next(part2, pos))
 
+/**
+ * Iterator for the descriptors field of a dvb_bat_transport.
+ *
+ * @param transport dvb_bat_transport pointer.
+ * @param pos Variable containing a pointer to the current descriptor.
+ */
 #define dvb_bat_transport_descriptors_for_each(transport, pos) \
 	for ((pos) = dvb_bat_transport_descriptors_first(transport); \
 	     (pos); \

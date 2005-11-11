@@ -21,7 +21,7 @@
 
 #include <ucsi/dvb/tot_section.h>
 
-struct dvb_tot_section *dvb_tot_section_parse(struct section *section)
+struct dvb_tot_section *dvb_tot_section_codec(struct section *section)
 {
 	uint8_t * buf = (uint8_t *)section;
 	int pos = sizeof(struct section);

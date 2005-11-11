@@ -23,8 +23,11 @@
 #define _UCSI_DVB_MULTILINGUAL_COMPONENT_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
+/**
+ * dvb_multilingual_component_descriptor structure.
+ */
 struct dvb_multilingual_component_descriptor {
 	struct descriptor d;
 
@@ -32,14 +35,23 @@ struct dvb_multilingual_component_descriptor {
 	/* struct dvb_multilingual_component components[] */
 } packed;
 
+/**
+ * An entry in the components field of a dvb_multilingual_component_descriptor.
+ */
 struct dvb_multilingual_component {
 	uint8_t iso_639_language_code[3];
 	uint8_t text_description_length;
 	/* uint8_t text_char[] */
 } packed;
 
+/**
+ * Process a dvb_multilingual_component_descriptor.
+ *
+ * @param d Generic descriptor pointer.
+ * @return dvb_multilingual_component_descriptor pointer, or NULL on error.
+ */
 static inline struct dvb_multilingual_component_descriptor*
-	dvb_multilingual_component_descriptor_parse(struct descriptor* d)
+	dvb_multilingual_component_descriptor_codec(struct descriptor* d)
 {
 	uint8_t* buf = (uint8_t*) d + 2;
 	int pos = sizeof(struct dvb_multilingual_component_descriptor) - 2;
@@ -66,11 +78,23 @@ static inline struct dvb_multilingual_component_descriptor*
 	return (struct dvb_multilingual_component_descriptor*) d;
 }
 
+/**
+ * Iterator for entries in the components field of a dvb_multilingual_component_descriptor.
+ *
+ * @param d Generic descriptor pointer.
+ * @param pos Variable containing a pointer to the current dvb_multilingual_component.
+ */
 #define dvb_multilingual_component_descriptor_components_for_each(d, pos) \
 	for ((pos) = dvb_multilingual_component_descriptor_components_first(d); \
 	     (pos); \
 	     (pos) = dvb_multilingual_component_descriptor_components_next(d, pos))
 
+/**
+ * Accessor for the text_char field in a dvb_multilingual_component.
+ *
+ * @param e dvb_multilingual_component pointer.
+ * @return Pointer to the field.
+ */
 static inline uint8_t *
 	dvb_multilingual_component_text_char(struct dvb_multilingual_component *e)
 {

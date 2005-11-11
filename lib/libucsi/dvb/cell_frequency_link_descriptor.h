@@ -23,14 +23,20 @@
 #define _UCSI_DVB_CELL_FREQUENCY_LINK_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
+/**
+ * dvb_cell_frequency_link_descriptor structure.
+ */
 struct dvb_cell_frequency_link_descriptor {
 	struct descriptor d;
 
 	/* struct dvb_cell_frequency_link_cell cells[] */
 } packed;
 
+/**
+ * An entry in the cells field of a dvb_cell_frequency_link_descriptor.
+ */
 struct dvb_cell_frequency_link_cell {
 	uint16_t cell_id;
 	uint32_t frequency;
@@ -38,13 +44,22 @@ struct dvb_cell_frequency_link_cell {
 	/* struct dvb_cell_frequency_link_subcell subcells[] */
 } packed;
 
+/**
+ * An entry in the subcells field of a dvb_cell_frequency_link_cell.
+ */
 struct dvb_cell_frequency_link_cell_subcell {
 	uint8_t cell_id_extension;
 	uint32_t transposer_frequency;
 } packed;
 
+/**
+ * Process a dvb_cell_frequency_link_descriptor.
+ *
+ * @param d Generic descriptor pointer.
+ * @return dvb_cell_frequency_link_descriptor pointer, or NULL on error.
+ */
 static inline struct dvb_cell_frequency_link_descriptor*
-	dvb_cell_frequency_link_descriptor_parse(struct descriptor* d)
+	dvb_cell_frequency_link_descriptor_codec(struct descriptor* d)
 {
 	int pos = 0;
 	int pos2 = 0;
@@ -82,11 +97,23 @@ static inline struct dvb_cell_frequency_link_descriptor*
 	return (struct dvb_cell_frequency_link_descriptor*) d;
 }
 
+/**
+ * Iterator for the cells field of a dvb_cell_frequency_link_descriptor.
+ *
+ * @param d dvb_cell_frequency_link_descriptor pointer.
+ * @param pos Variable holding a pointer to the current dvb_cell_frequency_link_cell.
+ */
 #define dvb_cell_frequency_link_descriptor_cells_for_each(d, pos) \
 	for ((pos) = dvb_cell_frequency_link_descriptor_cells_first(d); \
 	     (pos); \
 	     (pos) = dvb_cell_frequency_link_descriptor_cells_next(d, pos))
 
+/**
+ * Iterator for the subcells field of a dvb_cell_frequency_link_cell.
+ *
+ * @param cell dvb_cell_frequency_link_cell pointer.
+ * @param pos Variable holding a pointer to the current dvb_cell_frequency_link_cell_subcell.
+ */
 #define dvb_cell_frequency_link_cell_subcells_for_each(cell, pos) \
 	for ((pos) = dvb_cell_frequency_link_cell_subcells_first(cell); \
 	     (pos); \

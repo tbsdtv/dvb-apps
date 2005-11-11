@@ -23,7 +23,7 @@
 #define _UCSI_MPEG_STD_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
 /**
  * mpeg_std_descriptor structure.

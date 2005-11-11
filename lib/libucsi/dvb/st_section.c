@@ -21,7 +21,7 @@
 
 #include <ucsi/dvb/st_section.h>
 
-struct dvb_st_section * dvb_st_section_parse(struct section * section)
+struct dvb_st_section * dvb_st_section_codec(struct section * section)
 {
 	struct dvb_st_section * ret = (struct dvb_st_section *)section;
 

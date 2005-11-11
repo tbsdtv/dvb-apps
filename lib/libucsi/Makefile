@@ -1,14 +1,16 @@
 
 OBJ =	crc32.o \
 	section_buf.o \
-	transport_packet.o
+	transport_packet.o \
+	convert.o
 
-INC = 	common.h \
+INC = 	endianops.h \
 	crc32.h \
 	descriptor.h \
 	section.h \
 	section_buf.h \
-	transport_packet.h
+	transport_packet.h \
+	convert.h
 
 CC = gcc
 CFLAGS = -Wall -Wpointer-arith -g -fPIC

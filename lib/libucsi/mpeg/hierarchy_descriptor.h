@@ -23,7 +23,7 @@
 #define _UCSI_MPEG_HIERARCHY_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
 /**
  * mpeg_hierarchy_descriptor structure.

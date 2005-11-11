@@ -23,7 +23,7 @@
 #define _UCSI_MPEG_EXTERNAL_ES_ID_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
 /**
  * mpeg_external_es_id_descriptor structure.

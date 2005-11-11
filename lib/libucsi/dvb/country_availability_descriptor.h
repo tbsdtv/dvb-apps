@@ -23,8 +23,11 @@
 #define _UCSI_DVB_COUNTRY_AVAILABILITY_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
+/**
+ * dvb_country_availability_descriptor structure.
+ */
 struct dvb_country_availability_descriptor {
 	struct descriptor d;
 
@@ -33,12 +36,21 @@ struct dvb_country_availability_descriptor {
 	/* struct dvb_country_availability_entry countries[] */
 } packed;
 
+/**
+ * An entry in the countries field of a dvb_country_availability_descriptor.
+ */
 struct dvb_country_availability_entry {
 	uint8_t country_code[3];
 } packed;
 
+/**
+ * Process a dvb_country_availability_descriptor.
+ *
+ * @param d Generic descriptor pointer.
+ * @return dvb_country_availability_descriptor pointer, or NULL on error.
+ */
 static inline struct dvb_country_availability_descriptor*
-	dvb_country_availability_descriptor_parse(struct descriptor* d)
+	dvb_country_availability_descriptor_codec(struct descriptor* d)
 {
 	int len = d->len;
 
@@ -51,6 +63,12 @@ static inline struct dvb_country_availability_descriptor*
 	return (struct dvb_country_availability_descriptor*) d;
 }
 
+/**
+ * Iterator for the countries field of a dvb_country_availability_descriptor.
+ *
+ * @param d dvb_country_availability_descriptor pointer.
+ * @param pos Variable containing a pointer to the current dvb_country_availability_entry.
+ */
 #define dvb_country_availability_descriptor_countries_for_each(d, pos) \
 	for ((pos) = dvb_country_availability_descriptor_countries_first(d); \
 	     (pos); \

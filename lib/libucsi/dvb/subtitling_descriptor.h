@@ -23,14 +23,20 @@
 #define _UCSI_DVB_SUBTITLING_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
+/**
+ * dvb_subtitling_descriptor structure.
+ */
 struct dvb_subtitling_descriptor {
 	struct descriptor d;
 
 	/* struct dvb_subtitling_entry subtitles[] */
 } packed;
 
+/**
+ * An entry in the subtitles field of the a dvb_subtitling_descriptor.
+ */
 struct dvb_subtitling_entry {
 	uint8_t iso_639_language_code[3];
 	uint8_t subtitling_type;
@@ -38,8 +44,14 @@ struct dvb_subtitling_entry {
 	uint16_t ancillary_page_id;
 } packed;
 
+/**
+ * Process a dvb_subtitling_descriptor.
+ *
+ * @param d Generic descriptor.
+ * @return dvb_subtitling_descriptor pointer, or NULL on error.
+ */
 static inline struct dvb_subtitling_descriptor*
-	dvb_subtitling_descriptor_parse(struct descriptor* d)
+	dvb_subtitling_descriptor_codec(struct descriptor* d)
 {
 	int pos = 0;
 	uint8_t* ptr = (uint8_t*) d + 2;
@@ -57,6 +69,12 @@ static inline struct dvb_subtitling_descriptor*
 	return (struct dvb_subtitling_descriptor*) d;
 }
 
+/**
+ * Iterator for subtitles field in dvb_subtitling_descriptor.
+ *
+ * @param d dvb_subtitling_descriptor pointer.
+ * @param pos Variable containing a pointer to current dvb_subtitling_entry.
+ */
 #define dvb_subtitling_descriptor_subtitles_for_each(d, pos) \
 	for ((pos) = dvb_subtitling_descriptor_subtitles_first(d); \
 	     (pos); \

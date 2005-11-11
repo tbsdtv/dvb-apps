@@ -23,7 +23,7 @@
 #define _UCSI_MPEG_REGISTRATION_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
 /**
  * mpeg_registration_descriptor structure.
@@ -57,7 +57,7 @@ static inline struct mpeg_registration_descriptor*
  * mpeg_registration_descriptor structure.
  *
  * @param d Pointer to the mpeg_registration_descriptor structure.
- * @return Pointer to the field, or NULL on error.
+ * @return Pointer to the field.
  */
 static inline uint8_t *
 	mpeg_registration_descriptor_additional_id_info(struct mpeg_registration_descriptor *d)

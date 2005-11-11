@@ -23,8 +23,11 @@
 #define _UCSI_DVB_COMPONENT_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
+/**
+ * dvb_component_descriptor structure.
+ */
 struct dvb_component_descriptor {
 	struct descriptor d;
 
@@ -36,8 +39,14 @@ struct dvb_component_descriptor {
 	/* uint8_t text[] */
 } packed;
 
+/**
+ * Process a dvb_component_descriptor.
+ *
+ * @param d Pointer to a generic descriptor.
+ * @return dvb_component_descriptor pointer, or NULL on error.
+ */
 static inline struct dvb_component_descriptor*
-	dvb_component_descriptor_parse(struct descriptor* d)
+	dvb_component_descriptor_codec(struct descriptor* d)
 {
 	if (d->len < (sizeof(struct dvb_component_descriptor) - 2))
 		return NULL;
@@ -45,12 +54,24 @@ static inline struct dvb_component_descriptor*
 	return (struct dvb_component_descriptor*) d;
 }
 
+/**
+ * Accessor for the text field of a dvb_component_descriptor.
+ *
+ * @param d dvb_component_descriptor pointer.
+ * @return Pointer to the field.
+ */
 static inline uint8_t *
 	dvb_component_descriptor_text(struct dvb_component_descriptor *d)
 {
 	return (uint8_t *) d + sizeof(struct dvb_component_descriptor);
 }
 
+/**
+ * Determine the length of the text field of a dvb_component_descriptor.
+ *
+ * @param d dvb_component_descriptor pointer.
+ * @return Length of the field in bytes.
+ */
 static inline int
 	dvb_component_descriptor_text_length(struct dvb_component_descriptor *d)
 {

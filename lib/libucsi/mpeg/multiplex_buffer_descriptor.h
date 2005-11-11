@@ -23,7 +23,7 @@
 #define _UCSI_MPEG_MULTIPLEX_BUFFER_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
 /**
  * mpeg_multiplex_buffer_descriptor descriptor.

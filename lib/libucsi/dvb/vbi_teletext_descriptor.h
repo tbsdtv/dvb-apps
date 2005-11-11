@@ -23,14 +23,20 @@
 #define _UCSI_DVB_VBI_TELETEXT_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
+/**
+ * dvb_vbi_teletext_descriptor structure
+ */
 struct dvb_vbi_teletext_descriptor {
 	struct descriptor d;
 
 	/* struct dvb_vbi_teletext_entry entries[] */
 } packed;
 
+/**
+ * An entry in a dvb_vbi_teletext_descriptor structure.
+ */
 struct dvb_vbi_teletext_entry {
 	uint8_t language_code[3];
   EBIT2(uint8_t teletext_type		: 5; ,
@@ -38,8 +44,14 @@ struct dvb_vbi_teletext_entry {
 	uint8_t teletext_page_number;
 } packed;
 
+/**
+ * Process an dvb_vbi_teletext_descriptor.
+ *
+ * @param d Generic descriptor.
+ * @return dvb_vbi_teletext_descriptor pointer, or NULL on error.
+ */
 static inline struct dvb_vbi_teletext_descriptor*
-	dvb_vbi_teletext_descriptor_parse(struct descriptor* d)
+	dvb_vbi_teletext_descriptor_codec(struct descriptor* d)
 {
 	if (d->len % sizeof(struct dvb_vbi_teletext_entry))
 		return NULL;
@@ -47,6 +59,12 @@ static inline struct dvb_vbi_teletext_descriptor*
 	return (struct dvb_vbi_teletext_descriptor*) d;
 }
 
+/**
+ * Iterator for entries field of a dvb_vbi_teletext_descriptor.
+ *
+ * @param d Pointer to dvb_vbi_teletext_descriptor.
+ * @param pos Variable holding a pointer to the current dvb_vbi_teletext_entry.
+ */
 #define dvb_vbi_teletext_descriptor_entries_for_each(d, pos) \
 	for ((pos) = dvb_vbi_teletext_descriptor_entries_first(d); \
 	     (pos); \

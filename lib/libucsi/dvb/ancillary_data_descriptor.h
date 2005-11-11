@@ -23,16 +23,25 @@
 #define _UCSI_DVB_ANCILLARY_DATA_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
+/**
+ * dvb_ancillary_data_descriptor structure.
+ */
 struct dvb_ancillary_data_descriptor {
 	struct descriptor d;
 
 	uint8_t ancillary_data_identifier;
 } packed;
 
+/**
+ * Process a dvb_ancillary_data_descriptor.
+ *
+ * @param d Generic descriptor pointer.
+ * @return dvb_ancillary_data_descriptor pointer, or NULL on error.
+ */
 static inline struct dvb_ancillary_data_descriptor*
-	dvb_ancillary_data_descriptor_parse(struct descriptor* d)
+	dvb_ancillary_data_descriptor_codec(struct descriptor* d)
 {
 	if (d->len != (sizeof(struct dvb_ancillary_data_descriptor) - 2))
 		return NULL;

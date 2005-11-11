@@ -23,7 +23,7 @@
 #define _UCSI_DVB_CA_SYSTEM_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
 // FIXME: implement this from the DAVIC specs when/if available.
 

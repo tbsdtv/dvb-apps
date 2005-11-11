@@ -23,14 +23,20 @@
 #define _UCSI_DVB_LOCAL_TIME_OFFSET_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
+/**
+ * dvb_local_time_offset_descriptor parameter.
+ */
 struct dvb_local_time_offset_descriptor {
 	struct descriptor d;
 
 	/* struct dvb_local_time_offset offsets[] */
 } packed;
 
+/**
+ * Entry in the offsets field of dvb_local_time_offset_descriptor.
+ */
 struct dvb_local_time_offset {
 	uint8_t country_code[3];
   EBIT3(uint8_t country_region_id		: 6; ,
@@ -41,8 +47,14 @@ struct dvb_local_time_offset {
 	uint16_t next_time_offset;
 } packed;
 
+/**
+ * Process a dvb_local_time_offset_descriptor.
+ *
+ * @param d Generic descriptor pointer.
+ * @return dvb_local_time_offset_descriptor pointer, or NULL on error.
+ */
 static inline struct dvb_local_time_offset_descriptor*
-	dvb_local_time_offset_descriptor_parse(struct descriptor* d)
+	dvb_local_time_offset_descriptor_codec(struct descriptor* d)
 {
 	int len = d->len;
 	uint8_t* buf = (uint8_t*) d + 2;
@@ -61,6 +73,12 @@ static inline struct dvb_local_time_offset_descriptor*
 	return (struct dvb_local_time_offset_descriptor*) d;
 }
 
+/**
+ * Iterator for the offsets field of a dvb_local_time_offset_descriptor.
+ *
+ * @param d dvb_local_time_offset_descriptor pointer.
+ * @param pos Variable containing a pointer to the current dvb_local_time_offset.
+ */
 #define dvb_local_time_offset_descriptor_offsets_for_each(d, pos) \
 	for ((pos) = dvb_local_time_offset_descriptor_offsets_first(d); \
 	     (pos); \

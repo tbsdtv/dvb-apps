@@ -23,8 +23,11 @@
 #define _UCSI_DVB_SERVICE_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
+/**
+ * dvb_service_descriptor structure.
+ */
 struct dvb_service_descriptor {
 	struct descriptor d;
 
@@ -34,13 +37,23 @@ struct dvb_service_descriptor {
 	/* struct dvb_service_descriptor_part2 part2 */
 } packed;
 
+/**
+ * Second part of a dvb_service_descriptor following the variable length
+ * service_provider_name field.
+ */
 struct dvb_service_descriptor_part2 {
 	uint8_t service_name_length;
 	/* uint8_t service_name[] */
 } packed;
 
+/**
+ * Process a dvb_service_descriptor.
+ *
+ * @param d Generic descriptor pointer.
+ * @return dvb_service_descriptor pointer, or NULL on error.
+ */
 static inline struct dvb_service_descriptor*
-	dvb_service_descriptor_parse(struct descriptor* d)
+	dvb_service_descriptor_codec(struct descriptor* d)
 {
 	struct dvb_service_descriptor *p =
 		(struct dvb_service_descriptor *) d;
@@ -71,12 +84,24 @@ static inline struct dvb_service_descriptor*
 	return p;
 }
 
+/**
+ * Accessor for the service_provider_name field of a dvb_service_descriptor.
+ *
+ * @param d dvb_service_descriptor pointer.
+ * @return Pointer to the service_provider_name field.
+ */
 static inline uint8_t *
-	dvb_service_descriptor_provider_name(struct dvb_service_descriptor *d)
+	dvb_service_descriptor_service_provider_name(struct dvb_service_descriptor *d)
 {
 	return (uint8_t *) d + sizeof(struct dvb_service_descriptor);
 }
 
+/**
+ * Accessor for the second part of a dvb_service_descriptor.
+ *
+ * @param d dvb_service_descriptor pointer.
+ * @return dvb_service_descriptor_part2 pointer.
+ */
 static inline struct dvb_service_descriptor_part2 *
 	dvb_service_descriptor_part2(struct dvb_service_descriptor *d)
 {
@@ -85,8 +110,14 @@ static inline struct dvb_service_descriptor_part2 *
 		 d->service_provider_name_length);
 }
 
+/**
+ * Accessor for the service_name field of a dvb_service_descriptor_part2.
+ *
+ * @param d dvb_service_descriptor_part2 pointer.
+ * @return Pointer to the service_name field.
+ */
 static inline uint8_t *
-	dvb_service_descriptor_text_char(struct dvb_service_descriptor_part2 *d)
+	dvb_service_descriptor_service_name(struct dvb_service_descriptor_part2 *d)
 {
 	return (uint8_t *) d + sizeof(struct dvb_service_descriptor_part2);
 }

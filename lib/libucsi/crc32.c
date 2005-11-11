@@ -87,3 +87,11 @@ uint32_t crc32tbl[] =
 	0xafb010b1, 0xab710d06, 0xa6322bdf, 0xa2f33668,
 	0xbcb4666d, 0xb8757bda, 0xb5365d03, 0xb1f740b4
 };
+
+/**
+ * These are here so that something pulls in the headers to check for compile errors.
+ */
+#include <ucsi/mpeg/descriptor.h>
+#include <ucsi/mpeg/section.h>
+#include <ucsi/dvb/descriptor.h>
+#include <ucsi/dvb/section.h>

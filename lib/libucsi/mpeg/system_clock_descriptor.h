@@ -23,7 +23,7 @@
 #define _UCSI_MPEG_SYSTEM_CLOCK_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
 /**
  * mpeg_system_clock_descriptor structure.

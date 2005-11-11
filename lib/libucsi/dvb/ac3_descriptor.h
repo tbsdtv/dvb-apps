@@ -23,8 +23,11 @@
 #define _UCSI_DVB_AC3_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
+/**
+ * dvb_ac3_descriptor structure.
+ */
 struct dvb_ac3_descriptor {
 	struct descriptor d;
 
@@ -36,8 +39,14 @@ struct dvb_ac3_descriptor {
 	/* uint8_t additional_info[] */
 } packed;
 
+/**
+ * Process a dvb_ac3_descriptor.
+ *
+ * @param d Generic descriptor structure.
+ * @return dvb_ac3_descriptor pointer, or NULL on error.
+ */
 static inline struct dvb_ac3_descriptor*
-	dvb_ac3_descriptor_parse(struct descriptor* d)
+	dvb_ac3_descriptor_codec(struct descriptor* d)
 {
 	if (d->len < (sizeof(struct dvb_ac3_descriptor) - 2))
 		return NULL;
@@ -45,11 +54,23 @@ static inline struct dvb_ac3_descriptor*
 	return (struct dvb_ac3_descriptor*) d;
 }
 
+/**
+ * Retrieve pointer to additional_info field of a dvb_ac3_descriptor.
+ *
+ * @param d dvb_ac3_descriptor pointer.
+ * @return Pointer to additional_info field.
+ */
 static inline uint8_t *dvb_ac3_descriptor_additional_info(struct dvb_ac3_descriptor *d)
 {
 	return (uint8_t *) d + sizeof(struct dvb_ac3_descriptor);
 }
 
+/**
+ * Determine length of additional_info field of a dvb_ac3_descriptor.
+ *
+ * @param d dvb_ac3_descriptor pointer.
+ * @return Length of field in bytes.
+ */
 static inline int dvb_ac3_descriptor_additional_info_length(struct dvb_ac3_descriptor *d)
 {
 	return d->d.len - 1;

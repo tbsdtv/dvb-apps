@@ -23,21 +23,33 @@
 #define _UCSI_DVB_PARENTAL_RATING_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
+/**
+ * dvb_parental_rating_descriptor structure.
+ */
 struct dvb_parental_rating_descriptor {
 	struct descriptor d;
 
 	/* struct dvb_parental_rating ratings[] */
 } packed;
 
+/**
+ * An entry in the ratings field of a dvb_parental_rating_descriptor.
+ */
 struct dvb_parental_rating {
 	uint8_t country_code[3];
 	uint8_t rating;
 } packed;
 
+/**
+ * Process a dvb_parental_rating_descriptor.
+ *
+ * @param d Generic descriptor structure pointer.
+ * @return dvb_parental_rating_descriptor pointer, or NULL on error.
+ */
 static inline struct dvb_parental_rating_descriptor*
-	dvb_parental_rating_descriptor_parse(struct descriptor* d)
+	dvb_parental_rating_descriptor_codec(struct descriptor* d)
 {
 	if (d->len % sizeof(struct dvb_parental_rating))
 		return NULL;
@@ -45,6 +57,12 @@ static inline struct dvb_parental_rating_descriptor*
 	return (struct dvb_parental_rating_descriptor*) d;
 }
 
+/**
+ * Iterator for entries in the ratings field of a dvb_parental_rating_descriptor.
+ *
+ * @param d dvb_parental_rating_descriptor pointer.
+ * @param pos Variable containing a pointer to the current dvb_parental_rating.
+ */
 #define dvb_parental_rating_descriptor_ratings_for_each(d, pos) \
 	for ((pos) = dvb_parental_rating_descriptor_ratings_first(d); \
 	     (pos); \

@@ -23,14 +23,20 @@
 #define _UCSI_DVB_CONTENT_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
+/**
+ * dvb_content_descriptor structure.
+ */
 struct dvb_content_descriptor {
 	struct descriptor d;
 
 	/* struct dvb_content_nibble nibbles[] */
 } packed;
 
+/**
+ * An entry in the nibbles field of a dvb_content_descriptor.
+ */
 struct dvb_content_nibble {
   EBIT2(uint8_t content_nibble_level_1	: 4; ,
 	uint8_t content_nibble_level_2	: 4; );
@@ -38,8 +44,14 @@ struct dvb_content_nibble {
 	uint8_t user_nibble_2		: 4; );
 } packed;
 
+/**
+ * Process a dvb_content_descriptor.
+ *
+ * @param d Generic descriptor pointer.
+ * @return dvb_content_descriptor pointer, or NULL on error.
+ */
 static inline struct dvb_content_descriptor*
-	dvb_content_descriptor_parse(struct descriptor* d)
+	dvb_content_descriptor_codec(struct descriptor* d)
 {
 	if (d->len % sizeof(struct dvb_content_nibble))
 		return NULL;
@@ -47,6 +59,12 @@ static inline struct dvb_content_descriptor*
 	return (struct dvb_content_descriptor*) d;
 }
 
+/**
+ * Iterator for the nibbles field of a dvb_content_descriptor.
+ *
+ * @param d dvb_content_descriptor pointer.
+ * @param pos Variable containing a pointer to the current dvb_content_nibble.
+ */
 #define dvb_content_descriptor_nibbles_for_each(d, pos) \
 	for ((pos) = dvb_content_descriptor_nibbles_first(d); \
 	     (pos); \

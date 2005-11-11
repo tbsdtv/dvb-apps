@@ -23,8 +23,11 @@
 #define _UCSI_DVB_SATELLITE_DELIVERY_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
+/**
+ * dvb_satellite_delivery_descriptor structure.
+ */
 struct dvb_satellite_delivery_descriptor {
 	struct descriptor d;
 
@@ -37,8 +40,14 @@ struct dvb_satellite_delivery_descriptor {
 	uint32_t fec_inner	: 4;  );
 } packed;
 
+/**
+ * Process a dvb_satellite_delivery_descriptor.
+ *
+ * @param d Pointer to a generic descriptor structure.
+ * @return dvb_satellite_delivery_descriptor pointer, or NULL on error.
+ */
 static inline struct dvb_satellite_delivery_descriptor*
-	dvb_satellite_delivery_descriptor_parse(struct descriptor* d)
+	dvb_satellite_delivery_descriptor_codec(struct descriptor* d)
 {
 	if (d->len < (sizeof(struct dvb_satellite_delivery_descriptor) - 2))
 		return NULL;

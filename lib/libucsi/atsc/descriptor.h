@@ -22,7 +22,7 @@
 #ifndef _UCSI_ATSC_DESCRIPTOR_H
 #define _UCSI_ATSC_DESCRIPTOR_H 1
 
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
 /**
  * Enumeration of ATSC descriptor tags.

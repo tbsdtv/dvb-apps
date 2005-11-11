@@ -23,7 +23,7 @@
 #define _UCSI_MPEG_PRIVATE_DATA_INDICATOR_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
 /**
  * mpeg_private_data_indicator_descriptor structure

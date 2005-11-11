@@ -23,7 +23,7 @@
 #define _UCSI_MPEG_ISO_639_LANGUAGE_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
 /**
  * mpeg_iso_639_language_descriptor structure.

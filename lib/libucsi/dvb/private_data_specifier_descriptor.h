@@ -23,16 +23,25 @@
 #define _UCSI_DVB_PRIVATE_DATA_SPECIFIER_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
+/**
+ * dvb_private_data_specifier_descriptor structure.
+ */
 struct dvb_private_data_specifier_descriptor {
 	struct descriptor d;
 
 	uint32_t private_data_specifier;
 } packed;
 
+/**
+ * Process a dvb_private_data_specifier_descriptor.
+ *
+ * @param d Generic descriptor structure.
+ * @return dvb_private_data_specifier_descriptor pointer, or NULL on error.
+ */
 static inline struct dvb_private_data_specifier_descriptor*
-	dvb_private_data_specifier_descriptor_parse(struct descriptor* d)
+	dvb_private_data_specifier_descriptor_codec(struct descriptor* d)
 {
 	if (d->len != (sizeof(struct dvb_private_data_specifier_descriptor) - 2))
 		return NULL;

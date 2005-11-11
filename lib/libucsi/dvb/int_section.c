@@ -22,7 +22,7 @@
 
 #include <ucsi/dvb/int_section.h>
 
-struct dvb_int_section * dvb_int_section_parse(struct section_ext *ext)
+struct dvb_int_section * dvb_int_section_codec(struct section_ext *ext)
 {
 	uint8_t *buf = (uint8_t *) ext;
 	struct dvb_int_section *in = (struct dvb_int_section *) ext;

@@ -21,7 +21,7 @@
 
 #include <ucsi/dvb/rst_section.h>
 
-struct dvb_rst_section * dvb_rst_section_parse(struct section *section)
+struct dvb_rst_section * dvb_rst_section_codec(struct section *section)
 {
 	uint8_t * buf = (uint8_t *) section;
 	int pos = sizeof(struct section);

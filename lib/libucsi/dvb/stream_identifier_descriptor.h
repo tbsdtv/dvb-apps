@@ -23,16 +23,25 @@
 #define _UCSI_DVB_STREAM_IDENTIFIER_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
+/**
+ * dvb_stream_identifier_descriptor structure.
+ */
 struct dvb_stream_identifier_descriptor {
 	struct descriptor d;
 
 	uint8_t component_tag;
 } packed;
 
+/**
+ * Process a dvb_stream_identifier_descriptor.
+ *
+ * @param d Pointer to generic descriptor structure.
+ * @return dvb_stream_identifier_descriptor pointer, or NULL on error.
+ */
 static inline struct dvb_stream_identifier_descriptor*
-	dvb_stream_identifier_descriptor_parse(struct descriptor* d)
+	dvb_stream_identifier_descriptor_codec(struct descriptor* d)
 {
 	if (d->len != (sizeof(struct dvb_stream_identifier_descriptor) - 2))
 		return NULL;

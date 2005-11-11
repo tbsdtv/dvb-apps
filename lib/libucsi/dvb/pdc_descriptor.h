@@ -23,8 +23,11 @@
 #define _UCSI_DVB_PDC_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
+/**
+ * dvb_pdc_descriptor structure.
+ */
 struct dvb_pdc_descriptor {
 	struct descriptor d;
 
@@ -32,8 +35,14 @@ struct dvb_pdc_descriptor {
 	uint32_t programme_id_label	:20; );
 } packed;
 
+/**
+ * Process a dvb_pdc_descriptor.
+ *
+ * @param d Pointer to a generic descriptor structure.
+ * @return dvb_pdc_descriptor pointer, or NULL on error.
+ */
 static inline struct dvb_pdc_descriptor*
-	dvb_pdc_descriptor_parse(struct descriptor* d)
+	dvb_pdc_descriptor_codec(struct descriptor* d)
 {
 	if (d->len != (sizeof(struct dvb_pdc_descriptor) - 2))
 		return NULL;

@@ -23,16 +23,25 @@
 #define _UCSI_DVB_CA_IDENTIFIER_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
+/**
+ * dvb_ca_identifier_descriptor structure.
+ */
 struct dvb_ca_identifier_descriptor {
 	struct descriptor d;
 
 	/* uint16_t ca_system_ids[] */
 } packed;
 
+/**
+ * Process a dvb_ca_identifier_descriptor.
+ *
+ * @param d Generic descriptor pointer.
+ * @return dvb_ca_identifier_descriptor pointer, or NULL on error.
+ */
 static inline struct dvb_ca_identifier_descriptor*
-	dvb_ca_identifier_descriptor_parse(struct descriptor* d)
+	dvb_ca_identifier_descriptor_codec(struct descriptor* d)
 {
 	int len = d->len;
 	uint8_t *buf = (uint8_t*) d + 2;
@@ -49,12 +58,24 @@ static inline struct dvb_ca_identifier_descriptor*
 	return (struct dvb_ca_identifier_descriptor*) d;
 }
 
+/**
+ * Accessor for the ca_system_ids field of a dvb_ca_identifier_descriptor.
+ *
+ * @param d Generic descriptor pointer.
+ * @return Pointer to the field.
+ */
 static inline uint16_t *
 	dvb_ca_identifier_descriptor_ca_system_ids(struct dvb_ca_identifier_descriptor *d)
 {
 	return (uint16_t *) ((uint8_t *) d + sizeof(struct dvb_ca_identifier_descriptor));
 }
 
+/**
+ * Calculate the number of entries in the ca_system_ids field of a dvb_ca_identifier_descriptor.
+ *
+ * @param d dvb_ca_identifier_descriptor pointer.
+ * @return Number of entries.
+ */
 static inline int
 	dvb_ca_identifier_descriptor_ca_system_ids_count(struct dvb_ca_identifier_descriptor *d)
 {

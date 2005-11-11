@@ -23,22 +23,34 @@
 #define _UCSI_DVB_NVOD_REFERENCE_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
+/**
+ * dvb_nvod_reference_descriptor structure.
+ */
 struct dvb_nvod_reference_descriptor {
 	struct descriptor d;
 
 	/* struct dvb_nvod_reference references[] */
 } packed;
 
+/**
+ * An entry in the references field of a dvb_nvod_reference_descriptor.
+ */
 struct dvb_nvod_reference {
 	uint16_t transport_stream_id;
 	uint16_t original_network_id;
 	uint16_t service_id;
 } packed;
 
+/**
+ * Process a dvb_nvod_reference_descriptor.
+ *
+ * @param d Pointer to a generic descriptor structure pointer.
+ * @return dvb_nvod_reference_descriptor pointer, or NULL on error.
+ */
 static inline struct dvb_nvod_reference_descriptor*
-	dvb_nvod_reference_descriptor_parse(struct descriptor* d)
+	dvb_nvod_reference_descriptor_codec(struct descriptor* d)
 {
 	int pos = 0;
 	uint8_t* buf = (uint8_t*) d + 2;
@@ -57,6 +69,12 @@ static inline struct dvb_nvod_reference_descriptor*
 	return (struct dvb_nvod_reference_descriptor*) d;
 }
 
+/**
+ * Iterator over the references field in a dvb_nvod_reference_descriptor.
+ *
+ * @param d dvb_nvod_reference_descriptor pointer.
+ * @param pos Variable containing a pointer to the current dvb_nvod_reference.
+ */
 #define dvb_nvod_reference_descriptor_references_for_each(d, pos) \
 	for ((pos) = dvb_nvod_reference_descriptor_references_first(d); \
 	     (pos); \

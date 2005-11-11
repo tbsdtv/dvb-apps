@@ -24,20 +24,41 @@
 
 #include <ucsi/section.h>
 
+/**
+ * dvb_st_section structure.
+ */
 struct dvb_st_section {
 	struct section head;
 
 	/* uint8_t data[] */
 };
 
-struct dvb_st_section *dvb_st_section_parse(struct section *);
+/**
+ * Process a dvb_st_section.
+ *
+ * @param section Generic section header.
+ * @return dvb_st_section pointer, or NULL on error.
+ */
+struct dvb_st_section *dvb_st_section_codec(struct section *section);
 
+/**
+ * Accessor for data field of dvb_st_section.
+ *
+ * @param st dvb_st_section Pointer.
+ * @return Pointer to field.
+ */
 static inline uint8_t*
 	dvb_st_section_data(struct dvb_st_section* st)
 {
 	return (uint8_t*) st + sizeof(struct dvb_st_section);
 }
 
+/**
+ * Calculate length of data field of dvb_st_section.
+ *
+ * @param st dvb_st_section Pointer.
+ * @return Length in bytes.
+ */
 static inline int
 	dvb_st_section_data_length(struct dvb_st_section* st)
 {

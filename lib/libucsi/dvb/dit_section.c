@@ -21,7 +21,7 @@
 
 #include <ucsi/dvb/dit_section.h>
 
-struct dvb_dit_section * dvb_dit_section_parse(struct section * section)
+struct dvb_dit_section * dvb_dit_section_codec(struct section * section)
 {
 	struct dvb_dit_section * ret = (struct dvb_dit_section *)section;
 

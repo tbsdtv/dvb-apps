@@ -23,8 +23,11 @@
 #define _UCSI_DVB_TIME_SHIFTED_EVENT_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
+/**
+ * dvb_time_shifted_event_descriptor structure.
+ */
 struct dvb_time_shifted_event_descriptor {
 	struct descriptor d;
 
@@ -32,8 +35,14 @@ struct dvb_time_shifted_event_descriptor {
 	uint16_t reference_event_id;
 } packed;
 
+/**
+ * Process a dvb_time_shifted_event_descriptor.
+ *
+ * @param d Generic descriptor.
+ * @return dvb_time_shifted_event_descriptor pointer, or NULL on error.
+ */
 static inline struct dvb_time_shifted_event_descriptor*
-	dvb_time_shifted_event_descriptor(struct descriptor* d)
+	dvb_time_shifted_event_descriptor_codec(struct descriptor* d)
 {
 	if (d->len != (sizeof(struct dvb_time_shifted_event_descriptor) - 2))
 		return NULL;

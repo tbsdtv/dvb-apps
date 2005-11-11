@@ -23,7 +23,7 @@
 #define _UCSI_MPEG_MAXIMUM_BITRATE_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
 /**
  * mpeg_maximum_bitrate_descriptor structure.

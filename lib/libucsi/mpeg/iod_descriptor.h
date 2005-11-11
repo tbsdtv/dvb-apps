@@ -23,7 +23,7 @@
 #define _UCSI_MPEG_IOD_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
 /**
  * mpeg_iod_descriptor structure.
@@ -55,7 +55,7 @@ static inline struct mpeg_iod_descriptor*
  * Retrieve pointer to iod field of an mpeg_iod_descriptor structure.
  *
  * @param d Pointer to mpeg_iod_descriptor structure.
- * @return Pointer to the iod field, or NULL on error.
+ * @return Pointer to the iod field.
  */
 static inline uint8_t *
 	mpeg_iod_descriptor_iod(struct mpeg_iod_descriptor *d)

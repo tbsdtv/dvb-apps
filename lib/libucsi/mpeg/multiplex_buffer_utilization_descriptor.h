@@ -23,8 +23,11 @@
 #define _UCSI_MPEG_MULTIPLEX_BUFFER_UTILIZATION_DESCRIPTOR 1
 
 #include <ucsi/descriptor.h>
-#include <ucsi/common.h>
+#include <ucsi/endianops.h>
 
+/**
+ * mpeg_multiplex_buffer_utilization_descriptor structure.
+ */
 struct mpeg_multiplex_buffer_utilization_descriptor {
 	struct descriptor d;
 
@@ -34,6 +37,12 @@ struct mpeg_multiplex_buffer_utilization_descriptor {
 	uint16_t ltw_offset_upper_bound		: 15; );
 } packed;
 
+/**
+ * Process a mpeg_multiplex_buffer_utilization_descriptor.
+ *
+ * @param d Generic descriptor pointer.
+ * @return mpeg_multiplex_buffer_utilization_descriptor pointer, or NULL on error.
+ */
 static inline struct mpeg_multiplex_buffer_utilization_descriptor*
 	mpeg_multiplex_buffer_utilization_descriptor_codec(struct descriptor* d)
 {

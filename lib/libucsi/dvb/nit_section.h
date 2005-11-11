@@ -24,6 +24,9 @@
 
 #include <ucsi/section.h>
 
+/**
+ * dvb_nit_section structure.
+ */
 struct dvb_nit_section {
 	struct section_ext head;
 
@@ -33,12 +36,18 @@ struct dvb_nit_section {
 	/* struct dvb_nit_section_part2 part2 */
 };
 
+/**
+ * Second part of a dvb_nit_section, following the variable length descriptors field.
+ */
 struct dvb_nit_section_part2 {
   EBIT2(uint16_t reserved_2			: 4; ,
 	uint16_t transport_stream_loop_length	:12; );
 	/* struct dvb_nit_transport transports[] */
 } packed;
 
+/**
+ * An entry in the transports field of a dvb_nit_section_part2
+ */
 struct dvb_nit_transport {
 	uint16_t transport_stream_id;
 	uint16_t original_network_id;
@@ -47,13 +56,31 @@ struct dvb_nit_transport {
 	/* struct descriptor descriptors[] */
 } packed;
 
-struct dvb_nit_section * dvb_nit_section_parse(struct section_ext *);
+/**
+ * Process a dvb_nit_section.
+ *
+ * @param section Generic section_ext pointer.
+ * @return dvb_nit_section pointer, or NULL on error.
+ */
+struct dvb_nit_section * dvb_nit_section_codec(struct section_ext *section);
 
+/**
+ * Iterator over the descriptors field in a dvb_nit_section.
+ *
+ * @param nit dvb_nit_section pointer.
+ * @param pos Variable containing a pointer to the current descriptor.
+ */
 #define dvb_nit_section_descriptors_for_each(nit, pos) \
 	for ((pos) = dvb_nit_section_descriptors_first(nit); \
 	     (pos); \
 	     (pos) = dvb_nit_section_descriptors_next(nit, pos))
 
+/**
+ * Accessor for a pointer to the dvb_nit_section_part2 structure.
+ *
+ * @param nit dvb_nit_section pointer.
+ * @return dvb_nit_section_part2 pointer.
+ */
 static inline struct dvb_nit_section_part2 *dvb_nit_section_part2(struct dvb_nit_section * nit)
 {
 	return (struct dvb_nit_section_part2 *)
@@ -61,11 +88,24 @@ static inline struct dvb_nit_section_part2 *dvb_nit_section_part2(struct dvb_nit
 		 nit->network_descriptors_length);
 }
 
+/**
+ * Iterator over the transports field in a dvb_nit_section_part2.
+ *
+ * @param nit dvb_nit_section pointer.
+ * @param part2 dvb_nit_section_part2 pointer.
+ * @param pos Pointer to the current dvb_nit_transport.
+ */
 #define dvb_nit_section_transports_for_each(nit, part2, pos) \
 	for ((pos) = dvb_nit_section_transports_first(nit, part2); \
 	     (pos); \
 	     (pos) = dvb_nit_section_transports_next(part2, pos))
 
+/**
+ * Iterator over the descriptors field in a dvb_nit_transport.
+ *
+ * @param transport dvb_nit_transport pointer.
+ * @param pos Pointer to the current descriptor.
+ */
 #define dvb_nit_transport_descriptors_for_each(transport, pos) \
 	for ((pos) = dvb_nit_transport_descriptors_first(transport); \
 	     (pos); \

@@ -24,6 +24,9 @@
 
 #include <ucsi/section.h>
 
+/**
+ * dvb_sdt_section structure.
+ */
 struct dvb_sdt_section {
 	struct section_ext head;
 
@@ -32,6 +35,9 @@ struct dvb_sdt_section {
 	/* struct dvb_sdt_service services[] */
 } packed;
 
+/**
+ * An entry in the services field of a dvb_sdt_section.
+ */
 struct dvb_sdt_service {
 	uint16_t service_id;
   EBIT3(uint8_t	reserved			: 6; ,
@@ -43,14 +49,31 @@ struct dvb_sdt_service {
 	/* struct descriptor descriptors[] */
 } packed;
 
-struct dvb_sdt_section * dvb_sdt_section_parse(struct section_ext * section);
+/**
+ * Process a dvb_sdt_section.
+ *
+ * @param section Pointer to a generic section_ext structure.
+ * @return dvb_sdt_section pointer, or NULL on error.
+ */
+struct dvb_sdt_section * dvb_sdt_section_codec(struct section_ext *section);
 
+/**
+ * Iterator for the services field in a dvb_sdt_section.
+ *
+ * @param sdt dvb_sdt_section pointer.
+ * @param pos Variable containing a pointer to the current dvb_sdt_service.
+ */
 #define dvb_sdt_section_services_for_each(sdt, pos) \
 	for ((pos) = dvb_sdt_section_services_first(sdt); \
 	     (pos); \
 	     (pos) = dvb_sdt_section_services_next(sdt, pos))
 
-
+/**
+ * Iterator for the descriptors field in a dvb_sdt_service.
+ *
+ * @param service dvb_sdt_service pointer.
+ * @param pos Variable containing a pointer to the current descriptor.
+ */
 #define dvb_sdt_service_descriptors_for_each(service, pos) \
 	for ((pos) = dvb_sdt_service_descriptors_first(service); \
 	     (pos); \

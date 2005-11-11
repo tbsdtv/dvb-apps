@@ -21,7 +21,7 @@
 
 #include <ucsi/dvb/sdt_section.h>
 
-struct dvb_sdt_section * dvb_sdt_section_parse(struct section_ext * ext)
+struct dvb_sdt_section * dvb_sdt_section_codec(struct section_ext * ext)
 {
 	uint8_t * buf = (uint8_t *) ext;
 	unsigned int pos = 0;

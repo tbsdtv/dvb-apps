@@ -21,7 +21,7 @@
 
 #include <ucsi/dvb/nit_section.h>
 
-struct dvb_nit_section *dvb_nit_section_parse(struct section_ext * ext)
+struct dvb_nit_section *dvb_nit_section_codec(struct section_ext * ext)
 {
 	uint8_t * buf = (uint8_t *) ext;
 	struct dvb_nit_section * ret = (struct dvb_nit_section *) ext;
