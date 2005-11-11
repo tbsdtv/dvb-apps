@@ -57,19 +57,19 @@ int dvbdemux_set_section_filter(int fd, int pid,
 				uint8_t filter[16], uint8_t mask[16], uint8_t testtype[16],
 				int start, int checkcrc)
 {
-	struct dmx_sct_filter_params filter;
+	struct dmx_sct_filter_params sctfilter;
 
-	memset(&filter, 0, sizeof(filter));
-	filter.pid = pid;
-	memcpy(filter.filter.filter, filter, 16);
-	memcpy(filter.filter.mask, mask, 16);
-	memcpy(filter.filter.mode, testtype, 16);
+	memset(&sctfilter, 0, sizeof(sctfilter));
+	sctfilter.pid = pid;
+	memcpy(sctfilter.filter.filter, filter, 16);
+	memcpy(sctfilter.filter.mask, mask, 16);
+	memcpy(sctfilter.filter.mode, testtype, 16);
 	if (start)
-		filter.flags |= DMX_IMMEDIATE_START;
+		sctfilter.flags |= DMX_IMMEDIATE_START;
 	if (checkcrc)
-		filter.flags |= DMX_CHECK_CRC;
+		sctfilter.flags |= DMX_CHECK_CRC;
 
-	return ioctl(fd, DMX_SET_FILTER, &filter);
+	return ioctl(fd, DMX_SET_FILTER, &sctfilter);
 }
 
 int dvbdemux_set_pes_filter(int fd, int pid,
