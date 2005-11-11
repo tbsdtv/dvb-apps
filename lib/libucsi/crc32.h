@@ -21,6 +21,8 @@
 #ifndef _UCSI_CRC32_H
 #define _UCSI_CRC32_H 1
 
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -29,8 +31,6 @@ extern "C"
 #define CRC32_INIT (~0)
 
 extern uint32_t crc32tbl[];
-
-// FIXME: this is not endian aware
 
 /**
  * Calculate a CRC32 over a piece of data.
