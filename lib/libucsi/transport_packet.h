@@ -116,9 +116,9 @@ struct transport_packet {
  * function.
  */
 struct transport_values {
-	enum transport_adaptation_flags flags; /* always extracted */
-	uint8_t *payload;     /* always extracted */
-	uint16_t payload_length;    /* always extracted */
+	enum transport_adaptation_flags flags; 	/* always extracted */
+	uint8_t *payload;     			/* always extracted */
+	uint16_t payload_length;    		/* always extracted */
 
 	uint64_t pcr;
 	uint64_t opcr;

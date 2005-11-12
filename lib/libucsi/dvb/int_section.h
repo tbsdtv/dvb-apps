@@ -30,7 +30,7 @@ extern "C"
 #include <ucsi/section.h>
 
 /**
- * dvb_int_section structure.
+ * dvb_int_section structure - IP/MAC notification section.
  */
 struct dvb_int_section {
 	struct section head;
