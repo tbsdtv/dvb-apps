@@ -17,6 +17,8 @@ int main(int argc, char *argv[])
 	int sz;
 	int pid;
 	int i;
+	int used;
+	int section_status;
 	unsigned char continuities[TRANSPORT_MAX_PIDS];
 	struct section_buf *section_bufs[TRANSPORT_MAX_PIDS];
 	struct transport_packet *tspkt;
@@ -34,8 +36,14 @@ int main(int argc, char *argv[])
 		perror("demux");
 		exit(1);
 	}
-	if ((dvrfd = dvbdemux_open_dvr(adapter, 0, 0)) < 0) {
+	if ((dvrfd = dvbdemux_open_dvr(adapter, 0, 1)) < 0) {
 		perror("dvr");
+		exit(1);
+	}
+
+	// make the buffer a bit larger
+	if (dvbdemux_set_buffer(demuxfd, 1024*1024)) {
+		perror("set buffer");
 		exit(1);
 	}
 
@@ -86,7 +94,24 @@ int main(int argc, char *argv[])
 				section_buf_init(section_bufs[pid], DVB_MAX_SECTION_BYTES);
 			}
 
-			// FIXME: do stuff
+			// process the payload data as a section
+			while(tsvals.payload_length) {
+				used = section_buf_add_transport_payload(section_bufs[pid],
+									tsvals.payload, tsvals.payload_length,
+									tspkt->payload_unit_start_indicator,
+									&section_status);
+				tspkt->payload_unit_start_indicator = 0;
+				tsvals.payload_length -= used;
+
+				if (section_status == 1) {
+					printf("possible section on pid %04x\n", pid);
+					// FIXME: do something
+					section_buf_reset(section_bufs[pid]);
+				} else if (section_status < 0) {
+					// some kind of error - just discard
+					section_buf_reset(section_bufs[pid]);
+				}
+			}
 		}
 	}
 
