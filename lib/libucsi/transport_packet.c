@@ -43,7 +43,7 @@ int transport_packet_values_extract(struct transport_packet *pkt,
 	/* get the adaptation field length and skip the byte */
 	adaplength = *pos++;
 
-	/* do we actually have any of adaptation data? */
+	/* do we actually have any adaptation data? */
 	if (adaplength == 0)
 		goto extract_payload;
 
@@ -161,7 +161,7 @@ int transport_packet_values_extract(struct transport_packet *pkt,
 	/* piecewise_rate? */
 	if (adapextflags & transport_adaptation_extension_flag_piecewise_rate) {
 		if ((pos+3) > adapend)
-		return -1;
+			return -1;
 
 		if (extract & transport_value_piecewise_rate) {
 			out->piecewise_rate = ((pos[0] & 0x3f) << 16) |
@@ -175,7 +175,7 @@ int transport_packet_values_extract(struct transport_packet *pkt,
 	/* seamless_splice? */
 	if (adapextflags & transport_adaptation_extension_flag_seamless_splice) {
 		if ((pos+5) > adapend)
-		return -1;
+			return -1;
 
 		if (extract & transport_value_piecewise_rate) {
 			out->splice_type = pos[0] >> 4;
@@ -195,8 +195,9 @@ extract_payload:
 	/* does the packet contain a payload? */
 	if (pkt->adaptation_field_control & 1) {
 		int off = sizeof(struct transport_packet);
-		if (adaplength > 0)
-			off += 1 + adaplength;
+		if (pkt->adaptation_field_control & 2)
+			off++;
+		off += adaplength;
 
 		out->payload = (uint8_t*) pkt + off;
 		out->payload_length = TRANSPORT_PACKET_LENGTH - off;
