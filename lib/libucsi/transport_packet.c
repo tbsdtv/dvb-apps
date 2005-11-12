@@ -230,7 +230,7 @@ int transport_packet_continuity_check(struct transport_packet *pkt,
 	}
 
 	/* only packets with a payload should increment the counter */
-	if (pkt->adaptation_field_control & 0x02)
+	if (pkt->adaptation_field_control & 1)
 		nextcontinuity = (prevcontinuity + 1) & 0xf;
 
 	/* check for a normal continuity progression */
