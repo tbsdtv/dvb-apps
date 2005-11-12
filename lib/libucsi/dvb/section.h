@@ -53,10 +53,19 @@ enum dvb_section_tag {
 
 	stag_dvb_ip_mac_notification				= 0x4c,
 
-	stag_dvb_event_information_actual			= 0x4e,
-	stag_dvb_event_information_other			= 0x4f,
-	stag_dvb_event_information_actual_schedule		= 0x50,
-	stag_dvb_event_information_other_schdule		= 0x60,
+	stag_dvb_event_information_nownext_actual		= 0x4e,
+	stag_dvb_event_information_nownext_other		= 0x4f,
+	stag_dvb_event_information_schedule_actual		= 0x50, /* 0x50->0x5f */
+	stag_dvb_event_information_schedule_other		= 0x60, /* 0x60->0x6f */
+
+	stag_dvb_time_date					= 0x70,
+	stag_dvb_running_status					= 0x71,
+	stag_dvb_stuffing					= 0x72,
+	stag_dvb_time_offset					= 0x73,
+
+	stag_dvb_discontinuity_information			= 0x7e,
+	stag_dvb_selection_information				= 0x7f,
+
 };
 
 #ifdef __cplusplus
