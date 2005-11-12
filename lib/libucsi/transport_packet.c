@@ -136,7 +136,7 @@ int transport_packet_values_extract(struct transport_packet *pkt,
 		return -1;
 
 	/* do we want/have anything in the adaptation extension? */
-	if (((extract & 0x100) == 0) || (adapextlength == 0))
+	if (((extract & 0xff00) == 0) || (adapextlength == 0))
 		goto extract_payload;
 
 	/* extract the adaptation extension flags (we must have at least 1 byte

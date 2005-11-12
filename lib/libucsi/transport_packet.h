@@ -92,8 +92,8 @@ enum transport_value {
 
 	/* extension adaptation */
 	transport_value_ltw					= 0x0100,
-	transport_value_piecewise_rate				= 0x0101,
-	transport_value_seamless_splice				= 0x0102,
+	transport_value_piecewise_rate				= 0x0200,
+	transport_value_seamless_splice				= 0x0400,
 };
 
 /**
