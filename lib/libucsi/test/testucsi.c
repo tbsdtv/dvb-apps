@@ -1,3 +1,23 @@
+/*
+ * section and descriptor parser test/sample application.
+ *
+ * Copyright (C) 2005 Andrew de Quincey (adq_dvb@lidskialf.net)
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+ */
+
 #include <ucsi/mpeg/descriptor.h>
 #include <ucsi/mpeg/section.h>
 #include <ucsi/dvb/descriptor.h>
@@ -6,6 +26,7 @@
 #include <ucsi/section_buf.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <errno.h>
 #include <dvbdemux.h>
 
 int main(int argc, char *argv[])
@@ -58,8 +79,13 @@ int main(int argc, char *argv[])
 	memset(section_bufs, 0, sizeof(section_bufs));
 	while(1) {
 		if ((sz = read(dvrfd, databuf, sizeof(databuf))) < 0) {
-			perror("read error");
-			exit(1);
+			if (sz == -EOVERFLOW) {
+				fprintf(stderr, "data overflow!\n");
+				continue;
+			} else {
+				perror("read error");
+				exit(1);
+			}
 		}
 		for(i=0; i < sz; i+=TRANSPORT_PACKET_LENGTH) {
 			// parse the transport packet
@@ -80,6 +106,9 @@ int main(int argc, char *argv[])
 			    continuities + pid)) {
 				    fprintf(stderr, "Continuity error (pid:%04x)\n", pid);
 				continuities[pid] = 0;
+				if (section_bufs[pid] != NULL) {
+					section_buf_reset(section_bufs[pid]);
+				}
 				continue;
 			}
 
