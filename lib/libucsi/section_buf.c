@@ -37,7 +37,7 @@ int section_buf_init(struct section_buf *section, int max)
 	return 0;
 }
 
-int section_buf_add(struct section_buf *section, uint8_t* frag, int len)
+int section_buf_add(struct section_buf *section, uint8_t* frag, int len, int *section_status)
 {
 	int copy;
 	int used = 0;
@@ -45,15 +45,18 @@ int section_buf_add(struct section_buf *section, uint8_t* frag, int len)
 	uint8_t *pos = (uint8_t*) section + sizeof(struct section_buf) + section->count;
 
 	/* have we finished? */
-	if (section->header && (section->len == section->count))
+	if (section->header && (section->len == section->count)) {
+		*section_status = 1;
 		return 0;
+	}
 
 	/* skip over section padding bytes */
+	*section_status = 0;
 	if (section->count == 0) {
 		while(len && (*frag == SECTION_PAD)) {
+			frag++;
 			len--;
 			used++;
-			frag++;
 		}
 
 		if (len == 0)
@@ -67,24 +70,26 @@ int section_buf_add(struct section_buf *section, uint8_t* frag, int len)
 		if (copy > len)
 			copy = len;
 		memcpy(pos, frag, copy);
+		section->count += copy;
+		pos += copy;
+		frag += copy;
+		used += copy;
+		len -= copy;
 
 		/* we need 3 bytes for the section header */
-		section->count += copy;
 		if (section->count != SECTION_HDR_SIZE)
-			return copy;
+			return used;
 
 		/* work out the length & check it isn't too big */
-		data= (uint8_t*) section + sizeof(struct section_buf);
+		data = (uint8_t*) section + sizeof(struct section_buf);
 		section->len = SECTION_HDR_SIZE + (((data[1] & 0x0f) << 8) | data[2]);
-		if (section->len > section->max)
-			return -ERANGE;
+		if (section->len > section->max) {
+			*section_status = -ERANGE;
+			return len + used;
+		}
 
 		/* update fields */
 		section->header = 1;
-		pos += copy;
-		frag += copy;
-		len -= copy;
-		used += copy;
 	}
 
 	/* accumulate frag */
@@ -95,40 +100,51 @@ int section_buf_add(struct section_buf *section, uint8_t* frag, int len)
 	section->count += copy;
 	used += copy;
 
+	/* have we finished? */
+	if (section->header && (section->len == section->count))
+		*section_status = 1;
+
 	/* return number of bytes used */
 	return used;
 }
 
 int section_buf_add_transport_payload(struct section_buf *section,
 				      uint8_t* payload, int len,
-				      int pdu_start)
+				      int pdu_start, int *section_status)
 {
-	int used;
+	int used = 0;
 	int tmp;
 
-	/* sanity catch */
-	if (len == 0)
+	/* have we finished? */
+	if (section->header && (section->len == section->count)) {
+		*section_status = 1;
 		return 0;
+	}
 
 	/* if we're at a PDU start, we need extra handling for the extra first
 	 * byte giving the offset to the start of the next section. */
+	*section_status = 0;
 	if (pdu_start) {
 		/* work out the offset to the _next_ payload */
 		int offset = payload[0];
-		if ((offset+1) > len)
-			return -EINVAL;
+		if ((offset+1) > len) {
+			*section_status = -EINVAL;
+			return len;
+		}
 
 		/* accumulate the end if we need to */
-		if (section->count != 0) {
+		if ((section->count != 0) && offset) {
 			/* add the final fragment. */
-			tmp = section_buf_add(section, payload + 1, offset);
-			if (tmp < 0)
-				return tmp;
+			tmp = section_buf_add(section, payload + 1, offset, section_status);
+			if (*section_status)
+				return 1 + tmp;
 
 			/* since the stream said this was the final fragment
 			 * (PDU START bit), we check that it really was */
-			if ((tmp != offset) || section_buf_remaining(section))
-				return -ERANGE;
+			if ((tmp != offset) || section_buf_remaining(section)) {
+				*section_status = -ERANGE;
+				return len;
+			}
 
 			/* ok, return the number of bytes we used */
 			return 1 + tmp;
@@ -137,8 +153,10 @@ int section_buf_add_transport_payload(struct section_buf *section,
 		/* otherwise, we skip the end of the previous section, and
 		 * start accumulating the new data. */
 		used = 1 + offset;
+	} else if (section->count == 0) {
+		return len;
 	}
 
 	/* ok, just accumulate the data as normal */
-	return section_buf_add(section, payload+used, len - used);
+	return section_buf_add(section, payload+used, len - used, section_status);
 }

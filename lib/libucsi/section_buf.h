@@ -36,10 +36,10 @@ extern "C"
  * to section_buf_init() to set it up.
  */
 struct section_buf {
-	uint32_t max;
-	uint32_t count;
-	uint32_t len;
-	uint8_t header:1;
+	uint32_t max;      /* maximum size of section - setup by section_buf_init() */
+	uint32_t count;    /* number of bytes currently accumulated */
+	uint32_t len;      /* total number of bytes in the section being received */
+	uint8_t header:1;  /* flag indicating the section header has been commpletely received */
 	/* uint8_t data[] */
 };
 
@@ -53,18 +53,28 @@ struct section_buf {
 extern int section_buf_init(struct section_buf *section, int max);
 
 /**
+ * Initialise a section_buf structure.
+ *
+ * @param section The section_buf to initialise.
+ * @param max Maximum number of bytes in section (must be > 3)
+ * @return 0 on success, nonzero on error.
+ */
+static inline void section_buf_reset(struct section_buf *section)
+{
+	section_buf_init(section, section->max);
+}
+
+/**
  * Add a data fragment to a section_buf.
  *
  * @param section section_buf to add to.
  * @param frag Pointer to data fragment.
  * @param len Number of bytes of data.
- * @return 0 If section was already complete. >0 indicates how many bytes were
- * consumed.
- * -ERANGE indicates that the section is larger than section->max.
- * Note in this case, section->len is still updated, so you know how much data
- * needs to be skipped.
+ * @param section_status 0: nothing special. 1: section complete. -ERANGE indicates that the
+ * section is larger than section->max.
+ * @return Number of bytes which were consumed.
  */
-extern int section_buf_add(struct section_buf *section, uint8_t* frag, int len);
+extern int section_buf_add(struct section_buf *section, uint8_t* frag, int len, int *section_status);
 
 /**
  * Add a transport packet PSI payload to a section_buf. This takes into account
@@ -86,7 +96,7 @@ extern int section_buf_add(struct section_buf *section, uint8_t* frag, int len);
  */
 extern int section_buf_add_transport_payload(struct section_buf *section,
 					     uint8_t* payload, int len,
-					     int pdu_start);
+					     int pdu_start, int *section_status);
 
 /**
  * Get the number of bytes left to be received in a section_buf.
