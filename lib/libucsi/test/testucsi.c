@@ -95,7 +95,10 @@ int main(int argc, char *argv[])
 				continue;
 			}
 			pid = transport_packet_pid(tspkt);
-			if (transport_packet_values_extract(tspkt, &tsvals, 0)) {
+
+			// extract all TS packet values even though we don't need them to check for
+			// library segfaults etc
+			if (transport_packet_values_extract(tspkt, &tsvals, 0xffff) < 0) {
 				fprintf(stderr, "Bad packet received (pid:%04x)\n", pid);
 				continue;
 			}
