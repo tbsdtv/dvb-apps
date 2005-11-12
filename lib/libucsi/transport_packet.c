@@ -20,6 +20,9 @@
 
 #include "transport_packet.h"
 
+#define CONTINUITY_VALID 0x80
+#define CONTINUITY_DUPESEEN 0x40
+
 int transport_packet_values_extract(struct transport_packet *pkt,
 				    struct transport_values *out,
  				    enum transport_value extract)
@@ -218,14 +221,14 @@ int transport_packet_continuity_check(struct transport_packet *pkt,
 		return 0;
 
 	/* is the state valid? */
-	if (!(*cstate & 0x20)) {
-		*cstate = pktcontinuity | 0x80;
+	if (!(*cstate & CONTINUITY_VALID)) {
+		*cstate = pktcontinuity | CONTINUITY_VALID;
 		return 0;
 	}
 
 	/* check for discontinuity_indicator */
 	if (discontinuity_indicator) {
-		*cstate = pktcontinuity | 0x80;
+		*cstate = pktcontinuity | CONTINUITY_VALID;
 		return 0;
 	}
 
@@ -235,13 +238,13 @@ int transport_packet_continuity_check(struct transport_packet *pkt,
 
 	/* check for a normal continuity progression */
 	if (nextcontinuity == pktcontinuity) {
-		*cstate = pktcontinuity | 0x80;
+		*cstate = pktcontinuity | CONTINUITY_VALID;
 		return 0;
 	}
 
 	/* one dupe is allowed */
-	if ((prevcontinuity == pktcontinuity) && (!(*cstate & 0x40))) {
-		*cstate = pktcontinuity | 0xc0;
+	if ((prevcontinuity == pktcontinuity) && (!(*cstate & CONTINUITY_DUPESEEN))) {
+		*cstate = pktcontinuity | (CONTINUITY_VALID|CONTINUITY_DUPESEEN);
 		return 0;
 	}
 
