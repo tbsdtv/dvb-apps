@@ -38,7 +38,7 @@ extern "C"
 struct section_buf {
 	uint32_t max;      /* maximum size of section - setup by section_buf_init() */
 	uint32_t count;    /* number of bytes currently accumulated */
-	uint32_t len;      /* total number of bytes in the section being received */
+	uint32_t len;      /* total number of bytes expected in the complete section */
 	uint8_t header:1;  /* flag indicating the section header has been commpletely received */
 	/* uint8_t data[] */
 };
@@ -85,14 +85,9 @@ extern int section_buf_add(struct section_buf *section, uint8_t* frag, int len, 
  * @param len Number of bytes of data.
  * @param pdu_start True if the payload_unit_start_indicator flag was set in the
  * TS packet.
- * @return 0 If section was already complete. >0 indicates how many bytes were
- * consumed.
- * -ERANGE indicates that the section is larger than section->max.
- * Note in this case, section->len is still updated, so you know how much data
- * needs to be skipped. Or else the combination of pointer_field/pdu_start
- * meant either the complete data was never received, or too much data was
- * received.
- * -EINVAL indicates the pointer_field was completely invalid (too large).
+ * @param section_status 0: nothing special. 1: section complete. -ERANGE indicates that the
+ * section is larger than section->max. -EINVAL indicates the pointer_field was completely
+ * invalid (too large).
  */
 extern int section_buf_add_transport_payload(struct section_buf *section,
 					     uint8_t* payload, int len,
