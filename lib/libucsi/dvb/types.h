@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef _UCSI_CONVERT_H
-#define _UCSI_CONVERT_H 1
+#ifndef _UCSI_DVB_TYPES_H
+#define _UCSI_DVB_TYPES_H 1
 
 #ifdef __cplusplus
 extern "C"
