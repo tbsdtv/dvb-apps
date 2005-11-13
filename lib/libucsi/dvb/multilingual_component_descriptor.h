@@ -29,6 +29,7 @@ extern "C"
 
 #include <ucsi/descriptor.h>
 #include <ucsi/endianops.h>
+#include <ucsi/dvb/types.h>
 
 /**
  * dvb_multilingual_component_descriptor structure.
@@ -44,7 +45,7 @@ struct dvb_multilingual_component_descriptor {
  * An entry in the components field of a dvb_multilingual_component_descriptor.
  */
 struct dvb_multilingual_component {
-	uint8_t iso_639_language_code[3];
+	dvblang_t iso_639_language_code;
 	uint8_t text_description_length;
 	/* uint8_t text_char[] */
 } packed;

@@ -28,6 +28,7 @@ extern "C"
 #endif
 
 #include <ucsi/section.h>
+#include <ucsi/dvb/types.h>
 
 /**
  * dvb_tot_section structure.
@@ -35,7 +36,7 @@ extern "C"
 struct dvb_tot_section {
 	struct section head;
 
-	uint8_t utc_time[5];
+	dvbdate_t utc_time;
   EBIT2(uint16_t reserved		: 4; ,
 	uint16_t descriptors_loop_length:12; );
   	/* struct descriptor descriptors[] */

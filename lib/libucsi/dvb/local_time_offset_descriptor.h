@@ -29,6 +29,7 @@ extern "C"
 
 #include <ucsi/descriptor.h>
 #include <ucsi/endianops.h>
+#include <ucsi/dvb/types.h>
 
 /**
  * dvb_local_time_offset_descriptor parameter.
@@ -43,12 +44,12 @@ struct dvb_local_time_offset_descriptor {
  * Entry in the offsets field of dvb_local_time_offset_descriptor.
  */
 struct dvb_local_time_offset {
-	uint8_t country_code[3];
+	dvbcountry_t country_code;
   EBIT3(uint8_t country_region_id		: 6; ,
 	uint8_t reserved			: 1; ,
 	uint8_t local_time_offset_polarity	: 1; );
 	uint16_t local_time_offset;
-	uint8_t time_of_change[5];
+	dvbdate_t time_of_change;
 	uint16_t next_time_offset;
 } packed;
 

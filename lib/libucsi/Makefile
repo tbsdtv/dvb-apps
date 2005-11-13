@@ -1,8 +1,7 @@
 
 OBJ =	crc32.o \
 	section_buf.o \
-	transport_packet.o \
-	convert.o
+	transport_packet.o
 
 INC = 	endianops.h \
 	crc32.h \

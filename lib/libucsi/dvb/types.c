@@ -19,28 +19,28 @@
  */
 
 #include <string.h>
-#include "convert.h"
+#include "types.h"
 
 static int int_to_bcd(int intval);
 static int bcd_to_int(int bcdval);
 
-time_t dvbdate_to_unixtime(uint8_t *utc)
+time_t dvbdate_to_unixtime(dvbdate_t dvbdate)
 {
 	int k = 0;
 	struct tm tm;
 	double mjd;
 
 	/* check for the undefined value */
-	if ((utc[0] == 0xff) &&
-	    (utc[1] == 0xff) &&
-	    (utc[2] == 0xff) &&
-	    (utc[3] == 0xff) &&
-	    (utc[4] == 0xff)) {
+	if ((dvbdate[0] == 0xff) &&
+	    (dvbdate[1] == 0xff) &&
+	    (dvbdate[2] == 0xff) &&
+	    (dvbdate[3] == 0xff) &&
+	    (dvbdate[4] == 0xff)) {
 		return -1;
 	}
 
 	memset(&tm, 0, sizeof(tm));
-	mjd = (utc[0] << 8) | utc[1];
+	mjd = (dvbdate[0] << 8) | dvbdate[1];
 
 	tm.tm_year = (int) ((mjd - 15078.2) / 365.25);
 	tm.tm_mon = (int) (((mjd - 14956.1) - (int) (tm.tm_year * 365.25)) / 30.6001);
@@ -48,14 +48,14 @@ time_t dvbdate_to_unixtime(uint8_t *utc)
 	if ((tm.tm_mon == 14) || (tm.tm_mon == 15)) k = 1;
 	tm.tm_year += k;
 	tm.tm_mon = tm.tm_mon - 2 - k * 12;
-	tm.tm_sec = bcd_to_int(utc[4]);
-	tm.tm_min = bcd_to_int(utc[3]);
-	tm.tm_hour = bcd_to_int(utc[2]);
+	tm.tm_sec = bcd_to_int(dvbdate[4]);
+	tm.tm_min = bcd_to_int(dvbdate[3]);
+	tm.tm_hour = bcd_to_int(dvbdate[2]);
 
 	return mktime(&tm);
 }
 
-void unixtime_to_dvbdate(time_t unixtime, uint8_t *utc)
+void unixtime_to_dvbdate(time_t unixtime, dvbdate_t dvbdate)
 {
 	struct tm tm;
 	double l = 0;
@@ -63,7 +63,7 @@ void unixtime_to_dvbdate(time_t unixtime, uint8_t *utc)
 
 	/* the undefined value */
 	if (unixtime == -1) {
-		memset(utc, 0xff, 5);
+		memset(dvbdate, 0xff, 5);
 		return;
 	}
 
@@ -72,14 +72,14 @@ void unixtime_to_dvbdate(time_t unixtime, uint8_t *utc)
 	if ((tm.tm_mon == 1) || (tm.tm_mon == 2)) l = 1;
 	mjd = 14956 + tm.tm_mday + (int) ((tm.tm_year - l) * 365.25) + (int) ((tm.tm_mon + 1 + l * 12) * 30.6001);
 
-	utc[0] = (mjd & 0xff00) >> 8;
-	utc[1] = mjd & 0xff;
-	utc[2] = int_to_bcd(tm.tm_hour);
-	utc[3] = int_to_bcd(tm.tm_min);
-	utc[4] = int_to_bcd(tm.tm_sec);
+	dvbdate[0] = (mjd & 0xff00) >> 8;
+	dvbdate[1] = mjd & 0xff;
+	dvbdate[2] = int_to_bcd(tm.tm_hour);
+	dvbdate[3] = int_to_bcd(tm.tm_min);
+	dvbdate[4] = int_to_bcd(tm.tm_sec);
 }
 
-int dvbduration_to_seconds(uint8_t *dvbduration)
+int dvbduration_to_seconds(dvbduration_t dvbduration)
 {
 	int seconds = 0;
 
@@ -90,7 +90,7 @@ int dvbduration_to_seconds(uint8_t *dvbduration)
 	return seconds;
 }
 
-void seconds_to_dvbduration(int seconds, uint8_t *dvbduration)
+void seconds_to_dvbduration(int seconds, dvbduration_t dvbduration)
 {
 	int hours, mins;
 

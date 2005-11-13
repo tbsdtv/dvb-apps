@@ -14,9 +14,11 @@ OBJ = bat_section.o \
       sit_section.o \
       st_section.o \
       tdt_section.o \
-      tot_section.o
+      tot_section.o \
+      types.o
 
-INC = section.h \
+INC = types.h \
+      section.h \
       bat_section.h \
       dit_section.h \
       eit_section.h \

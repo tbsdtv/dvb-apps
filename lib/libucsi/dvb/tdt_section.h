@@ -28,6 +28,7 @@ extern "C"
 #endif
 
 #include <ucsi/section.h>
+#include <ucsi/dvb/types.h>
 
 /**
  * dvb_tdt_section structure.
@@ -35,7 +36,7 @@ extern "C"
 struct dvb_tdt_section {
 	struct section head;
 
-	uint8_t utc_time[5]; // DVBDATE
+	dvbdate_t utc_time;
 } packed;
 
 /**

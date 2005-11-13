@@ -28,6 +28,8 @@ extern "C"
 #endif
 
 #include <ucsi/section.h>
+#include <ucsi/dvb/types.h>
+
 
 /**
  * dvb_eit_section structure.
@@ -47,8 +49,8 @@ struct dvb_eit_section {
  */
 struct dvb_eit_event {
 	uint16_t event_id;
-	uint8_t start_time[5]; // DVBTIME
-	uint8_t duration[3];   // DVBDURATION
+	dvbdate_t start_time;
+	dvbduration_t duration;
   EBIT3(uint16_t running_status		: 3;  ,
 	uint16_t free_ca_mode		: 1;  ,
 	uint16_t descriptors_loop_length:12; );

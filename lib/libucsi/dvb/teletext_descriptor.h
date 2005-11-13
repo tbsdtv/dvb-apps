@@ -29,6 +29,7 @@ extern "C"
 
 #include <ucsi/descriptor.h>
 #include <ucsi/endianops.h>
+#include <ucsi/dvb/types.h>
 
 /**
  * dvb_teletext_descriptor structure.
@@ -43,7 +44,7 @@ struct dvb_teletext_descriptor {
  * An entry in the entries field of a dvb_teletext_descriptor.
  */
 struct dvb_teletext_entry {
-	uint8_t iso_639_language_code[3];
+	dvblang_t iso_639_language_code;
   EBIT2(uint8_t teletext_type		: 5; ,
 	uint8_t teletext_magazine_number: 3; );
 	uint8_t teletext_page_number;

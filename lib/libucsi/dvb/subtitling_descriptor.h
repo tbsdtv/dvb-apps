@@ -29,6 +29,7 @@ extern "C"
 
 #include <ucsi/descriptor.h>
 #include <ucsi/endianops.h>
+#include <ucsi/dvb/types.h>
 
 /**
  * dvb_subtitling_descriptor structure.
@@ -43,7 +44,7 @@ struct dvb_subtitling_descriptor {
  * An entry in the subtitles field of the a dvb_subtitling_descriptor.
  */
 struct dvb_subtitling_entry {
-	uint8_t iso_639_language_code[3];
+	dvblang_t iso_639_language_code;
 	uint8_t subtitling_type;
 	uint16_t composition_page_id;
 	uint16_t ancillary_page_id;
