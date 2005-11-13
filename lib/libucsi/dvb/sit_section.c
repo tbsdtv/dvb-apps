@@ -32,7 +32,7 @@ struct dvb_sit_section * dvb_sit_section_codec(struct section_ext * ext)
 		return NULL;
 
 	bswap16(buf + pos);
-	pos += sizeof(struct dvb_sit_section);
+	pos += 2;
 
 	if ((pos + ret->transmission_info_loop_length) > len)
 		return NULL;

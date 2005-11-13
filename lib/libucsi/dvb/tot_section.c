@@ -28,13 +28,13 @@ struct dvb_tot_section *dvb_tot_section_codec(struct section *section)
 	int len = section->length + sizeof(struct section) - CRC_SIZE;
 	struct dvb_tot_section * ret = (struct dvb_tot_section *)section;
 
-	if (len < sizeof(struct dvb_tot_section));
+	if (len < sizeof(struct dvb_tot_section))
 		return NULL;
 
 	pos += 5;
 	bswap16(buf + pos);
 	pos += 2;
-
+   
 	if ((pos + ret->descriptors_loop_length) > len)
 		return NULL;
 

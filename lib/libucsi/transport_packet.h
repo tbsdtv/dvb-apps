@@ -32,7 +32,6 @@ extern "C"
 #define TRANSPORT_PACKET_LENGTH 188
 #define TRANSPORT_PACKET_SYNC   0x47
 #define TRANSPORT_MAX_PIDS      0x2000
-#define TRANSPORT_PAT_PID       0
 #define TRANSPORT_NULL_PID      0x1fff
 
 
@@ -101,9 +100,10 @@ enum transport_value {
  */
 struct transport_packet {
 	uint8_t sync_byte;
-  EBIT3(uint8_t transport_error_indicator 	: 1; ,
+  EBIT4(uint8_t transport_error_indicator 	: 1; ,
 	uint8_t payload_unit_start_indicator	: 1; ,
-	uint8_t pid_hi				: 6; );
+	uint8_t transport_priority		: 1; ,
+	uint8_t pid_hi				: 5; );
 	uint8_t pid_lo;
   EBIT3(uint8_t transport_scrambling_control	: 2; ,
 	uint8_t adaptation_field_control	: 2; ,
@@ -132,6 +132,17 @@ struct transport_values {
 };
 
 /**
+ * Extract the PID from a transport packet.
+ *
+ * @param pkt The packet.
+ * @return The PID.
+ */
+static inline int transport_packet_pid(struct transport_packet *pkt)
+{
+	return (pkt->pid_hi << 8) | (pkt->pid_lo);
+}
+
+/**
  * Process a buffer into a transport packet.
  *
  * @param buf Raw buffer.
@@ -144,18 +155,10 @@ static inline struct transport_packet *transport_packet_init(unsigned char *buf)
 	if (pkt->sync_byte != TRANSPORT_PACKET_SYNC)
 		return NULL;
 
-	return pkt;
-}
+	if (transport_packet_pid(pkt) >= TRANSPORT_MAX_PIDS)
+		return NULL;
 
-/**
- * Extract the PID from a transport packet.
- *
- * @param pkt The packet.
- * @return The PID.
- */
-static inline int transport_packet_pid(struct transport_packet *pkt)
-{
-	return (pkt->pid_hi << 8) | (pkt->pid_lo);
+	return pkt;
 }
 
 /**

@@ -33,7 +33,7 @@ int transport_packet_values_extract(struct transport_packet *pkt,
 	enum transport_value extracted = 0;
 	enum transport_adaptation_flags adapflags = 0;
 	enum transport_adaptation_extension_flags adapextflags = 0;
-	int adaplength = -1;
+	int adaplength = 0;
 	int adapextlength = 0;
 
 	/* does the packet contain an adaptation field ? */
@@ -236,6 +236,8 @@ int transport_packet_continuity_check(struct transport_packet *pkt,
 	/* only packets with a payload should increment the counter */
 	if (pkt->adaptation_field_control & 1)
 		nextcontinuity = (prevcontinuity + 1) & 0xf;
+	else
+		nextcontinuity = prevcontinuity;
 
 	/* check for a normal continuity progression */
 	if (nextcontinuity == pktcontinuity) {

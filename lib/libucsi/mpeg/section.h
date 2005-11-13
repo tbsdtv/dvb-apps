@@ -33,6 +33,10 @@ extern "C"
 #include <ucsi/mpeg/pmt_section.h>
 #include <ucsi/mpeg/tsdt_section.h>
 
+#define TRANSPORT_PAT_PID 0x00
+#define TRANSPORT_CAT_PID 0x01
+#define TRANSPORT_TSDT_PID 0x02
+   
 /**
  * Enumeration of MPEG section tags.
  */

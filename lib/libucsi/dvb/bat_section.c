@@ -32,7 +32,7 @@ struct dvb_bat_section * dvb_bat_section_codec(struct section_ext * ext)
 		return NULL;
 
 	bswap16(buf + pos);
-	pos += sizeof(struct dvb_bat_section);
+	pos += 2;
 
 	if ((pos + ret->bouquet_descriptors_length) > len)
 		return NULL;

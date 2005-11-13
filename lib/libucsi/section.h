@@ -87,6 +87,33 @@ static inline struct section * section_codec(uint8_t * buf, int len)
 }
 
 /**
+ * Some sections have a CRC even though they are not section_exts.
+ * This function is to allow checking of them.
+ *
+ * @param section Pointer to the processed section structure.
+ * @return Nonzero on error, or 0 if the CRC was correct.
+ */
+static inline int section_check_crc(struct section *section)
+{
+	uint8_t * buf = (uint8_t *) section;
+	int len = sizeof(struct section) + section->length;
+	uint32_t crc;
+
+	/* the crc check has to be performed on the unswapped data */
+	bswap16(buf+1);
+	crc = crc32(CRC32_INIT, buf, len);
+	bswap16(buf+1);
+
+	/* the crc check includes the crc value,
+	 * the result should therefore be zero.
+	 */
+	if (crc)
+		return -1;
+	return 0;
+}
+   
+   
+/**
  * Decode an extended section structure.
  *
  * @param section Pointer to the processed section structure.
@@ -100,19 +127,7 @@ static inline struct section_ext * section_ext_decode(struct section * section,
 		return NULL;
 
 	if (check_crc) {
-		uint8_t * buf = (uint8_t *) section;
-		int len = sizeof(struct section) + section->length;
-		uint32_t crc;
-
-		/* the crc check has to be performed on the unswapped data */
-		bswap16(buf+1);
-		crc = crc32(CRC32_INIT, buf, len);
-		bswap16(buf+1);
-
-		/* the crc check includes the crc value,
-		* the result should therefore be zero.
-		*/
-		if (crc)
+		if (section_check_crc(section))
 			return NULL;
 	}
 

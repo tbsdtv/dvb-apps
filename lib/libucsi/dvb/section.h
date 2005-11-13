@@ -39,6 +39,16 @@ extern "C"
 #include <ucsi/dvb/tot_section.h>
 #include <ucsi/dvb/int_section.h>
 
+#define TRANSPORT_NIT_PID 0x10
+#define TRANSPORT_SDT_PID 0x11
+#define TRANSPORT_BAT_PID 0x11
+#define TRANSPORT_EIT_PID 0x12
+#define TRANSPORT_RST_PID 0x13
+#define TRANSPORT_TDT_PID 0x14
+#define TRANSPORT_TOT_PID 0x14
+#define TRANSPORT_DIT_PID 0x1e
+#define TRANSPORT_SIT_PID 0x1f
+
 /**
  * Enumeration of DVB section tags.
  */

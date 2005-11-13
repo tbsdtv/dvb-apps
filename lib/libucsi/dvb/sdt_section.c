@@ -24,14 +24,14 @@
 struct dvb_sdt_section * dvb_sdt_section_codec(struct section_ext * ext)
 {
 	uint8_t * buf = (uint8_t *) ext;
-	unsigned int pos = 0;
+	unsigned int pos = sizeof(struct section_ext);
 	unsigned int len = section_ext_length(ext);
 
 	if (len < sizeof(struct dvb_sdt_section))
 		return NULL;
 
-	bswap16(buf + sizeof(struct section_ext));
-	pos += sizeof(struct dvb_sdt_section);
+	bswap16(buf + pos);
+	pos += 3;
 
 	while (pos < len) {
 		struct dvb_sdt_service * service =

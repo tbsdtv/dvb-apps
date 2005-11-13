@@ -40,6 +40,7 @@ struct section_buf {
 	uint32_t count;    /* number of bytes currently accumulated */
 	uint32_t len;      /* total number of bytes expected in the complete section */
 	uint8_t header:1;  /* flag indicating the section header has been commpletely received */
+	uint8_t wait_pdu:1;/* flag indicating to wait till the next PDU start */
 	/* uint8_t data[] */
 };
 
@@ -61,7 +62,9 @@ extern int section_buf_init(struct section_buf *section, int max);
  */
 static inline void section_buf_reset(struct section_buf *section)
 {
+	int tmp = section->wait_pdu;
 	section_buf_init(section, section->max);
+	section->wait_pdu = tmp;
 }
 
 /**

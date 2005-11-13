@@ -67,9 +67,9 @@ struct dvb_sit_section * dvb_sit_section_codec(struct section_ext *section);
  * @param pos Variable holding pointer to current descriptor.
  */
 #define dvb_sit_section_descriptors_for_each(sit, pos) \
-	for ((pos) = dvb_sit_descriptors_first(sit); \
+	for ((pos) = dvb_sit_section_descriptors_first(sit); \
 	     (pos); \
-	     (pos) = dvb_sit_descriptors_first(sit))
+	     (pos) = dvb_sit_section_descriptors_first(sit))
 
 /**
  * Iterator for services field in a dvb_sit_section.
@@ -78,9 +78,9 @@ struct dvb_sit_section * dvb_sit_section_codec(struct section_ext *section);
  * @param pos Variable holding pointer to current dvb_sit_service.
  */
 #define dvb_sit_section_services_for_each(sit, pos) \
-	for ((pos) = dvb_sit_services_first(sit); \
+	for ((pos) = dvb_sit_section_services_first(sit); \
 	     (pos); \
-	     (pos) = dvb_sit_services_next(sit, pos))
+	     (pos) = dvb_sit_section_services_next(sit, pos))
 
 /**
  * Iterator for descriptors field in a dvb_sit_service.

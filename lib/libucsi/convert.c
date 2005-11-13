@@ -47,7 +47,7 @@ time_t dvbdate_to_unixtime(uint8_t *utc)
 	tm.tm_mday = (int) mjd - 14956 - (int) (tm.tm_year * 365.25) - (int) (tm.tm_mon * 30.6001);
 	if ((tm.tm_mon == 14) || (tm.tm_mon == 15)) k = 1;
 	tm.tm_year += k;
-	tm.tm_mon = tm.tm_mon - 1 - k * 12;
+	tm.tm_mon = tm.tm_mon - 2 - k * 12;
 	tm.tm_sec = bcd_to_int(utc[4]);
 	tm.tm_min = bcd_to_int(utc[3]);
 	tm.tm_hour = bcd_to_int(utc[2]);
@@ -68,7 +68,8 @@ void unixtime_to_dvbdate(time_t unixtime, uint8_t *utc)
 	}
 
 	gmtime_r(&unixtime, &tm);
-	if ((tm.tm_mon == 1) || (tm.tm_mon = 2)) l = 1;
+	tm.tm_mon++;
+	if ((tm.tm_mon == 1) || (tm.tm_mon == 2)) l = 1;
 	mjd = 14956 + tm.tm_mday + (int) ((tm.tm_year - l) * 365.25) + (int) ((tm.tm_mon + 1 + l * 12) * 30.6001);
 
 	utc[0] = (mjd & 0xff00) >> 8;
