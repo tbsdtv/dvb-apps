@@ -37,7 +37,7 @@ struct mpeg_maximum_bitrate_descriptor {
 	struct descriptor d;
 
   EBIT2(uint32_t reserved		: 2;  ,
-	uint32_t maximum_bitrate	:22;  );
+	uint32_t maximum_bitrate	: 22; );
 } packed;
 
 /**
@@ -52,7 +52,7 @@ static inline struct mpeg_maximum_bitrate_descriptor*
 	if (d->len != (sizeof(struct mpeg_maximum_bitrate_descriptor) - 2))
 		return NULL;
 
-	bswap32((uint8_t*) d + 2);
+	bswap24((uint8_t*) d + 2);
 
 	return (struct mpeg_maximum_bitrate_descriptor*) d;
 }

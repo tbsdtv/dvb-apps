@@ -102,7 +102,7 @@ static inline struct dvb_nvod_reference*
 		return NULL;
 
 	return (struct dvb_nvod_reference *)
-		(uint8_t*) d + sizeof(struct dvb_nvod_reference_descriptor);
+		((uint8_t*) d + sizeof(struct dvb_nvod_reference_descriptor));
 }
 
 static inline struct dvb_nvod_reference*

@@ -141,7 +141,7 @@ static inline struct dvb_cell_frequency_link_cell*
 		return NULL;
 
 	return (struct dvb_cell_frequency_link_cell *)
-		(uint8_t*) d + sizeof(struct dvb_cell_frequency_link_descriptor);
+		((uint8_t*) d + sizeof(struct dvb_cell_frequency_link_descriptor));
 }
 
 static inline struct dvb_cell_frequency_link_cell*
@@ -166,7 +166,7 @@ static inline struct dvb_cell_frequency_link_cell_subcell*
 		return NULL;
 
 	return (struct dvb_cell_frequency_link_cell_subcell*)
-		(uint8_t*) d + sizeof(struct dvb_cell_frequency_link_cell);
+		((uint8_t*) d + sizeof(struct dvb_cell_frequency_link_cell));
 }
 
 static inline struct dvb_cell_frequency_link_cell_subcell*

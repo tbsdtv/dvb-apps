@@ -70,10 +70,10 @@ static inline struct mpeg_iso_639_language_descriptor*
  * @param d Pointer to the mpeg_iso_639_language_descriptor structure.
  * @param pos Variable holding a pointer to the current entry.
  */
-#define mpeg_iso_639_language_descriptor_languages_for_each(d, pos) \
-	for ((pos) = mpeg_iso_639_language_descriptor_languages_first(d); \
-	     (pos); \
-	     (pos) = mpeg_iso_639_language_descriptor_languages_next(d, pos))
+#define mpeg_iso_639_language_descriptor_languages_for_each(_d, _pos) \
+	for ((_pos) = mpeg_iso_639_language_descriptor_languages_first(_d); \
+	     (_pos); \
+	     (_pos) = mpeg_iso_639_language_descriptor_languages_next(_d, _pos))
 
 
 
@@ -92,7 +92,7 @@ static inline struct mpeg_iso_639_language_code*
 		return NULL;
 
 	return (struct mpeg_iso_639_language_code *)
-		(uint8_t*) d + sizeof(struct mpeg_iso_639_language_descriptor);
+		((uint8_t*) d + sizeof(struct mpeg_iso_639_language_descriptor));
 }
 
 static inline struct mpeg_iso_639_language_code*

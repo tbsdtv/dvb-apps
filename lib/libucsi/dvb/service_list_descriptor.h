@@ -99,7 +99,7 @@ static inline struct dvb_service_list_service*
 		return NULL;
 
 	return (struct dvb_service_list_service *)
-		(uint8_t*) d + sizeof(struct dvb_service_list_descriptor);
+		((uint8_t*) d + sizeof(struct dvb_service_list_descriptor));
 }
 
 static inline struct dvb_service_list_service*

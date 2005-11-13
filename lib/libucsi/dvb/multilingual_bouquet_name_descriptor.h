@@ -120,7 +120,7 @@ static inline struct dvb_multilingual_bouquet_name*
 		return NULL;
 
 	return (struct dvb_multilingual_bouquet_name *)
-		(uint8_t*) d + sizeof(struct dvb_multilingual_bouquet_name_descriptor);
+		((uint8_t*) d + sizeof(struct dvb_multilingual_bouquet_name_descriptor));
 }
 
 static inline struct dvb_multilingual_bouquet_name*

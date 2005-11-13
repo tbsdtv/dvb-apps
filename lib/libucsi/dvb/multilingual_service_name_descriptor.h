@@ -170,7 +170,7 @@ static inline struct dvb_multilingual_service_name*
 		return NULL;
 
 	return (struct dvb_multilingual_service_name *)
-		(uint8_t*) d + sizeof(struct dvb_multilingual_service_name_descriptor);
+		((uint8_t*) d + sizeof(struct dvb_multilingual_service_name_descriptor));
 }
 
 static inline struct dvb_multilingual_service_name*

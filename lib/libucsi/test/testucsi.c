@@ -34,7 +34,7 @@
 void parse_section(uint8_t *buf, int len, int pid);
 void parse_descriptor(struct descriptor *d, int indent);
 void iprintf(int indent, char *fmt, ...);
-void hexdump(int indent, uint8_t *buf, int buflen);
+void hexdump(int indent, char *prefix, uint8_t *buf, int buflen);
 
 #define TIME_CHECK_VAL 1131835761
 #define DURATION_CHECK_VAL 5643
@@ -109,7 +109,7 @@ int main(int argc, char *argv[])
 	memset(section_bufs, 0, sizeof(section_bufs));
 	while(1) {
 		if ((sz = read(dvrfd, databuf, sizeof(databuf))) < 0) {
-			if (sz == -EOVERFLOW) {
+			if (errno == EOVERFLOW) {
 				fprintf(stderr, "data overflow!\n");
 				continue;
 			} else {
@@ -173,7 +173,7 @@ int main(int argc, char *argv[])
 					section_buf_reset(section_bufs[pid]);
 				} else if (section_status < 0) {
 					// some kind of error - just discard
-	//				fprintf(stderr, "XXXX bad section %04x %i\n",pid, section_status);
+					fprintf(stderr, "XXXX bad section %04x %i\n",pid, section_status);
 					section_buf_reset(section_bufs[pid]);
 				}
 			}
@@ -310,7 +310,7 @@ void parse_section(uint8_t *buf, int len, int pid)
 			printf("XXXX OSDMT parse error\n");
 			break;
 		}
-		hexdump(1, objects, objects_length);
+		hexdump(1, "SCT ", objects, objects_length);
 		break;
 	}
 
@@ -594,7 +594,7 @@ void parse_section(uint8_t *buf, int len, int pid)
 
 	default:
 		fprintf(stderr, "XXXX Unknown table_id:0x%02x (pid:0x%04x)\n", section->table_id, pid);
-		hexdump(0, buf, len);
+//		hexdump(0, "SCT ", buf, len);
 		return;
 	}
 
@@ -608,13 +608,13 @@ void parse_descriptor(struct descriptor *d, int indent)
 	{
 		struct mpeg_video_stream_descriptor *dx;
 
-		iprintf(indent, "Decode mpeg_video_stream_descriptor\n");
+		iprintf(indent, "DSC Decode mpeg_video_stream_descriptor\n");
 		dx = mpeg_video_stream_descriptor_codec(d);
 		if (dx == NULL) {
-			fprintf(stderr, "XXXX mpeg_video_stream_descriptor decode error\n");
+			fprintf(stderr, "DSC XXXX mpeg_video_stream_descriptor decode error\n");
 			return;
 		}
-		iprintf(indent, "multiple_frame_rate_flag:%i frame_rate_code:%i mpeg_1_only_flag:%i constrained_parameter_flag:%i still_picture_flag:%i\n",
+		iprintf(indent, "DSC multiple_frame_rate_flag:%i frame_rate_code:%i mpeg_1_only_flag:%i constrained_parameter_flag:%i still_picture_flag:%i\n",
 			dx->multiple_frame_rate_flag,
 			dx->frame_rate_code,
 			dx->mpeg_1_only_flag,
@@ -622,7 +622,7 @@ void parse_descriptor(struct descriptor *d, int indent)
 			dx->still_picture_flag);
 		if (!dx->mpeg_1_only_flag) {
 			struct mpeg_video_stream_extra *extra = mpeg_video_stream_descriptor_extra(dx);
-			iprintf(indent, "profile_and_level_indication:0x%02x chroma_format:%i frame_rate_extension:%i\n",
+			iprintf(indent, "DSC profile_and_level_indication:0x%02x chroma_format:%i frame_rate_extension:%i\n",
 				extra->profile_and_level_indication,
 				extra->chroma_format,
 				extra->frame_rate_extension);
@@ -633,14 +633,14 @@ void parse_descriptor(struct descriptor *d, int indent)
 	case dtag_mpeg_audio_stream:
 	{
 		struct mpeg_audio_stream_descriptor *dx;
-
-		iprintf(indent, "Decode mpeg_audio_stream_descriptor\n");
+	   
+		iprintf(indent, "DSC Decode mpeg_audio_stream_descriptor\n");
 		dx = mpeg_audio_stream_descriptor_codec(d);
 		if (dx == NULL) {
-			fprintf(stderr, "XXXX mpeg_audio_stream_descriptor decode error\n");
+			fprintf(stderr, "DSC XXXX mpeg_audio_stream_descriptor decode error\n");
 			return;
 		}
-		iprintf(indent, "free_format_flag:%i id:%i layer:%i variable_rate_audio_indicator:%i\n",
+		iprintf(indent, "DSC free_format_flag:%i id:%i layer:%i variable_rate_audio_indicator:%i\n",
 			dx->free_format_flag,
 			dx->id,
 			dx->layer,
@@ -652,13 +652,13 @@ void parse_descriptor(struct descriptor *d, int indent)
 	{
 		struct mpeg_hierarchy_descriptor *dx;
 
-		iprintf(indent, "Decode mpeg_hierarchy_descriptor\n");
+		iprintf(indent, "DSC Decode mpeg_hierarchy_descriptor\n");
 		dx = mpeg_hierarchy_descriptor_codec(d);
 		if (dx == NULL) {
-			fprintf(stderr, "XXXX mpeg_hierarchy_descriptor decode error\n");
+			fprintf(stderr, "DSC XXXX mpeg_hierarchy_descriptor decode error\n");
 			return;
 		}
-		iprintf(indent, "hierarchy_type:%i hierarchy_layer_index:%i hierarchy_embedded_layer_index:%i hierarchy_channel:%i\n",
+		iprintf(indent, "DSC hierarchy_type:%i hierarchy_layer_index:%i hierarchy_embedded_layer_index:%i hierarchy_channel:%i\n",
 			dx->hierarchy_type,
 			dx->hierarchy_layer_index,
 			dx->hierarchy_embedded_layer_index,
@@ -670,16 +670,16 @@ void parse_descriptor(struct descriptor *d, int indent)
 	{
 		struct mpeg_registration_descriptor *dx;
 
-		iprintf(indent, "Decode mpeg_registration_descriptor\n");
+		iprintf(indent, "DSC Decode mpeg_registration_descriptor\n");
 		dx = mpeg_registration_descriptor_codec(d);
 		if (dx == NULL) {
-			fprintf(stderr, "XXXX mpeg_registration_descriptor decode error\n");
+			fprintf(stderr, "DSC XXXX mpeg_registration_descriptor decode error\n");
 			return;
 		}
-		iprintf(indent, "format_identifier:0x%x\n",
+		iprintf(indent, "DSC format_identifier:0x%x\n",
 			dx->format_identifier);
-		iprintf(indent, "additional_id_info:\n");
-		hexdump(indent,
+		iprintf(indent, "DSC additional_id_info:\n");
+		hexdump(indent, "DSC ",
 			mpeg_registration_descriptor_additional_id_info(dx),
 			mpeg_registration_descriptor_additional_id_info_length(dx));
 		break;
@@ -688,14 +688,14 @@ void parse_descriptor(struct descriptor *d, int indent)
 	case dtag_mpeg_data_stream_alignment:
 	{
 		struct mpeg_data_stream_alignment_descriptor *dx;
-
-		iprintf(indent, "Decode mpeg_data_stream_alignment_descriptor\n");
+	   
+		iprintf(indent, "DSC Decode mpeg_data_stream_alignment_descriptor\n");
 		dx = mpeg_data_stream_alignment_descriptor_codec(d);
 		if (dx == NULL) {
-			fprintf(stderr, "XXXX mpeg_data_stream_alignment_descriptor decode error\n");
+			fprintf(stderr, "DSC XXXX mpeg_data_stream_alignment_descriptor decode error\n");
 			return;
 		}
-		iprintf(indent, "alignment_type:%i\n",
+		iprintf(indent, "DSC alignment_type:%i\n",
 			dx->alignment_type);
 		break;
 	}
@@ -704,13 +704,13 @@ void parse_descriptor(struct descriptor *d, int indent)
 	{
 		struct mpeg_target_background_grid_descriptor *dx;
 
-		iprintf(indent, "Decode mpeg_target_background_grid_descriptor\n");
+		iprintf(indent, "DSC Decode mpeg_target_background_grid_descriptor\n");
 		dx = mpeg_target_background_grid_descriptor_codec(d);
 		if (dx == NULL) {
-			fprintf(stderr, "XXXX mpeg_target_background_grid_descriptor decode error\n");
+			fprintf(stderr, "DSC XXXX mpeg_target_background_grid_descriptor decode error\n");
 			return;
 		}
-		iprintf(indent, "horizontal_size:%i vertical_size:%i aspect_ratio_information:%i\n",
+		iprintf(indent, "DSC horizontal_size:%i vertical_size:%i aspect_ratio_information:%i\n",
 			dx->horizontal_size,
 		        dx->vertical_size,
 		        dx->aspect_ratio_information);
@@ -721,13 +721,13 @@ void parse_descriptor(struct descriptor *d, int indent)
 	{
 		struct mpeg_video_window_descriptor *dx;
 
-		iprintf(indent, "Decode mpeg_video_window_descriptor\n");
+		iprintf(indent, "DSC Decode mpeg_video_window_descriptor\n");
 		dx = mpeg_video_window_descriptor_codec(d);
 		if (dx == NULL) {
-			fprintf(stderr, "XXXX mpeg_video_window_descriptor decode error\n");
+			fprintf(stderr, "DSC XXXX mpeg_video_window_descriptor decode error\n");
 			return;
 		}
-		iprintf(indent, "horizontal_offset:%i vertical_offset:%i window_priority:%i\n",
+		iprintf(indent, "DSC horizontal_offset:%i vertical_offset:%i window_priority:%i\n",
 			dx->horizontal_offset,
 			dx->vertical_offset,
 			dx->window_priority);
@@ -737,18 +737,18 @@ void parse_descriptor(struct descriptor *d, int indent)
 	case dtag_mpeg_ca:
 	{
 		struct mpeg_ca_descriptor *dx;
-
-		iprintf(indent, "Decode mpeg_ca_descriptor\n");
+	   
+		iprintf(indent, "DSC Decode mpeg_ca_descriptor\n");
 		dx = mpeg_ca_descriptor_codec(d);
 		if (dx == NULL) {
-			fprintf(stderr, "XXXX mpeg_ca_descriptor decode error\n");
+			fprintf(stderr, "DSC XXXX mpeg_ca_descriptor decode error\n");
 			return;
 		}
-		iprintf(indent, "ca_system_id:0x%04x ca_pid:0x%04x\n",
+		iprintf(indent, "DSC ca_system_id:0x%04x ca_pid:0x%04x\n",
 			dx->ca_system_id,
 			dx->ca_pid);
-		iprintf(indent, "data:\n");
-		hexdump(indent, mpeg_ca_descriptor_data(dx), mpeg_ca_descriptor_data_length(dx));
+		iprintf(indent, "DSC data:\n");
+		hexdump(indent, "DSC ", mpeg_ca_descriptor_data(dx), mpeg_ca_descriptor_data_length(dx));
 		break;
 	}
 
@@ -757,14 +757,14 @@ void parse_descriptor(struct descriptor *d, int indent)
 		struct mpeg_iso_639_language_descriptor *dx;
 		struct mpeg_iso_639_language_code *cur_lang;
 
-		iprintf(indent, "Decode mpeg_iso_639_language_descriptor\n");
+		iprintf(indent, "DSC Decode mpeg_iso_639_language_descriptor\n");
 		dx = mpeg_iso_639_language_descriptor_codec(d);
 		if (dx == NULL) {
-			fprintf(stderr, "XXXX mpeg_iso_639_language_descriptor decode error\n");
+			fprintf(stderr, "DSC XXXX mpeg_iso_639_language_descriptor decode error\n");
 			return;
 		}
 		mpeg_iso_639_language_descriptor_languages_for_each(dx, cur_lang) {
-			iprintf(indent, "language_code:%c%c%c audio_type:0x%02x\n",
+			iprintf(indent+1, "DSC language_code:%c%c%c audio_type:0x%02x\n",
 				cur_lang->language_code[0],
 				cur_lang->language_code[1],
 				cur_lang->language_code[2],
@@ -777,13 +777,13 @@ void parse_descriptor(struct descriptor *d, int indent)
 	{
 		struct mpeg_system_clock_descriptor *dx;
 
-		iprintf(indent, "Decode mpeg_system_clock_descriptor\n");
+		iprintf(indent, "DSC Decode mpeg_system_clock_descriptor\n");
 		dx = mpeg_system_clock_descriptor_codec(d);
 		if (dx == NULL) {
-			fprintf(stderr, "XXXX mpeg_system_clock_descriptor decode error\n");
+			fprintf(stderr, "DSC XXXX mpeg_system_clock_descriptor decode error\n");
 			return;
 		}
-		iprintf(indent, "external_clock_reference_indicator:%i clock_accuracy_integer:%i clock_accuracy_exponent:%i\n",
+		iprintf(indent, "DSC external_clock_reference_indicator:%i clock_accuracy_integer:%i clock_accuracy_exponent:%i\n",
 			dx->external_clock_reference_indicator,
 			dx->clock_accuracy_integer,
 		        dx->clock_accuracy_exponent);
@@ -794,13 +794,13 @@ void parse_descriptor(struct descriptor *d, int indent)
 	{
 		struct mpeg_multiplex_buffer_utilization_descriptor *dx;
 
-		iprintf(indent, "Decode mpeg_multiplex_buffer_utilization_descriptor\n");
+		iprintf(indent, "DSC Decode mpeg_multiplex_buffer_utilization_descriptor\n");
 		dx = mpeg_multiplex_buffer_utilization_descriptor_codec(d);
 		if (dx == NULL) {
-			fprintf(stderr, "XXXX mpeg_multiplex_buffer_utilization_descriptor decode error\n");
+			fprintf(stderr, "DSC XXXX mpeg_multiplex_buffer_utilization_descriptor decode error\n");
 			return;
 		}
-		iprintf(indent, "bound_valid_flag:%i ltw_offset_lower_bound:%i ltw_offset_upper_bound:%i\n",
+		iprintf(indent, "DSC bound_valid_flag:%i ltw_offset_lower_bound:%i ltw_offset_upper_bound:%i\n",
 			dx->bound_valid_flag,
 			dx->ltw_offset_lower_bound,
 			dx->ltw_offset_upper_bound);
@@ -811,30 +811,30 @@ void parse_descriptor(struct descriptor *d, int indent)
 	{
 		struct mpeg_copyright_descriptor *dx;
 
-		iprintf(indent, "Decode mpeg_copyright_descriptor\n");
+		iprintf(indent, "DSC Decode mpeg_copyright_descriptor\n");
 		dx = mpeg_copyright_descriptor_codec(d);
 		if (dx == NULL) {
-			fprintf(stderr, "XXXX mpeg_copyright_descriptor decode error\n");
+			fprintf(stderr, "DSC XXXX mpeg_copyright_descriptor decode error\n");
 			return;
 		}
-		iprintf(indent, "copyright_identifier:0x%08x\n",
+		iprintf(indent, "DSC copyright_identifier:0x%08x\n",
 			dx->copyright_identifier);
-		iprintf(indent, "data:\n");
-		hexdump(indent, mpeg_copyright_descriptor_data(dx), mpeg_copyright_descriptor_data_length(dx));
+		iprintf(indent, "DSC data:\n");
+		hexdump(indent, "DSC ", mpeg_copyright_descriptor_data(dx), mpeg_copyright_descriptor_data_length(dx));
 		break;
 	}
 
 	case dtag_mpeg_maximum_bitrate:
 	{
 		struct mpeg_maximum_bitrate_descriptor *dx;
-
-		iprintf(indent, "Decode mpeg_maximum_bitrate_descriptor\n");
+	   
+		iprintf(indent, "DSC Decode mpeg_maximum_bitrate_descriptor\n");
 		dx = mpeg_maximum_bitrate_descriptor_codec(d);
 		if (dx == NULL) {
-			fprintf(stderr, "XXXX mpeg_maximum_bitrate_descriptor decode error\n");
+			fprintf(stderr, "DSC XXXX mpeg_maximum_bitrate_descriptor decode error\n");
 			return;
 		}
-		iprintf(indent, "maximum_bitrate:%i\n",
+		iprintf(indent, "DSC maximum_bitrate:%i\n",
 			dx->maximum_bitrate);
 		break;
 	}
@@ -843,13 +843,13 @@ void parse_descriptor(struct descriptor *d, int indent)
 	{
 		struct mpeg_private_data_indicator_descriptor *dx;
 
-		iprintf(indent, "Decode mpeg_private_data_indicator_descriptor\n");
+		iprintf(indent, "DSC Decode mpeg_private_data_indicator_descriptor\n");
 		dx = mpeg_private_data_indicator_descriptor_codec(d);
 		if (dx == NULL) {
-			fprintf(stderr, "XXXX mpeg_private_data_indicator_descriptor decode error\n");
+			fprintf(stderr, "DSC XXXX mpeg_private_data_indicator_descriptor decode error\n");
 			return;
 		}
-		iprintf(indent, "private_data_indicator:0x%x\n",
+		iprintf(indent, "DSC private_data_indicator:0x%x\n",
 			dx->private_data_indicator);
 		break;
 	}
@@ -858,13 +858,13 @@ void parse_descriptor(struct descriptor *d, int indent)
 	{
 		struct mpeg_smoothing_buffer_descriptor *dx;
 
-		iprintf(indent, "Decode mpeg_smoothing_buffer_descriptor\n");
+		iprintf(indent, "DSC Decode mpeg_smoothing_buffer_descriptor\n");
 		dx = mpeg_smoothing_buffer_descriptor_codec(d);
 		if (dx == NULL) {
-			fprintf(stderr, "XXXX mpeg_smoothing_buffer_descriptor decode error\n");
+			fprintf(stderr, "DSC XXXX mpeg_smoothing_buffer_descriptor decode error\n");
 			return;
 		}
-		iprintf(indent, "sb_leak_rate:%i sb_size:%i\n",
+		iprintf(indent, "DSC sb_leak_rate:%i sb_size:%i\n",
 			dx->sb_leak_rate,
 		        dx->sb_size);
 		break;
@@ -874,13 +874,13 @@ void parse_descriptor(struct descriptor *d, int indent)
 	{
 		struct mpeg_std_descriptor *dx;
 
-		iprintf(indent, "Decode mpeg_std_descriptor\n");
+		iprintf(indent, "DSC Decode mpeg_std_descriptor\n");
 		dx = mpeg_std_descriptor_codec(d);
 		if (dx == NULL) {
-			fprintf(stderr, "XXXX mpeg_std_descriptor decode error\n");
+			fprintf(stderr, "DSC XXXX mpeg_std_descriptor decode error\n");
 			return;
 		}
-		iprintf(indent, "leak_valid_flag:%i\n",
+		iprintf(indent, "DSC leak_valid_flag:%i\n",
 			dx->leak_valid_flag);
 		break;
 	}
@@ -889,13 +889,13 @@ void parse_descriptor(struct descriptor *d, int indent)
 	{
 		struct mpeg_ibp_descriptor *dx;
 
-		iprintf(indent, "Decode mpeg_ibp_descriptor\n");
+		iprintf(indent, "DSC Decode mpeg_ibp_descriptor\n");
 		dx = mpeg_ibp_descriptor_codec(d);
 		if (dx == NULL) {
-			fprintf(stderr, "XXXX mpeg_ibp_descriptor decode error\n");
+			fprintf(stderr, "DSC XXXX mpeg_ibp_descriptor decode error\n");
 			return;
 		}
-		iprintf(indent, "closed_gop_flag:%i identical_gop_flag:%i max_gop_length:%i\n",
+		iprintf(indent, "DSC closed_gop_flag:%i identical_gop_flag:%i max_gop_length:%i\n",
 			dx->closed_gop_flag, dx->identical_gop_flag, dx->max_gop_length);
 		break;
 	}
@@ -904,13 +904,13 @@ void parse_descriptor(struct descriptor *d, int indent)
 	{
 		struct mpeg4_video_descriptor *dx;
 
-		iprintf(indent, "Decode mpeg4_video_descriptor\n");
+		iprintf(indent, "DSC Decode mpeg4_video_descriptor\n");
 		dx = mpeg4_video_descriptor_codec(d);
 		if (dx == NULL) {
-			fprintf(stderr, "XXXX mpeg4_video_descriptor decode error\n");
+			fprintf(stderr, "DSC XXXX mpeg4_video_descriptor decode error\n");
 			return;
 		}
-		iprintf(indent, "mpeg4_visual_profile_and_level:0x%02x\n",
+		iprintf(indent, "DSC mpeg4_visual_profile_and_level:0x%02x\n",
 			dx->mpeg4_visual_profile_and_level);
 		break;
 	}
@@ -919,13 +919,13 @@ void parse_descriptor(struct descriptor *d, int indent)
 	{
 		struct mpeg4_audio_descriptor *dx;
 
-		iprintf(indent, "Decode mpeg4_audio_descriptor\n");
+		iprintf(indent, "DSC Decode mpeg4_audio_descriptor\n");
 		dx = mpeg4_audio_descriptor_codec(d);
 		if (dx == NULL) {
-			fprintf(stderr, "XXXX mpeg4_audio_descriptor decode error\n");
+			fprintf(stderr, "DSC XXXX mpeg4_audio_descriptor decode error\n");
 			return;
 		}
-		iprintf(indent, "mpeg4_audio_profile_and_level:0x%02x\n",
+		iprintf(indent, "DSC mpeg4_audio_profile_and_level:0x%02x\n",
 			dx->mpeg4_audio_profile_and_level);
 		break;
 	}
@@ -934,16 +934,16 @@ void parse_descriptor(struct descriptor *d, int indent)
 	{
 		struct mpeg_iod_descriptor *dx;
 
-		iprintf(indent, "Decode mpeg_iod_descriptor\n");
+		iprintf(indent, "DSC Decode mpeg_iod_descriptor\n");
 		dx = mpeg_iod_descriptor_codec(d);
 		if (dx == NULL) {
-			fprintf(stderr, "XXXX mpeg_iod_descriptor decode error\n");
+			fprintf(stderr, "DSC XXXX mpeg_iod_descriptor decode error\n");
 			return;
 		}
-		iprintf(indent, "scope_of_iod_label:0x%08x iod_label:0x%02x\n",
+		iprintf(indent, "DSC scope_of_iod_label:0x%08x iod_label:0x%02x\n",
 			dx->scope_of_iod_label, dx->iod_label);
-		iprintf(indent, "iod:\n");
-		hexdump(indent, mpeg_iod_descriptor_iod(dx), mpeg_iod_descriptor_iod_length(dx));
+		iprintf(indent, "DSC iod:\n");
+		hexdump(indent, "DSC ", mpeg_iod_descriptor_iod(dx), mpeg_iod_descriptor_iod_length(dx));
 		break;
 	}
 
@@ -951,13 +951,13 @@ void parse_descriptor(struct descriptor *d, int indent)
 	{
 		struct mpeg_sl_descriptor *dx;
 
-		iprintf(indent, "Decode mpeg_sl_descriptor\n");
+		iprintf(indent, "DSC Decode mpeg_sl_descriptor\n");
 		dx = mpeg_sl_descriptor_codec(d);
 		if (dx == NULL) {
-			fprintf(stderr, "XXXX mpeg_sl_descriptor decode error\n");
+			fprintf(stderr, "DSC XXXX mpeg_sl_descriptor decode error\n");
 			return;
 		}
-		iprintf(indent, "es_id:0x%04x\n",
+		iprintf(indent, "DSC es_id:0x%04x\n",
 			dx->es_id);
 		break;
 	}
@@ -967,14 +967,14 @@ void parse_descriptor(struct descriptor *d, int indent)
 		struct mpeg_fmc_descriptor *dx;
 		struct mpeg_flex_mux *cur_fm;
 
-		iprintf(indent, "Decode mpeg_fmc_descriptor\n");
+		iprintf(indent, "DSC Decode mpeg_fmc_descriptor\n");
 		dx = mpeg_fmc_descriptor_codec(d);
 		if (dx == NULL) {
-			fprintf(stderr, "XXXX mpeg_fmc_descriptor_descriptor decode error\n");
+			fprintf(stderr, "DSC XXXX mpeg_fmc_descriptor_descriptor decode error\n");
 			return;
 		}
 		mpeg_fmc_descriptor_muxes_for_each(dx, cur_fm) {
-			iprintf(indent, "es_id:0x%04x flex_mux_channel:0x%02x\n",
+			iprintf(indent+1, "DSC es_id:0x%04x flex_mux_channel:0x%02x\n",
 				cur_fm->es_id,
 				cur_fm->flex_mux_channel);
 		}
@@ -985,13 +985,13 @@ void parse_descriptor(struct descriptor *d, int indent)
 	{
 		struct mpeg_external_es_id_descriptor *dx;
 
-		iprintf(indent, "Decode mpeg_external_es_id_descriptor\n");
+		iprintf(indent, "DSC Decode mpeg_external_es_id_descriptor\n");
 		dx = mpeg_external_es_id_descriptor_codec(d);
 		if (dx == NULL) {
-			fprintf(stderr, "XXXX mpeg_external_es_id_descriptor decode error\n");
+			fprintf(stderr, "DSC XXXX mpeg_external_es_id_descriptor decode error\n");
 			return;
 		}
-		iprintf(indent, "external_es_id:0x%04x\n",
+		iprintf(indent, "DSC external_es_id:0x%04x\n",
 			dx->external_es_id);
 		break;
 	}
@@ -1000,14 +1000,14 @@ void parse_descriptor(struct descriptor *d, int indent)
 	{
 		struct mpeg_muxcode_descriptor *dx;
 
-		iprintf(indent, "Decode mpeg_muxcode_descriptor\n");
+		iprintf(indent, "DSC Decode mpeg_muxcode_descriptor\n");
 		dx = mpeg_muxcode_descriptor_codec(d);
 		if (dx == NULL) {
-			fprintf(stderr, "XXXX mpeg_muxcode_descriptor decode error\n");
+			fprintf(stderr, "DSC XXXX mpeg_muxcode_descriptor decode error\n");
 			return;
 		}
-		iprintf(indent, "entries:\n");
-		hexdump(indent, mpeg_muxcode_descriptor_entries(dx), mpeg_muxcode_descriptor_entries_length(dx));
+		iprintf(indent, "DSC entries:\n");
+		hexdump(indent, "DSC ", mpeg_muxcode_descriptor_entries(dx), mpeg_muxcode_descriptor_entries_length(dx));
 		break;
 	}
 
@@ -1015,14 +1015,14 @@ void parse_descriptor(struct descriptor *d, int indent)
 	{
 		struct mpeg_fmxbuffer_size_descriptor *dx;
 
-		iprintf(indent, "Decode mpeg_fmxbuffer_size_descriptor\n");
+		iprintf(indent, "DSC Decode mpeg_fmxbuffer_size_descriptor\n");
 		dx = mpeg_fmxbuffer_size_descriptor_codec(d);
 		if (dx == NULL) {
-			fprintf(stderr, "XXXX mpeg_fmxbuffer_size_descriptor decode error\n");
+			fprintf(stderr, "DSC XXXX mpeg_fmxbuffer_size_descriptor decode error\n");
 			return;
 		}
-		iprintf(indent, "descriptors:\n");
-		hexdump(indent, mpeg_fmxbuffer_size_descriptor_descriptors(dx), mpeg_fmxbuffer_size_descriptor_descriptors_length(dx));
+		iprintf(indent, "DSC descriptors:\n");
+		hexdump(indent, "DSC ", mpeg_fmxbuffer_size_descriptor_descriptors(dx), mpeg_fmxbuffer_size_descriptor_descriptors_length(dx));
 		break;
 	}
 
@@ -1030,13 +1030,13 @@ void parse_descriptor(struct descriptor *d, int indent)
 	{
 		struct mpeg_multiplex_buffer_descriptor *dx;
 
-		iprintf(indent, "Decode mpeg_multiplex_buffer_descriptor\n");
+		iprintf(indent, "DSC Decode mpeg_multiplex_buffer_descriptor\n");
 		dx = mpeg_multiplex_buffer_descriptor_codec(d);
 		if (dx == NULL) {
-			fprintf(stderr, "XXXX mpeg_multiplex_buffer_descriptor decode error\n");
+			fprintf(stderr, "DSC XXXX mpeg_multiplex_buffer_descriptor decode error\n");
 			return;
 		}
-		iprintf(indent, "mb_buffer_size:%i tb_leak_rate:%i\n",
+		iprintf(indent, "DSC mb_buffer_size:%i tb_leak_rate:%i\n",
 			dx->mb_buffer_size, dx->tb_leak_rate);
 		break;
 	}
@@ -1092,7 +1092,7 @@ void parse_descriptor(struct descriptor *d, int indent)
 	case dtag_dvb_service_identifier:
 	case dtag_dvb_service_availability:
 	default:
-		fprintf(stderr, "XXXX Unknown descriptor_tag:0x%02x\n", d->tag);
+//		fprintf(stderr, "DSC XXXX Unknown descriptor_tag:0x%02x\n", d->tag);
 		return;
 	}
 }
@@ -1110,7 +1110,7 @@ void iprintf(int indent, char *fmt, ...)
 	va_end(ap);
 }
 
-void hexdump(int indent, uint8_t *buf, int buflen)
+void hexdump(int indent, char *prefix, uint8_t *buf, int buflen)
 {
 	int i;
 	int j;
@@ -1118,7 +1118,7 @@ void hexdump(int indent, uint8_t *buf, int buflen)
 	char line[512];
 
 	for(i=0; i< buflen; i+=16) {
-		max =  16;
+		max = 16;
 		if ((i + max) > buflen)
 				max = buflen - i;
 
@@ -1142,7 +1142,6 @@ void hexdump(int indent, uint8_t *buf, int buflen)
 		for(j=0; j < indent; j++) {
 			printf("\t");
 		}
-		printf(line);
-		printf("|\n");
+		printf("%s%s|\n", prefix, line);
 	}
 }

@@ -124,7 +124,7 @@ static inline struct dvb_multilingual_component*
 		return NULL;
 
 	return (struct dvb_multilingual_component *)
-		(uint8_t*) d + sizeof(struct dvb_multilingual_component_descriptor);
+		((uint8_t*) d + sizeof(struct dvb_multilingual_component_descriptor));
 }
 
 static inline struct dvb_multilingual_component*

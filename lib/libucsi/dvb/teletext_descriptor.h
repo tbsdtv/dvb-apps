@@ -93,7 +93,7 @@ static inline struct dvb_teletext_entry*
 		return NULL;
 
 	return (struct dvb_teletext_entry *)
-		(uint8_t*) d + sizeof(struct dvb_teletext_descriptor);
+		((uint8_t*) d + sizeof(struct dvb_teletext_descriptor));
 }
 
 static inline struct dvb_teletext_entry*

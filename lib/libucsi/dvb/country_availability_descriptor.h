@@ -97,7 +97,7 @@ static inline struct dvb_country_availability_entry*
 		return NULL;
 
 	return (struct dvb_country_availability_entry *)
-		(uint8_t*) d + sizeof(struct dvb_country_availability_descriptor);
+		((uint8_t*) d + sizeof(struct dvb_country_availability_descriptor));
 }
 
 static inline struct dvb_country_availability_entry*

@@ -91,7 +91,7 @@ static inline struct dvb_content_nibble*
 		return NULL;
 
 	return (struct dvb_content_nibble *)
-		(uint8_t*) d + sizeof(struct dvb_content_descriptor);
+		((uint8_t*) d + sizeof(struct dvb_content_descriptor));
 }
 
 static inline struct dvb_content_nibble*

@@ -91,7 +91,7 @@ static inline struct dvb_parental_rating*
 		return NULL;
 
 	return (struct dvb_parental_rating *)
-		(uint8_t*) d + sizeof(struct dvb_parental_rating_descriptor);
+		((uint8_t*) d + sizeof(struct dvb_parental_rating_descriptor));
 }
 
 static inline struct dvb_parental_rating*

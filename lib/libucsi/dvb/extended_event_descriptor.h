@@ -193,7 +193,7 @@ static inline struct dvb_extended_event_item*
 		return NULL;
 
 	return (struct dvb_extended_event_item *)
-		(uint8_t*) d + sizeof(struct dvb_extended_event_descriptor);
+		((uint8_t*) d + sizeof(struct dvb_extended_event_descriptor));
 }
 
 static inline struct dvb_extended_event_item*

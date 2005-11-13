@@ -101,7 +101,7 @@ static inline struct dvb_cell_list_descriptor*
 		while(pos2 < e->subcell_info_loop_length) {
 			bswap16(buf+pos+pos2+1);
 			bswap16(buf+pos+pos2+3);
-			bswap32(buf+pos+pos2+5);
+			bswap24(buf+pos+pos2+5);
 
 			pos2 += sizeof(struct dvb_subcell_list_entry);
 		}
@@ -151,7 +151,7 @@ static inline struct dvb_cell_list_entry*
 		return NULL;
 
 	return (struct dvb_cell_list_entry *)
-		(uint8_t*) d + sizeof(struct dvb_cell_list_descriptor);
+		((uint8_t*) d + sizeof(struct dvb_cell_list_descriptor));
 }
 
 static inline struct dvb_cell_list_entry*
@@ -176,7 +176,7 @@ static inline struct dvb_subcell_list_entry*
 		return NULL;
 
 	return (struct dvb_subcell_list_entry*)
-		(uint8_t*) d + sizeof(struct dvb_cell_list_entry);
+		((uint8_t*) d + sizeof(struct dvb_cell_list_entry));
 }
 
 static inline struct dvb_subcell_list_entry*

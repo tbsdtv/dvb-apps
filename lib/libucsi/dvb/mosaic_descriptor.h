@@ -259,7 +259,7 @@ static inline struct dvb_mosaic_info*
 		return NULL;
 
 	return (struct dvb_mosaic_info *)
-		(uint8_t*) d + sizeof(struct dvb_mosaic_descriptor);
+		((uint8_t*) d + sizeof(struct dvb_mosaic_descriptor));
 }
 
 static inline struct dvb_mosaic_info*
@@ -294,7 +294,7 @@ static inline struct dvb_mosaic_elementary_cell_field*
 		return NULL;
 
 	return (struct dvb_mosaic_elementary_cell_field*)
-		(uint8_t*) d + sizeof(struct dvb_mosaic_info);
+		((uint8_t*) d + sizeof(struct dvb_mosaic_info));
 }
 
 static inline struct dvb_mosaic_elementary_cell_field*

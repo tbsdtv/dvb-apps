@@ -108,7 +108,7 @@ static inline struct dvb_local_time_offset*
 		return NULL;
 
 	return (struct dvb_local_time_offset *)
-		(uint8_t*) d + sizeof(struct dvb_local_time_offset_descriptor);
+		((uint8_t*) d + sizeof(struct dvb_local_time_offset_descriptor));
 }
 
 static inline struct dvb_local_time_offset*
