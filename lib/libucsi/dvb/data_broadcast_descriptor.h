@@ -29,7 +29,7 @@ extern "C"
 
 #include <ucsi/descriptor.h>
 #include <ucsi/endianops.h>
-#include <ucsi/dvb/types.h>
+#include <ucsi/types.h>
 
 /**
  * dvb_data_broadcast_descriptor structure.
@@ -48,7 +48,7 @@ struct dvb_data_broadcast_descriptor {
  * Second part of a dvb_data_broadcast_descriptor following the variable length selector field.
  */
 struct dvb_data_broadcast_descriptor_part2 {
-	dvblang_t iso_639_language_code;
+	iso639lang_t language_code;
 	uint8_t text_length;
 	/* uint8_t text[] */
 } packed;

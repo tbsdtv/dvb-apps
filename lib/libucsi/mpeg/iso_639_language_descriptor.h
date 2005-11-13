@@ -29,6 +29,7 @@ extern "C"
 
 #include <ucsi/descriptor.h>
 #include <ucsi/endianops.h>
+#include <ucsi/types.h>
 
 /**
  * mpeg_iso_639_language_descriptor structure.
@@ -43,7 +44,7 @@ struct mpeg_iso_639_language_descriptor {
  * An entry in the mpeg_iso_639_language_descriptor languages field.
  */
 struct mpeg_iso_639_language_code {
-	uint8_t iso_639_language_code[3];
+	iso639lang_t language_code;
 	uint8_t audio_type;
 } packed;
 

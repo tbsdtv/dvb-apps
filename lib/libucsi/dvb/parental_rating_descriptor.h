@@ -29,7 +29,7 @@ extern "C"
 
 #include <ucsi/descriptor.h>
 #include <ucsi/endianops.h>
-#include <ucsi/dvb/types.h>
+#include <ucsi/types.h>
 
 /**
  * dvb_parental_rating_descriptor structure.
@@ -44,7 +44,7 @@ struct dvb_parental_rating_descriptor {
  * An entry in the ratings field of a dvb_parental_rating_descriptor.
  */
 struct dvb_parental_rating {
-	dvbcountry_t country_code;
+	iso639country_t country_code;
 	uint8_t rating;
 } packed;
 

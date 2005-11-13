@@ -29,7 +29,7 @@ extern "C"
 
 #include <ucsi/descriptor.h>
 #include <ucsi/endianops.h>
-#include <ucsi/dvb/types.h>
+#include <ucsi/types.h>
 
 /**
  * dvb_linkage_descriptor structure.
@@ -76,7 +76,7 @@ struct dvb_platform_id {
  * Entries in the names field of a dvb_platform_id.
  */
 struct dvb_platform_name {
-	dvblang_t iso_639_language_code;
+	iso639lang_t language_code;
 	uint8_t platform_name_length;
 	/* uint8_t text[] */
 } packed;

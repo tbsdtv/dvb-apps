@@ -764,10 +764,10 @@ void parse_descriptor(struct descriptor *d, int indent)
 			return;
 		}
 		mpeg_iso_639_language_descriptor_languages_for_each(dx, cur_lang) {
-			iprintf(indent, "iso_639_language_code:%c%c%c audio_type:0x%02x\n",
-				cur_lang->iso_639_language_code[0],
-				cur_lang->iso_639_language_code[1],
-				cur_lang->iso_639_language_code[2],
+			iprintf(indent, "language_code:%c%c%c audio_type:0x%02x\n",
+				cur_lang->language_code[0],
+				cur_lang->language_code[1],
+				cur_lang->language_code[2],
 				cur_lang->audio_type);
 		}
 		break;

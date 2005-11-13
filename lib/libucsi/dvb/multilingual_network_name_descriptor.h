@@ -29,7 +29,7 @@ extern "C"
 
 #include <ucsi/descriptor.h>
 #include <ucsi/endianops.h>
-#include <ucsi/dvb/types.h>
+#include <ucsi/types.h>
 
 /**
  * dvb_multilingual_network_name_descriptor structure.
@@ -44,7 +44,7 @@ struct dvb_multilingual_network_name_descriptor {
  * An entry in the names field of a dvb_multilingual_network_name_descriptor.
  */
 struct dvb_multilingual_network_name {
-	dvblang_t iso_639_language_code;
+	iso639lang_t language_code;
 	uint8_t network_name_length;
 	/* uint8_t name[] */
 } packed;

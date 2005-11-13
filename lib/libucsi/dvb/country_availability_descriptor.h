@@ -29,7 +29,7 @@ extern "C"
 
 #include <ucsi/descriptor.h>
 #include <ucsi/endianops.h>
-#include <ucsi/dvb/types.h>
+#include <ucsi/types.h>
 
 /**
  * dvb_country_availability_descriptor structure.
@@ -46,7 +46,7 @@ struct dvb_country_availability_descriptor {
  * An entry in the countries field of a dvb_country_availability_descriptor.
  */
 struct dvb_country_availability_entry {
-	dvbcountry_t country_code;
+	iso639country_t country_code;
 } packed;
 
 /**

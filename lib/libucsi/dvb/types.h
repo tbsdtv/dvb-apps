@@ -31,8 +31,6 @@ extern "C"
 
 typedef uint8_t dvbdate_t[5];
 typedef uint8_t dvbduration_t[3];
-typedef uint8_t dvblang_t[3];
-typedef uint8_t dvbcountry_t[3];
 
 /**
  * Convert from a 5 byte DVB UTC date to unix time.

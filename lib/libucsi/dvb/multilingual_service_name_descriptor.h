@@ -29,7 +29,7 @@ extern "C"
 
 #include <ucsi/descriptor.h>
 #include <ucsi/endianops.h>
-#include <ucsi/dvb/types.h>
+#include <ucsi/types.h>
 
 /**
  * dvb_multilingual_service_name_descriptor structure.
@@ -44,7 +44,7 @@ struct dvb_multilingual_service_name_descriptor {
  * An entry in the service_names field of a dvb_multilingual_service_name_descriptor.
  */
 struct dvb_multilingual_service_name {
-	dvblang_t iso_639_language_code;
+	iso639lang_t language_code;
 	uint8_t service_provider_name_length;
 	/* uint8_t service_provider_name[] */
 	/* struct dvb_multilingual_service_name_part2 part2 */

@@ -29,7 +29,7 @@ extern "C"
 
 #include <ucsi/descriptor.h>
 #include <ucsi/endianops.h>
-#include <ucsi/dvb/types.h>
+#include <ucsi/types.h>
 
 /**
  * dvb_component_descriptor structure.
@@ -41,7 +41,7 @@ struct dvb_component_descriptor {
 	uint8_t stream_content	: 4; );
 	uint8_t component_type;
 	uint8_t component_tag;
-	dvblang_t iso_639_language_code;
+	iso639lang_t language_code;
 	/* uint8_t text[] */
 } packed;
 

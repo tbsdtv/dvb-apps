@@ -29,7 +29,7 @@ extern "C"
 
 #include <ucsi/descriptor.h>
 #include <ucsi/endianops.h>
-#include <ucsi/dvb/types.h>
+#include <ucsi/types.h>
 
 /**
  * dvb_extended_event_descriptor structure.
@@ -39,7 +39,7 @@ struct dvb_extended_event_descriptor {
 
   EBIT2(uint8_t descriptor_number	: 4; ,
 	uint8_t last_descriptor_number	: 4; );
-	dvblang_t iso_639_language_code;
+	iso639lang_t language_code;
 	uint8_t length_of_items;
 	/* struct dvb_extended_event_item items[] */
 	/* struct dvb_extended_event_descriptor_part2 part2 */
