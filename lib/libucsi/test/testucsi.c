@@ -25,7 +25,9 @@
 #include <ucsi/transport_packet.h>
 #include <ucsi/section_buf.h>
 #include <ucsi/dvb/types.h>
-#include <dvbdemux.h>
+#include <dvbdemux/dvbdemux.h>
+#include <dvbfe/dvbfe.h>
+#include <dvbcfg/dvbcfg_seed_backend_file.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <errno.h>
@@ -44,6 +46,7 @@ int main(int argc, char *argv[])
 	int demuxfd;
 	int dvrfd;
 	int adapter;
+	char *seedfile;
 	unsigned char databuf[TRANSPORT_PACKET_LENGTH*20];
 	int sz;
 	int pid;
@@ -57,14 +60,20 @@ int main(int argc, char *argv[])
 	int pidlimit = -1;
 	dvbdate_t dvbdate;
 	dvbduration_t dvbduration;
+	struct dvbcfg_seed_backend *seedbackend;
+	struct dvbcfg_seed *seeds = NULL;
+	int fefd;
+	int sourcetype;
+	struct dvb_frontend_info feinfo;
 
-	if ((argc < 2) || (argc > 3)) {
-		fprintf(stderr, "Syntax: testucsi <adapter id> [<pid to limit to>]\n");
+	if ((argc < 3) || (argc > 4)) {
+		fprintf(stderr, "Syntax: testucsi <adapter id> <seed file> [<pid to limit to>]\n");
 		exit(1);
 	}
 	adapter = atoi(argv[1]);
-	if (argc == 3)
-		sscanf(argv[2], "%i", &pidlimit);
+	seedfile = argv[2];
+	if (argc == 4)
+		sscanf(argv[3], "%i", &pidlimit);
 	printf("Using adapter %i\n", adapter);
 
 	// check the dvbdate conversion functions
@@ -81,6 +90,46 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 	printf("dvbdate/dvbduration function checks passed\n");
+
+	// get the type of frontend
+	if ((fefd = dvbfe_open(adapter, 0, 0)) < 0) {
+		perror("open frontend");
+		exit(1);
+	}
+	if (dvbfe_get_info(fefd, &feinfo)) {
+		perror("get feinfo");
+		exit(1);
+	}
+	switch(feinfo.type) {
+	case FE_QPSK:
+		sourcetype = DVBCFG_SOURCETYPE_DVBS;
+		break;
+
+	case FE_QAM:
+		sourcetype = DVBCFG_SOURCETYPE_DVBC;
+		break;
+
+	case FE_OFDM:
+		sourcetype = DVBCFG_SOURCETYPE_DVBT;
+		break;
+
+	case FE_ATSC:
+		sourcetype = DVBCFG_SOURCETYPE_ATSC;
+		break;
+	default:
+		fprintf(stderr, "Unknown frontend type %i\n", feinfo.type);
+		exit(1);
+	}
+
+	// try and open the seed file
+	if (dvbcfg_seed_backend_file_create("/", seedfile, 1, sourcetype, &seedbackend)) {
+		fprintf(stderr, "XXXX Failed to create seed backend\n");
+		exit(1);
+	}
+	if (dvbcfg_seed_load(seedbackend, seeds)) {
+		fprintf(stderr, "XXXX Failed to load seeds from supplied file\n");
+		exit(1);
+	}
 
 	// open devices
 	if ((demuxfd = dvbdemux_open_demux(adapter, 0)) < 0) {
@@ -634,7 +683,7 @@ void parse_descriptor(struct descriptor *d, int indent)
 	case dtag_mpeg_audio_stream:
 	{
 		struct mpeg_audio_stream_descriptor *dx;
-	   
+
 		iprintf(indent, "DSC Decode mpeg_audio_stream_descriptor\n");
 		dx = mpeg_audio_stream_descriptor_codec(d);
 		if (dx == NULL) {
@@ -689,7 +738,7 @@ void parse_descriptor(struct descriptor *d, int indent)
 	case dtag_mpeg_data_stream_alignment:
 	{
 		struct mpeg_data_stream_alignment_descriptor *dx;
-	   
+
 		iprintf(indent, "DSC Decode mpeg_data_stream_alignment_descriptor\n");
 		dx = mpeg_data_stream_alignment_descriptor_codec(d);
 		if (dx == NULL) {
@@ -738,7 +787,7 @@ void parse_descriptor(struct descriptor *d, int indent)
 	case dtag_mpeg_ca:
 	{
 		struct mpeg_ca_descriptor *dx;
-	   
+
 		iprintf(indent, "DSC Decode mpeg_ca_descriptor\n");
 		dx = mpeg_ca_descriptor_codec(d);
 		if (dx == NULL) {
@@ -828,7 +877,7 @@ void parse_descriptor(struct descriptor *d, int indent)
 	case dtag_mpeg_maximum_bitrate:
 	{
 		struct mpeg_maximum_bitrate_descriptor *dx;
-	   
+
 		iprintf(indent, "DSC Decode mpeg_maximum_bitrate_descriptor\n");
 		dx = mpeg_maximum_bitrate_descriptor_codec(d);
 		if (dx == NULL) {
