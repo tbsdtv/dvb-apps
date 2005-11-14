@@ -31,8 +31,10 @@ extern "C"
 /**
  * Possible encapsulations of data.
  */
-#define DVBNET_ENCAP_MPE 0
-#define DVBNET_ENCAP_ULE 1
+typedef enum dvbnet_encap {
+	DVBNET_ENCAP_MPE,
+	DVBNET_ENCAP_ULE,
+} dvbnet_encap_t;
 
 /**
  * The maximum allowed number of dvb network devices per adapter netdevice.
