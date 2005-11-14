@@ -267,82 +267,82 @@ int dvbfe_diseqc_command(dvbfe_handle_t _fehandle, char *command)
 		}
 
 		switch(command[i]) {
-			case 't':
-				if ((status = ioctl(fehandle->fd, FE_SET_TONE, SEC_TONE_OFF)) != 0)
-					return status;
-				break;
+		case 't':
+			if ((status = ioctl(fehandle->fd, FE_SET_TONE, SEC_TONE_OFF)) != 0)
+				return status;
+			break;
 
-			case 'T':
-				if ((status = ioctl(fehandle->fd, FE_SET_TONE, SEC_TONE_ON)) != 0)
-					return status;
-				break;
+		case 'T':
+			if ((status = ioctl(fehandle->fd, FE_SET_TONE, SEC_TONE_ON)) != 0)
+				return status;
+			break;
 
-			case '_':
-				if ((status = ioctl(fehandle->fd, FE_SET_VOLTAGE, SEC_VOLTAGE_OFF)) != 0)
-					return status;
-				break;
+		case '_':
+			if ((status = ioctl(fehandle->fd, FE_SET_VOLTAGE, SEC_VOLTAGE_OFF)) != 0)
+				return status;
+			break;
 
-			case 'v':
-				if ((status = ioctl(fehandle->fd, FE_SET_VOLTAGE, SEC_VOLTAGE_13)) != 0)
-					return status;
-				break;
+		case 'v':
+			if ((status = ioctl(fehandle->fd, FE_SET_VOLTAGE, SEC_VOLTAGE_13)) != 0)
+				return status;
+			break;
 
-			case 'V':
-				if ((status = ioctl(fehandle->fd, FE_SET_VOLTAGE, SEC_VOLTAGE_18)) != 0)
-					return status;
-				break;
+		case 'V':
+			if ((status = ioctl(fehandle->fd, FE_SET_VOLTAGE, SEC_VOLTAGE_18)) != 0)
+				return status;
+			break;
 
-			case 'A':
-				if ((status = ioctl(fehandle->fd, FE_DISEQC_SEND_BURST, SEC_MINI_A)) != 0)
-					return status;
-				break;
+		case 'A':
+			if ((status = ioctl(fehandle->fd, FE_DISEQC_SEND_BURST, SEC_MINI_A)) != 0)
+				return status;
+			break;
 
-			case 'B':
-				if ((status = ioctl(fehandle->fd, FE_DISEQC_SEND_BURST, SEC_MINI_B)) != 0)
-					return status;
-				break;
+		case 'B':
+			if ((status = ioctl(fehandle->fd, FE_DISEQC_SEND_BURST, SEC_MINI_B)) != 0)
+				return status;
+			break;
 
-			case '+':
-				ioctl(fehandle->fd, FE_ENABLE_HIGH_LNB_VOLTAGE, 1);
-				/* don't care if this one is not supported */
-				break;
+		case '+':
+			ioctl(fehandle->fd, FE_ENABLE_HIGH_LNB_VOLTAGE, 1);
+			/* don't care if this one is not supported */
+			break;
 
-			case '-':
-				ioctl(fehandle->fd, FE_ENABLE_HIGH_LNB_VOLTAGE, 0);
-				/* don't care if this one is not supported */
-				break;
+		case '-':
+			ioctl(fehandle->fd, FE_ENABLE_HIGH_LNB_VOLTAGE, 0);
+			/* don't care if this one is not supported */
+			break;
 
-			case 'W':
-				waittime = atoi(command + i + 1);
-				if (waittime == 0) {
-					return -EINVAL;
-				}
-				usleep(waittime * 1000);
-				while(command[i] && !isspace(command[i]))
-					i++;
-				break;
-
-			case '[':
-				master_cmd.msg_len = sscanf(command+i+1, "%x %x %x %x %x %x",
-						tmpcmd, tmpcmd+1, tmpcmd+2, tmpcmd+3, tmpcmd+4, tmpcmd+5);
-				if (master_cmd.msg_len == 0)
-					return -EINVAL;
-				master_cmd.msg[0] = tmpcmd[0];
-				master_cmd.msg[1] = tmpcmd[1];
-				master_cmd.msg[2] = tmpcmd[2];
-				master_cmd.msg[3] = tmpcmd[3];
-				master_cmd.msg[4] = tmpcmd[4];
-				master_cmd.msg[5] = tmpcmd[5];
-
-				if ((status = ioctl(fehandle->fd, FE_DISEQC_SEND_MASTER_CMD, &master_cmd)) != 0)
-					return status;
-
-				while(command[i] && (command[i] != ']'))
-					i++;
-				break;
-
-			default:
+		case 'W':
+			waittime = atoi(command + i + 1);
+			if (waittime == 0) {
 				return -EINVAL;
+			}
+			usleep(waittime * 1000);
+			while(command[i] && !isspace(command[i]))
+				i++;
+			break;
+
+		case '[':
+			master_cmd.msg_len = sscanf(command+i+1, "%x %x %x %x %x %x",
+					tmpcmd, tmpcmd+1, tmpcmd+2, tmpcmd+3, tmpcmd+4, tmpcmd+5);
+			if (master_cmd.msg_len == 0)
+				return -EINVAL;
+			master_cmd.msg[0] = tmpcmd[0];
+			master_cmd.msg[1] = tmpcmd[1];
+			master_cmd.msg[2] = tmpcmd[2];
+			master_cmd.msg[3] = tmpcmd[3];
+			master_cmd.msg[4] = tmpcmd[4];
+			master_cmd.msg[5] = tmpcmd[5];
+
+			if ((status = ioctl(fehandle->fd, FE_DISEQC_SEND_MASTER_CMD, &master_cmd)) != 0)
+				return status;
+
+			while(command[i] && (command[i] != ']'))
+				i++;
+			break;
+
+		default:
+			return -EINVAL;
 		}
 
 		i++;
