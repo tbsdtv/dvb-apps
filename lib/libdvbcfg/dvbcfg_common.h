@@ -30,16 +30,6 @@ extern "C"
 #include <dvbapi/dvbfe.h>
 
 /**
- * Possible types of source_id.
- */
-enum dvbcfg_sourcetype {
-        DVBCFG_SOURCETYPE_DVBS = 'S',
-        DVBCFG_SOURCETYPE_DVBC = 'C',
-        DVBCFG_SOURCETYPE_DVBT = 'T',
-        DVBCFG_SOURCETYPE_ATSC = 'A',
-};
-
-/**
  * A <source_id> defines a unique standardised ID for all DVB networks. It is divided into
  * components as follows:
  *
@@ -81,7 +71,7 @@ enum dvbcfg_sourcetype {
  * whitespace characters.
  */
 struct dvbcfg_source_id {
-        enum dvbcfg_sourcetype source_type;
+        dvbfe_type_t source_type;
         char *source_network;
         char *source_region;
         char *source_locale;
@@ -335,7 +325,7 @@ extern int dvbcfg_gsid_equal(struct dvbcfg_gsid* gsid1, struct dvbcfg_gsid* gsid
  * @return 0 on success, non-zero on error.
  */
 extern int dvbcfg_delivery_from_string(char * delivery_str,
-                                       enum dvbcfg_sourcetype source_type,
+                                       dvbfe_type_t source_type,
                                        struct dvbcfg_delivery *delivery);
 
 /**
@@ -348,7 +338,7 @@ extern int dvbcfg_delivery_from_string(char * delivery_str,
  * @param destsz Size of dest in bytes.
  * @return 0 on success, or nonzero on error.
  */
-extern int dvbcfg_delivery_to_string(enum dvbcfg_sourcetype source_type,
+extern int dvbcfg_delivery_to_string(dvbfe_type_t source_type,
                                      int long_delivery,
                                      struct dvbcfg_delivery *delivery,
                                      char* dest,

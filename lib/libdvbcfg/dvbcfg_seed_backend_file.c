@@ -37,7 +37,7 @@ struct dvbcfg_seed_backend_file {
         FILE* outhandle;
         int long_delivery;
 
-        enum dvbcfg_sourcetype source_type;
+	dvbfe_type_t source_type;
 };
 
 static int get_delivery(struct dvbcfg_seed_backend* backend,
@@ -48,7 +48,7 @@ static int put_delivery(struct dvbcfg_seed_backend* backend,
 int dvbcfg_seed_backend_file_create(const char* basename,
                                     const char* filename,
                                     int long_delivery,
-                                    enum dvbcfg_sourcetype source_type,
+				    dvbfe_type_t source_type,
                                     struct dvbcfg_seed_backend** backend)
 {
         struct dvbcfg_seed_backend_file* fbackend;

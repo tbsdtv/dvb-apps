@@ -150,10 +150,10 @@ int dvbcfg_source_id_from_string(char* string, struct dvbcfg_source_id* source_i
         memset(source_id, 0, sizeof(struct dvbcfg_source_id));
 
         switch(string[0]) {
-        case DVBCFG_SOURCETYPE_DVBS:
-        case DVBCFG_SOURCETYPE_DVBC:
-        case DVBCFG_SOURCETYPE_DVBT:
-        case DVBCFG_SOURCETYPE_ATSC:
+        case DVBFE_TYPE_DVBS:
+        case DVBFE_TYPE_DVBC:
+        case DVBFE_TYPE_DVBT:
+        case DVBFE_TYPE_ATSC:
                 break;
 
         default:
@@ -454,7 +454,7 @@ int dvbcfg_gsid_equal(struct dvbcfg_gsid* gsid1, struct dvbcfg_gsid* gsid2)
 }
 
 int dvbcfg_delivery_from_string(char * delivery_str,
-                                enum dvbcfg_sourcetype source_type,
+				dvbfe_type_t source_type,
                                 struct dvbcfg_delivery *delivery)
 {
         int numtokens;
@@ -463,7 +463,7 @@ int dvbcfg_delivery_from_string(char * delivery_str,
         int long_delivery = 0;
 
         switch(source_type) {
-        case DVBCFG_SOURCETYPE_DVBS:
+        case DVBFE_TYPE_DVBS:
                 numtokens = dvbcfg_tokenise(delivery_str, " \t", -1, 1);
                 if (numtokens != 5)
                         return -EINVAL;
@@ -520,7 +520,7 @@ int dvbcfg_delivery_from_string(char * delivery_str,
                 delivery->u.dvb.u.dvbs.fec_inner = val;
                 break;
 
-        case DVBCFG_SOURCETYPE_DVBC:
+        case DVBFE_TYPE_DVBC:
                 numtokens = dvbcfg_tokenise(delivery_str, " \t", -1, 1);
                 if (numtokens != 5)
                         return -EINVAL;
@@ -575,7 +575,7 @@ int dvbcfg_delivery_from_string(char * delivery_str,
                 delivery->u.dvb.u.dvbc.modulation = val;
                 break;
 
-        case DVBCFG_SOURCETYPE_DVBT:
+        case DVBFE_TYPE_DVBT:
                 numtokens = dvbcfg_tokenise(delivery_str, " \t", -1, 1);
                 if (numtokens != 9)
                         return -EINVAL;
@@ -679,7 +679,7 @@ int dvbcfg_delivery_from_string(char * delivery_str,
                 delivery->u.dvb.u.dvbt.hierarchy_information = val;
                 break;
 
-        case DVBCFG_SOURCETYPE_ATSC:
+        case DVBFE_TYPE_ATSC:
                 numtokens = dvbcfg_tokenise(delivery_str, " \t", -1, 1);
                 if (numtokens != 3)
                         return -EINVAL;
@@ -725,7 +725,7 @@ int dvbcfg_delivery_from_string(char * delivery_str,
         return 0;
 }
 
-int dvbcfg_delivery_to_string(enum dvbcfg_sourcetype source_type,
+int dvbcfg_delivery_to_string(dvbfe_type_t source_type,
                               int long_delivery,
                               struct dvbcfg_delivery *delivery,
                               char* dest,
@@ -734,7 +734,7 @@ int dvbcfg_delivery_to_string(enum dvbcfg_sourcetype source_type,
         char polarization = 'H';
 
         switch(source_type) {
-        case DVBCFG_SOURCETYPE_DVBS:
+        case DVBFE_TYPE_DVBS:
                 switch(delivery->u.dvb.u.dvbs.polarization) {
                 case DVBFE_POLARIZATION_H:
                         polarization = 'H';
@@ -774,7 +774,7 @@ int dvbcfg_delivery_to_string(enum dvbcfg_sourcetype source_type,
                 }
                 break;
 
-        case DVBCFG_SOURCETYPE_DVBC:
+        case DVBFE_TYPE_DVBC:
                 if (long_delivery) {
                         if (snprintf(dest, destsz, "%i %s %i %s %s",
                                     delivery->u.dvb.frequency,
@@ -797,7 +797,7 @@ int dvbcfg_delivery_to_string(enum dvbcfg_sourcetype source_type,
                 }
                 break;
 
-        case DVBCFG_SOURCETYPE_DVBT:
+        case DVBFE_TYPE_DVBT:
                 if (long_delivery) {
                         if (snprintf(dest, destsz, "%i %s %s %s %s %s %s %s %s",
                                     delivery->u.dvb.frequency,
@@ -833,7 +833,7 @@ int dvbcfg_delivery_to_string(enum dvbcfg_sourcetype source_type,
                 }
                 break;
 
-        case DVBCFG_SOURCETYPE_ATSC:
+        case DVBFE_TYPE_ATSC:
                 if (long_delivery) {
                         if (snprintf(dest, destsz, "%i %s %s",
                                     delivery->u.dvb.frequency,

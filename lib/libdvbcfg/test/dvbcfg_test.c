@@ -144,11 +144,11 @@ int main(int argc, char *argv[])
 
                 dvbcfg_seed_init(&seed);
 
-                dvbcfg_seed_backend_file_create(".", argv[2], 1, DVBCFG_SOURCETYPE_DVBS, &seed_backend);
+                dvbcfg_seed_backend_file_create(".", argv[2], 1, DVBFE_TYPE_DVBS, &seed_backend);
                 dvbcfg_seed_load(seed_backend, &seed);
                 dvbcfg_seed_backend_file_destroy(seed_backend);
 
-                dvbcfg_seed_backend_file_create(".", argv[3], 1, DVBCFG_SOURCETYPE_DVBS, &seed_backend);
+		dvbcfg_seed_backend_file_create(".", argv[3], 1, DVBFE_TYPE_DVBS, &seed_backend);
                 dvbcfg_seed_save(seed_backend, &seed);
                 dvbcfg_seed_backend_file_destroy(seed_backend);
 

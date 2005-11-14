@@ -62,7 +62,7 @@ extern "C"
 int dvbcfg_seed_backend_file_create(const char* basedir,
                                     const char* filename,
                                     int long_delivery,
-                                    enum dvbcfg_sourcetype source_type,
+                                    dvbfe_type_t source_type,
                                     struct dvbcfg_seed_backend** backend);
 
 /**

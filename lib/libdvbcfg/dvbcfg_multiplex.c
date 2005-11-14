@@ -594,16 +594,16 @@ uint32_t dvbcfg_multiplex_calculate_differentiator(struct dvbcfg_multiplex* mult
         uint32_t tmp = 0;
 
         switch(multiplex->source->source_id.source_type) {
-        case DVBCFG_SOURCETYPE_DVBS:
+        case DVBFE_TYPE_DVBS:
                 tmp = multiplex->delivery.u.dvb.frequency / (multiplex->delivery.u.dvb.u.dvbs.symbol_rate / 1000);
                 tmp <<= 2;
                 tmp |= (multiplex->delivery.u.dvb.u.dvbs.polarization & 3);
                 return tmp;
 
-        case DVBCFG_SOURCETYPE_DVBC:
+	case DVBFE_TYPE_DVBC:
                 return multiplex->delivery.u.dvb.frequency / multiplex->delivery.u.dvb.u.dvbc.symbol_rate;
 
-        case DVBCFG_SOURCETYPE_DVBT:
+	case DVBFE_TYPE_DVBT:
                 switch(multiplex->delivery.u.dvb.u.dvbt.bandwidth) {
                 case DVBFE_BANDWIDTH_8_MHZ:
                         tmp = 8000000;
@@ -620,7 +620,7 @@ uint32_t dvbcfg_multiplex_calculate_differentiator(struct dvbcfg_multiplex* mult
                 }
                 return multiplex->delivery.u.dvb.frequency / tmp;
 
-        case DVBCFG_SOURCETYPE_ATSC:
+	case DVBFE_TYPE_ATSC:
                 return multiplex->delivery.u.dvb.frequency / 6000000;
         }
 
