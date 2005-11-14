@@ -62,9 +62,8 @@ int main(int argc, char *argv[])
 	dvbduration_t dvbduration;
 	struct dvbcfg_seed_backend *seedbackend;
 	struct dvbcfg_seed *seeds = NULL;
-	int fefd;
-	int sourcetype;
-	struct dvb_frontend_info feinfo;
+	dvbfe_handle_t fe;
+	struct dvbfe_info feinfo;
 
 	if ((argc < 3) || (argc > 4)) {
 		fprintf(stderr, "Syntax: testucsi <adapter id> <seed file> [<pid to limit to>]\n");
@@ -92,37 +91,17 @@ int main(int argc, char *argv[])
 	printf("dvbdate/dvbduration function checks passed\n");
 
 	// get the type of frontend
-	if ((fefd = dvbfe_open(adapter, 0, 0)) < 0) {
+	if ((fe = dvbfe_open(adapter, 0, 0)) == NULL) {
 		perror("open frontend");
 		exit(1);
 	}
-	if (dvbfe_get_info(fefd, &feinfo)) {
+	if (dvbfe_get_info(fe, 0, &feinfo)) {
 		perror("get feinfo");
-		exit(1);
-	}
-	switch(feinfo.type) {
-	case FE_QPSK:
-		sourcetype = DVBCFG_SOURCETYPE_DVBS;
-		break;
-
-	case FE_QAM:
-		sourcetype = DVBCFG_SOURCETYPE_DVBC;
-		break;
-
-	case FE_OFDM:
-		sourcetype = DVBCFG_SOURCETYPE_DVBT;
-		break;
-
-	case FE_ATSC:
-		sourcetype = DVBCFG_SOURCETYPE_ATSC;
-		break;
-	default:
-		fprintf(stderr, "Unknown frontend type %i\n", feinfo.type);
 		exit(1);
 	}
 
 	// try and open the seed file
-	if (dvbcfg_seed_backend_file_create("/", seedfile, 1, sourcetype, &seedbackend)) {
+	if (dvbcfg_seed_backend_file_create("/", seedfile, 1, feinfo.type, &seedbackend)) {
 		fprintf(stderr, "XXXX Failed to create seed backend\n");
 		exit(1);
 	}
