@@ -113,9 +113,10 @@ static const struct dvbcfg_setting atsc_modulation_list[] = {
 
 char* dvbcfg_source_id_to_string(struct dvbcfg_source_id* source_id)
 {
-  int len = 3;
+	int len = 3;
         char* str;
         char* ptr;
+	char source_type = '?';
 
         if (source_id->source_network)
                 len += strlen(source_id->source_network);
@@ -128,8 +129,26 @@ char* dvbcfg_source_id_to_string(struct dvbcfg_source_id* source_id)
         if (str == NULL)
                 return NULL;
 
+	switch(source_id->source_type) {
+	case DVBFE_TYPE_DVBS:
+		source_type = 'S';
+		break;
+
+	case DVBFE_TYPE_DVBC:
+		source_type = 'C';
+		break;
+
+	case DVBFE_TYPE_DVBT:
+		source_type = 'T';
+		break;
+
+	case DVBFE_TYPE_ATSC:
+		source_type = 'A';
+		break;
+	}
+
         ptr = str;
-        ptr += sprintf(ptr, "%c-%s", source_id->source_type, source_id->source_network);
+        ptr += sprintf(ptr, "%c-%s", source_type, source_id->source_network);
         if (source_id->source_region)
                 ptr += sprintf(ptr, "-%s", source_id->source_region);
         if (source_id->source_locale)
@@ -150,16 +169,25 @@ int dvbcfg_source_id_from_string(char* string, struct dvbcfg_source_id* source_i
         memset(source_id, 0, sizeof(struct dvbcfg_source_id));
 
         switch(string[0]) {
-        case DVBFE_TYPE_DVBS:
-        case DVBFE_TYPE_DVBC:
-        case DVBFE_TYPE_DVBT:
-        case DVBFE_TYPE_ATSC:
-                break;
+        case 'S':
+		source_id->source_type = DVBFE_TYPE_DVBS;
+		break;
+
+        case 'C':
+		source_id->source_type = DVBFE_TYPE_DVBC;
+		break;
+
+	case 'T':
+		source_id->source_type = DVBFE_TYPE_DVBT;
+		break;
+
+        case 'A':
+		source_id->source_type = DVBFE_TYPE_ATSC;
+		break;
 
         default:
                 return -EINVAL;
         }
-        source_id->source_type = string[0];
 
         network_start = strchr(string, '-');
         if (network_start == NULL)
