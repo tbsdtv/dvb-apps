@@ -33,6 +33,7 @@
 #include <errno.h>
 #include <stdarg.h>
 
+void receive_data(int dvrfd, int timeout);
 void parse_section(uint8_t *buf, int len, int pid);
 void parse_descriptor(struct descriptor *d, int indent);
 void iprintf(int indent, char *fmt, ...);
@@ -46,25 +47,17 @@ int main(int argc, char *argv[])
 	int demuxfd;
 	int dvrfd;
 	int adapter;
-	char *seedfile;
-	unsigned char databuf[TRANSPORT_PACKET_LENGTH*20];
-	int sz;
-	int pid;
 	int i;
-	int used;
-	int section_status;
-	unsigned char continuities[TRANSPORT_MAX_PIDS];
-	struct section_buf *section_bufs[TRANSPORT_MAX_PIDS];
-	struct transport_packet *tspkt;
-	struct transport_values tsvals;
+	char *seedfile;
 	int pidlimit = -1;
 	dvbdate_t dvbdate;
 	dvbduration_t dvbduration;
 	struct dvbcfg_seed_backend *seedbackend;
-	struct dvbcfg_seed *seeds = NULL;
+	struct dvbcfg_seed seeds;
 	dvbfe_handle_t fe;
 	struct dvbfe_info feinfo;
 
+	// process arguments
 	if ((argc < 3) || (argc > 4)) {
 		fprintf(stderr, "Syntax: testucsi <adapter id> <seed file> [<pid to limit to>]\n");
 		exit(1);
@@ -88,9 +81,8 @@ int main(int argc, char *argv[])
 			DURATION_CHECK_VAL, (int) dvbduration_to_seconds(dvbduration));
 		exit(1);
 	}
-	printf("dvbdate/dvbduration function checks passed\n");
 
-	// get the type of frontend
+	// open the frontend
 	if ((fe = dvbfe_open(adapter, 0, 0)) == NULL) {
 		perror("open frontend");
 		exit(1);
@@ -101,16 +93,17 @@ int main(int argc, char *argv[])
 	}
 
 	// try and open the seed file
+	dvbcfg_seed_init(&seeds);
 	if (dvbcfg_seed_backend_file_create("/", seedfile, 1, feinfo.type, &seedbackend)) {
 		fprintf(stderr, "XXXX Failed to create seed backend\n");
 		exit(1);
 	}
-	if (dvbcfg_seed_load(seedbackend, seeds)) {
+	if (dvbcfg_seed_load(seedbackend, &seeds)) {
 		fprintf(stderr, "XXXX Failed to load seeds from supplied file\n");
 		exit(1);
 	}
 
-	// open devices
+	// open demux devices
 	if ((demuxfd = dvbdemux_open_demux(adapter, 0)) < 0) {
 		perror("demux");
 		exit(1);
@@ -120,7 +113,7 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	// make the buffer a bit larger
+	// make the demux buffer a bit larger
 	if (dvbdemux_set_buffer(demuxfd, 1024*1024)) {
 		perror("set buffer");
 		exit(1);
@@ -132,10 +125,34 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
+	// process all seeds
+	for(i=0; i< seeds.deliveries_count; i++) {
+		dvbfe_set(fe, &seeds.deliveries[i].u.dvb);
+		receive_data(dvrfd, 60);
+	}
+
+	return 0;
+}
+
+void receive_data(int dvrfd, int timeout)
+{
+	unsigned char databuf[TRANSPORT_PACKET_LENGTH*20];
+	int sz;
+	int pid;
+	int i;
+	int used;
+	int section_status;
+	time_t starttime;
+	unsigned char continuities[TRANSPORT_MAX_PIDS];
+	struct section_buf *section_bufs[TRANSPORT_MAX_PIDS];
+	struct transport_packet *tspkt;
+	struct transport_values tsvals;
+
 	// process the data
+	starttime = time(NULL);
 	memset(continuities, 0, sizeof(continuities));
 	memset(section_bufs, 0, sizeof(section_bufs));
-	while(1) {
+	while((time(NULL) - starttime) < timeout) {
 		if ((sz = read(dvrfd, databuf, sizeof(databuf))) < 0) {
 			if (errno == EOVERFLOW) {
 				fprintf(stderr, "data overflow!\n");
@@ -207,8 +224,6 @@ int main(int argc, char *argv[])
 			}
 		}
 	}
-
-	return 0;
 }
 
 void parse_section(uint8_t *buf, int len, int pid)
