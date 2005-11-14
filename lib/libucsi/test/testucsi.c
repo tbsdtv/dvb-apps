@@ -206,6 +206,7 @@ void parse_section(uint8_t *buf, int len, int pid)
 			fprintf(stderr, "XXXX PAT section decode error\n");
 			return;
 		}
+		printf("transport_stream_id:0x%04x\n", mpeg_pat_section_transport_stream_id(pat));
 		mpeg_pat_section_programs_for_each(pat, cur) {
 			printf("\tprogram_number:0x%04x pid:0x%04x\n", cur->program_number, cur->pid);
 		}
@@ -245,7 +246,7 @@ void parse_section(uint8_t *buf, int len, int pid)
 			fprintf(stderr, "XXXX PMT section decode error\n");
 			return;
 		}
-		printf("pcr_pid:0x%02x\n", pmt->pcr_pid);
+		printf("program_number:0x%04x pcr_pid:0x%02x\n", mpeg_pmt_section_program_number(pmt), pmt->pcr_pid);
 		mpeg_pmt_section_descriptors_for_each(pmt, curd) {
 			parse_descriptor(curd, 1);
 		}
@@ -295,6 +296,7 @@ void parse_section(uint8_t *buf, int len, int pid)
 			fprintf(stderr, "XXXX ISO14496 section decode error\n");
 			return;
 		}
+		printf("PID:0x%04x\n", mpeg_odsmt_section_pid(odsmt));
 		mpeg_odsmt_section_streams_for_each(osdmt, cur_stream, index) {
 			if (odsmt->stream_count == 0) {
 				printf("\tSINGLE 0x%04x\n", cur_stream->u.single.esid);
@@ -330,6 +332,7 @@ void parse_section(uint8_t *buf, int len, int pid)
 			fprintf(stderr, "XXXX NIT section decode error\n");
 			return;
 		}
+		printf("network_id:0x%04x\n", dvb_nit_section_network_id(nit));
 		dvb_nit_section_descriptors_for_each(nit, curd) {
 			parse_descriptor(curd, 1);
 		}
@@ -358,7 +361,7 @@ void parse_section(uint8_t *buf, int len, int pid)
 			fprintf(stderr, "XXXX SDT section decode error\n");
 			return;
 		}
-		printf("original_network_id:0x%04x\n", sdt->original_network_id);
+		printf("transport_stream_id:0x%04x original_network_id:0x%04x\n", dvb_sdt_section_transport_stream_id(sdt), sdt->original_network_id);
 		dvb_sdt_section_services_for_each(sdt, cur_service) {
 			printf("\tservice_id:0x%04x eit_schedule_flag:%i eit_present_following_flag:%i running_status:%i free_ca_mode:%i\n",
 			       cur_service->service_id,
@@ -388,6 +391,7 @@ void parse_section(uint8_t *buf, int len, int pid)
 			fprintf(stderr, "XXXX BAT section decode error\n");
 			return;
 		}
+		printf("bouquet_id:0x%04x\n", dvb_bat_section_bouquet_id(bat));
 		dvb_bat_section_descriptors_for_each(bat, curd) {
 			parse_descriptor(curd, 1);
 		}
@@ -407,8 +411,8 @@ void parse_section(uint8_t *buf, int len, int pid)
 	{
 		struct dvb_int_section *_int;
 		struct descriptor *curd;
-		struct dvb_int_section_target_loop_entry *cur_loop_entry;
-		struct dvb_int_section_operational_loop *operational_loop;
+		struct dvb_int_target *cur_target;
+		struct dvb_int_operational_loop *operational_loop;
 
 		if ((section_ext = section_ext_decode(section, 1)) == NULL) {
 			return;
@@ -418,24 +422,20 @@ void parse_section(uint8_t *buf, int len, int pid)
 			fprintf(stderr, "XXXX INT section decode error\n");
 			return;
 		}
-		printf("action_type:0x%02x platform_id_hash:0x%02x version_number:%i current_next_indicator:%i section_number:0x%02x last_section_number:0x%02x platform_id:0x%06x processing_order:0x%02x\n",
-		       _int->action_type,
-		       _int->platform_id_hash,
-		       _int->version_number,
-		       _int->current_next_indicator,
-		       _int->section_number,
-		       _int->last_section_number,
+		printf("action_type:0x%02x platform_id_hash:0x%02x platform_id:0x%06x processing_order:0x%02x\n",
+		       dvb_int_section_action_type(_int),
+		       dvb_int_section_platform_id_hash(_int),
 		       _int->platform_id,
 		       _int->processing_order);
 		dvb_int_section_platform_descriptors_for_each(_int, curd) {
 			parse_descriptor(curd, 1);
 		}
-		dvb_int_section_target_loop_for_each(_int, cur_loop_entry) {
-			dvb_int_section_target_loop_entry_target_descriptors_for_each(cur_loop_entry, curd) {
+		dvb_int_section_target_loop_for_each(_int, cur_target) {
+			dvb_int_target_target_descriptors_for_each(cur_target, curd) {
 				parse_descriptor(curd, 2);
 			}
-			operational_loop = dvb_int_section_target_loop_entry_operational_loop(cur_loop_entry);
-			dvb_int_section_operational_loop_operational_descriptors_for_each(operational_loop, curd) {
+			operational_loop = dvb_int_target_operational_loop(cur_target);
+			dvb_int_operational_loop_operational_descriptors_for_each(operational_loop, curd) {
 				parse_descriptor(curd, 3);
 			}
 		}
@@ -462,7 +462,8 @@ void parse_section(uint8_t *buf, int len, int pid)
 			fprintf(stderr, "XXXX EIT section decode error\n");
 			return;
 		}
-		printf("transport_stream_id:0x%04x original_network_id:0x%04x segment_last_section_number:0x%02x last_table_id:0x%02x\n",
+		printf("service_id:0x%04x transport_stream_id:0x%04x original_network_id:0x%04x segment_last_section_number:0x%02x last_table_id:0x%02x\n",
+		       dvb_eit_section_service_id(eit),
 		       eit->transport_stream_id,
 		       eit->original_network_id,
 		       eit->segment_last_section_number,

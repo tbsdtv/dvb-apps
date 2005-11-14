@@ -65,6 +65,17 @@ struct mpeg_pmt_stream {
 extern struct mpeg_pmt_section *mpeg_pmt_section_codec(struct section_ext *section);
 
 /**
+ * Accessor for program_number field of a PMT.
+ * 
+ * @param pmt PMT pointer.
+ * @return The program_number.
+ */
+static inline uint16_t mpeg_pmt_section_program_number(struct mpeg_pmt_section *pmt)
+{
+	return pmt->head.table_id_ext;
+}
+
+/**
  * Convenience iterator for the descriptors field of the mpeg_pmt_section structure.
  *
  * @param pmt Pointer to the mpeg_pmt_section structure.

@@ -33,7 +33,7 @@ extern "C"
  * mpeg_pat_section structure.
  */
 struct mpeg_pat_section {
-	struct section_ext head;
+	struct section_ext head; /* table_id_ext == transport_stream_id */
 
 	/* struct mpeg_pat_program programs[] */
 } packed;
@@ -54,6 +54,17 @@ struct mpeg_pat_program {
  * @return Pointer to the mpeg_pat_section structure, or NULL on error.
  */
 extern struct mpeg_pat_section *mpeg_pat_section_codec(struct section_ext *section);
+
+/**
+ * Accessor for the transport_stream_id field of a PAT.
+ * 
+ * @Âpaam pat PAT pointer.
+ * @return The transport_stream_id.
+ */
+static inline uint16_t mpeg_pat_section_transport_stream_id(struct mpeg_pat_section *pat)
+{
+	return pat->head.table_id_ext;
+}
 
 /**
  * Conveience iterator for the programs field of an mpeg_pat_section.

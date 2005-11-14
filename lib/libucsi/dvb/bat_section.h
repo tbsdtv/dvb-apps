@@ -70,6 +70,17 @@ struct dvb_bat_transport {
 struct dvb_bat_section *dvb_bat_section_codec(struct section_ext *section);
 
 /**
+ * Accessor for the bouquet_id field of a BAT.
+ * 
+ * @param bat BAT pointer.
+ * @return The bouquet_id.
+ */
+static inline uint16_t dvb_bat_section_bouquet_id(struct dvb_bat_section *bat)
+{
+	return bat->head.table_id_ext;
+}
+
+/**
  * Iterator for the descriptors field in a dvb_bat_section.
  *
  * @param bat dvb_bat_section pointer.

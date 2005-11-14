@@ -46,29 +46,29 @@ struct dvb_int_section * dvb_int_section_codec(struct section_ext *ext)
 	pos += in->platform_descriptors_length;
 
 	while (pos < len) {
-		struct dvb_int_section_target_loop_entry *s2 = (struct dvb_int_section_target_loop_entry *) (buf + pos);
-		struct dvb_int_section_operational_loop *s3;
+		struct dvb_int_target *s2 = (struct dvb_int_target *) (buf + pos);
+		struct dvb_int_operational_loop *s3;
 
 		bswap16(buf + pos); /* target_descriptor_loop_length swap */
 
 		if (len - pos < s2->target_descriptors_length)
 			return NULL;
 
-		pos += sizeof(struct dvb_int_section_target_loop_entry);
+		pos += sizeof(struct dvb_int_target);
 
 		if (verify_descriptors(buf + pos, s2->target_descriptors_length))
 			return NULL;
 
 		pos += s2->target_descriptors_length;
 
-		s3 = (struct dvb_int_section_operational_loop *) (buf + pos);
+		s3 = (struct dvb_int_operational_loop *) (buf + pos);
 
 		bswap16(buf + pos); /* operational_descriptor_loop_length swap */
 
 		if (len - pos < s3->operational_descriptors_length)
 			return NULL;
 
-		pos += sizeof(struct dvb_int_section_operational_loop);
+		pos += sizeof(struct dvb_int_operational_loop);
 
 		if (verify_descriptors(buf + pos, s3->operational_descriptors_length))
 			return NULL;

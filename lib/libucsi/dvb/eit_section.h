@@ -66,6 +66,17 @@ struct dvb_eit_event {
 struct dvb_eit_section *dvb_eit_section_codec(struct section_ext *section);
 
 /**
+ * Accessor for the service_id field of an EIT.
+ * 
+ * @param eit EIT pointer.
+ * @return The service_id.
+ */
+static inline uint16_t dvb_eit_section_service_id(struct dvb_eit_section *eit)
+{
+	return eit->head.table_id_ext;
+}
+
+/**
  * Iterator for the events field of a dvb_eit_section.
  *
  * @param eit dvb_eit_section pointer.

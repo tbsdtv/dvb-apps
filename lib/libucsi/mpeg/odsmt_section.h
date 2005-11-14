@@ -70,6 +70,17 @@ struct mpeg_odsmt_stream {
 extern struct mpeg_odsmt_section *mpeg_odsmt_section_codec(struct section_ext *section);
 
 /**
+ * Accessor for the PID field of an ODSMT.
+ * 
+ * @param odsmt odsmt pointer.
+ * @return The pid.
+ */
+static inline uint16_t mpeg_odsmt_section_pid(struct mpeg_odsmt_section *odsmt)
+{
+	return odsmt->head.table_id_ext & 0x1fff;
+}
+
+/**
  * Convenience iterator for the streams field of an mpeg_odsmt_section.
  *
  * @param osdmt Pointer to the mpeg_odsmt_section structure.

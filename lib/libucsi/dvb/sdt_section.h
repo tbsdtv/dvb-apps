@@ -63,6 +63,17 @@ struct dvb_sdt_service {
 struct dvb_sdt_section * dvb_sdt_section_codec(struct section_ext *section);
 
 /**
+ * Accessor for the transport_stream_id field of an SDT.
+ * 
+ * @param sdt SDT pointer.
+ * @return The transport_stream_id.
+ */
+static inline uint16_t dvb_sdt_section_transport_stream_id(struct dvb_sdt_section *sdt)
+{
+	return sdt->head.table_id_ext;
+}
+
+/**
  * Iterator for the services field in a dvb_sdt_section.
  *
  * @param sdt dvb_sdt_section pointer.
@@ -88,6 +99,7 @@ struct dvb_sdt_section * dvb_sdt_section_codec(struct section_ext *section);
 
 
 
+   
 
 
 

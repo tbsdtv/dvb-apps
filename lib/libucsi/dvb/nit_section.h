@@ -70,6 +70,17 @@ struct dvb_nit_transport {
 struct dvb_nit_section * dvb_nit_section_codec(struct section_ext *section);
 
 /**
+ * Accessor for the network_id field of a NIT.
+ * 
+ * @param nit NIT pointer.
+ * @return The network_id.
+ */
+static inline uint16_t dvb_nit_section_network_id(struct dvb_nit_section *nit)
+{
+	return nit->head.table_id_ext;
+}
+
+/**
  * Iterator over the descriptors field in a dvb_nit_section.
  *
  * @param nit dvb_nit_section pointer.
