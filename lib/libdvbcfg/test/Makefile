@@ -1,5 +1,5 @@
 
-CFLAGS += -I..
+CFLAGS += -I.. -I../../libdvbapi
 
 test: dvbcfg_test.o ../libdvbcfg.a
 	gcc -o dvbcfg_test dvbcfg_test.o ../libdvbcfg.a

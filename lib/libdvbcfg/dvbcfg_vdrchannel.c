@@ -33,7 +33,7 @@ static int readaudiopids(char *line, struct dvbcfg_vdrchannel *params,
                          int audio_type);
 static void freeaudiostreams(struct dvbcfg_vdrchannel *channel);
 static int parse_fe_setting(char *string, char **nextptr,
-                            fe_type_t fe_type);
+                            dvbfe_type_t fe_type);
 static int set_fe_setting(struct dvbcfg_vdrchannel *channel, int code,
                           int value);
 
@@ -111,37 +111,30 @@ int dvbcfg_vdrchannel_load(const char *config_file,
 
                 /* determine the type of frontend required for this channel and initalise
                    the structure with defaults */
-                tmpchannel.polarization = DVBCFG_POLARIZATION_H;
-                tmpchannel.fe_params.inversion = INVERSION_OFF;
+                tmpchannel.fe_params.inversion = DVBFE_INVERSION_OFF;
                 switch (tmpchannel.source_name[0]) {
                 case 'S':
-                        tmpchannel.fe_type = FE_QPSK;
-                        tmpchannel.fe_params.u.qpsk.fec_inner = FEC_AUTO;
+                        tmpchannel.fe_type = DVBFE_TYPE_DVBS;
+			tmpchannel.fe_params.u.dvbs.polarization = DVBFE_POLARIZATION_H;
+			tmpchannel.fe_params.u.dvbs.fec_inner = DVBFE_FEC_AUTO;
                         tmpchannel.fe_params.frequency *= 1000;
                         break;
 
                 case 'T':
-                        tmpchannel.fe_type = FE_OFDM;
-                        tmpchannel.fe_params.u.ofdm.bandwidth =
-                            BANDWIDTH_AUTO;
-                        tmpchannel.fe_params.u.ofdm.code_rate_HP =
-                            FEC_AUTO;
-                        tmpchannel.fe_params.u.ofdm.code_rate_LP =
-                            FEC_AUTO;
-                        tmpchannel.fe_params.u.ofdm.constellation =
-                            QAM_AUTO;
-                        tmpchannel.fe_params.u.ofdm.transmission_mode =
-                            TRANSMISSION_MODE_AUTO;
-                        tmpchannel.fe_params.u.ofdm.guard_interval =
-                            GUARD_INTERVAL_AUTO;
-                        tmpchannel.fe_params.u.ofdm.hierarchy_information =
-                            HIERARCHY_AUTO;
+                        tmpchannel.fe_type = DVBFE_TYPE_DVBT;
+                        tmpchannel.fe_params.u.dvbt.bandwidth = DVBFE_BANDWIDTH_AUTO;
+			tmpchannel.fe_params.u.dvbt.code_rate_HP = DVBFE_FEC_AUTO;
+			tmpchannel.fe_params.u.dvbt.code_rate_LP = DVBFE_FEC_AUTO;
+			tmpchannel.fe_params.u.dvbt.constellation = DVBFE_QAM_AUTO;
+			tmpchannel.fe_params.u.dvbt.transmission_mode = DVBFE_TRANSMISSION_MODE_AUTO;
+			tmpchannel.fe_params.u.dvbt.guard_interval = DVBFE_GUARD_INTERVAL_AUTO;
+			tmpchannel.fe_params.u.dvbt.hierarchy_information = DVBFE_HIERARCHY_AUTO;
                         break;
 
                 case 'C':
-                        tmpchannel.fe_type = FE_QAM;
-                        tmpchannel.fe_params.u.qam.fec_inner = FEC_AUTO;
-                        tmpchannel.fe_params.u.qam.modulation = QAM_AUTO;
+			tmpchannel.fe_type = DVBFE_TYPE_DVBC;
+			tmpchannel.fe_params.u.dvbc.fec_inner = DVBFE_FEC_AUTO;
+			tmpchannel.fe_params.u.dvbc.modulation = DVBFE_QAM_AUTO;
                         break;
                 }
 
@@ -173,15 +166,15 @@ int dvbcfg_vdrchannel_load(const char *config_file,
 
                 /* the symbol rate */
                 switch (tmpchannel.fe_type) {
-                case FE_QPSK:
-                        if (sscanf(linepos, "%d", &tmpchannel.fe_params.u.qpsk.symbol_rate) != 1) {
+		case DVBFE_TYPE_DVBS:
+                        if (sscanf(linepos, "%d", &tmpchannel.fe_params.u.dvbs.symbol_rate) != 1) {
                                 continue;
                         }
-                        tmpchannel.fe_params.u.qpsk.symbol_rate *= 1000;
+                        tmpchannel.fe_params.u.dvbs.symbol_rate *= 1000;
                         break;
 
-                case FE_QAM:
-                        if (sscanf(linepos, "%d", &tmpchannel.fe_params.u.qam.symbol_rate) != 1) {
+		case DVBFE_TYPE_DVBC:
+                        if (sscanf(linepos, "%d", &tmpchannel.fe_params.u.dvbc.symbol_rate) != 1) {
                                 continue;
                         }
                         break;
@@ -458,22 +451,22 @@ static int readaudiopids(char *line, struct dvbcfg_vdrchannel *channel,
     if (errno) return -1;
 
 static int parse_fe_setting(char *string, char **nextptr,
-                            fe_type_t fe_type)
+                            dvbfe_type_t fe_type)
 {
         char *allowed;
         int val;
 
         /* is this param allowed for this frontend type? */
         switch (fe_type) {
-        case FE_QPSK:
+	case DVBFE_TYPE_DVBS:
                 allowed = "CIHVRL";
                 break;
 
-        case FE_QAM:
+	case DVBFE_TYPE_DVBC:
                 allowed = "CIM";
                 break;
 
-        case FE_OFDM:
+	case DVBFE_TYPE_DVBT:
                 allowed = "BCDGIMTY";
                 break;
 
@@ -491,13 +484,13 @@ static int parse_fe_setting(char *string, char **nextptr,
 
                 switch (val) {
                 case 6:
-                        return BANDWIDTH_6_MHZ;
+                        return DVBFE_BANDWIDTH_6_MHZ;
                 case 7:
-                        return BANDWIDTH_7_MHZ;
+			return DVBFE_BANDWIDTH_7_MHZ;
                 case 8:
-                        return BANDWIDTH_8_MHZ;
+			return DVBFE_BANDWIDTH_8_MHZ;
                 case 999:
-                        return BANDWIDTH_AUTO;
+			return DVBFE_BANDWIDTH_AUTO;
                 default:
                         return -1;
                 }
@@ -509,25 +502,25 @@ static int parse_fe_setting(char *string, char **nextptr,
 
                 switch (val) {
                 case 0:
-                        return FEC_NONE;
+			return DVBFE_FEC_NONE;
                 case 12:
-                        return FEC_1_2;
+			return DVBFE_FEC_1_2;
                 case 23:
-                        return FEC_2_3;
+			return DVBFE_FEC_2_3;
                 case 34:
-                        return FEC_3_4;
+			return DVBFE_FEC_3_4;
                 case 45:
-                        return FEC_4_5;
+			return DVBFE_FEC_4_5;
                 case 56:
-                        return FEC_5_6;
+			return DVBFE_FEC_5_6;
                 case 67:
-                        return FEC_6_7;
+			return DVBFE_FEC_6_7;
                 case 78:
-                        return FEC_7_8;
+			return DVBFE_FEC_7_8;
                 case 89:
-                        return FEC_8_9;
+			return DVBFE_FEC_8_9;
                 case 999:
-                        return FEC_AUTO;
+			return DVBFE_FEC_AUTO;
                 default:
                         return -1;
                 }
@@ -538,15 +531,15 @@ static int parse_fe_setting(char *string, char **nextptr,
 
                 switch (val) {
                 case 4:
-                        return GUARD_INTERVAL_1_4;
+			return DVBFE_GUARD_INTERVAL_1_4;
                 case 8:
-                        return GUARD_INTERVAL_1_8;
+			return DVBFE_GUARD_INTERVAL_1_8;
                 case 16:
-                        return GUARD_INTERVAL_1_16;
+			return DVBFE_GUARD_INTERVAL_1_16;
                 case 32:
-                        return GUARD_INTERVAL_1_32;
+			return DVBFE_GUARD_INTERVAL_1_32;
                 case 999:
-                        return GUARD_INTERVAL_AUTO;
+			return DVBFE_GUARD_INTERVAL_AUTO;
                 default:
                         return -1;
                 }
@@ -556,11 +549,11 @@ static int parse_fe_setting(char *string, char **nextptr,
                 PARSEINT(val, string + 1, nextptr);
                 switch (val) {
                 case 0:
-                        return INVERSION_OFF;
+			return DVBFE_INVERSION_OFF;
                 case 1:
-                        return INVERSION_ON;
+			return DVBFE_INVERSION_ON;
                 case 999:
-                        return INVERSION_AUTO;
+			return DVBFE_INVERSION_AUTO;
                 default:
                         return -1;
                 }
@@ -570,19 +563,19 @@ static int parse_fe_setting(char *string, char **nextptr,
                 PARSEINT(val, string + 1, nextptr);
                 switch (val) {
                 case 0:
-                        return QPSK;
+			return DVBFE_QPSK;
                 case 16:
-                        return QAM_16;
+			return DVBFE_QAM_16;
                 case 32:
-                        return QAM_32;
+			return DVBFE_QAM_32;
                 case 64:
-                        return QAM_64;
+			return DVBFE_QAM_64;
                 case 128:
-                        return QAM_128;
+			return DVBFE_QAM_128;
                 case 256:
-                        return QAM_256;
+			return DVBFE_QAM_256;
                 case 999:
-                        return QAM_AUTO;
+			return DVBFE_QAM_AUTO;
                 default:
                         return -1;
                 }
@@ -592,11 +585,11 @@ static int parse_fe_setting(char *string, char **nextptr,
                 PARSEINT(val, string + 1, nextptr);
                 switch (val) {
                 case 2:
-                        return TRANSMISSION_MODE_2K;
+			return DVBFE_TRANSMISSION_MODE_2K;
                 case 8:
-                        return TRANSMISSION_MODE_8K;
+			return DVBFE_TRANSMISSION_MODE_8K;
                 case 999:
-                        return TRANSMISSION_MODE_AUTO;
+			return DVBFE_TRANSMISSION_MODE_AUTO;
                 default:
                         return -1;
                 }
@@ -606,15 +599,15 @@ static int parse_fe_setting(char *string, char **nextptr,
                 PARSEINT(val, string + 1, nextptr);
                 switch (val) {
                 case 0:
-                        return HIERARCHY_NONE;
+			return DVBFE_HIERARCHY_NONE;
                 case 1:
-                        return HIERARCHY_1;
+			return DVBFE_HIERARCHY_1;
                 case 2:
-                        return HIERARCHY_2;
+			return DVBFE_HIERARCHY_2;
                 case 4:
-                        return HIERARCHY_4;
+			return DVBFE_HIERARCHY_4;
                 case 999:
-                        return HIERARCHY_AUTO;
+			return DVBFE_HIERARCHY_AUTO;
                 default:
                         return -1;
                 }
@@ -622,19 +615,19 @@ static int parse_fe_setting(char *string, char **nextptr,
 
         case 'H':
                 *nextptr = string + 1;
-                return DVBCFG_POLARIZATION_H;
+                return DVBFE_POLARIZATION_H;
 
         case 'V':
                 *nextptr = string + 1;
-                return DVBCFG_POLARIZATION_V;
+                return DVBFE_POLARIZATION_V;
 
         case 'L':
                 *nextptr = string + 1;
-                return DVBCFG_POLARIZATION_L;
+                return DVBFE_POLARIZATION_L;
 
         case 'R':
                 *nextptr = string + 1;
-                return DVBCFG_POLARIZATION_R;
+                return DVBFE_POLARIZATION_R;
 
         default:
                 return -1;
@@ -650,10 +643,10 @@ static int set_fe_setting(struct dvbcfg_vdrchannel *channel, int code,
         }
 
         switch (channel->fe_type) {
-        case FE_QPSK:
+        case DVBFE_TYPE_DVBS:
                 switch (code) {
                 case 'C':
-                        channel->fe_params.u.qpsk.fec_inner = value;
+                        channel->fe_params.u.dvbs.fec_inner = value;
                         break;
 
                 case 'H':
@@ -664,51 +657,51 @@ static int set_fe_setting(struct dvbcfg_vdrchannel *channel, int code,
                         break;
                 }
 
-        case FE_QAM:
+        case DVBFE_TYPE_DVBC:
                 switch (code) {
                 case 'C':
-                        channel->fe_params.u.qam.fec_inner = value;
+                        channel->fe_params.u.dvbc.fec_inner = value;
                         break;
 
                 case 'M':
-                        channel->fe_params.u.qam.modulation = value;
+                        channel->fe_params.u.dvbc.modulation = value;
                         break;
                 }
 
-        case FE_OFDM:
+        case DVBFE_TYPE_DVBT:
                 switch (code) {
                 case 'B':
-                        channel->fe_params.u.ofdm.bandwidth = value;
+                        channel->fe_params.u.dvbt.bandwidth = value;
                         break;
 
                 case 'C':
-                        channel->fe_params.u.ofdm.code_rate_HP = value;
+                        channel->fe_params.u.dvbt.code_rate_HP = value;
                         break;
 
                 case 'D':
-                        channel->fe_params.u.ofdm.code_rate_LP = value;
+                        channel->fe_params.u.dvbt.code_rate_LP = value;
                         break;
 
                 case 'G':
-                        channel->fe_params.u.ofdm.guard_interval = value;
+                        channel->fe_params.u.dvbt.guard_interval = value;
                         break;
 
                 case 'M':
-                        channel->fe_params.u.ofdm.constellation = value;
+                        channel->fe_params.u.dvbt.constellation = value;
                         break;
 
                 case 'T':
-                        channel->fe_params.u.ofdm.transmission_mode =
+                        channel->fe_params.u.dvbt.transmission_mode =
                             value;
                         break;
 
                 case 'Y':
-                        channel->fe_params.u.ofdm.hierarchy_information =
+                        channel->fe_params.u.dvbt.hierarchy_information =
                             value;
                         break;
                 }
 
-        case FE_ATSC:
+        case DVBFE_TYPE_ATSC:
                 return -EINVAL;
         }
 

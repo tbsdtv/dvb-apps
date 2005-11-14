@@ -27,17 +27,7 @@ extern "C"
 #endif
 
 #include <stdint.h>
-#include <linux/dvb/frontend.h>
-
-/**
- * Possible polarization values.
- */
-enum dvbcfg_polarization {
-        DVBCFG_POLARIZATION_H = 0,
-        DVBCFG_POLARIZATION_V = 1,
-        DVBCFG_POLARIZATION_L = 2,
-        DVBCFG_POLARIZATION_R = 3,
-};
+#include <dvbapi/dvbfe.h>
 
 /**
  * Possible types of source_id.
@@ -179,18 +169,15 @@ struct dvbcfg_gsid
  * ATSC: <frequency> <inversion> <modulation>
  *
  * All numerical values in the delivery are in the units used in the
- * "struct dvb_frontend_parameters". For other parameters, there are two
+ * "struct dvbfe_parameters". For other parameters, there are two
  * possiblities: either the numerical value as defined in the enumerations in
- * frontend.h, or the exact string corresponding to that numerical value as
- * defined in frontend.h. The same format for all such values must be used
+ * dvbfe.h, or the exact string corresponding to that numerical value as
+ * defined in dvbfe.h. The same format for all such values must be used
  * within a single entry.
  */
 struct dvbcfg_delivery {
         union {
-                struct {
-                        struct dvb_frontend_parameters fe_params;
-                        enum dvbcfg_polarization polarization;      /* DVBS only */
-                } dvb;
+		struct dvbfe_parameters dvb;
         } u;
 };
 

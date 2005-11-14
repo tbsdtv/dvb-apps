@@ -163,13 +163,13 @@ static int get_diseqc(struct dvbcfg_diseqc_backend* backend,
 
                 /* the polarization */
                 if (linepos[0] == 'H')
-                        polarization = DVBCFG_POLARIZATION_H;
+                        polarization = DVBFE_POLARIZATION_H;
                 else if (linepos[0] == 'V')
-                        polarization = DVBCFG_POLARIZATION_V;
+                        polarization = DVBFE_POLARIZATION_V;
                 else if (linepos[0] == 'L')
-                        polarization = DVBCFG_POLARIZATION_L;
+                        polarization = DVBFE_POLARIZATION_L;
                 else if (linepos[0] == 'R')
-                        polarization = DVBCFG_POLARIZATION_R;
+                        polarization = DVBFE_POLARIZATION_R;
                 else
                         continue;
                 linepos = dvbcfg_nexttoken(linepos);
@@ -221,19 +221,19 @@ static int put_diseqc(struct dvbcfg_diseqc_backend* backend,
         entry = diseqc->entries;
         while (entry) {
                 switch (entry->polarization) {
-                case DVBCFG_POLARIZATION_H:
+                case DVBFE_POLARIZATION_H:
                         polarization = 'H';
                         break;
 
-                case DVBCFG_POLARIZATION_V:
+                case DVBFE_POLARIZATION_V:
                         polarization = 'V';
                         break;
 
-                case DVBCFG_POLARIZATION_L:
+                case DVBFE_POLARIZATION_L:
                         polarization = 'L';
                         break;
 
-                case DVBCFG_POLARIZATION_R:
+                case DVBFE_POLARIZATION_R:
                         polarization = 'R';
                         break;
                 }

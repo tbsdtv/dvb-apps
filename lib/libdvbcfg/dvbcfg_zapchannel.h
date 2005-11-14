@@ -27,13 +27,13 @@ extern "C"
 #endif
 
 #include <stdint.h>
-#include <linux/dvb/frontend.h>
+#include <dvbapi/dvbfe.h>
 
 struct dvbcfg_zapchannel
 {
         char* name;
-        fe_type_t fe_type;
-        struct dvb_frontend_parameters fe_params;
+        dvbfe_type_t fe_type;
+        struct dvbfe_parameters fe_params;
         int polarization;
         int satellite_switch;
         int video_pid;

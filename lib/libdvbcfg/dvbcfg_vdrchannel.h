@@ -27,7 +27,7 @@ extern "C"
 #endif
 
 #include <stdint.h>
-#include <linux/dvb/frontend.h>
+#include <dvbapi/dvbfe.h>
 
 
 #define DVBCFG_VDRCHANNEL_AUDIO_MPEG 0
@@ -48,7 +48,7 @@ struct dvbcfg_vdrchannel {
         char *provider_name;
         char *source_name;
         char *short_name;
-        fe_type_t fe_type;
+        dvbfe_type_t fe_type;
         uint16_t video_pid;
         uint16_t pcr_pid;
         struct dvbcfg_vdrchannel_audio *audio_streams;
@@ -59,7 +59,7 @@ struct dvbcfg_vdrchannel {
         uint16_t radio_id;
         uint16_t caids[DVBCFG_VDRCHANNEL_MAXCAIDS];
         int num_caids;
-        struct dvb_frontend_parameters fe_params;
+        struct dvbfe_parameters fe_params;
         uint8_t polarization;
 
         struct dvbcfg_vdrchannel *prev; /* NULL=> first entry */

@@ -595,33 +595,33 @@ uint32_t dvbcfg_multiplex_calculate_differentiator(struct dvbcfg_multiplex* mult
 
         switch(multiplex->source->source_id.source_type) {
         case DVBCFG_SOURCETYPE_DVBS:
-                tmp = multiplex->delivery.u.dvb.fe_params.frequency / (multiplex->delivery.u.dvb.fe_params.u.qpsk.symbol_rate / 1000);
+                tmp = multiplex->delivery.u.dvb.frequency / (multiplex->delivery.u.dvb.u.dvbs.symbol_rate / 1000);
                 tmp <<= 2;
-                tmp |= (multiplex->delivery.u.dvb.polarization & 3);
+                tmp |= (multiplex->delivery.u.dvb.u.dvbs.polarization & 3);
                 return tmp;
 
         case DVBCFG_SOURCETYPE_DVBC:
-                return multiplex->delivery.u.dvb.fe_params.frequency / multiplex->delivery.u.dvb.fe_params.u.qam.symbol_rate;
+                return multiplex->delivery.u.dvb.frequency / multiplex->delivery.u.dvb.u.dvbc.symbol_rate;
 
         case DVBCFG_SOURCETYPE_DVBT:
-                switch(multiplex->delivery.u.dvb.fe_params.u.ofdm.bandwidth) {
-                case BANDWIDTH_8_MHZ:
+                switch(multiplex->delivery.u.dvb.u.dvbt.bandwidth) {
+                case DVBFE_BANDWIDTH_8_MHZ:
                         tmp = 8000000;
                         break;
 
-                case BANDWIDTH_7_MHZ:
+                case DVBFE_BANDWIDTH_7_MHZ:
                         tmp = 7000000;
                         break;
 
-                case BANDWIDTH_AUTO:
-                case BANDWIDTH_6_MHZ:
+                case DVBFE_BANDWIDTH_AUTO:
+                case DVBFE_BANDWIDTH_6_MHZ:
                         tmp = 6000000;
                         break;
                 }
-                return multiplex->delivery.u.dvb.fe_params.frequency / tmp;
+                return multiplex->delivery.u.dvb.frequency / tmp;
 
         case DVBCFG_SOURCETYPE_ATSC:
-                return multiplex->delivery.u.dvb.fe_params.frequency / 6000000;
+                return multiplex->delivery.u.dvb.frequency / 6000000;
         }
 
         return 0;
