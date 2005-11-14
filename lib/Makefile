@@ -1,22 +1,16 @@
 
-.PHONY: libdvbcfg libdvbdemux libdvben50221 libdvbfe libdvbnet libdvbsi libucsi
+.PHONY: libdvbcfg libdvbapi libdvben50221 libdvbsi libucsi
 
-all: libdvbcfg libdvbdemux libdvben50221 libdvbfe libdvbnet libdvbsi libucsi
+all: libdvbcfg libdvbapi libdvben50221 libdvbsi libucsi
 
 libdvbcfg:
 	$(MAKE) -C libdvbcfg $(MAKECMDGOALS)
 
-libdvbdemux:
-	$(MAKE) -C libdvbdemux $(MAKECMDGOALS)
+libdvbapi:
+	$(MAKE) -C libdvbapi $(MAKECMDGOALS)
 
 libdvben50221:
 	$(MAKE) -C libdvben50221 $(MAKECMDGOALS)
-
-libdvbfe:
-	$(MAKE) -C libdvbfe $(MAKECMDGOALS)
-
-libdvbnet:
-	$(MAKE) -C libdvbnet $(MAKECMDGOALS)
 
 libdvbsi:
 	$(MAKE) -C libdvbsi $(MAKECMDGOALS)
@@ -26,9 +20,7 @@ libucsi:
 
 %::
 	$(MAKE) -C libdvbcfg $(MAKECMDGOALS)
-	$(MAKE) -C libdvbdemux $(MAKECMDGOALS)
+	$(MAKE) -C libdvbapi $(MAKECMDGOALS)
 	$(MAKE) -C libdvben50221 $(MAKECMDGOALS)
-	$(MAKE) -C libdvbfe $(MAKECMDGOALS)
-	$(MAKE) -C libdvbnet $(MAKECMDGOALS)
 	$(MAKE) -C libdvbsi $(MAKECMDGOALS)
 	$(MAKE) -C libucsi $(MAKECMDGOALS)

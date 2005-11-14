@@ -25,8 +25,8 @@
 #include <ucsi/transport_packet.h>
 #include <ucsi/section_buf.h>
 #include <ucsi/dvb/types.h>
-#include <dvbdemux/dvbdemux.h>
-#include <dvbfe/dvbfe.h>
+#include <dvbapi/dvbdemux.h>
+#include <dvbapi/dvbfe.h>
 #include <dvbcfg/dvbcfg_seed_backend_file.h>
 #include <stdio.h>
 #include <unistd.h>
