@@ -13,8 +13,12 @@ RANLIB = ranlib
 STRIP = strip
 INSTDIR=/usr/local
 
-all: $(STATICLIB) $(SHAREDLIB)
+all: symlink $(STATICLIB) $(SHAREDLIB)
 
+symlink:
+	@rm -f dvbdemux
+	@ln -s . dvbdemux
+		
 $(STATICLIB): $(OBJS)
 	$(AR) rc $(STATICLIB) $(OBJS)
 	$(RANLIB) $(STATICLIB)
@@ -31,6 +35,6 @@ install: $(STATICLIB) $(SHAREDLIB) $(INCLUDES)
 	cp -f $(INCLUDES) $(INSTDIR)/include/dvbdemux
 
 clean:
-	rm -f *~ *# *.o *.a *.so
+	rm -f *~ *# *.o *.a *.so dvbdemux
 
 .PHONY: clean all
