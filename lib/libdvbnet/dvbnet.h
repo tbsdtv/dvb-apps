@@ -26,8 +26,13 @@ extern "C"
 {
 #endif
 
-#include <linux/dvb/net.h>
 #include <stdint.h>
+
+/**
+ * Possible encapsulations of data.
+ */
+#define DVBNET_ENCAP_MPE 0
+#define DVBNET_ENCAP_ULE 1
 
 /**
  * The maximum allowed number of dvb network devices per adapter netdevice.
@@ -48,7 +53,7 @@ extern int dvbnet_open(int adapter, int netdeviceid);
  *
  * @param fd FD opened with libdvbnet_open().
  * @param pid PID of the stream containing the network data.
- * @param encapsulation Encapsulation type of the stream (one of DVB_NET_FEEDTYPE_*).
+ * @param encapsulation Encapsulation type of the stream (one of DVBNET_ENCAP_*).
  * @return 0 on success, nonzero on failure.
  */
 extern int dvbnet_add_interface(int fd, uint16_t pid, int encapsulation);
@@ -58,10 +63,11 @@ extern int dvbnet_add_interface(int fd, uint16_t pid, int encapsulation);
  *
  * @param fd FD opened with libdvbnet_open().
  * @param ifnum Index of interface to retrieve.
- * @param info Place to put the information.
+ * @param pid The PID of the interface.
+ * @param encapsulation The encapsulation of the interface (DVBNET_ENCAP_*).
  * @return 0 on success, nonzero on failure.
  */
-extern int dvbnet_get_interface(int fd, int ifnum, struct dvb_net_if *info);
+extern int dvbnet_get_interface(int fd, int ifnum, uint16_t *pid, int *encapsulation);
 
 /**
  * Remove a DVBNET interface.

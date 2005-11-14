@@ -25,6 +25,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
+#include <linux/dvb/net.h>
+#include <errno.h>
 #include "dvbnet.h"
 
 int dvbnet_open(int adapter, int netdeviceid)
@@ -42,15 +44,47 @@ int dvbnet_add_interface(int fd, uint16_t pid, int encapsulation)
 
 	memset(&params, 0, sizeof(params));
 	params.pid = pid;
-	params.feedtype = encapsulation;
+
+	switch(encapsulation) {
+	case DVBNET_ENCAP_MPE:
+		params.feedtype = DVB_NET_FEEDTYPE_MPE;
+		break;
+
+	case DVBNET_ENCAP_ULE:
+		params.feedtype = DVB_NET_FEEDTYPE_ULE;
+		break;
+
+	default:
+		return -EINVAL;
+	}
 	return ioctl(fd, NET_ADD_IF, &params);
 }
 
-int dvbnet_get_interface(int fd, int ifnum, struct dvb_net_if* info)
+int dvbnet_get_interface(int fd, int ifnum, uint16_t *pid, int *encapsulation)
 {
-	memset(info, 0, sizeof(struct dvb_net_if));
-	info->if_num = ifnum;
-	return ioctl(fd, NET_GET_IF, info);
+	struct dvb_net_if info;
+	int res;
+
+	memset(&info, 0, sizeof(struct dvb_net_if));
+	info.if_num = ifnum;
+
+	if ((res = ioctl(fd, NET_GET_IF, &info)) < 0)
+		return res;
+
+	*pid = info.pid;
+	switch(info.feedtype) {
+	case DVB_NET_FEEDTYPE_MPE:
+		*encapsulation = DVBNET_ENCAP_MPE;
+		break;
+
+	case DVB_NET_FEEDTYPE_ULE:
+		*encapsulation = DVBNET_ENCAP_ULE;
+		break;
+
+	default:
+		return -EINVAL;
+	}
+	return 0;
 }
 
 int dvbnet_remove_interface(int fd, int ifnum)
