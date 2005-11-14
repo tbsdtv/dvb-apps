@@ -1,14 +1,16 @@
 libucsi test record. Anything without PASS is either not tested, or is
 currently broken.
 
-Sections:
+Testing means (a) ensure there are no segfaults etc. (b) dump the raw hex,
+decode it by hand, and check it matches the output.
 
+Sections:
 PASS mpeg/cat_section.h
      mpeg/odsmt_section.h
 PASS mpeg/pat_section.h
 PASS mpeg/pmt_section.h
      mpeg/tsdt_section.h
-     dvb/bat_section.h
+PASS dvb/bat_section.h
      dvb/dit_section.h
 PASS dvb/eit_section.h
      dvb/int_section.h
@@ -36,17 +38,18 @@ PASS mpeg/maximum_bitrate_descriptor.h
      mpeg/mpeg4_audio_descriptor.h
      mpeg/mpeg4_video_descriptor.h
      mpeg/multiplex_buffer_descriptor.h
-     mpeg/multiplex_buffer_utilization_descriptor.h
+PASS mpeg/multiplex_buffer_utilization_descriptor.h
      mpeg/muxcode_descriptor.h
-     mpeg/private_data_indicator_descriptor.h
-     mpeg/registration_descriptor.h
+PASS mpeg/private_data_indicator_descriptor.h
+PASS mpeg/registration_descriptor.h
      mpeg/sl_descriptor.h
-     mpeg/smoothing_buffer_descriptor.h
-     mpeg/std_descriptor.h
-     mpeg/system_clock_descriptor.h
+PASS mpeg/smoothing_buffer_descriptor.h
+PASS mpeg/std_descriptor.h
+PASS mpeg/system_clock_descriptor.h
      mpeg/target_background_grid_descriptor.h
 PASS mpeg/video_stream_descriptor.h
      mpeg/video_window_descriptor.h
+
      dvb/ac3_descriptor.h
      dvb/ancillary_data_descriptor.h
      dvb/announcement_support_descriptor.h

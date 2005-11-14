@@ -1093,7 +1093,7 @@ void parse_descriptor(struct descriptor *d, int indent)
 	case dtag_dvb_service_identifier:
 	case dtag_dvb_service_availability:
 	default:
-//		fprintf(stderr, "DSC XXXX Unknown descriptor_tag:0x%02x\n", d->tag);
+		fprintf(stderr, "DSC XXXX Unknown descriptor_tag:0x%02x\n", d->tag);
 		return;
 	}
 }
@@ -1129,7 +1129,7 @@ void hexdump(int indent, char *prefix, uint8_t *buf, int buflen)
 		for(j=0; j<max; j++) {
 			sprintf(line + 4 + (j*3), "%02x", buf[i+j]);
 			if ((buf[i+j] > 31) && (buf[i+j] < 127))
-				sprintf(line + 4 + 48 + 1 + j, "%c", buf[i+j]);
+				line[4 + 48 + 1 + j] = buf[i+j];
 			else
 				line[4 + 48 + 1 + j] = '.';
 		}

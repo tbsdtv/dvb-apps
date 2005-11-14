@@ -32,7 +32,7 @@ struct dvb_eit_section *dvb_eit_section_codec(struct section_ext * ext)
 
 	bswap16(buf + pos);
 	pos += 2;
-	bswap16(buf + pos + 2);
+	bswap16(buf + pos);
 	pos += 4;
    
 	while (pos < len) {
