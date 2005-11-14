@@ -28,6 +28,7 @@
 #include <unistd.h>
 #include <ctype.h>
 #include <errno.h>
+#include <linux/dvb/frontend.h>
 #include "dvbfe.h"
 
 int dvbfe_open(int adapter, int frontend, int readonly)
@@ -43,9 +44,29 @@ int dvbfe_open(int adapter, int frontend, int readonly)
 	}
 }
 
-int dvbfe_get_info(int fd, struct dvb_frontend_info *info)
+int dvbfe_get_type(int fd)
 {
-	return ioctl(fd, FE_GET_INFO, info);
+	struct dvb_frontend_info info;
+	int res;
+
+	if ((res = ioctl(fd, FE_GET_INFO, &info)) != 0)
+		return res;
+
+	switch(info.type) {
+	case FE_QPSK:
+		return DVBFE_TYPE_DVBS;
+
+	case FE_QAM:
+		return DVBFE_TYPE_DVBC;
+
+	case FE_OFDM:
+		return DVBFE_TYPE_DVBT;
+
+	case FE_ATSC:
+		return DVBFE_TYPE_ATSC;
+
+	}
+	return -EINVAL;
 }
 
 int dvbfe_get_status(int fd, int statusmask, struct dvbfe_status *result)
@@ -93,14 +114,96 @@ int dvbfe_get_status(int fd, int statusmask, struct dvbfe_status *result)
 	return returnval;
 }
 
-int dvbfe_set_frontend(int fd, struct dvb_frontend_parameters *params)
+int dvbfe_set_frontend(int fd, struct dvbfe_parameters *params)
 {
-	return ioctl(fd, FE_SET_FRONTEND, params);
+	struct dvb_frontend_parameters kparams;
+	struct dvb_frontend_info info;
+	int res;
+
+	if ((res = ioctl(fd, FE_GET_INFO, &info)) != 0)
+		return res;
+
+	// FIXME: these should all be done with switches and not directly copied
+	kparams.frequency = params->frequency;
+	kparams.inversion = params->inversion;
+	switch(info.type) {
+	case FE_QPSK:
+		kparams.u.qpsk.symbol_rate = params->u.dvbs.symbol_rate;
+		kparams.u.qpsk.fec_inner = params->u.dvbs.fec_inner;
+		break;
+
+	case FE_QAM:
+		kparams.u.qam.symbol_rate = params->u.dvbc.symbol_rate;
+		kparams.u.qam.fec_inner = params->u.dvbc.fec_inner;
+		kparams.u.qam.modulation = params->u.dvbc.modulation;
+		break;
+
+	case FE_OFDM:
+                kparams.u.ofdm.bandwidth = params->u.dvbt.bandwidth;
+                kparams.u.ofdm.code_rate_HP = params->u.dvbt.code_rate_HP;
+                kparams.u.ofdm.code_rate_LP= params->u.dvbt.code_rate_LP;
+                kparams.u.ofdm.constellation= params->u.dvbt.constellation;
+                kparams.u.ofdm.transmission_mode= params->u.dvbt.transmission_mode;
+                kparams.u.ofdm.guard_interval= params->u.dvbt.guard_interval;
+                kparams.u.ofdm.hierarchy_information= params->u.dvbt.hierarchy_information;
+                break;
+
+	case FE_ATSC:
+		kparams.u.vsb.modulation = params->u.atsc.modulation;
+		break;
+
+	default:
+		return -EINVAL;
+	}
+
+	return ioctl(fd, FE_SET_FRONTEND, &kparams);
 }
 
-int dvbfe_get_frontend(int fd, struct dvb_frontend_parameters *params)
+int dvbfe_get_frontend(int fd, struct dvbfe_parameters *params)
 {
-	return ioctl(fd, FE_GET_FRONTEND, params);
+	struct dvb_frontend_parameters kparams;
+	struct dvb_frontend_info info;
+	int res;
+
+	if ((res = ioctl(fd, FE_GET_INFO, &info)) != 0)
+		return res;
+	if ((res = ioctl(fd, FE_GET_FRONTEND, &kparams)) != 0)
+		return res;
+
+	// FIXME: these should all be done with switches and not directly copied
+	params->frequency = kparams.frequency;
+	params->inversion = kparams.inversion;
+	switch(info.type) {
+	case FE_QPSK:
+		params->u.dvbs.symbol_rate = kparams.u.qpsk.symbol_rate;
+		params->u.dvbs.fec_inner = kparams.u.qpsk.fec_inner;
+		break;
+
+	case FE_QAM:
+		params->u.dvbc.symbol_rate = kparams.u.qam.symbol_rate;
+		params->u.dvbc.fec_inner = kparams.u.qam.fec_inner;
+		params->u.dvbc.modulation = kparams.u.qam.modulation;
+		break;
+
+	case FE_OFDM:
+		params->u.dvbt.bandwidth = kparams.u.ofdm.bandwidth;
+		params->u.dvbt.code_rate_HP = kparams.u.ofdm.code_rate_HP;
+		params->u.dvbt.code_rate_LP= kparams.u.ofdm.code_rate_LP;
+		params->u.dvbt.constellation= kparams.u.ofdm.constellation;
+		params->u.dvbt.transmission_mode= kparams.u.ofdm.transmission_mode;
+		params->u.dvbt.guard_interval= kparams.u.ofdm.guard_interval;
+		params->u.dvbt.hierarchy_information= kparams.u.ofdm.hierarchy_information;
+		break;
+
+	case FE_ATSC:
+		params->u.atsc.modulation = kparams.u.vsb.modulation;
+		break;
+
+	default:
+		return -EINVAL;
+	}
+
+	return 0;
 }
 
 int dvbfe_diseqc_command(int fd, char *command)
