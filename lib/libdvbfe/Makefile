@@ -13,7 +13,11 @@ RANLIB = ranlib
 STRIP = strip
 INSTDIR=/usr/local
 
-all: $(STATICLIB) $(SHAREDLIB)
+all: symlink $(STATICLIB) $(SHAREDLIB)
+
+symlink:
+	@rm -f dvbfe
+	@ln -s . dvbfe
 
 $(STATICLIB): $(OBJS)
 	$(AR) rc $(STATICLIB) $(OBJS)
@@ -31,6 +35,6 @@ install: $(STATICLIB) $(SHAREDLIB) $(INCLUDES)
 	cp -f $(INCLUDES) $(INSTDIR)/include/dvbfe
 
 clean:
-	rm -f *~ *# *.o *.a *.so
+	rm -f *~ *# *.o *.a *.so dvbfe
 
 .PHONY: clean all
