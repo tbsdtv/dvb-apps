@@ -197,9 +197,11 @@ extern void dvbfe_close(dvbfe_handle_t handle);
  *
  * @param fehandle Handle opened with dvbfe_open().
  * @param params Params to set.
- * @return 0 on success, nonzero on failure.
+ * @param timeout <0 => wait forever for lock. 0=>return immediately, >0=>
+ * number of milliseconds to wait for a lock.
+ * @return 0 on success, nonzero on failure (including no lock if timeout != 0).
  */
-extern int dvbfe_set(dvbfe_handle_t fehandle, struct dvbfe_parameters *params);
+extern int dvbfe_set(dvbfe_handle_t fehandle, struct dvbfe_parameters *params, int timeout);
 
 /**
  * Call this function regularly from a loop to maintain the frontend lock.

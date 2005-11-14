@@ -198,10 +198,13 @@ int dvbfe_get_info(dvbfe_handle_t _fehandle, dvbfe_info_mask_t querymask, struct
 	return returnval;
 }
 
-int dvbfe_set(dvbfe_handle_t _fehandle, struct dvbfe_parameters *params)
+int dvbfe_set(dvbfe_handle_t _fehandle, struct dvbfe_parameters *params, int timeout)
 {
 	struct dvb_frontend_parameters kparams;
 	struct dvbfe_handle_prv *fehandle = (struct dvbfe_handle_prv*) _fehandle;
+	int res;
+	struct timeval endtime;
+	fe_status_t status;
 
 	// FIXME: these should all be done with switches and not directly copied
 	kparams.frequency = params->frequency;
@@ -236,7 +239,51 @@ int dvbfe_set(dvbfe_handle_t _fehandle, struct dvbfe_parameters *params)
 		return -EINVAL;
 	}
 
-	return ioctl(fehandle->fd, FE_SET_FRONTEND, &kparams);
+	// set it and check for error
+	res = ioctl(fehandle->fd, FE_SET_FRONTEND, &kparams);
+	if (res)
+		return res;
+
+	// 0 => return immediately
+	if (timeout == 0) {
+		return 0;
+	}
+
+	/* calculate timeout */
+	if (timeout > 0) {
+		gettimeofday(&endtime, NULL);
+		timeout *= 1000;
+		endtime.tv_sec += timeout / 1000000;
+		endtime.tv_usec += timeout % 1000000;
+	}
+
+	/* wait for a lock */
+	while(1) {
+		/* has it locked? */
+		if (!ioctl(fehandle->fd, FE_READ_STATUS, &status)) {
+			if (status & FE_HAS_LOCK) {
+				break;
+			}
+		}
+
+		/* check for timeout */
+		if (timeout > 0) {
+			struct timeval curtime;
+			gettimeofday(&curtime, NULL);
+			if ((curtime.tv_sec > endtime.tv_sec) ||
+			    ((curtime.tv_sec == endtime.tv_sec) && (curtime.tv_usec >= endtime.tv_usec))) {
+				break;
+			}
+		}
+
+		/* delay for a bit */
+		usleep(100000);
+	}
+
+	/* exit */
+	if (status & FE_HAS_LOCK)
+		return 0;
+	return -ETIMEDOUT;
 }
 
 void dvbfe_poll(dvbfe_handle_t fehandle)
