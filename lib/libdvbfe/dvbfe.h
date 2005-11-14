@@ -43,7 +43,11 @@ extern "C"
  * Structure containing values used by the dvbfe_get_status() call.
  */
 struct dvbfe_status {
-        fe_status_t status;
+	unsigned int signal     : 1;
+	unsigned int carrier    : 1;
+	unsigned int viterbi    : 1;
+	unsigned int sync       : 1;
+	unsigned int lock       : 1;
 	uint32_t ber;
 	uint16_t signal_strength;
 	uint16_t snr;

@@ -51,10 +51,27 @@ int dvbfe_get_info(int fd, struct dvb_frontend_info *info)
 int dvbfe_get_status(int fd, int statusmask, struct dvbfe_status *result)
 {
 	int returnval = 0;
+	fe_status_t status;
 
+	memset(result, 0, sizeof(result));
 	if (statusmask & DVBFE_STATUS_FE) {
-		if (!ioctl(fd, FE_READ_STATUS, &result->status))
+		if (!ioctl(fd, FE_READ_STATUS, &status)) {
 			returnval |= DVBFE_STATUS_FE;
+			if (status & FE_HAS_SIGNAL)
+				result->signal = 1;
+
+			if (status & FE_HAS_CARRIER)
+				result->carrier = 1;
+
+			if (status & FE_HAS_VITERBI)
+				result->viterbi = 1;
+
+			if (status & FE_HAS_SYNC)
+				result->sync = 1;
+
+			if (status & FE_HAS_LOCK)
+				result->lock = 1;
+		}
 	}
 	if (statusmask & DVBFE_STATUS_BER) {
 		if (!ioctl(fd, FE_READ_BER, &result->ber))
