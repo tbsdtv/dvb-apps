@@ -142,30 +142,38 @@ struct dvbfe_parameters {
 };
 
 /**
- * Mask of values used in the dvbfe_get_status() call.
+ * Mask of values used in the dvbfe_get_info() call.
  */
-typedef enum dvbfe_status_mask {
-	DVBFE_STATUS_FE                 = 0x01,
-	DVBFE_STATUS_BER                = 0x02,
-	DVBFE_STATUS_SIGNAL_STRENGTH    = 0x04,
-	DVBFE_STATUS_SNR                = 0x08,
-	DVBFE_STATUS_UNCORRECTED_BLOCKS = 0x10,
-} dvbfe_status_mask_t;
+typedef enum dvbfe_info_mask {
+	DVBFE_INFO_LOCKSTATUS			= 0x01,
+	DVBFE_INFO_FEPARAMS			= 0x02,
+	DVBFE_INFO_BER				= 0x04,
+	DVBFE_INFO_SIGNAL_STRENGTH		= 0x08,
+	DVBFE_INFO_SNR				= 0x10,
+	DVBFE_INFO_UNCORRECTED_BLOCKS		= 0x20,
+} dvbfe_info_mask_t;
 
 /**
- * Structure containing values used by the dvbfe_get_status() call.
+ * Structure containing values used by the dvbfe_get_info() call.
  */
-struct dvbfe_status {
-	unsigned int signal     : 1;
-	unsigned int carrier    : 1;
-	unsigned int viterbi    : 1;
-	unsigned int sync       : 1;
-	unsigned int lock       : 1;
-	uint32_t ber;
-	uint16_t signal_strength;
-	uint16_t snr;
-	uint32_t ucblocks;
+struct dvbfe_info {
+	dvbfe_type_t type;			/* always retrieved */
+	unsigned int signal     : 1;		/* } DVBFE_INFO_LOCKSTATUS */
+	unsigned int carrier    : 1;		/* } */
+	unsigned int viterbi    : 1;		/* } */
+	unsigned int sync       : 1;		/* } */
+	unsigned int lock       : 1;		/* } */
+	struct dvbfe_parameters feparams;	/* DVBFE_INFO_FEPARAMS */
+	uint32_t ber;				/* DVBFE_INFO_BER */
+	uint16_t signal_strength;		/* DVBFE_INFO_SIGNAL_STRENGTH */
+	uint16_t snr;				/* DVBFE_INFO_SNR */
+	uint32_t ucblocks;			/* DVBFE_INFO_UNCORRECTED_BLOCKS */
 };
+
+/**
+ * Frontend handle datatype.
+ */
+typedef void *dvbfe_handle_t;
 
 /**
  * Open a DVB frontend.
@@ -173,65 +181,64 @@ struct dvbfe_status {
  * @param adapter DVB adapter ID.
  * @param frontend Frontend ID of that adapter to open.
  * @param readonly If 1, frontend will be opened in readonly mode only.
- * @return A unix file descriptor on success, or -1 on failure.
+ * @return A handle on success, or NULL on failure.
  */
-extern int dvbfe_open(int adapter, int frontend, int readonly);
+extern dvbfe_handle_t dvbfe_open(int adapter, int frontend, int readonly);
 
 /**
- * Retrieve the type of frontend.
+ * Close a DVB frontend.
  *
- * @param fd FD opened with libdvbfe_open().
- * @return One of the DVBFE_TYPE_* values on success, or < 0 on failure
+ * @param fehandle Handle opened with dvbfe_open().
  */
-extern int dvbfe_get_type(int fd);
-
-/**
- * Retrieve status of frontend.
- *
- * @param fd FD opened with libdvbfe_open().
- * @param statusmask ORed bitmask of desired DVBFE_STATUS_* values.
- * @param result Where to put the retrieved results.
- * @return ORed bitmask of DVBFE_STATUS_* indicating which values were read successfully.
- */
-extern int dvbfe_get_status(int fd, int statusmask, struct dvbfe_status *result);
+extern void dvbfe_close(dvbfe_handle_t handle);
 
 /**
  * Set the frontend tuning parameters.
  *
- * @param fd FD opened with libdvbfe_open().
+ * @param fehandle Handle opened with dvbfe_open().
  * @param params Params to set.
  * @return 0 on success, nonzero on failure.
  */
-extern int dvbfe_set_frontend(int fd, struct dvbfe_parameters *params);
+extern int dvbfe_set(dvbfe_handle_t fehandle, struct dvbfe_parameters *params);
 
 /**
- * Read the current frontend tuning parameters from the hardware.
+ * Call this function regularly from a loop to maintain the frontend lock.
  *
- * @param fd FD opened with libdvbfe_open().
- * @param params Where to put the parameters.
- * @return 0 on success, nonzero on failure.
+ * @param fehandle Handle opened with dvbfe_open().
  */
-extern int dvbfe_get_frontend(int fd, struct dvbfe_parameters *params);
+extern void dvbfe_poll(dvbfe_handle_t fehandle);
+
+/**
+ * Retrieve information about the frontend.
+ *
+ * @param fehandle Handle opened with dvbfe_open().
+ * @param querymask ORed bitmask of desired DVBFE_INFO_* values.
+ * @param result Where to put the retrieved results.
+ * @return ORed bitmask of DVBFE_INFO_* indicating which values were read successfully.
+ */
+extern int dvbfe_get_info(dvbfe_handle_t fehandle, dvbfe_info_mask_t querymask, struct dvbfe_info *result);
+
+
 
 /**
  * Execute a DISEQC command string (format as specified in libdvbcfg diseqc.conf).
  *
- * @param fd FD opened with libdvbfe_open().
+ * @param fehandle Handle opened with dvbfe_open().
  * @param command Command to execute.
  * @return 0 on success, nonzero on failure.
  */
-extern int dvbfe_diseqc_command(int fd, char *command);
+extern int dvbfe_diseqc_command(dvbfe_handle_t fehandle, char *command);
 
 /**
  * Read a DISEQC response from the frontend.
  *
- * @param fd FD opened with libdvbfe_open().
+ * @param fehandle Handle opened with dvbfe_open().
  * @param timeout Timeout for DISEQC response.
  * @param buf Buffer to store response in.
  * @param len Number of bytes in buffer.
  * @return >= 0 on success (number of received bytes), <0 on failure.
  */
-extern int dvbfe_diseqc_read(int fd, int timeout, unsigned char *buf, unsigned int len);
+extern int dvbfe_diseqc_read(dvbfe_handle_t fehandle, int timeout, unsigned char *buf, unsigned int len);
 
 #ifdef __cplusplus
 }
