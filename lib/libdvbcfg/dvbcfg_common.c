@@ -28,46 +28,46 @@
 #include "dvbcfg_util.h"
 
 static const struct dvbcfg_setting bandwidth_list [] = {
-        { "BANDWIDTH_6_MHZ", DVBFE_BANDWIDTH_6_MHZ },
-	{ "BANDWIDTH_7_MHZ", DVBFE_BANDWIDTH_7_MHZ },
-	{ "BANDWIDTH_8_MHZ", DVBFE_BANDWIDTH_8_MHZ },
-	{ "BANDWIDTH_AUTO",  DVBFE_BANDWIDTH_AUTO },
+        { "BANDWIDTH_6_MHZ", DVBFE_DVBT_BANDWIDTH_6_MHZ },
+	{ "BANDWIDTH_7_MHZ", DVBFE_DVBT_BANDWIDTH_7_MHZ },
+	{ "BANDWIDTH_8_MHZ", DVBFE_DVBT_BANDWIDTH_8_MHZ },
+	{ "BANDWIDTH_AUTO",  DVBFE_DVBT_BANDWIDTH_AUTO },
         { NULL, -1 },
 };
 
 static const struct dvbcfg_setting guard_interval_list [] = {
-	{"GUARD_INTERVAL_1_16", DVBFE_GUARD_INTERVAL_1_16},
-	{"GUARD_INTERVAL_1_32", DVBFE_GUARD_INTERVAL_1_32},
-	{"GUARD_INTERVAL_1_4",  DVBFE_GUARD_INTERVAL_1_4},
-	{"GUARD_INTERVAL_1_8",  DVBFE_GUARD_INTERVAL_1_8},
-	{"GUARD_INTERVAL_AUTO", DVBFE_GUARD_INTERVAL_AUTO},
+	{"GUARD_INTERVAL_1_16", DVBFE_DVBT_GUARD_INTERVAL_1_16},
+	{"GUARD_INTERVAL_1_32", DVBFE_DVBT_GUARD_INTERVAL_1_32},
+	{"GUARD_INTERVAL_1_4",  DVBFE_DVBT_GUARD_INTERVAL_1_4},
+	{"GUARD_INTERVAL_1_8",  DVBFE_DVBT_GUARD_INTERVAL_1_8},
+	{"GUARD_INTERVAL_AUTO", DVBFE_DVBT_GUARD_INTERVAL_AUTO},
         { NULL, -1 },
 };
 
 static const struct dvbcfg_setting hierarchy_information_list [] = {
-	{ "HIERARCHY_NONE", DVBFE_HIERARCHY_NONE },
-	{ "HIERARCHY_1",    DVBFE_HIERARCHY_1 },
-	{ "HIERARCHY_2",    DVBFE_HIERARCHY_2 },
-	{ "HIERARCHY_4",    DVBFE_HIERARCHY_4 },
-	{ "HIERARCHY_AUTO", DVBFE_HIERARCHY_AUTO },
+	{ "HIERARCHY_NONE", DVBFE_DVBT_HIERARCHY_NONE },
+	{ "HIERARCHY_1",    DVBFE_DVBT_HIERARCHY_1 },
+	{ "HIERARCHY_2",    DVBFE_DVBT_HIERARCHY_2 },
+	{ "HIERARCHY_4",    DVBFE_DVBT_HIERARCHY_4 },
+	{ "HIERARCHY_AUTO", DVBFE_DVBT_HIERARCHY_AUTO },
         { NULL, -1 },
 };
 
 static const struct dvbcfg_setting constellation_list [] = {
-	{ "QPSK",     DVBFE_QPSK },
-	{ "QAM_16",   DVBFE_QAM_16 },
-	{ "QAM_32",   DVBFE_QAM_32 },
-	{ "QAM_64",   DVBFE_QAM_64 },
-	{ "QAM_128",  DVBFE_QAM_128 },
-	{ "QAM_256",  DVBFE_QAM_256 },
-	{ "QAM_AUTO", DVBFE_QAM_AUTO },
+	{ "QPSK",     DVBFE_DVBT_CONST_QPSK },
+	{ "QAM_16",   DVBFE_DVBT_CONST_QAM_16 },
+	{ "QAM_32",   DVBFE_DVBT_CONST_QAM_32 },
+	{ "QAM_64",   DVBFE_DVBT_CONST_QAM_64 },
+	{ "QAM_128",  DVBFE_DVBT_CONST_QAM_128 },
+	{ "QAM_256",  DVBFE_DVBT_CONST_QAM_256 },
+	{ "AUTO",     DVBFE_DVBT_CONST_AUTO },
         { NULL, -1 },
 };
 
 static const struct dvbcfg_setting transmission_mode_list [] = {
-	{ "TRANSMISSION_MODE_2K",   DVBFE_TRANSMISSION_MODE_2K },
-	{ "TRANSMISSION_MODE_8K",   DVBFE_TRANSMISSION_MODE_8K },
-	{ "TRANSMISSION_MODE_AUTO", DVBFE_TRANSMISSION_MODE_AUTO },
+	{ "TRANSMISSION_MODE_2K",   DVBFE_DVBT_TRANSMISSION_MODE_2K },
+	{ "TRANSMISSION_MODE_8K",   DVBFE_DVBT_TRANSMISSION_MODE_8K },
+	{ "TRANSMISSION_MODE_AUTO", DVBFE_DVBT_TRANSMISSION_MODE_AUTO },
         { NULL, -1 },
 };
 
@@ -93,21 +93,21 @@ static const struct dvbcfg_setting fec_list[] = {
 };
 
 static const struct dvbcfg_setting dvbc_modulation_list[] = {
-	{ "QAM_16",   DVBFE_QAM_16 },
-	{ "QAM_32",   DVBFE_QAM_32 },
-	{ "QAM_64",   DVBFE_QAM_64 },
-	{ "QAM_128",  DVBFE_QAM_128 },
-	{ "QAM_256",  DVBFE_QAM_256 },
-	{ "QAM_AUTO", DVBFE_QAM_AUTO },
+	{ "QAM_16",   DVBFE_DVBC_MOD_QAM_16 },
+	{ "QAM_32",   DVBFE_DVBC_MOD_QAM_32 },
+	{ "QAM_64",   DVBFE_DVBC_MOD_QAM_64 },
+	{ "QAM_128",  DVBFE_DVBC_MOD_QAM_128 },
+	{ "QAM_256",  DVBFE_DVBC_MOD_QAM_256 },
+	{ "AUTO",     DVBFE_DVBC_MOD_AUTO },
         { NULL, -1 },
 };
 
 static const struct dvbcfg_setting atsc_modulation_list[] = {
-	{ "VSB_8",    DVBFE_VSB_8 },
-	{ "VSB_16",   DVBFE_VSB_16 },
-	{ "QAM_64",   DVBFE_QAM_64 },
-	{ "QAM_256",  DVBFE_QAM_256 },
-	{ "QAM_AUTO", DVBFE_QAM_AUTO },
+	{ "VSB_8",    DVBFE_ATSC_MOD_VSB_8 },
+	{ "VSB_16",   DVBFE_ATSC_MOD_VSB_16 },
+	{ "QAM_64",   DVBFE_ATSC_MOD_QAM_64 },
+	{ "QAM_256",  DVBFE_ATSC_MOD_QAM_256 },
+	{ "AUTO",     DVBFE_ATSC_MOD_AUTO },
         { NULL, -1 },
 };
 

@@ -605,16 +605,16 @@ uint32_t dvbcfg_multiplex_calculate_differentiator(struct dvbcfg_multiplex* mult
 
 	case DVBFE_TYPE_DVBT:
                 switch(multiplex->delivery.u.dvb.u.dvbt.bandwidth) {
-                case DVBFE_BANDWIDTH_8_MHZ:
+                case DVBFE_DVBT_BANDWIDTH_8_MHZ:
                         tmp = 8000000;
                         break;
 
-                case DVBFE_BANDWIDTH_7_MHZ:
+                case DVBFE_DVBT_BANDWIDTH_7_MHZ:
                         tmp = 7000000;
                         break;
 
-                case DVBFE_BANDWIDTH_AUTO:
-                case DVBFE_BANDWIDTH_6_MHZ:
+                case DVBFE_DVBT_BANDWIDTH_AUTO:
+                case DVBFE_DVBT_BANDWIDTH_6_MHZ:
                         tmp = 6000000;
                         break;
                 }

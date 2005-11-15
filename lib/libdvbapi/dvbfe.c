@@ -34,6 +34,102 @@
 
 #define GET_INFO_MIN_DELAY_US 100000
 
+static int lookupval(int val, int reverse, int table[][2]);
+
+
+static int dvbfe_spectral_inversion_to_kapi[][2] =
+{
+	{ DVBFE_INVERSION_OFF, INVERSION_OFF },
+	{ DVBFE_INVERSION_ON, INVERSION_ON },
+	{ DVBFE_INVERSION_AUTO, INVERSION_AUTO },
+	{ -1, -1 }
+};
+
+static int dvbfe_code_rate_to_kapi[][2] =
+{
+	{ DVBFE_FEC_NONE, FEC_NONE },
+	{ DVBFE_FEC_1_2, FEC_1_2 },
+	{ DVBFE_FEC_2_3, FEC_2_3 },
+	{ DVBFE_FEC_3_4, FEC_3_4 },
+	{ DVBFE_FEC_4_5, FEC_4_5 },
+	{ DVBFE_FEC_5_6, FEC_5_6 },
+	{ DVBFE_FEC_6_7, FEC_6_7 },
+	{ DVBFE_FEC_7_8, FEC_7_8 },
+	{ DVBFE_FEC_8_9, FEC_8_9 },
+	{ DVBFE_FEC_AUTO, FEC_AUTO },
+	{ -1, -1 }
+};
+
+static int dvbfe_dvbt_const_to_kapi[][2] =
+{
+	{ DVBFE_DVBT_CONST_QPSK, FE_QPSK },
+	{ DVBFE_DVBT_CONST_QAM_16, QAM_16 },
+	{ DVBFE_DVBT_CONST_QAM_32, QAM_32 },
+	{ DVBFE_DVBT_CONST_QAM_64, QAM_64 },
+	{ DVBFE_DVBT_CONST_QAM_128, QAM_128 },
+	{ DVBFE_DVBT_CONST_QAM_256, QAM_256 },
+	{ DVBFE_DVBT_CONST_AUTO, QAM_AUTO },
+	{ -1, -1 }
+};
+
+static int dvbfe_dvbc_mod_to_kapi[][2] =
+{
+	{ DVBFE_DVBC_MOD_QAM_16, QAM_16 },
+	{ DVBFE_DVBC_MOD_QAM_32, QAM_32 },
+	{ DVBFE_DVBC_MOD_QAM_64, QAM_64 },
+	{ DVBFE_DVBC_MOD_QAM_128, QAM_128 },
+	{ DVBFE_DVBC_MOD_QAM_256, QAM_256 },
+	{ DVBFE_DVBC_MOD_AUTO, QAM_AUTO },
+	{ -1, -1 }
+};
+
+static int dvbfe_atsc_mod_to_kapi[][2] =
+{
+	{ DVBFE_ATSC_MOD_QAM_64, QAM_64 },
+	{ DVBFE_ATSC_MOD_QAM_256, QAM_256 },
+	{ DVBFE_ATSC_MOD_VSB_8, VSB_8 },
+	{ DVBFE_ATSC_MOD_VSB_16, VSB_16 },
+	{ DVBFE_ATSC_MOD_AUTO, QAM_AUTO },
+	{ -1, -1 }
+};
+
+static int dvbfe_dvbt_transmit_mode_to_kapi[][2] =
+{
+	{ DVBFE_DVBT_TRANSMISSION_MODE_2K, TRANSMISSION_MODE_2K },
+	{ DVBFE_DVBT_TRANSMISSION_MODE_8K, TRANSMISSION_MODE_8K },
+	{ DVBFE_DVBT_TRANSMISSION_MODE_AUTO, TRANSMISSION_MODE_AUTO },
+	{ -1, -1 }
+};
+
+static int dvbfe_dvbt_bandwidth_to_kapi[][2] =
+{
+	{ DVBFE_DVBT_BANDWIDTH_8_MHZ, BANDWIDTH_8_MHZ },
+	{ DVBFE_DVBT_BANDWIDTH_7_MHZ, BANDWIDTH_7_MHZ },
+	{ DVBFE_DVBT_BANDWIDTH_6_MHZ, BANDWIDTH_6_MHZ },
+	{ DVBFE_DVBT_BANDWIDTH_AUTO, BANDWIDTH_AUTO },
+	{ -1, -1 }
+};
+
+static int dvbfe_dvbt_guard_interval_to_kapi[][2] =
+{
+	{ DVBFE_DVBT_GUARD_INTERVAL_1_32, GUARD_INTERVAL_1_32},
+	{ DVBFE_DVBT_GUARD_INTERVAL_1_16, GUARD_INTERVAL_1_16},
+	{ DVBFE_DVBT_GUARD_INTERVAL_1_8, GUARD_INTERVAL_1_8},
+	{ DVBFE_DVBT_GUARD_INTERVAL_1_4, GUARD_INTERVAL_1_4},
+	{ DVBFE_DVBT_GUARD_INTERVAL_AUTO, GUARD_INTERVAL_AUTO},
+	{ -1, -1 }
+};
+
+static int dvbfe_dvbt_hierarchy_to_kapi[][2] =
+{
+	{ DVBFE_DVBT_HIERARCHY_NONE, HIERARCHY_NONE },
+	{ DVBFE_DVBT_HIERARCHY_1, HIERARCHY_1 },
+	{ DVBFE_DVBT_HIERARCHY_2, HIERARCHY_2 },
+	{ DVBFE_DVBT_HIERARCHY_4, HIERARCHY_4 },
+	{ DVBFE_DVBT_HIERARCHY_AUTO, HIERARCHY_AUTO },
+	{ -1, -1 }
+};
+
 struct dvbfe_handle_prv {
 	int fd;
 	dvbfe_type_t type;
@@ -141,31 +237,42 @@ int dvbfe_get_info(dvbfe_handle_t _fehandle, dvbfe_info_mask_t querymask, struct
 		if (!ioctl(fehandle->fd, FE_GET_FRONTEND, &kparams)) {
 			returnval |= DVBFE_INFO_FEPARAMS;
 			result->feparams.frequency = kparams.frequency;
-			result->feparams.inversion = kparams.inversion;
+			result->feparams.inversion = lookupval(kparams.inversion, 1, dvbfe_spectral_inversion_to_kapi);
 			switch(fehandle->type) {
 			case FE_QPSK:
 				result->feparams.u.dvbs.symbol_rate = kparams.u.qpsk.symbol_rate;
-				result->feparams.u.dvbs.fec_inner = kparams.u.qpsk.fec_inner;
+				result->feparams.u.dvbs.fec_inner =
+					lookupval(kparams.u.qpsk.fec_inner, 1, dvbfe_code_rate_to_kapi);
 				break;
 
 			case FE_QAM:
 				result->feparams.u.dvbc.symbol_rate = kparams.u.qam.symbol_rate;
-				result->feparams.u.dvbc.fec_inner = kparams.u.qam.fec_inner;
-				result->feparams.u.dvbc.modulation = kparams.u.qam.modulation;
+				result->feparams.u.dvbc.fec_inner =
+					lookupval(kparams.u.qam.fec_inner, 1, dvbfe_code_rate_to_kapi);
+				result->feparams.u.dvbc.modulation =
+					lookupval(kparams.u.qam.modulation, 1, dvbfe_dvbc_mod_to_kapi);
 				break;
 
 			case FE_OFDM:
-				result->feparams.u.dvbt.bandwidth = kparams.u.ofdm.bandwidth;
-				result->feparams.u.dvbt.code_rate_HP = kparams.u.ofdm.code_rate_HP;
-				result->feparams.u.dvbt.code_rate_LP= kparams.u.ofdm.code_rate_LP;
-				result->feparams.u.dvbt.constellation= kparams.u.ofdm.constellation;
-				result->feparams.u.dvbt.transmission_mode= kparams.u.ofdm.transmission_mode;
-				result->feparams.u.dvbt.guard_interval= kparams.u.ofdm.guard_interval;
-				result->feparams.u.dvbt.hierarchy_information= kparams.u.ofdm.hierarchy_information;
+				result->feparams.u.dvbt.bandwidth =
+					lookupval(kparams.u.ofdm.bandwidth, 1, dvbfe_dvbt_bandwidth_to_kapi);
+				result->feparams.u.dvbt.code_rate_HP =
+					lookupval(kparams.u.ofdm.code_rate_HP, 1, dvbfe_code_rate_to_kapi);
+				result->feparams.u.dvbt.code_rate_LP =
+					lookupval(kparams.u.ofdm.code_rate_LP, 1, dvbfe_code_rate_to_kapi);
+				result->feparams.u.dvbt.constellation =
+					lookupval(kparams.u.ofdm.constellation, 1, dvbfe_dvbt_const_to_kapi);
+				result->feparams.u.dvbt.transmission_mode =
+					lookupval(kparams.u.ofdm.transmission_mode, 1, dvbfe_dvbt_transmit_mode_to_kapi);
+				result->feparams.u.dvbt.guard_interval =
+					lookupval(kparams.u.ofdm.guard_interval, 1, dvbfe_dvbt_guard_interval_to_kapi);
+				result->feparams.u.dvbt.hierarchy_information =
+					lookupval(kparams.u.ofdm.hierarchy_information, 1, dvbfe_dvbt_hierarchy_to_kapi);
 				break;
 
 			case FE_ATSC:
-				result->feparams.u.atsc.modulation = kparams.u.vsb.modulation;
+				result->feparams.u.atsc.modulation =
+					lookupval(kparams.u.vsb.modulation, 1, dvbfe_atsc_mod_to_kapi);
 				break;
 			}
 		}
@@ -210,33 +317,35 @@ int dvbfe_set(dvbfe_handle_t _fehandle, struct dvbfe_parameters *params, int tim
 	struct timeval endtime;
 	fe_status_t status;
 
-	// FIXME: these should all be done with switches and not directly copied
 	kparams.frequency = params->frequency;
-	kparams.inversion = params->inversion;
+	kparams.inversion = lookupval(params->inversion, 0, dvbfe_spectral_inversion_to_kapi);
 	switch(fehandle->type) {
 	case FE_QPSK:
 		kparams.u.qpsk.symbol_rate = params->u.dvbs.symbol_rate;
-		kparams.u.qpsk.fec_inner = params->u.dvbs.fec_inner;
+		kparams.u.qpsk.fec_inner = lookupval(params->u.dvbs.fec_inner, 0, dvbfe_code_rate_to_kapi);
 		break;
 
 	case FE_QAM:
 		kparams.u.qam.symbol_rate = params->u.dvbc.symbol_rate;
-		kparams.u.qam.fec_inner = params->u.dvbc.fec_inner;
-		kparams.u.qam.modulation = params->u.dvbc.modulation;
+		kparams.u.qam.fec_inner = lookupval(params->u.dvbc.fec_inner, 0, dvbfe_code_rate_to_kapi);
+		kparams.u.qam.modulation = lookupval(params->u.dvbc.modulation, 0, dvbfe_dvbc_mod_to_kapi);
 		break;
 
 	case FE_OFDM:
-                kparams.u.ofdm.bandwidth = params->u.dvbt.bandwidth;
-                kparams.u.ofdm.code_rate_HP = params->u.dvbt.code_rate_HP;
-                kparams.u.ofdm.code_rate_LP= params->u.dvbt.code_rate_LP;
-                kparams.u.ofdm.constellation= params->u.dvbt.constellation;
-                kparams.u.ofdm.transmission_mode= params->u.dvbt.transmission_mode;
-                kparams.u.ofdm.guard_interval= params->u.dvbt.guard_interval;
-                kparams.u.ofdm.hierarchy_information= params->u.dvbt.hierarchy_information;
+		kparams.u.ofdm.bandwidth = lookupval(params->u.dvbt.bandwidth, 0, dvbfe_dvbt_bandwidth_to_kapi);
+		kparams.u.ofdm.code_rate_HP = lookupval(params->u.dvbt.code_rate_HP, 0, dvbfe_code_rate_to_kapi);
+		kparams.u.ofdm.code_rate_LP = lookupval(params->u.dvbt.code_rate_LP, 0, dvbfe_code_rate_to_kapi);
+		kparams.u.ofdm.constellation = lookupval(params->u.dvbt.constellation, 0, dvbfe_dvbt_const_to_kapi);
+		kparams.u.ofdm.transmission_mode =
+			lookupval(params->u.dvbt.transmission_mode, 0, dvbfe_dvbt_transmit_mode_to_kapi);
+		kparams.u.ofdm.guard_interval =
+			lookupval(params->u.dvbt.guard_interval, 0, dvbfe_dvbt_guard_interval_to_kapi);
+		kparams.u.ofdm.hierarchy_information =
+			lookupval(params->u.dvbt.hierarchy_information, 0, dvbfe_dvbt_hierarchy_to_kapi);
                 break;
 
 	case FE_ATSC:
-		kparams.u.vsb.modulation = params->u.atsc.modulation;
+		kparams.u.vsb.modulation = lookupval(params->u.atsc.modulation, 0, dvbfe_atsc_mod_to_kapi);
 		break;
 
 	default:
@@ -437,4 +546,24 @@ int dvbfe_diseqc_read(dvbfe_handle_t _fehandle, int timeout, unsigned char *buf,
 	memcpy(buf, reply.msg, len);
 
 	return len;
+}
+
+static int lookupval(int val, int reverse, int table[][2])
+{
+	int i =0;
+
+	while(table[i][0] != -1) {
+		if (!reverse) {
+			if (val == table[i][0]) {
+				return table[i][1];
+			}
+		} else {
+			if (val == table[i][1]) {
+				return table[i][0];
+			}
+		}
+		i++;
+	}
+
+	return -1;
 }

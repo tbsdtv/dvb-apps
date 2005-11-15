@@ -65,46 +65,61 @@ typedef enum dvbfe_code_rate {
 	DVBFE_FEC_AUTO
 } dvbfe_code_rate_t;
 
-typedef enum dvbfe_modulation {
-	DVBFE_QPSK,
-	DVBFE_QAM_16,
-	DVBFE_QAM_32,
-	DVBFE_QAM_64,
-	DVBFE_QAM_128,
-	DVBFE_QAM_256,
-	DVBFE_QAM_AUTO,
-	DVBFE_VSB_8,
-	DVBFE_VSB_16
-} dvbfe_modulation_t;
+typedef enum dvbfe_dvbt_const {
+	DVBFE_DVBT_CONST_QPSK,
+	DVBFE_DVBT_CONST_QAM_16,
+	DVBFE_DVBT_CONST_QAM_32,
+	DVBFE_DVBT_CONST_QAM_64,
+	DVBFE_DVBT_CONST_QAM_128,
+	DVBFE_DVBT_CONST_QAM_256,
+	DVBFE_DVBT_CONST_AUTO
+} dvbfe_dvbt_const_t;
 
-typedef enum dvbfe_transmit_mode {
-	DVBFE_TRANSMISSION_MODE_2K,
-	DVBFE_TRANSMISSION_MODE_8K,
-	DVBFE_TRANSMISSION_MODE_AUTO
-} dvbfe_transmit_mode_t;
+typedef enum dvbfe_dvbc_mod {
+	DVBFE_DVBC_MOD_QAM_16,
+	DVBFE_DVBC_MOD_QAM_32,
+	DVBFE_DVBC_MOD_QAM_64,
+	DVBFE_DVBC_MOD_QAM_128,
+	DVBFE_DVBC_MOD_QAM_256,
+	DVBFE_DVBC_MOD_AUTO,
+} dvbfe_dvbc_mod_t;
 
-typedef enum dvbfe_bandwidth {
-	DVBFE_BANDWIDTH_8_MHZ,
-	DVBFE_BANDWIDTH_7_MHZ,
-	DVBFE_BANDWIDTH_6_MHZ,
-	DVBFE_BANDWIDTH_AUTO
-} dvbfe_bandwidth_t;
+typedef enum dvbfe_atsc_mod {
+	DVBFE_ATSC_MOD_QAM_64,
+	DVBFE_ATSC_MOD_QAM_256,
+	DVBFE_ATSC_MOD_VSB_8,
+	DVBFE_ATSC_MOD_VSB_16,
+	DVBFE_ATSC_MOD_AUTO
+} dvbfe_atsc_mod_t;
 
-typedef enum dvbfe_guard_interval {
-	DVBFE_GUARD_INTERVAL_1_32,
-	DVBFE_GUARD_INTERVAL_1_16,
-	DVBFE_GUARD_INTERVAL_1_8,
-	DVBFE_GUARD_INTERVAL_1_4,
-	DVBFE_GUARD_INTERVAL_AUTO
-} dvbfe_guard_interval_t;
+typedef enum dvbfe_dvbt_transmit_mode {
+	DVBFE_DVBT_TRANSMISSION_MODE_2K,
+	DVBFE_DVBT_TRANSMISSION_MODE_8K,
+	DVBFE_DVBT_TRANSMISSION_MODE_AUTO
+} dvbfe_dvbt_transmit_mode_t;
 
-typedef enum dvbfe_hierarchy {
-	DVBFE_HIERARCHY_NONE,
-	DVBFE_HIERARCHY_1,
-	DVBFE_HIERARCHY_2,
-	DVBFE_HIERARCHY_4,
-	DVBFE_HIERARCHY_AUTO
-} dvbfe_hierarchy_t;
+typedef enum dvbfe_dvbt_bandwidth {
+	DVBFE_DVBT_BANDWIDTH_8_MHZ,
+	DVBFE_DVBT_BANDWIDTH_7_MHZ,
+	DVBFE_DVBT_BANDWIDTH_6_MHZ,
+	DVBFE_DVBT_BANDWIDTH_AUTO
+} dvbfe_dvbt_bandwidth_t;
+
+typedef enum dvbfe_dvbt_guard_interval {
+	DVBFE_DVBT_GUARD_INTERVAL_1_32,
+	DVBFE_DVBT_GUARD_INTERVAL_1_16,
+	DVBFE_DVBT_GUARD_INTERVAL_1_8,
+	DVBFE_DVBT_GUARD_INTERVAL_1_4,
+	DVBFE_DVBT_GUARD_INTERVAL_AUTO
+} dvbfe_dvbt_guard_interval_t;
+
+typedef enum dvbfe_dvbt_hierarchy {
+	DVBFE_DVBT_HIERARCHY_NONE,
+	DVBFE_DVBT_HIERARCHY_1,
+	DVBFE_DVBT_HIERARCHY_2,
+	DVBFE_DVBT_HIERARCHY_4,
+	DVBFE_DVBT_HIERARCHY_AUTO
+} dvbfe_dvbt_hierarchy_t;
 
 /**
  * Structure used to store and communicate frontend parameters.
@@ -122,21 +137,21 @@ struct dvbfe_parameters {
 		struct {
 			uint32_t			symbol_rate;
 			dvbfe_code_rate_t		fec_inner;
-			dvbfe_modulation_t		modulation;
+			dvbfe_dvbc_mod_t		modulation;
 		} dvbc;
 
 		struct {
-			dvbfe_bandwidth_t		bandwidth;
+			dvbfe_dvbt_bandwidth_t		bandwidth;
 			dvbfe_code_rate_t		code_rate_HP;
 			dvbfe_code_rate_t		code_rate_LP;
-			dvbfe_modulation_t		constellation;
-			dvbfe_transmit_mode_t		transmission_mode;
-			dvbfe_guard_interval_t		guard_interval;
-			dvbfe_hierarchy_t		hierarchy_information;
+			dvbfe_dvbt_const_t		constellation;
+			dvbfe_dvbt_transmit_mode_t	transmission_mode;
+			dvbfe_dvbt_guard_interval_t	guard_interval;
+			dvbfe_dvbt_hierarchy_t		hierarchy_information;
 		} dvbt;
 
 		struct {
-			dvbfe_modulation_t		modulation;
+			dvbfe_atsc_mod_t		modulation;
 		} atsc;
 	} u;
 };

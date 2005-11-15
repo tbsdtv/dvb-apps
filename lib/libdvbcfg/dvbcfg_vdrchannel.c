@@ -122,19 +122,19 @@ int dvbcfg_vdrchannel_load(const char *config_file,
 
                 case 'T':
                         tmpchannel.fe_type = DVBFE_TYPE_DVBT;
-                        tmpchannel.fe_params.u.dvbt.bandwidth = DVBFE_BANDWIDTH_AUTO;
+			tmpchannel.fe_params.u.dvbt.bandwidth = DVBFE_DVBT_BANDWIDTH_AUTO;
 			tmpchannel.fe_params.u.dvbt.code_rate_HP = DVBFE_FEC_AUTO;
 			tmpchannel.fe_params.u.dvbt.code_rate_LP = DVBFE_FEC_AUTO;
-			tmpchannel.fe_params.u.dvbt.constellation = DVBFE_QAM_AUTO;
-			tmpchannel.fe_params.u.dvbt.transmission_mode = DVBFE_TRANSMISSION_MODE_AUTO;
-			tmpchannel.fe_params.u.dvbt.guard_interval = DVBFE_GUARD_INTERVAL_AUTO;
-			tmpchannel.fe_params.u.dvbt.hierarchy_information = DVBFE_HIERARCHY_AUTO;
+			tmpchannel.fe_params.u.dvbt.constellation = DVBFE_DVBT_CONST_AUTO;
+			tmpchannel.fe_params.u.dvbt.transmission_mode = DVBFE_DVBT_TRANSMISSION_MODE_AUTO;
+			tmpchannel.fe_params.u.dvbt.guard_interval = DVBFE_DVBT_GUARD_INTERVAL_AUTO;
+			tmpchannel.fe_params.u.dvbt.hierarchy_information = DVBFE_DVBT_HIERARCHY_AUTO;
                         break;
 
                 case 'C':
 			tmpchannel.fe_type = DVBFE_TYPE_DVBC;
 			tmpchannel.fe_params.u.dvbc.fec_inner = DVBFE_FEC_AUTO;
-			tmpchannel.fe_params.u.dvbc.modulation = DVBFE_QAM_AUTO;
+			tmpchannel.fe_params.u.dvbc.modulation = DVBFE_DVBC_MOD_AUTO;
                         break;
                 }
 
@@ -484,13 +484,13 @@ static int parse_fe_setting(char *string, char **nextptr,
 
                 switch (val) {
                 case 6:
-                        return DVBFE_BANDWIDTH_6_MHZ;
+                        return DVBFE_DVBT_BANDWIDTH_6_MHZ;
                 case 7:
-			return DVBFE_BANDWIDTH_7_MHZ;
+			return DVBFE_DVBT_BANDWIDTH_7_MHZ;
                 case 8:
-			return DVBFE_BANDWIDTH_8_MHZ;
+			return DVBFE_DVBT_BANDWIDTH_8_MHZ;
                 case 999:
-			return DVBFE_BANDWIDTH_AUTO;
+			return DVBFE_DVBT_BANDWIDTH_AUTO;
                 default:
                         return -1;
                 }
@@ -531,15 +531,15 @@ static int parse_fe_setting(char *string, char **nextptr,
 
                 switch (val) {
                 case 4:
-			return DVBFE_GUARD_INTERVAL_1_4;
+			return DVBFE_DVBT_GUARD_INTERVAL_1_4;
                 case 8:
-			return DVBFE_GUARD_INTERVAL_1_8;
+			return DVBFE_DVBT_GUARD_INTERVAL_1_8;
                 case 16:
-			return DVBFE_GUARD_INTERVAL_1_16;
+			return DVBFE_DVBT_GUARD_INTERVAL_1_16;
                 case 32:
-			return DVBFE_GUARD_INTERVAL_1_32;
+			return DVBFE_DVBT_GUARD_INTERVAL_1_32;
                 case 999:
-			return DVBFE_GUARD_INTERVAL_AUTO;
+			return DVBFE_DVBT_GUARD_INTERVAL_AUTO;
                 default:
                         return -1;
                 }
@@ -561,35 +561,54 @@ static int parse_fe_setting(char *string, char **nextptr,
 
         case 'M':
                 PARSEINT(val, string + 1, nextptr);
-                switch (val) {
-                case 0:
-			return DVBFE_QPSK;
-                case 16:
-			return DVBFE_QAM_16;
-                case 32:
-			return DVBFE_QAM_32;
-                case 64:
-			return DVBFE_QAM_64;
-                case 128:
-			return DVBFE_QAM_128;
-                case 256:
-			return DVBFE_QAM_256;
-                case 999:
-			return DVBFE_QAM_AUTO;
-                default:
-                        return -1;
-                }
-                break;
+		if (fe_type == DVBFE_TYPE_DVBC) {
+			switch (val) {
+			case 16:
+				return DVBFE_DVBC_MOD_QAM_16;
+			case 32:
+				return DVBFE_DVBC_MOD_QAM_32;
+			case 64:
+				return DVBFE_DVBC_MOD_QAM_64;
+			case 128:
+				return DVBFE_DVBC_MOD_QAM_128;
+			case 256:
+				return DVBFE_DVBC_MOD_QAM_256;
+			case 999:
+				return DVBFE_DVBC_MOD_AUTO;
+			default:
+				return -1;
+			}
+		} else if (fe_type == DVBFE_TYPE_DVBT) {
+			switch (val) {
+			case 0:
+				return DVBFE_DVBT_CONST_QPSK;
+			case 16:
+				return DVBFE_DVBT_CONST_QAM_16;
+			case 32:
+				return DVBFE_DVBT_CONST_QAM_32;
+			case 64:
+				return DVBFE_DVBT_CONST_QAM_64;
+			case 128:
+				return DVBFE_DVBT_CONST_QAM_128;
+			case 256:
+				return DVBFE_DVBT_CONST_QAM_256;
+			case 999:
+				return DVBFE_DVBT_CONST_AUTO;
+			default:
+				return -1;
+			}
+		}
+		break;
 
-        case 'T':
+	case 'T':
                 PARSEINT(val, string + 1, nextptr);
                 switch (val) {
                 case 2:
-			return DVBFE_TRANSMISSION_MODE_2K;
+			return DVBFE_DVBT_TRANSMISSION_MODE_2K;
                 case 8:
-			return DVBFE_TRANSMISSION_MODE_8K;
+			return DVBFE_DVBT_TRANSMISSION_MODE_8K;
                 case 999:
-			return DVBFE_TRANSMISSION_MODE_AUTO;
+			return DVBFE_DVBT_TRANSMISSION_MODE_AUTO;
                 default:
                         return -1;
                 }
@@ -599,15 +618,15 @@ static int parse_fe_setting(char *string, char **nextptr,
                 PARSEINT(val, string + 1, nextptr);
                 switch (val) {
                 case 0:
-			return DVBFE_HIERARCHY_NONE;
+			return DVBFE_DVBT_HIERARCHY_NONE;
                 case 1:
-			return DVBFE_HIERARCHY_1;
+			return DVBFE_DVBT_HIERARCHY_1;
                 case 2:
-			return DVBFE_HIERARCHY_2;
+			return DVBFE_DVBT_HIERARCHY_2;
                 case 4:
-			return DVBFE_HIERARCHY_4;
+			return DVBFE_DVBT_HIERARCHY_4;
                 case 999:
-			return DVBFE_HIERARCHY_AUTO;
+			return DVBFE_DVBT_HIERARCHY_AUTO;
                 default:
                         return -1;
                 }
