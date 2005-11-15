@@ -72,15 +72,19 @@ dvbfe_handle_t dvbfe_open(int adapter, int frontend, int readonly)
 	switch(info.type) {
 	case FE_QPSK:
 		fehandle->type = DVBFE_TYPE_DVBS;
+		break;
 
 	case FE_QAM:
 		fehandle->type = DVBFE_TYPE_DVBC;
+		break;
 
 	case FE_OFDM:
 		fehandle->type = DVBFE_TYPE_DVBT;
+		break;
 
 	case FE_ATSC:
 		fehandle->type = DVBFE_TYPE_ATSC;
+		break;
 	}
 
 	// done
