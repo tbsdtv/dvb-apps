@@ -125,25 +125,30 @@ static int get_diseqc(struct dvbcfg_diseqc_backend* backend,
                 if ((numtokens < 4) || (numtokens > 5))
                        continue;
 
-                /* the source id */
-                if (dvbcfg_source_id_from_string(linepos, &source_id))
-                        return -ENOMEM;
+		/* check for wildcard */
+		if (strcmp(linepos, "*")) {
+			source = NULL;
+		} else {
+			/* the source id */
+			if (dvbcfg_source_id_from_string(linepos, &source_id))
+				return -ENOMEM;
 
-                /* try to find the source */
-                source = dvbcfg_source_find2(*(fbackend->sources), &source_id);
-                if (source == NULL) {
-                        if (!fbackend->create_sources) {
-                                dvbcfg_source_id_free(&source_id);
-                                continue;
-                        }
+			/* try to find the source */
+			source = dvbcfg_source_find2(*(fbackend->sources), &source_id);
+			if (source == NULL) {
+				if (!fbackend->create_sources) {
+					dvbcfg_source_id_free(&source_id);
+					continue;
+				}
 
-                        source = dvbcfg_source_new2(fbackend->sources, &source_id, "???");
-                        dvbcfg_source_id_free(&source_id);
-                        if (source == NULL)
-                                return -ENOMEM;
-                } else {
-                        dvbcfg_source_id_free(&source_id);
-                }
+				source = dvbcfg_source_new2(fbackend->sources, &source_id, "???");
+				dvbcfg_source_id_free(&source_id);
+				if (source == NULL)
+					return -ENOMEM;
+			} else {
+				dvbcfg_source_id_free(&source_id);
+			}
+		}
 
                 /* find/create the diseqc */
                 curdiseqc = dvbcfg_diseqc_find(*diseqcs, source);
@@ -214,9 +219,13 @@ static int put_diseqc(struct dvbcfg_diseqc_backend* backend,
                         return -errno;
         }
 
-        source_id = dvbcfg_source_id_to_string(&diseqc->source->source_id);
-        if (source_id == NULL)
-                return -ENOMEM;
+	if (diseqc->source == NULL) {
+		source_id = "*";
+	} else {
+		source_id = dvbcfg_source_id_to_string(&diseqc->source->source_id);
+		if (source_id == NULL)
+			return -ENOMEM;
+	}
 
         entry = diseqc->entries;
         while (entry) {

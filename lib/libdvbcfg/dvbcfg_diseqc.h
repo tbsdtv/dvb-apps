@@ -58,7 +58,7 @@ struct dvbcfg_diseqc_entry {
  * In-memory representation of diseqc information for a single source_id.
  */
 struct dvbcfg_diseqc {
-        struct dvbcfg_source* source;
+	struct dvbcfg_source* source; /* NULL => wildcard */
 
         struct dvbcfg_diseqc_entry *entries;
 
