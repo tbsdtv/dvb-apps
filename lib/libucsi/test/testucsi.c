@@ -28,6 +28,8 @@
 #include <dvbapi/dvbdemux.h>
 #include <dvbapi/dvbfe.h>
 #include <dvbcfg/dvbcfg_seed_backend_file.h>
+#include <dvbcfg/dvbcfg_diseqc_backend_file.h>
+#include <dvbcfg/dvbcfg_source.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <errno.h>
@@ -42,30 +44,40 @@ void hexdump(int indent, char *prefix, uint8_t *buf, int buflen);
 #define TIME_CHECK_VAL 1131835761
 #define DURATION_CHECK_VAL 5643
 
+#define MAX_TUNE_TIME 3000
+#define MAX_DUMP_TIME 60
+
+
 int main(int argc, char *argv[])
 {
 	int demuxfd;
 	int dvrfd;
 	int adapter;
-	int i;
 	char *seedfile;
+	char *diseqcfile;
 	int pidlimit = -1;
 	dvbdate_t dvbdate;
 	dvbduration_t dvbduration;
 	struct dvbcfg_seed_backend *seedbackend;
-	struct dvbcfg_seed seeds;
+	struct dvbcfg_seed *seeds = NULL;
+	struct dvbcfg_diseqc_backend *diseqcbackend;
+	struct dvbcfg_diseqc *diseqcs = NULL;
+	struct dvbcfg_source *sources = NULL;
 	dvbfe_handle_t fe;
 	struct dvbfe_info feinfo;
+	struct dvbcfg_diseqc *diseqc;
+	struct dvbcfg_diseqc_entry *dentry;
 
 	// process arguments
-	if ((argc < 3) || (argc > 4)) {
-		fprintf(stderr, "Syntax: testucsi <adapter id> <seed file> [<pid to limit to>]\n");
+	if ((argc < 4) || (argc > 5)) {
+		fprintf(stderr, "Syntax: testucsi <adapter id> <seed file> <diseqc file> [<pid to limit to>]\n");
 		exit(1);
 	}
 	adapter = atoi(argv[1]);
 	seedfile = argv[2];
-	if (argc == 4)
-		sscanf(argv[3], "%i", &pidlimit);
+	diseqcfile = argv[3];
+	if (argc == 5)
+		sscanf(argv[4], "%i", &pidlimit);
 	printf("Using adapter %i\n", adapter);
 
 	// check the dvbdate conversion functions
@@ -93,8 +105,7 @@ int main(int argc, char *argv[])
 	}
 
 	// try and open the seed file
-	dvbcfg_seed_init(&seeds);
-	if (dvbcfg_seed_backend_file_create("/", seedfile, 1, feinfo.type, &seedbackend)) {
+	if (dvbcfg_seed_backend_file_create("/", seedfile, 1, &sources, 1, &seedbackend)) {
 		fprintf(stderr, "XXXX Failed to create seed backend\n");
 		exit(1);
 	}
@@ -103,12 +114,22 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
+	// try and open the disqec file
+	if (dvbcfg_diseqc_backend_file_create(diseqcfile, &sources, 1, &diseqcbackend)) {
+		fprintf(stderr, "XXXX Failed to create diseqc backend\n");
+		exit(1);
+	}
+	if (dvbcfg_diseqc_load(diseqcbackend, &diseqcs)) {
+		fprintf(stderr, "XXXX Failed to load disecqs from supplied file\n");
+		exit(1);
+	}
+
 	// open demux devices
-	if ((demuxfd = dvbdemux_open_demux(adapter, 0)) < 0) {
+	if ((demuxfd = dvbdemux_open_demux(adapter, 0, 0)) < 0) {
 		perror("demux");
 		exit(1);
 	}
-	if ((dvrfd = dvbdemux_open_dvr(adapter, 0, 1)) < 0) {
+	if ((dvrfd = dvbdemux_open_dvr(adapter, 0, 1, 1)) < 0) {
 		perror("dvr");
 		exit(1);
 	}
@@ -126,9 +147,34 @@ int main(int argc, char *argv[])
 	}
 
 	// process all seeds
-	for(i=0; i< seeds.deliveries_count; i++) {
-		dvbfe_set(fe, &seeds.deliveries[i].u.dvb);
-		receive_data(dvrfd, 60);
+	while(seeds) {
+		struct dvbfe_parameters delivery;
+		delivery = seeds->delivery.u.dvb;
+		if (feinfo.type == DVBFE_TYPE_DVBS) {
+			// find the diseqc
+			if ((diseqc = dvbcfg_diseqc_find(diseqcs, seeds->source)) != NULL) {
+				if ((dentry = dvbcfg_diseqc_find_entry(diseqc,
+						seeds->delivery.u.dvb.frequency,
+						seeds->delivery.u.dvb.u.dvbs.polarization)) != NULL) {
+					printf("Diseqc: %s\n", dentry->command);
+					dvbfe_diseqc_command(fe, dentry->command);
+				}
+			}
+		}
+
+		printf("Tuning to: %i(%i) %i %i\n",
+		       seeds->delivery.u.dvb.frequency,
+		       delivery.frequency,
+		       delivery.u.dvbs.symbol_rate,
+		       delivery.u.dvbs.fec_inner);
+		if (dvbfe_set(fe, &delivery, MAX_TUNE_TIME)) {
+			fprintf(stderr, "Failed to lock!\n");
+		} else {
+			printf("Tuned successfully!\n");
+			receive_data(dvrfd, MAX_DUMP_TIME);
+		}
+
+		seeds = seeds->next;
 	}
 
 	return 0;
@@ -153,9 +199,13 @@ void receive_data(int dvrfd, int timeout)
 	memset(continuities, 0, sizeof(continuities));
 	memset(section_bufs, 0, sizeof(section_bufs));
 	while((time(NULL) - starttime) < timeout) {
+		// got some!
 		if ((sz = read(dvrfd, databuf, sizeof(databuf))) < 0) {
 			if (errno == EOVERFLOW) {
 				fprintf(stderr, "data overflow!\n");
+				continue;
+			} else if (errno == EAGAIN) {
+				usleep(100);
 				continue;
 			} else {
 				perror("read error");
