@@ -161,6 +161,7 @@ int main(int argc, char *argv[])
 						seeds->delivery.u.dvb.frequency,
 						seeds->delivery.u.dvb.u.dvbs.polarization)) != NULL) {
 					printf("Diseqc: %s\n", dentry->command);
+					delivery.frequency -= dentry->lof;
 					dvbfe_diseqc_command(fe, dentry->command);
 				}
 			}
