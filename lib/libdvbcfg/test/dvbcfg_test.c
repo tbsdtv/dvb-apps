@@ -143,11 +143,11 @@ int main(int argc, char *argv[])
                 struct dvbcfg_seed *seeds = NULL;
                 struct dvbcfg_source *sources = NULL;
 
-                dvbcfg_seed_backend_file_create(".", argv[2], 1, &sources, 1, &seed_backend);
+                dvbcfg_seed_backend_file_create(argv[2], 1, &sources, 1, &seed_backend);
                 dvbcfg_seed_load(seed_backend, &seeds);
                 dvbcfg_seed_backend_file_destroy(seed_backend);
 
-		dvbcfg_seed_backend_file_create(".", argv[3], 1, &sources, 1, &seed_backend);
+		dvbcfg_seed_backend_file_create(argv[3], 1, &sources, 1, &seed_backend);
                 dvbcfg_seed_save(seed_backend, seeds);
                 dvbcfg_seed_backend_file_destroy(seed_backend);
 

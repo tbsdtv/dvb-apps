@@ -27,7 +27,7 @@
 #include "dvbcfg_source.h"
 #include "dvbcfg_util.h"
 
-#define DVBCFG_DEFAULT_SEED_DIRECTORY (DVBCFG_DEFAULT_DIR "/seed/")
+#define DVBCFG_DEFAULT_SEED_FILENAME (DVBCFG_DEFAULT_DIR "/seeds.conf")
 
 struct dvbcfg_seed_backend_file {
         struct dvbcfg_seed_backend api;
@@ -45,15 +45,13 @@ static int get_seed(struct dvbcfg_seed_backend* backend,
 static int put_seed(struct dvbcfg_seed_backend* backend,
                     struct dvbcfg_seed* seed);
 
-int dvbcfg_seed_backend_file_create(const char* basename,
-                                    const char* filename,
+int dvbcfg_seed_backend_file_create(const char* filename,
                                     int long_delivery,
 				    struct dvbcfg_source** sources,
 				    int create_sources,
                                     struct dvbcfg_seed_backend** backend)
 {
         struct dvbcfg_seed_backend_file* fbackend;
-        char tmp[512];
 
         fbackend = malloc(sizeof(struct dvbcfg_seed_backend_file));
         if (fbackend == NULL)
@@ -63,17 +61,15 @@ int dvbcfg_seed_backend_file_create(const char* basename,
         fbackend->api.get = get_seed;
         fbackend->api.put = put_seed;
 
-        if (basename == NULL)
-                basename = DVBCFG_DEFAULT_SEED_DIRECTORY;
-
-        if (snprintf(tmp, sizeof(tmp), "%s/%s", basename, filename) >= sizeof(tmp))
-                return -ENOMEM;
-
-        fbackend->filename = strdup(tmp);
-        if (fbackend->filename == NULL) {
-                free(fbackend);
-                return -ENOMEM;
-        }
+	if (filename) {
+		fbackend->filename = strdup(filename);
+	} else {
+		fbackend->filename = strdup(DVBCFG_DEFAULT_SEED_FILENAME);
+	}
+	if (fbackend->filename == NULL) {
+		free(fbackend);
+		return -ENOMEM;
+	}
         fbackend->long_delivery = long_delivery;
 	fbackend->sources = sources;
 	fbackend->create_sources = create_sources;
