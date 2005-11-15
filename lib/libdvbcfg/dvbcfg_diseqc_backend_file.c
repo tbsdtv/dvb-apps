@@ -158,7 +158,7 @@ static int get_diseqc(struct dvbcfg_diseqc_backend* backend,
                 /* the SLOF */
                 if (sscanf(linepos, "%d", &val) != 1)
                         continue;
-                slof = val * 1000;  // want it in kHz
+		slof = val;
                 linepos = dvbcfg_nexttoken(linepos);
 
                 /* the polarization */
@@ -177,7 +177,7 @@ static int get_diseqc(struct dvbcfg_diseqc_backend* backend,
                 /* LOF */
                 if (sscanf(linepos, "%d", &val) != 1)
                         continue;
-                lof = val * 1000;   // want it in kHz
+		lof = val;
                 linepos = dvbcfg_nexttoken(linepos);
 
                 /* command */
@@ -239,8 +239,8 @@ static int put_diseqc(struct dvbcfg_diseqc_backend* backend,
                 }
 
                 fprintf(fbackend->outhandle, "%s %d %c %d %s\n",
-                        source_id, entry->slof / 1000,
-                        polarization, entry->lof / 1000,
+                        source_id, entry->slof,
+                        polarization, entry->lof,
                         entry->command);
 
                 entry = entry->next;
