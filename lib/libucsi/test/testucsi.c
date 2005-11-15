@@ -65,6 +65,7 @@ int main(int argc, char *argv[])
 	struct dvbcfg_source *sources = NULL;
 	dvbfe_handle_t fe;
 	struct dvbfe_info feinfo;
+	struct dvbcfg_diseqc *diseqc_wildcard;
 	struct dvbcfg_diseqc *diseqc;
 	struct dvbcfg_diseqc_entry *dentry;
 
@@ -147,11 +148,15 @@ int main(int argc, char *argv[])
 	}
 
 	// process all seeds
+	diseqc_wildcard = dvbcfg_diseqc_find(diseqcs, NULL);
 	while(seeds) {
 		struct dvbfe_parameters delivery;
 		delivery = seeds->delivery.u.dvb;
 		if (feinfo.type == DVBFE_TYPE_DVBS) {
-			if ((diseqc = dvbcfg_diseqc_find(diseqcs, seeds->source)) != NULL) {
+			if ((diseqc = dvbcfg_diseqc_find(diseqcs, seeds->source)) == NULL) {
+				diseqc = diseqc_wildcard;
+			}
+			if (diseqc != NULL) {
 				if ((dentry = dvbcfg_diseqc_find_entry(diseqc,
 						seeds->delivery.u.dvb.frequency,
 						seeds->delivery.u.dvb.u.dvbs.polarization)) != NULL) {
