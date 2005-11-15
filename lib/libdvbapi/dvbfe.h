@@ -221,10 +221,36 @@ extern void dvbfe_poll(dvbfe_handle_t fehandle);
  */
 extern int dvbfe_get_info(dvbfe_handle_t fehandle, dvbfe_info_mask_t querymask, struct dvbfe_info *result);
 
-
-
 /**
- * Execute a DISEQC command string (format as specified in libdvbcfg diseqc.conf).
+ * Execute a DISEQC command string.
+ *
+ * A diseqc command consists of a sequence of the following codes, separated by
+ * whitespace:
+ * Simple commands:
+ * t         - turn 22kHz tone off.
+ * T         - turn 22kHz tone on.
+ * _         - set voltage to 0v (i.e. off).
+ * v         - set voltage to 13v.
+ * V         - set voltage to 18v.
+ * +         - Enable high LNB voltage.
+ * -         - Disable high LNB voltage.
+ * A         - send DISEQC mini command A.
+ * B         - send DISEQC mini command B.
+ * Wii       - Delay for ii milliseconds.
+ *
+ * Extended commands:
+ * .dishnetworks(XX) - Send a dish networks legacy command 0xXX
+ * .diseqc(XX ...)   - Send a raw diseqc master command. The command may be up
+ * to 6 bytes long, each byte must be in hex-ascii.
+ *
+ * Comments begin with '#' - any characters after this will be ignored
+ * to the end of the line.
+ *
+ * Examples:
+ * S-19.2E  11700 V  9750  t v W15 .diseqc(E0 10 38 F0) W15 A W15 t
+ * S-19.2E  99999 V 10600  t v W15 .diseqc(E0 10 38 F1) W15 A W15 T
+ * S-19.2E  11700 H  9750  t V W15 .diseqc(E0 10 38 F2) W15 A W15 t
+ * S-19.2E  99999 H 10600  t V W15 .diseqc(E0 10 38 F3) W15 A W15 T
  *
  * @param fehandle Handle opened with dvbfe_open().
  * @param command Command to execute.

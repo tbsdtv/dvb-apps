@@ -45,31 +45,8 @@ extern "C"
  * <polarization> Is the polarization for this entry - one of 'H','V','L', or 'R'.
  * <lof> The frequency (in MHz) to subtract from the channel frequency if
  * this entry matches.
- * <diseqc command> The diseqc command to execute if this entry matches.
- *
- * A diseqc command consists of a sequence of the following codes, separated by
- * whitespace:
- * t        - turn 22kHz tone off.
- * T        - turn 22kHz tone on.
- * _        - set voltage to 0v (i.e. off).
- * v        - set voltage to 13v.
- * V        - set voltage to 18v.
- * +        - Enable high LNB voltage.
- * -        - Disable high LNB voltage.
- * A        - send DISEQC mini command A.
- * B        - send DISEQC mini command B.
- * Wii      - Delay for ii milliseconds.
- * [XX ...] - Send a diseqc master command. The command may be up to 6 bytes
- * long, each byte must be in hex-ascii.
- *
- * Comments begin with '#' - any characters after this will be ignored
- * to the end of the line.
- *
- * Examples:
- * S-19.2E  11700 V  9750  t v W15 [E0 10 38 F0] W15 A W15 t
- * S-19.2E  99999 V 10600  t v W15 [E0 10 38 F1] W15 A W15 T
- * S-19.2E  11700 H  9750  t V W15 [E0 10 38 F2] W15 A W15 t
- * S-19.2E  99999 H 10600  t V W15 [E0 10 38 F3] W15 A W15 T
+ * <diseqc command> The diseqc command to execute if this entry matches. The
+ * syntax is described in dvbapi/dvbfe.h
  */
 
 
