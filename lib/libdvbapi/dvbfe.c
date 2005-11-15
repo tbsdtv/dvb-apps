@@ -369,24 +369,39 @@ int dvbfe_diseqc_command(dvbfe_handle_t _fehandle, char *command)
 				i++;
 			break;
 
-		case '[':
-			master_cmd.msg_len = sscanf(command+i+1, "%x %x %x %x %x %x",
-					tmpcmd, tmpcmd+1, tmpcmd+2, tmpcmd+3, tmpcmd+4, tmpcmd+5);
-			if (master_cmd.msg_len == 0)
-				return -EINVAL;
-			master_cmd.msg[0] = tmpcmd[0];
-			master_cmd.msg[1] = tmpcmd[1];
-			master_cmd.msg[2] = tmpcmd[2];
-			master_cmd.msg[3] = tmpcmd[3];
-			master_cmd.msg[4] = tmpcmd[4];
-			master_cmd.msg[5] = tmpcmd[5];
+		case '.': // extended command
+		{
+			if (strncmp(command+i+1, "diseqc(", 7)) {
+				master_cmd.msg_len =
+					sscanf(command+i+8, "%x %x %x %x %x %x",
+					       tmpcmd, tmpcmd+1, tmpcmd+2, tmpcmd+3, tmpcmd+4, tmpcmd+5);
+				if (master_cmd.msg_len == 0)
+					return -EINVAL;
+				master_cmd.msg[0] = tmpcmd[0];
+				master_cmd.msg[1] = tmpcmd[1];
+				master_cmd.msg[2] = tmpcmd[2];
+				master_cmd.msg[3] = tmpcmd[3];
+				master_cmd.msg[4] = tmpcmd[4];
+				master_cmd.msg[5] = tmpcmd[5];
 
-			if ((status = ioctl(fehandle->fd, FE_DISEQC_SEND_MASTER_CMD, &master_cmd)) != 0)
-				return status;
+				if ((status = ioctl(fehandle->fd, FE_DISEQC_SEND_MASTER_CMD, &master_cmd)) != 0)
+					return status;
 
-			while(command[i] && (command[i] != ']'))
+			} else if (strncmp(command+i+1, "dishnetworks(", 13)) {
+				master_cmd.msg_len = sscanf(command+i+14, "%x", tmpcmd);
+				if (master_cmd.msg_len == 0)
+					return -EINVAL;
+
+				if ((status = ioctl(fehandle->fd, FE_DISHNETWORK_SEND_LEGACY_CMD, &tmpcmd)) != 0)
+					return status;
+			}
+
+			/* skip to the end... */
+			while(command[i] && (command[i] != ')'))
 				i++;
 			break;
+		}
+
 
 		default:
 			return -EINVAL;
