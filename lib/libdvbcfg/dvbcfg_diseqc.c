@@ -139,19 +139,15 @@ void dvbcfg_diseqc_remove_entry(struct dvbcfg_diseqc* diseqc,
 struct dvbcfg_diseqc *dvbcfg_diseqc_find(struct dvbcfg_diseqc *diseqcs,
                                          struct dvbcfg_source* source)
 {
-	struct dvbcfg_diseqc *wildcard = NULL;
-
         while (diseqcs) {
 		if (source == diseqcs->source) {
                         return diseqcs;
-		} else if ((diseqcs->source == NULL) && (wildcard == NULL)) {
-			wildcard = diseqcs;
 		}
 
                 diseqcs = diseqcs->next;
         }
 
-        return wildcard;
+        return NULL;
 }
 
 struct dvbcfg_diseqc_entry *dvbcfg_diseqc_find_entry(struct dvbcfg_diseqc* diseqc,

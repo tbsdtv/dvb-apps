@@ -126,7 +126,7 @@ static int get_diseqc(struct dvbcfg_diseqc_backend* backend,
                        continue;
 
 		/* check for wildcard */
-		if (strcmp(linepos, "*")) {
+		if (!strcmp(linepos, "*")) {
 			source = NULL;
 		} else {
 			/* the source id */
@@ -255,7 +255,9 @@ static int put_diseqc(struct dvbcfg_diseqc_backend* backend,
                 entry = entry->next;
         }
 
-        free(source_id);
+	if (diseqc->source != NULL) {
+	        free(source_id);
+	}
 
         return 0;
 }
