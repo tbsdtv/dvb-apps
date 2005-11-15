@@ -36,19 +36,20 @@ struct dvbcfg_seed_backend_file {
         FILE* inhandle;
         FILE* outhandle;
         int long_delivery;
-
-	dvbfe_type_t source_type;
+	struct dvbcfg_source** sources;
+	int create_sources;
 };
 
-static int get_delivery(struct dvbcfg_seed_backend* backend,
-                        struct dvbcfg_seed* seed);
-static int put_delivery(struct dvbcfg_seed_backend* backend,
-                        struct dvbcfg_delivery* delivery);
+static int get_seed(struct dvbcfg_seed_backend* backend,
+                    struct dvbcfg_seed** seeds);
+static int put_seed(struct dvbcfg_seed_backend* backend,
+                    struct dvbcfg_seed* seed);
 
 int dvbcfg_seed_backend_file_create(const char* basename,
                                     const char* filename,
                                     int long_delivery,
-				    dvbfe_type_t source_type,
+				    struct dvbcfg_source** sources,
+				    int create_sources,
                                     struct dvbcfg_seed_backend** backend)
 {
         struct dvbcfg_seed_backend_file* fbackend;
@@ -59,8 +60,8 @@ int dvbcfg_seed_backend_file_create(const char* basename,
                 return -ENOMEM;
 
         memset(fbackend, 0, sizeof(struct dvbcfg_seed_backend_file));
-        fbackend->api.get = get_delivery;
-        fbackend->api.put = put_delivery;
+        fbackend->api.get = get_seed;
+        fbackend->api.put = put_seed;
 
         if (basename == NULL)
                 basename = DVBCFG_DEFAULT_SEED_DIRECTORY;
@@ -74,7 +75,8 @@ int dvbcfg_seed_backend_file_create(const char* basename,
                 return -ENOMEM;
         }
         fbackend->long_delivery = long_delivery;
-        fbackend->source_type = source_type;
+	fbackend->sources = sources;
+	fbackend->create_sources = create_sources;
 
         *backend = (struct dvbcfg_seed_backend*) fbackend;
         return 0;
@@ -94,13 +96,16 @@ void dvbcfg_seed_backend_file_destroy(struct dvbcfg_seed_backend* backend)
         free(backend);
 }
 
-static int get_delivery(struct dvbcfg_seed_backend* backend,
-                        struct dvbcfg_seed* seed)
+static int get_seed(struct dvbcfg_seed_backend* backend,
+                    struct dvbcfg_seed** seeds)
 {
         struct dvbcfg_seed_backend_file* fbackend =
                 (struct dvbcfg_seed_backend_file*) backend;
         char curline[256];
         char *linepos;
+	struct dvbcfg_source_id source_id;
+	int numtokens;
+	struct dvbcfg_source *source;
         struct dvbcfg_delivery delivery;
 
         /* open the file if necessary */
@@ -118,12 +123,38 @@ static int get_delivery(struct dvbcfg_seed_backend* backend,
                 if (dvbcfg_cleanline(linepos) == 0)
                         continue;
 
+		/* tokenise the line */
+		numtokens = dvbcfg_tokenise(linepos, " \t", 1, 1);
+		if (numtokens != 2)
+			continue;
+
+		/* the source id */
+		if (dvbcfg_source_id_from_string(linepos, &source_id))
+			return -ENOMEM;
+
+		/* try to find the source */
+		source = dvbcfg_source_find2(*(fbackend->sources), &source_id);
+		if (source == NULL) {
+			if (!fbackend->create_sources) {
+				dvbcfg_source_id_free(&source_id);
+				continue;
+			}
+
+			source = dvbcfg_source_new2(fbackend->sources, &source_id, "???");
+			dvbcfg_source_id_free(&source_id);
+			if (source == NULL)
+				return -ENOMEM;
+		} else {
+			dvbcfg_source_id_free(&source_id);
+		}
+
                 /* parse the delivery */
-                if (dvbcfg_delivery_from_string(linepos, fbackend->source_type, &delivery))
+		linepos = dvbcfg_nexttoken(linepos);
+                if (dvbcfg_delivery_from_string(linepos, source->source_id.source_type, &delivery))
                         continue;
 
                 /* add it in! */
-                dvbcfg_seed_add_delivery(seed, delivery);
+                dvbcfg_seed_new(seeds, source, delivery);
 
                 /* delivery read successfully! */
                 return 0;
@@ -133,12 +164,13 @@ static int get_delivery(struct dvbcfg_seed_backend* backend,
         return 1;
 }
 
-static int put_delivery(struct dvbcfg_seed_backend* backend,
-                        struct dvbcfg_delivery* delivery)
+static int put_seed(struct dvbcfg_seed_backend* backend,
+                    struct dvbcfg_seed* seed)
 {
         char tmp[512];
         struct dvbcfg_seed_backend_file* fbackend =
                 (struct dvbcfg_seed_backend_file*) backend;
+	char *source_id;
 
         /* open the file if necessary */
         if (fbackend->outhandle == NULL) {
@@ -147,12 +179,14 @@ static int put_delivery(struct dvbcfg_seed_backend* backend,
                         return -errno;
         }
 
-        if (dvbcfg_delivery_to_string(fbackend->source_type,
+        if (dvbcfg_delivery_to_string(seed->source->source_id.source_type,
                                       fbackend->long_delivery,
-                                      delivery, tmp, sizeof(tmp)))
+                                      &seed->delivery, tmp, sizeof(tmp)))
                 return -ENOMEM;
+	source_id = dvbcfg_source_id_to_string(&seed->source->source_id);
 
-        fprintf(fbackend->outhandle, "%s\n", tmp);
+	fprintf(fbackend->outhandle, "%s %s\n", source_id, tmp);
 
+	free(source_id);
         return 0;
 }

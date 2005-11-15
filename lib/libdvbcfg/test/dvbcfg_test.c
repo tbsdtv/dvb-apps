@@ -140,19 +140,18 @@ int main(int argc, char *argv[])
                 dvbcfg_source_free_all(sources);
 
         } else if (!strcmp(argv[1], "-seed")) {
-                struct dvbcfg_seed seed;
+                struct dvbcfg_seed *seeds = NULL;
+                struct dvbcfg_source *sources = NULL;
 
-                dvbcfg_seed_init(&seed);
-
-                dvbcfg_seed_backend_file_create(".", argv[2], 1, DVBFE_TYPE_DVBS, &seed_backend);
-                dvbcfg_seed_load(seed_backend, &seed);
+                dvbcfg_seed_backend_file_create(".", argv[2], 1, &sources, 1, &seed_backend);
+                dvbcfg_seed_load(seed_backend, &seeds);
                 dvbcfg_seed_backend_file_destroy(seed_backend);
 
-		dvbcfg_seed_backend_file_create(".", argv[3], 1, DVBFE_TYPE_DVBS, &seed_backend);
-                dvbcfg_seed_save(seed_backend, &seed);
+		dvbcfg_seed_backend_file_create(".", argv[3], 1, &sources, 1, &seed_backend);
+                dvbcfg_seed_save(seed_backend, seeds);
                 dvbcfg_seed_backend_file_destroy(seed_backend);
 
-                dvbcfg_seed_clear(&seed);
+                dvbcfg_seed_free_all(seeds);
 
         } else {
                 syntax();

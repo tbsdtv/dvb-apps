@@ -31,19 +31,17 @@ extern "C"
 /**
  * The file backend consists of multiple lines as follows:
  *
- * <delivery>
+ * <source_id> <delivery>
  *
+ * <source_id> Should correspond to an entry in the dvbcfg_sources file.
  * <delivery> is an externalised delivery structure as described in
  * dvbcfg_common.h.
- *
- * The name of the seed file should correspond to the source_id it is a seed
- * for (e.g. S-5E.conf).
  *
  * Comments begin with '#' - any characters after this will be ignored
  * to the end of the line.
  *
  * Examples:
- * 12345 0 H 27500000 9
+ * S-28.8E 12345 0 H 27500000 9
  */
 
 /**
@@ -55,14 +53,17 @@ extern "C"
  * @param filename Pathname to the seeds file relative to basedir.
  * @param long_delivery If 1, the long format for delivery lines will be used
  * (human readable strings). If 0, the short format will be used (integers only).
- * @param source_type source_type of the deliveries in this seed file.
+ * @param sources Pointer to list of pre-loaded source instances.
+ * @param create_sources If 1, any missing sources will automatically be added
+ * to the supplied sources list. If 0, the missing source will be ignored.
  * @param backend Will be updated to point to the backend API instance.
  * @return 0 on success, nonzero on error.
  */
 int dvbcfg_seed_backend_file_create(const char* basedir,
                                     const char* filename,
                                     int long_delivery,
-                                    dvbfe_type_t source_type,
+				    struct dvbcfg_source** sources,
+				    int create_sources,
                                     struct dvbcfg_seed_backend** backend);
 
 /**

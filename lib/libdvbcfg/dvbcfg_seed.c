@@ -28,10 +28,10 @@
 
 
 int dvbcfg_seed_load(struct dvbcfg_seed_backend *backend,
-                     struct dvbcfg_seed *seed)
+                     struct dvbcfg_seed **seeds)
 {
         int status;
-        while(!(status = backend->get(backend, seed)));
+        while(!(status = backend->get(backend, seeds)));
 
         if (status < 0)
                 return status;
@@ -40,68 +40,70 @@ int dvbcfg_seed_load(struct dvbcfg_seed_backend *backend,
 }
 
 int dvbcfg_seed_save(struct dvbcfg_seed_backend *backend,
-                     struct dvbcfg_seed *seed)
+                     struct dvbcfg_seed *seeds)
 {
         int status;
-        int i;
 
-        for (i=0; i< seed->deliveries_count; i++) {
-                if ((status = backend->put(backend, &seed->deliveries[i])) != 0)
-                        return status;
-        }
+	while(seeds) {
+		if ((status = backend->put(backend, seeds)) != 0)
+			return status;
 
-        return 0;
-}
-
-int dvbcfg_seed_add_delivery(struct dvbcfg_seed* seed, struct dvbcfg_delivery delivery)
-{
-        struct dvbcfg_delivery* tmp = seed->deliveries;
-
-        if (seed->deliveries == NULL) {
-                seed->deliveries = (struct dvbcfg_delivery*) malloc(sizeof(struct dvbcfg_delivery));
-                if (seed->deliveries == NULL)
-                        return -ENOMEM;
-                memcpy(seed->deliveries, &delivery, sizeof(struct dvbcfg_delivery));
-                seed->deliveries_count = 1;
-        } else {
-                seed->deliveries = (struct dvbcfg_delivery*)
-                    realloc(seed->deliveries, sizeof(struct dvbcfg_delivery) * (seed->deliveries_count+1));
-                if (seed->deliveries == NULL) {
-                        seed->deliveries = tmp;
-                        return -ENOMEM;
-                }
-                memcpy(&seed->deliveries[seed->deliveries_count++], &delivery, sizeof(struct dvbcfg_delivery));
-        }
+		seeds = seeds->next;
+	}
 
         return 0;
 }
 
-int dvbcfg_seed_remove_delivery(struct dvbcfg_seed* seed, int idx)
+struct dvbcfg_seed *dvbcfg_seed_new(struct dvbcfg_seed **seeds, struct dvbcfg_source *source, struct dvbcfg_delivery delivery)
 {
-        struct dvbcfg_delivery* tmp;
+	struct dvbcfg_seed* newseed;
+	struct dvbcfg_seed* curseed;
 
-        if (seed->deliveries == NULL)
-                return -EINVAL;
+	/* create new structure */
+	newseed = (struct dvbcfg_seed*) malloc(sizeof(struct dvbcfg_seed));
+	if (newseed == NULL)
+		return NULL;
+	memset(newseed, 0, sizeof(struct dvbcfg_seed));
+	newseed->source = source;
+	newseed->delivery = delivery;
 
-        tmp = (struct dvbcfg_delivery*) malloc(sizeof(struct dvbcfg_delivery) * (seed->deliveries_count-1));
-        if (tmp == NULL)
-                return -ENOMEM;
-        memcpy(tmp, seed->deliveries, sizeof(struct dvbcfg_delivery) * idx);
-        memcpy(tmp + (sizeof(struct dvbcfg_delivery) * idx),
-               seed->deliveries + (sizeof(struct dvbcfg_delivery) * (idx + 1)),
-               sizeof(struct dvbcfg_delivery) * (seed->deliveries_count - idx - 1));
+	/* add it to the list */
+	if (*seeds == NULL)
+		*seeds = newseed;
+	else {
+		curseed = *seeds;
+		while(curseed->next)
+			curseed = curseed->next;
+		curseed->next = newseed;
+	}
 
-        free(seed->deliveries);
-        seed->deliveries = tmp;
-        seed->deliveries_count--;
-
-        return 0;
+	return newseed;
 }
 
-void dvbcfg_seed_clear(struct dvbcfg_seed *tofree)
+void dvbcfg_seed_free(struct dvbcfg_seed **seeds, struct dvbcfg_seed *tofree)
 {
-        /* free internal structures */
-        if (tofree->deliveries)
-                free(tofree->deliveries);
-        memset(tofree, 0, sizeof(struct dvbcfg_seed));
+	struct dvbcfg_seed *next;
+	struct dvbcfg_seed *cur;
+
+	next = tofree->next;
+
+	/* free internal structures */
+	free(tofree);
+
+	/* adjust pointers */
+	if (*seeds == tofree)
+		*seeds = next;
+	else {
+		cur = *seeds;
+		while((cur->next != tofree) && (cur->next))
+			cur = cur->next;
+		if (cur->next == tofree)
+			cur->next = next;
+	}
+}
+
+void dvbcfg_seed_free_all(struct dvbcfg_seed *seeds)
+{
+	while(seeds)
+		dvbcfg_seed_free(&seeds, seeds);
 }
