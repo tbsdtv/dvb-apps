@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
 	}
 
 	// try and open the seed file
-	if (dvbcfg_seed_backend_file_create("/", seedfile, 1, &sources, 1, &seedbackend)) {
+	if (dvbcfg_seed_backend_file_create(seedfile, 1, &sources, 1, &seedbackend)) {
 		fprintf(stderr, "XXXX Failed to create seed backend\n");
 		exit(1);
 	}
