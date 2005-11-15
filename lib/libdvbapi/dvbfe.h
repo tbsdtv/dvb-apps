@@ -247,10 +247,10 @@ extern int dvbfe_get_info(dvbfe_handle_t fehandle, dvbfe_info_mask_t querymask, 
  * to the end of the line.
  *
  * Examples:
- * S-19.2E  11700 V  9750  t v W15 .diseqc(E0 10 38 F0) W15 A W15 t
- * S-19.2E  99999 V 10600  t v W15 .diseqc(E0 10 38 F1) W15 A W15 T
- * S-19.2E  11700 H  9750  t V W15 .diseqc(E0 10 38 F2) W15 A W15 t
- * S-19.2E  99999 H 10600  t V W15 .diseqc(E0 10 38 F3) W15 A W15 T
+ * S-19.2E  11700000 V  9750000  t v W15 .diseqc(E0 10 38 F0) W15 A W15 t
+ * S-19.2E  99999999 V 10600000  t v W15 .diseqc(E0 10 38 F1) W15 A W15 T
+ * S-19.2E  11700000 H  9750000  t V W15 .diseqc(E0 10 38 F2) W15 A W15 t
+ * S-19.2E  99999999 H 10600000  t V W15 .diseqc(E0 10 38 F3) W15 A W15 T
  *
  * @param fehandle Handle opened with dvbfe_open().
  * @param command Command to execute.
