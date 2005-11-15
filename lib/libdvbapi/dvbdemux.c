@@ -31,25 +31,33 @@
 #include "dvbdemux.h"
 
 
-int dvbdemux_open_demux(int adapter, int demuxdevice)
+int dvbdemux_open_demux(int adapter, int demuxdevice, int nonblocking)
 {
 	char filename[PATH_MAX+1];
+	int extraflags = 0;
+
+	if (nonblocking)
+		extraflags |= O_NONBLOCK;
 
 	sprintf(filename, "/dev/dvb/adapter%i/demux%i", adapter, demuxdevice);
 
-	return open(filename, O_RDWR);
+	return open(filename, O_RDWR | extraflags);
 }
 
-int dvbdemux_open_dvr(int adapter, int dvrdevice, int readonly)
+int dvbdemux_open_dvr(int adapter, int dvrdevice, int readonly, int nonblocking)
 {
 	char filename[PATH_MAX+1];
+	int extraflags = 0;
+
+	if (nonblocking)
+		extraflags |= O_NONBLOCK;
 
 	sprintf(filename, "/dev/dvb/adapter%i/dvr%i", adapter, dvrdevice);
 
 	if (readonly) {
-		return open(filename, O_RDONLY);
+		return open(filename, O_RDONLY | extraflags);
 	} else {
-		return open(filename, O_RDWR);
+		return open(filename, O_RDWR | extraflags);
 	}
 }
 

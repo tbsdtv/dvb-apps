@@ -72,9 +72,10 @@ extern "C"
  *
  * @param adapter Index of the DVB adapter.
  * @param demuxdevice Index of the demux device on that adapter (usually 0).
+ * @param nonblocking If 1, frontend will be opened in nonblocking mode.
  * @return A unix file descriptor on success, or -1 on failure.
  */
-extern int dvbdemux_open_demux(int adapter, int demuxdevice);
+extern int dvbdemux_open_demux(int adapter, int demuxdevice, int nonblocking);
 
 /**
  * Open a DVR device. May be opened for writing once, or multiple times in readonly
@@ -88,9 +89,10 @@ extern int dvbdemux_open_demux(int adapter, int demuxdevice);
  * @param adapter Index of the DVB adapter.
  * @param dvrdevice Index of the dvr device on that adapter (usually 0)
  * @param readonly If 1, frontend will be opened in readonly mode only.
+ * @param nonblocking If 1, frontend will be opened in nonblocking mode.
  * @return A unix file descriptor on success, or -1 on failure.
  */
-extern int dvbdemux_open_dvr(int adapter, int dvrdevice, int readonly);
+extern int dvbdemux_open_dvr(int adapter, int dvrdevice, int readonly, int nonblocking);
 
 /**
  * Set filter for capturing decoded SI table sections. This allows filtering on up
