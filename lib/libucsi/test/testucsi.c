@@ -151,7 +151,6 @@ int main(int argc, char *argv[])
 		struct dvbfe_parameters delivery;
 		delivery = seeds->delivery.u.dvb;
 		if (feinfo.type == DVBFE_TYPE_DVBS) {
-			// find the diseqc
 			if ((diseqc = dvbcfg_diseqc_find(diseqcs, seeds->source)) != NULL) {
 				if ((dentry = dvbcfg_diseqc_find_entry(diseqc,
 						seeds->delivery.u.dvb.frequency,
