@@ -24,7 +24,7 @@
 
 int verbose = 1;
 
-int set_tone_data_burst(int fd, fe_sec_tone_mode_t tone)
+int set_22k_tone(int fd, fe_sec_tone_mode_t tone)
 {
 	int ret = 0;
 
@@ -48,7 +48,7 @@ int set_tone_data_burst(int fd, fe_sec_tone_mode_t tone)
 		return ret;
 }
 
-int set_22k_tone(int fd, fe_sec_mini_cmd_t minicmd)
+int set_tone_data_burst(int fd, fe_sec_mini_cmd_t minicmd)
 {
 	int ret = 0;
 

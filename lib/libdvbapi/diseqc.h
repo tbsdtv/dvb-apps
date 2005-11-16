@@ -150,14 +150,14 @@ struct cmd_types msgtbl[] = {
  *	@param fd, FD opened with libdvbfe_open().
  *	@param tone, SEC_TONE_ON/SEC_TONE_OFF
  */
-extern int set_tone_data_burst(int fd, fe_sec_tone_mode_t tone);
+extern int set_22k_tone(int fd, fe_sec_tone_mode_t tone);
 
 /*
  *	22khz Tone control
  *	@param fd, FD opened with libdvbfe_open().
  *	@param adapter, minicmd, SEC_MINI_A/SEC_MINI_B
  */
-extern int set_22k_tone(int fd, fe_sec_mini_cmd_t minicmd);
+extern int set_tone_data_burst(int fd, fe_sec_mini_cmd_t minicmd);
 
 /*
  *	H/V polarization control
