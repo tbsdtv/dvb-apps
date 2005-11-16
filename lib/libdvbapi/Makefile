@@ -3,7 +3,7 @@ OBJS =  dvbdemux.o	\
 	dvbnet.o	\
 	diseqc.o
 
-INCLUDES = dvbdemux.h dvbfe.h dvbnet.h
+INCLUDES = dvbdemux.h dvbfe.h dvbnet.h diseqc.h
 
 CFLAGS ?= -fPIC -O2 -g -Wall -Wstrict-prototypes -Wshadow -Wpointer-arith
 CPPFLAGS = -I. -I../../include
