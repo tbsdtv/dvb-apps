@@ -26,15 +26,15 @@ int verbose = 1;
 
 int set_tone_data_burst(int fd, fe_sec_tone_mode_t tone)
 {
-	int ret;
+	int ret = 0;
 
 	if (fd > 0) {
 		switch (tone) {
 			case SEC_TONE_OFF:
-				ret = ioctl (fd, FE_SET_TONE, SEC_TONE_OFF);
+				ret = ioctl(fd, FE_SET_TONE, SEC_TONE_OFF);
 				break;
 			case SEC_TONE_ON:
-				ret = ioctl (fd, FE_SET_TONE, SEC_TONE_OFF);
+				ret = ioctl(fd, FE_SET_TONE, SEC_TONE_OFF);
 				break;
 			default:
 				print(verbose, ERROR, 1, "Invalid command !");
@@ -50,7 +50,7 @@ int set_tone_data_burst(int fd, fe_sec_tone_mode_t tone)
 
 int set_22k_tone(int fd, fe_sec_mini_cmd_t minicmd)
 {
-	int ret;
+	int ret = 0;
 
 	if (fd > 0) {
 		switch (minicmd) {
@@ -74,7 +74,7 @@ int set_22k_tone(int fd, fe_sec_mini_cmd_t minicmd)
 
 int set_polarization(int fd, fe_sec_voltage_t polarization)
 {
-	int ret;
+	int ret = 0;
 
 	if (fd > 0) {
 		switch (polarization) {
@@ -98,14 +98,14 @@ int set_polarization(int fd, fe_sec_voltage_t polarization)
 
 int do_diseqc_cmd(int fd, uint8_t cmd, uint8_t  address, uint8_t *data)
 {
-	int ret, i;
+	int ret = 0;
 	uint8_t length;
 	struct diseqc_cmd diseqc_message;
 
 	memcpy(&diseqc_message.message[0], &msgtbl->command[1], 6);
+	length = msgtbl->command[0];
 	diseqc_message.length = length;
 
-	length = msgtbl->command[0];
 	/*	Set Address	*/
 	diseqc_message.message[2] = address;
 	switch (length) {

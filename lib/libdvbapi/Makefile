@@ -6,7 +6,7 @@ OBJS =  dvbdemux.o	\
 INCLUDES = dvbdemux.h dvbfe.h dvbnet.h diseqc.h
 
 CFLAGS ?= -fPIC -O2 -g -Wall -Wstrict-prototypes -Wshadow -Wpointer-arith
-CPPFLAGS = -I. -I../../include
+CPPFLAGS = -I. -I../../include -I../libdvbmisc
 LDFLAGS = -shared -lc
 
 STATICLIB = libdvbapi.a
