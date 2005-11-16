@@ -1,7 +1,7 @@
-
-OBJS =  dvbdemux.o \
-        dvbfe.o \
-	dvbnet.o
+OBJS =  dvbdemux.o	\
+	dvbfe.o		\
+	dvbnet.o	\
+	diseqc.o
 
 INCLUDES = dvbdemux.h dvbfe.h dvbnet.h
 
@@ -20,7 +20,7 @@ all: symlink $(STATICLIB) $(SHAREDLIB)
 symlink:
 	@rm -f dvbapi
 	@ln -s . dvbapi
-		
+
 $(STATICLIB): $(OBJS)
 	$(AR) rc $(STATICLIB) $(OBJS)
 	$(RANLIB) $(STATICLIB)
