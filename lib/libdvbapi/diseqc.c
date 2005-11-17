@@ -19,22 +19,26 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <sys/ioctl.h>
+#include <fcntl.h>
+#include <linux/dvb/frontend.h>
 #include "diseqc.h"
 #include "dvbmisc.h"
 
+
 int verbose = 1;
 
-int set_22k_tone(int fd, fe_sec_tone_mode_t tone)
+int set_22k_tone(int fd, dvbfe_sec_tone_mode_t tone)
 {
 	int ret = 0;
 
 	if (fd > 0) {
 		switch (tone) {
-			case SEC_TONE_OFF:
-				ret = ioctl(fd, FE_SET_TONE, SEC_TONE_OFF);
+			case DVBFE_SEC_TONE_OFF:
+				ret = ioctl(fd, FE_SET_TONE, DVBFE_SEC_TONE_OFF);
 				break;
-			case SEC_TONE_ON:
-				ret = ioctl(fd, FE_SET_TONE, SEC_TONE_OFF);
+			case DVBFE_SEC_TONE_ON:
+				ret = ioctl(fd, FE_SET_TONE, DVBFE_SEC_TONE_ON);
 				break;
 			default:
 				print(verbose, ERROR, 1, "Invalid command !");
@@ -45,20 +49,20 @@ int set_22k_tone(int fd, fe_sec_tone_mode_t tone)
 	} else
 		print(verbose, ERROR, 1, "Device open error !");
 
-		return ret;
+	return ret;
 }
 
-int set_tone_data_burst(int fd, fe_sec_mini_cmd_t minicmd)
+int set_tone_data_burst(int fd, dvbfe_sec_mini_cmd_t minicmd)
 {
 	int ret = 0;
 
 	if (fd > 0) {
 		switch (minicmd) {
-			case SEC_MINI_A:
-				ret = ioctl(fd, FE_DISEQC_SEND_BURST, SEC_MINI_A);
+			case DVBFE_SEC_MINI_A:
+				ret = ioctl(fd, FE_DISEQC_SEND_BURST, DVBFE_SEC_MINI_A);
 				break;
-			case SEC_MINI_B:
-				ret = ioctl(fd, FE_DISEQC_SEND_BURST, SEC_MINI_B);
+			case DVBFE_SEC_MINI_B:
+				ret = ioctl(fd, FE_DISEQC_SEND_BURST, DVBFE_SEC_MINI_B);
 				break;
 			default:
 				print(verbose, ERROR, 1, "Invalid command");
@@ -72,17 +76,17 @@ int set_tone_data_burst(int fd, fe_sec_mini_cmd_t minicmd)
 	return ret;
 }
 
-int set_polarization(int fd, fe_sec_voltage_t polarization)
+int set_polarization(int fd, dvbfe_sec_voltage_t polarization)
 {
 	int ret = 0;
 
 	if (fd > 0) {
 		switch (polarization) {
-			case SEC_VOLTAGE_13:
-				ret = ioctl(fd, FE_SET_VOLTAGE, SEC_VOLTAGE_13);
+			case DVBFE_SEC_VOLTAGE_13:
+				ret = ioctl(fd, FE_SET_VOLTAGE, DVBFE_SEC_VOLTAGE_13);
 				break;
-			case SEC_VOLTAGE_18:
-				ret = ioctl(fd, FE_SET_VOLTAGE, SEC_VOLTAGE_18);
+			case DVBFE_SEC_VOLTAGE_18:
+				ret = ioctl(fd, FE_SET_VOLTAGE, DVBFE_SEC_VOLTAGE_18);
 				break;
 			default:
 				print(verbose, ERROR, 1, "Invalid command");
@@ -126,7 +130,7 @@ int do_diseqc_cmd(int fd, uint8_t cmd, uint8_t  address, uint8_t *data)
 	}
 
 	if (fd > 0) {
-		ret = ioctl(fd, diseqc_message);
+		ret = ioctl(fd, cmd, &diseqc_message);
 		if (ret == -1)
 			print(verbose, ERROR, 1, "IOCTL failed");
 

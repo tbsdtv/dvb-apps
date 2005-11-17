@@ -70,15 +70,6 @@
 #define DISEQC12_STEP_MOTOR_UP		28  //???????
 #define DISEQC12_STEP_MOTOR_DOWN	29
 
-
-/*
- *		Linux DVB API v3 IOCTL's
- */
-
-#define FE_SET_TONE		   _IO('o', 66)  /* fe_sec_tone_mode_t */
-#define FE_SET_VOLTAGE		   _IO('o', 67)  /* fe_sec_voltage_t */
-#define FE_DISEQC_SEND_BURST       _IO('o', 65)  /* fe_sec_mini_cmd_t */
-
 struct diseqc_cmd {
 	uint8_t message[6];
 	uint8_t length;
@@ -89,21 +80,22 @@ struct cmd_types {
 	char *cmd_descr;
 };
 
-typedef enum fe_sec_voltage {
-	SEC_VOLTAGE_13,
-	SEC_VOLTAGE_18,
-	SEC_VOLTAGE_OFF
-} fe_sec_voltage_t;
+typedef enum dvbfe_sec_voltage {
+	DVBFE_SEC_VOLTAGE_13,
+	DVBFE_SEC_VOLTAGE_18,
+	DVBFE_SEC_VOLTAGE_OFF
+} dvbfe_sec_voltage_t;
 
-typedef enum fe_sec_tone_mode {
-	SEC_TONE_ON,
-	SEC_TONE_OFF
-} fe_sec_tone_mode_t;
+typedef enum dvbfe_sec_tone_mode {
+	DVBFE_SEC_TONE_ON,
+	DVBFE_SEC_TONE_OFF
+} dvbfe_sec_tone_mode_t;
 
-typedef enum fe_sec_mini_cmd {
-	SEC_MINI_A,
-	SEC_MINI_B
-} fe_sec_mini_cmd_t;
+typedef enum dvbfe_sec_mini_cmd {
+	DVBFE_SEC_MINI_A,
+	DVBFE_SEC_MINI_B
+} dvbfe_sec_mini_cmd_t;
+
 
 struct cmd_types msgtbl[] = {
 
@@ -123,7 +115,7 @@ struct cmd_types msgtbl[] = {
 	{ { 0x03, 0xe0, 0x00, 0x2c, 0x00, 0x00, 0x00 }, "DISEQC11_SET_SWITCH1_INP_B" },
 	{ { 0x03, 0xe0, 0x00, 0x2d, 0x00, 0x00, 0x00 }, "DISEQC11_SET_SWITCH2_INP_B" },
 	{ { 0x03, 0xe0, 0x00, 0x2e, 0x00, 0x00, 0x00 }, "DISEQC11_SET_SWITCH3_INP_B" },
-	{ { 0x03, 0xe0, 0x00, 0x2f , 0x00, 0x00, 0x00 }, "DISEQC11_SET_SWITCH4_INP_B" },
+	{ { 0x03, 0xe0, 0x00, 0x2f, 0x00, 0x00, 0x00 }, "DISEQC11_SET_SWITCH4_INP_B" },
 
 	{ { 0x03, 0xe0, 0x00, 0x30, 0x00, 0x00, 0x00 }, "DISEQCxx_SET_BUS_SLEEP" },
 	{ { 0x03, 0xe0, 0x00, 0x31, 0x00, 0x00, 0x00 }, "DISEQCxx_SET_BUS_AWAKE" },
@@ -150,21 +142,21 @@ struct cmd_types msgtbl[] = {
  *	@param fd, FD opened with libdvbfe_open().
  *	@param tone, SEC_TONE_ON/SEC_TONE_OFF
  */
-extern int set_22k_tone(int fd, fe_sec_tone_mode_t tone);
+extern int set_22k_tone(int fd, dvbfe_sec_tone_mode_t tone);
 
 /*
  *	22khz Tone control
  *	@param fd, FD opened with libdvbfe_open().
  *	@param adapter, minicmd, SEC_MINI_A/SEC_MINI_B
  */
-extern int set_tone_data_burst(int fd, fe_sec_mini_cmd_t minicmd);
+extern int set_tone_data_burst(int fd, dvbfe_sec_mini_cmd_t minicmd);
 
 /*
  *	H/V polarization control
  *	@param fd, FD opened with libdvbfe_open().
  *	@param polarization, SEC_VOLTAGE_13/SEC_VOLTAGE_18/SEC_VOLTAGE_OFF
  */
-extern int set_polarization(int fd, fe_sec_voltage_t polarization);
+extern int set_polarization(int fd, dvbfe_sec_voltage_t polarization);
 
 /*
  *	Send a DiSEqC Command
