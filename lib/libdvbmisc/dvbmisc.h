@@ -28,9 +28,9 @@
 #define INFO		2
 #define DEBUG		3
 
-#define print(x, y, z, fmt, arg...) do {					\
-	if (z) {											\
-		if	((x > ERROR) && (x > y))				\
+#define print(x, y, z, fmt, arg...) do {				\
+	if (z) {							\
+		if	((x > ERROR) && (x > y))			\
 			vprint("%s: " fmt "\n", __func__ , ##arg);	\
 		else if	((x > NOTICE) && (x > y))			\
 			vprint("%s: " fmt "\n",__func__ , ##arg);	\
@@ -40,7 +40,7 @@
 			vprint("%s: " fmt "\n", __func__ , ##arg);	\
 	} else {							\
 		if (x > y)						\
-			printk(fmt, ##arg);				\
+			vprint(fmt, ##arg);				\
 	}								\
 } while(0)
 
