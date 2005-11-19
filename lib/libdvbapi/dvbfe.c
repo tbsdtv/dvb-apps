@@ -34,9 +34,6 @@
 
 #define GET_INFO_MIN_DELAY_US 100000
 
-static int lookupval(int val, int reverse, int table[][2]);
-
-
 static int dvbfe_spectral_inversion_to_kapi[][2] =
 {
 	{ DVBFE_INVERSION_OFF, INVERSION_OFF },
@@ -129,6 +126,27 @@ static int dvbfe_dvbt_hierarchy_to_kapi[][2] =
 	{ DVBFE_DVBT_HIERARCHY_AUTO, HIERARCHY_AUTO },
 	{ -1, -1 }
 };
+
+static int lookupval(int val, int reverse, int table[][2])
+{
+	int i =0;
+
+	while(table[i][0] != -1) {
+		if (!reverse) {
+			if (val == table[i][0]) {
+				return table[i][1];
+			}
+		} else {
+			if (val == table[i][1]) {
+				return table[i][0];
+			}
+		}
+		i++;
+	}
+
+	return -1;
+}
+
 
 struct dvbfe_handle_prv {
 	int fd;
@@ -418,6 +436,9 @@ int dvbfe_diseqc_command(dvbfe_handle_t _fehandle, char *command)
 	struct dvb_diseqc_master_cmd master_cmd;
 	unsigned int tmpcmd[6];
 	struct dvbfe_handle_prv *fehandle = (struct dvbfe_handle_prv*) _fehandle;
+	char value_s[20];
+	int value_i;
+	int addr;
 
 	while(command[i]) {
 		/* kill whitespace */
@@ -484,9 +505,13 @@ int dvbfe_diseqc_command(dvbfe_handle_t _fehandle, char *command)
 
 		case '.': // extended command
 		{
-			if (strncmp(command+i+1, "diseqc(", 7)) {
+			i++;
+
+			if (!strncmp(command+i, "D(", 2)) {
+				i += 2;
+
 				master_cmd.msg_len =
-					sscanf(command+i+8, "%x %x %x %x %x %x",
+					sscanf(command+i, "%i %i %i %i %i %i",
 					       tmpcmd, tmpcmd+1, tmpcmd+2, tmpcmd+3, tmpcmd+4, tmpcmd+5);
 				if (master_cmd.msg_len == 0)
 					return -EINVAL;
@@ -499,13 +524,188 @@ int dvbfe_diseqc_command(dvbfe_handle_t _fehandle, char *command)
 
 				if ((status = ioctl(fehandle->fd, FE_DISEQC_SEND_MASTER_CMD, &master_cmd)) != 0)
 					return status;
+			} else if (!strncmp(command+i, "Dband(", 6)) {
+				if (sscanf(command+i+6, "%i %2s", &addr, value_s) != 2)
+					return -EINVAL;
+				if (!strncmp(value_s, "lo", 2)) {
+					master_cmd.msg[0] = 0xe0;
+					master_cmd.msg[1] = addr;
+					master_cmd.msg[2] = 0x20;
+					master_cmd.msg_len = 3;
+				} else if (!strncmp(value_s, "hi", 2)) {
+					master_cmd.msg[0] = 0xe0;
+					master_cmd.msg[1] = addr;
+					master_cmd.msg[2] = 0x24;
+					master_cmd.msg_len = 3;
+				} else {
+					return -EINVAL;
+				}
+				if ((status = ioctl(fehandle->fd, FE_DISEQC_SEND_MASTER_CMD, &master_cmd)) != 0)
+					return status;
 
-			} else if (strncmp(command+i+1, "dishnetworks(", 13)) {
-				master_cmd.msg_len = sscanf(command+i+14, "%x", tmpcmd);
-				if (master_cmd.msg_len == 0)
+			} else if ((!strncmp(command+i, "Dpolarisation(", 14) ||
+				   (!strncmp(command+i, "Dpolarization(", 14)))) {
+				if (sscanf(command+i+14, "%i %1s", &addr, value_s) != 2)
+					return -EINVAL;
+				switch(*value_s) {
+				case 'H':
+				case 'L':
+					master_cmd.msg[0] = 0xe0;
+					master_cmd.msg[1] = addr;
+					master_cmd.msg[2] = 0x25;
+					master_cmd.msg_len = 3;
+					break;
+
+				case 'V':
+				case 'R':
+					master_cmd.msg[0] = 0xe0;
+					master_cmd.msg[1] = addr;
+					master_cmd.msg[2] = 0x21;
+					master_cmd.msg_len = 3;
+					break;
+
+				default:
+					return -EINVAL;
+				}
+				if ((status = ioctl(fehandle->fd, FE_DISEQC_SEND_MASTER_CMD, &master_cmd)) != 0)
+					return status;
+
+			} else if (!strncmp(command+i, "Dsatellite_position(", 20)) {
+				if (sscanf(command+i+20, "%i %1s", &addr, value_s) != 2)
+					return -EINVAL;
+				switch(*value_s) {
+				case 'A':
+				case 'C':
+					master_cmd.msg[0] = 0xe0;
+					master_cmd.msg[1] = addr;
+					master_cmd.msg[2] = 0x22;
+					master_cmd.msg_len = 3;
+					break;
+
+				case 'B':
+				case 'D':
+					master_cmd.msg[0] = 0xe0;
+					master_cmd.msg[1] = addr;
+					master_cmd.msg[2] = 0x26;
+					master_cmd.msg_len = 3;
+					break;
+
+				default:
+					return -EINVAL;
+				}
+				if ((status = ioctl(fehandle->fd, FE_DISEQC_SEND_MASTER_CMD, &master_cmd)) != 0)
+					return status;
+
+			} else if (!strncmp(command+i, "Dswitch_option(", 15)) {
+				if (sscanf(command+i+15, "%i %1s", &addr, value_s) != 2)
+					return -EINVAL;
+				switch(*value_s) {
+				case 'A':
+					master_cmd.msg[0] = 0xe0;
+					master_cmd.msg[1] = addr;
+					master_cmd.msg[2] = 0x23;
+					master_cmd.msg_len = 3;
+					break;
+
+				case 'B':
+					master_cmd.msg[0] = 0xe0;
+					master_cmd.msg[1] = addr;
+					master_cmd.msg[2] = 0x27;
+					master_cmd.msg_len = 3;
+					break;
+
+				default:
+					return -EINVAL;
+				}
+				if ((status = ioctl(fehandle->fd, FE_DISEQC_SEND_MASTER_CMD, &master_cmd)) != 0)
+					return status;
+
+			} else if (!strncmp(command+i, "Dport_pins(", 11)) {
+				int mask;
+				if (sscanf(command+i+11, "%i %i %i", &addr, &mask, &value_i) != 3)
 					return -EINVAL;
 
-				if ((status = ioctl(fehandle->fd, FE_DISHNETWORK_SEND_LEGACY_CMD, &tmpcmd)) != 0)
+				if (mask & 0x0f) {
+					master_cmd.msg[0] = 0xe0;
+					master_cmd.msg[1] = addr;
+					master_cmd.msg[2] = 0x38;
+					master_cmd.msg[3] = ((mask & 0x0f) << 4) | (value_i & 0x0f);
+					master_cmd.msg_len = 4;
+
+					if ((status = ioctl(fehandle->fd, FE_DISEQC_SEND_MASTER_CMD, &master_cmd)) != 0)
+						return status;
+				}
+				if (mask & 0xf0) {
+					master_cmd.msg[0] = 0xe0;
+					master_cmd.msg[1] = addr;
+					master_cmd.msg[2] = 0x39;
+					master_cmd.msg[3] = (mask & 0xf0) | ((value_i & 0xf0) >> 4);
+					master_cmd.msg_len = 4;
+
+					if ((status = ioctl(fehandle->fd, FE_DISEQC_SEND_MASTER_CMD, &master_cmd)) != 0)
+						return status;
+				}
+
+			} else if (!strncmp(command+i, "Dgoto_preset(", 13)) {
+				if (sscanf(command+i+13, "%i %i", &addr, &value_i) != 2)
+					return -EINVAL;
+
+				master_cmd.msg[0] = 0xe0;
+				master_cmd.msg[1] = addr;
+				master_cmd.msg[2] = 0x3b;
+				master_cmd.msg[3] = value_i;
+				master_cmd.msg_len = 4;
+
+				if ((status = ioctl(fehandle->fd, FE_DISEQC_SEND_MASTER_CMD, &master_cmd)) != 0)
+					return status;
+
+			} else if (!strncmp(command+i, "Dgoto_angle(", 12)) {
+				int integer = 0;
+				int fraction = 0;
+				char *tmp;
+
+				if (sscanf(command+i+12, "%i %s", &addr, value_s) != 2)
+					return -EINVAL;
+
+				// parse the integer and fractional parts using fixed point
+				integer = atoi(value_s);
+				tmp = strchr(value_s, '.');
+				if (tmp != NULL) {
+					tmp++;
+					tmp[3] = 0;
+					fraction = ((atoi(tmp) * 16000) / 1000000) & 0xf;
+				}
+
+				// generate the command
+				master_cmd.msg[0] = 0xe0;
+				master_cmd.msg[1] = addr;
+				master_cmd.msg[2] = 0x6e;
+				if (integer < -256) {
+					return -EINVAL;
+				} else if (integer < 0) {
+					integer = -integer;
+					master_cmd.msg[3] = 0xf0;
+				} else if (integer < 256) {
+					master_cmd.msg[3] = 0x00;
+				} else if (integer < 512) {
+					integer -= 256;
+					master_cmd.msg[3] = 0x10;
+				} else {
+					return -EINVAL;
+				}
+				master_cmd.msg[3] |= ((integer / 16) & 0x0f);
+				integer = integer % 16;
+				master_cmd.msg[4] |= ((integer & 0x0f) << 4) | fraction;
+				master_cmd.msg_len = 5;
+
+				if ((status = ioctl(fehandle->fd, FE_DISEQC_SEND_MASTER_CMD, &master_cmd)) != 0)
+					return status;
+
+			} else if (!strncmp(command+i, "dishnetworks(", 13)) {
+				if (sscanf(command+i+13, "%i", tmpcmd) != 1)
+					return -EINVAL;
+
+				if ((status = ioctl(fehandle->fd, FE_DISHNETWORK_SEND_LEGACY_CMD, tmpcmd)) != 0)
 					return status;
 			}
 
@@ -546,24 +746,4 @@ int dvbfe_diseqc_read(dvbfe_handle_t _fehandle, int timeout, unsigned char *buf,
 	memcpy(buf, reply.msg, len);
 
 	return len;
-}
-
-static int lookupval(int val, int reverse, int table[][2])
-{
-	int i =0;
-
-	while(table[i][0] != -1) {
-		if (!reverse) {
-			if (val == table[i][0]) {
-				return table[i][1];
-			}
-		} else {
-			if (val == table[i][1]) {
-				return table[i][0];
-			}
-		}
-		i++;
-	}
-
-	return -1;
 }

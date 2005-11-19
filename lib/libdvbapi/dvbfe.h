@@ -254,18 +254,34 @@ extern int dvbfe_get_info(dvbfe_handle_t fehandle, dvbfe_info_mask_t querymask, 
  * Wii       - Delay for ii milliseconds.
  *
  * Extended commands:
- * .dishnetworks(XX) - Send a dish networks legacy command 0xXX
- * .diseqc(XX ...)   - Send a raw diseqc master command. The command may be up
- * to 6 bytes long, each byte must be in hex-ascii.
+ * .dishnetworks(<value>) - Send a dish networks legacy command <value>
+ * .D(<value> ...)   - Send a raw diseqc master command. The command may be up
+ * 	to 6 bytes long.
+ * .Dband(<addr> <lo|hi>) - Set frequency band hi or lo.
+ * .Dpolarisation(<addr> <V|H|L|R>) - Set polarisation.
+ * .Dsatellite_position(<addr> <A|B>) - Set "satellite position" input switch.
+ * .Dswitch_option(<addr> <A|B>) - Set "switch option" input switch.
+ * .Dport_pins(<addr> <mask> <value>) - Set all input switches. Mask and value
+ * 	are hex-ascii 8 bit bytes. Only bits with a corresponding '1' in mask
+ * 	will be changed.
+ * .Dgoto_preset(<addr> <index>) - Set a positioner to a preset index (integer)
+ * .Dgoto_angle(<addr> <angle>) - Set a positioner to a given angle
+ * (e.g. 49.6). The angle may range between -180 to 496. It may include a
+ * fractional part.
+ *
+ * All integer values use standard notation - no prefix=>decimal, 0x=>hex etc.
+ *
+ * Set <addr> to 0 if you just have a simple DISEQC setup (e.g. one switch). See
+ * the DISEQC specification at http://www.eutelsat.org/ for full information.
  *
  * Comments begin with '#' - any characters after this will be ignored
  * to the end of the line.
  *
  * Examples:
- * S-19.2E  11700000 V  9750000  t v W15 .diseqc(E0 10 38 F0) W15 A W15 t
- * S-19.2E  99999999 V 10600000  t v W15 .diseqc(E0 10 38 F1) W15 A W15 T
- * S-19.2E  11700000 H  9750000  t V W15 .diseqc(E0 10 38 F2) W15 A W15 t
- * S-19.2E  99999999 H 10600000  t V W15 .diseqc(E0 10 38 F3) W15 A W15 T
+ * S-19.2E  11700000 V  9750000  t v W15 .D(E0 10 38 F0) W15 A W15 t
+ * S-19.2E  99999999 V 10600000  t v W15 .D(E0 10 38 F1) W15 A W15 T
+ * S-19.2E  11700000 H  9750000  t V W15 .D(E0 10 38 F2) W15 A W15 t
+ * S-19.2E  99999999 H 10600000  t V W15 .D(E0 10 38 F3) W15 A W15 T
  *
  * @param fehandle Handle opened with dvbfe_open().
  * @param command Command to execute.
