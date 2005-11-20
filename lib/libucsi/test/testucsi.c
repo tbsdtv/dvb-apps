@@ -299,14 +299,14 @@ void parse_section(uint8_t *buf, int len, int pid)
 		if ((section_ext = section_ext_decode(section, 1)) == NULL) {
 			return;
 		}
-		printf("Decode PAT (pid:0x%04x) (table:0x%02x)\n", pid, section->table_id);
+		printf("SCT Decode PAT (pid:0x%04x) (table:0x%02x)\n", pid, section->table_id);
 		if ((pat = mpeg_pat_section_codec(section_ext)) == NULL) {
-			fprintf(stderr, "XXXX PAT section decode error\n");
+			fprintf(stderr, "SCT XXXX PAT section decode error\n");
 			return;
 		}
-		printf("transport_stream_id:0x%04x\n", mpeg_pat_section_transport_stream_id(pat));
+		printf("SCT transport_stream_id:0x%04x\n", mpeg_pat_section_transport_stream_id(pat));
 		mpeg_pat_section_programs_for_each(pat, cur) {
-			printf("\tprogram_number:0x%04x pid:0x%04x\n", cur->program_number, cur->pid);
+			printf("\tSCT program_number:0x%04x pid:0x%04x\n", cur->program_number, cur->pid);
 		}
 		break;
 	}
@@ -319,9 +319,9 @@ void parse_section(uint8_t *buf, int len, int pid)
 		if ((section_ext = section_ext_decode(section, 1)) == NULL) {
 			return;
 		}
-		printf("Decode CAT (pid:0x%04x) (table:0x%02x)\n", pid, section->table_id);
+		printf("SCT Decode CAT (pid:0x%04x) (table:0x%02x)\n", pid, section->table_id);
 		if ((cat = mpeg_cat_section_codec(section_ext)) == NULL) {
-			fprintf(stderr, "XXXX CAT section decode error\n");
+			fprintf(stderr, "SCT XXXX CAT section decode error\n");
 			return;
 		}
 		mpeg_cat_section_descriptors_for_each(cat, curd) {
@@ -339,17 +339,17 @@ void parse_section(uint8_t *buf, int len, int pid)
 		if ((section_ext = section_ext_decode(section, 1)) == NULL) {
 			return;
 		}
-		printf("Decode PMT (pid:0x%04x) (table:0x%02x)\n", pid, section->table_id);
+		printf("SCT Decode PMT (pid:0x%04x) (table:0x%02x)\n", pid, section->table_id);
 		if ((pmt = mpeg_pmt_section_codec(section_ext)) == NULL) {
-			fprintf(stderr, "XXXX PMT section decode error\n");
+			fprintf(stderr, "SCT XXXX PMT section decode error\n");
 			return;
 		}
-		printf("program_number:0x%04x pcr_pid:0x%02x\n", mpeg_pmt_section_program_number(pmt), pmt->pcr_pid);
+		printf("SCT program_number:0x%04x pcr_pid:0x%02x\n", mpeg_pmt_section_program_number(pmt), pmt->pcr_pid);
 		mpeg_pmt_section_descriptors_for_each(pmt, curd) {
 			parse_descriptor(curd, 1);
 		}
 		mpeg_pmt_section_streams_for_each(pmt, cur_stream) {
-			printf("\tstream_type:0x%02x pid:0x%04x\n", cur_stream->stream_type, cur_stream->pid);
+			printf("\tSCT stream_type:0x%02x pid:0x%04x\n", cur_stream->stream_type, cur_stream->pid);
 			mpeg_pmt_stream_descriptors_for_each(cur_stream, curd) {
 				parse_descriptor(curd, 2);
 			}
@@ -365,9 +365,9 @@ void parse_section(uint8_t *buf, int len, int pid)
 		if ((section_ext = section_ext_decode(section, 1)) == NULL) {
 			return;
 		}
-		printf("Decode TSDT (pid:0x%04x) (table:0x%02x)\n", pid, section->table_id);
+		printf("SCT Decode TSDT (pid:0x%04x) (table:0x%02x)\n", pid, section->table_id);
 		if ((tsdt = mpeg_tsdt_section_codec(section_ext)) == NULL) {
-			fprintf(stderr, "XXXX TSDT section decode error\n");
+			fprintf(stderr, "SCT XXXX TSDT section decode error\n");
 			return;
 		}
 		mpeg_tsdt_section_descriptors_for_each(tsdt, curd) {
@@ -389,17 +389,17 @@ void parse_section(uint8_t *buf, int len, int pid)
 		if ((section_ext = section_ext_decode(section, 1)) == NULL) {
 			return;
 		}
-		printf("Decode ISO14496 (pid:0x%04x) (table:0x%02x)\n", pid, section->table_id);
+		printf("SCT Decode ISO14496 (pid:0x%04x) (table:0x%02x)\n", pid, section->table_id);
 		if ((odsmt = mpeg_odsmt_section_codec(section_ext)) == NULL) {
 			fprintf(stderr, "XXXX ISO14496 section decode error\n");
 			return;
 		}
-		printf("PID:0x%04x\n", mpeg_odsmt_section_pid(odsmt));
+		printf("SCT PID:0x%04x\n", mpeg_odsmt_section_pid(odsmt));
 		mpeg_odsmt_section_streams_for_each(osdmt, cur_stream, index) {
 			if (odsmt->stream_count == 0) {
-				printf("\tSINGLE 0x%04x\n", cur_stream->u.single.esid);
+				printf("\tSCT SINGLE 0x%04x\n", cur_stream->u.single.esid);
 			} else {
-				printf("\tMULTI 0x%04x 0x%02x\n", cur_stream->u.multi.esid, cur_stream->u.multi.fmc);
+				printf("\tSCT MULTI 0x%04x 0x%02x\n", cur_stream->u.multi.esid, cur_stream->u.multi.fmc);
 			}
 			mpeg_odsmt_stream_descriptors_for_each(osdmt, cur_stream, curd) {
 				parse_descriptor(curd, 2);
@@ -407,7 +407,7 @@ void parse_section(uint8_t *buf, int len, int pid)
 		}
 		objects = mpeg_odsmt_section_object_descriptors(odsmt, &objects_length);
 		if (objects == NULL) {
-			printf("XXXX OSDMT parse error\n");
+			printf("SCT XXXX OSDMT parse error\n");
 			break;
 		}
 		hexdump(1, "SCT ", objects, objects_length);
@@ -425,18 +425,18 @@ void parse_section(uint8_t *buf, int len, int pid)
 		if ((section_ext = section_ext_decode(section, 1)) == NULL) {
 			return;
 		}
-		printf("Decode NIT (pid:0x%04x) (table:0x%02x)\n", pid, section->table_id);
+		printf("SCT Decode NIT (pid:0x%04x) (table:0x%02x)\n", pid, section->table_id);
 		if ((nit = dvb_nit_section_codec(section_ext)) == NULL) {
-			fprintf(stderr, "XXXX NIT section decode error\n");
+			fprintf(stderr, "SCT XXXX NIT section decode error\n");
 			return;
 		}
-		printf("network_id:0x%04x\n", dvb_nit_section_network_id(nit));
+		printf("SCT network_id:0x%04x\n", dvb_nit_section_network_id(nit));
 		dvb_nit_section_descriptors_for_each(nit, curd) {
 			parse_descriptor(curd, 1);
 		}
 		part2 = dvb_nit_section_part2(nit);
 		dvb_nit_section_transports_for_each(nit, part2, cur_transport) {
-			printf("\ttransport_stream_id:0x%04x original_network_id:0x%04x\n", cur_transport->transport_stream_id, cur_transport->original_network_id);
+			printf("\tSCT transport_stream_id:0x%04x original_network_id:0x%04x\n", cur_transport->transport_stream_id, cur_transport->original_network_id);
 			dvb_nit_transport_descriptors_for_each(cur_transport, curd) {
 				parse_descriptor(curd, 2);
 			}
@@ -454,14 +454,14 @@ void parse_section(uint8_t *buf, int len, int pid)
 		if ((section_ext = section_ext_decode(section, 1)) == NULL) {
 			return;
 		}
-		printf("Decode SDT (pid:0x%04x) (table:0x%02x)\n", pid, section->table_id);
+		printf("SCT Decode SDT (pid:0x%04x) (table:0x%02x)\n", pid, section->table_id);
 		if ((sdt = dvb_sdt_section_codec(section_ext)) == NULL) {
 			fprintf(stderr, "XXXX SDT section decode error\n");
 			return;
 		}
-		printf("transport_stream_id:0x%04x original_network_id:0x%04x\n", dvb_sdt_section_transport_stream_id(sdt), sdt->original_network_id);
+		printf("SCT transport_stream_id:0x%04x original_network_id:0x%04x\n", dvb_sdt_section_transport_stream_id(sdt), sdt->original_network_id);
 		dvb_sdt_section_services_for_each(sdt, cur_service) {
-			printf("\tservice_id:0x%04x eit_schedule_flag:%i eit_present_following_flag:%i running_status:%i free_ca_mode:%i\n",
+			printf("\tSCT service_id:0x%04x eit_schedule_flag:%i eit_present_following_flag:%i running_status:%i free_ca_mode:%i\n",
 			       cur_service->service_id,
 			       cur_service->eit_schedule_flag,
 			       cur_service->eit_present_following_flag,
@@ -484,18 +484,18 @@ void parse_section(uint8_t *buf, int len, int pid)
 		if ((section_ext = section_ext_decode(section, 1)) == NULL) {
 			return;
 		}
-		printf("Decode BAT (pid:0x%04x) (table:0x%02x)\n", pid, section->table_id);
+		printf("SCT Decode BAT (pid:0x%04x) (table:0x%02x)\n", pid, section->table_id);
 		if ((bat = dvb_bat_section_codec(section_ext)) == NULL) {
-			fprintf(stderr, "XXXX BAT section decode error\n");
+			fprintf(stderr, "SCT XXXX BAT section decode error\n");
 			return;
 		}
-		printf("bouquet_id:0x%04x\n", dvb_bat_section_bouquet_id(bat));
+		printf("SCT bouquet_id:0x%04x\n", dvb_bat_section_bouquet_id(bat));
 		dvb_bat_section_descriptors_for_each(bat, curd) {
 			parse_descriptor(curd, 1);
 		}
 		part2 = dvb_bat_section_part2(bat);
 		dvb_bat_section_transports_for_each(part2, cur_transport) {
-			printf("\ttransport_stream_id:0x%04x original_network_id:0x%04x\n",
+			printf("\tSCT transport_stream_id:0x%04x original_network_id:0x%04x\n",
 			       cur_transport->transport_stream_id,
 			       cur_transport->original_network_id);
 			dvb_bat_transport_descriptors_for_each(cur_transport, curd) {
@@ -515,12 +515,12 @@ void parse_section(uint8_t *buf, int len, int pid)
 		if ((section_ext = section_ext_decode(section, 1)) == NULL) {
 			return;
 		}
-		printf("Decode INT (pid:0x%04x) (table:0x%02x)\n", pid, section->table_id);
+		printf("SCT Decode INT (pid:0x%04x) (table:0x%02x)\n", pid, section->table_id);
 		if ((_int = dvb_int_section_codec(section_ext)) == NULL) {
 			fprintf(stderr, "XXXX INT section decode error\n");
 			return;
 		}
-		printf("action_type:0x%02x platform_id_hash:0x%02x platform_id:0x%06x processing_order:0x%02x\n",
+		printf("SCT action_type:0x%02x platform_id_hash:0x%02x platform_id:0x%06x processing_order:0x%02x\n",
 		       dvb_int_section_action_type(_int),
 		       dvb_int_section_platform_id_hash(_int),
 		       _int->platform_id,
@@ -555,12 +555,12 @@ void parse_section(uint8_t *buf, int len, int pid)
 		if ((section_ext = section_ext_decode(section, 1)) == NULL) {
 			return;
 		}
-		printf("Decode EIT (pid:0x%04x) (table:0x%02x)\n", pid, section->table_id);
+		printf("SCT Decode EIT (pid:0x%04x) (table:0x%02x)\n", pid, section->table_id);
 		if ((eit = dvb_eit_section_codec(section_ext)) == NULL) {
 			fprintf(stderr, "XXXX EIT section decode error\n");
 			return;
 		}
-		printf("service_id:0x%04x transport_stream_id:0x%04x original_network_id:0x%04x segment_last_section_number:0x%02x last_table_id:0x%02x\n",
+		printf("SCT service_id:0x%04x transport_stream_id:0x%04x original_network_id:0x%04x segment_last_section_number:0x%02x last_table_id:0x%02x\n",
 		       dvb_eit_section_service_id(eit),
 		       eit->transport_stream_id,
 		       eit->original_network_id,
@@ -568,7 +568,7 @@ void parse_section(uint8_t *buf, int len, int pid)
 		       eit->last_table_id);
 		dvb_eit_section_events_for_each(eit, cur_event) {
 			start_time = dvbdate_to_unixtime(cur_event->start_time);
-			printf("\tevent_id:0x%04x duration:%i running_status:%i free_ca_mode:%i start_time:%i -- %s",
+			printf("\tSCT event_id:0x%04x duration:%i running_status:%i free_ca_mode:%i start_time:%i -- %s",
 			       cur_event->event_id,
 			       dvbduration_to_seconds(cur_event->duration),
 			       cur_event->running_status,
@@ -587,13 +587,13 @@ void parse_section(uint8_t *buf, int len, int pid)
 		struct dvb_tdt_section *tdt;
 		time_t dvbtime;
 
-		printf("Decode TDT (pid:0x%04x) (table:0x%02x)\n", pid, section->table_id);
+		printf("SCT Decode TDT (pid:0x%04x) (table:0x%02x)\n", pid, section->table_id);
 		if ((tdt = dvb_tdt_section_codec(section)) == NULL) {
 			fprintf(stderr, "XXXX TDT section decode error\n");
 			return;
 		}
 		dvbtime = dvbdate_to_unixtime(tdt->utc_time);
-		printf("Time: %i -- %s", (int) dvbtime, ctime(&dvbtime));
+		printf("SCT Time: %i -- %s", (int) dvbtime, ctime(&dvbtime));
 		break;
 	}
 
@@ -602,13 +602,13 @@ void parse_section(uint8_t *buf, int len, int pid)
 		struct dvb_rst_section *rst;
 		struct dvb_rst_status *cur_status;
 
-		printf("Decode RST (pid:0x%04x) (table:0x%02x)\n", pid, section->table_id);
+		printf("SCT Decode RST (pid:0x%04x) (table:0x%02x)\n", pid, section->table_id);
 		if ((rst = dvb_rst_section_codec(section)) == NULL) {
-			fprintf(stderr, "XXXX RST section decode error\n");
+			fprintf(stderr, "SCT XXXX RST section decode error\n");
 			return;
 		}
 		dvb_rst_section_statuses_for_each(rst, cur_status) {
-			printf("\ttransport_stream_id:0x%04x original_network_id:0x%04x service_id:0x%04x event_id:0x%04x running_status:%i\n",
+			printf("\tSCT transport_stream_id:0x%04x original_network_id:0x%04x service_id:0x%04x event_id:0x%04x running_status:%i\n",
 			       cur_status->transport_stream_id,
 			       cur_status->original_network_id,
 			       cur_status->service_id,
@@ -622,12 +622,12 @@ void parse_section(uint8_t *buf, int len, int pid)
 	{
 		struct dvb_st_section *st;
 
-		printf("Decode ST (pid:0x%04x) (table:0x%02x)\n", pid, section->table_id);
+		printf("SCT Decode ST (pid:0x%04x) (table:0x%02x)\n", pid, section->table_id);
 		if ((st = dvb_st_section_codec(section)) == NULL) {
-			fprintf(stderr, "XXXX ST section decode error\n");
+			fprintf(stderr, "SCT XXXX ST section decode error\n");
 			return;
 		}
-		printf("Length: %i\n", dvb_st_section_data_length(st));
+		printf("SCT Length: %i\n", dvb_st_section_data_length(st));
 		break;
 	}
 
@@ -639,13 +639,13 @@ void parse_section(uint8_t *buf, int len, int pid)
 
 		if (section_check_crc(section))
 			return;
-		printf("Decode TOT (pid:0x%04x) (table:0x%02x)\n", pid, section->table_id);
+		printf("SCT Decode TOT (pid:0x%04x) (table:0x%02x)\n", pid, section->table_id);
 		if ((tot = dvb_tot_section_codec(section)) == NULL) {
-			fprintf(stderr, "XXXX TOT section decode error\n");
+			fprintf(stderr, "SCT XXXX TOT section decode error\n");
 			return;
 		}
 		dvbtime = dvbdate_to_unixtime(tot->utc_time);
-		printf("utc_time: %i -- %s", (int) dvbtime, ctime(&dvbtime));
+		printf("SCT utc_time: %i -- %s", (int) dvbtime, ctime(&dvbtime));
 		dvb_tot_section_descriptors_for_each(tot, curd) {
 			parse_descriptor(curd, 1);
 		}
@@ -656,12 +656,12 @@ void parse_section(uint8_t *buf, int len, int pid)
 	{
 		struct dvb_dit_section *dit;
 
-		printf("Decode DIT (pid:0x%04x) (table:0x%02x)\n", pid, section->table_id);
+		printf("SCT Decode DIT (pid:0x%04x) (table:0x%02x)\n", pid, section->table_id);
 		if ((dit = dvb_dit_section_codec(section)) == NULL) {
-			fprintf(stderr, "XXXX DIT section decode error\n");
+			fprintf(stderr, "SCT XXXX DIT section decode error\n");
 			return;
 		}
-		printf("transition_flag:%i\n", dit->transition_flag);
+		printf("SCT transition_flag:%i\n", dit->transition_flag);
 		break;
 	}
 
@@ -674,16 +674,16 @@ void parse_section(uint8_t *buf, int len, int pid)
 		if ((section_ext = section_ext_decode(section, 1)) == NULL) {
 			return;
 		}
-		printf("Decode SIT (pid:0x%04x) (table:0x%02x)\n", pid, section->table_id);
+		printf("SCT Decode SIT (pid:0x%04x) (table:0x%02x)\n", pid, section->table_id);
 		if ((sit = dvb_sit_section_codec(section_ext)) == NULL) {
-			fprintf(stderr, "XXXX SIT section decode error\n");
+			fprintf(stderr, "SCT XXXX SIT section decode error\n");
 			return;
 		}
 		dvb_sit_section_descriptors_for_each(sit, curd) {
 			parse_descriptor(curd, 1);
 		}
 		dvb_sit_section_services_for_each(sit, cur_service) {
-			printf("\tservice_id:0x%04x running_status:%i\n", cur_service->service_id, cur_service->running_status);
+			printf("\tSCT service_id:0x%04x running_status:%i\n", cur_service->service_id, cur_service->running_status);
 			dvb_sit_service_descriptors_for_each(cur_service, curd) {
 				parse_descriptor(curd, 2);
 			}
@@ -692,8 +692,8 @@ void parse_section(uint8_t *buf, int len, int pid)
 	}
 
 	default:
-		fprintf(stderr, "XXXX Unknown table_id:0x%02x (pid:0x%04x)\n", section->table_id, pid);
-//		hexdump(0, "SCT ", buf, len);
+		fprintf(stderr, "SCT XXXX Unknown table_id:0x%02x (pid:0x%04x)\n", section->table_id, pid);
+		hexdump(0, "SCT ", buf, len);
 		return;
 	}
 
