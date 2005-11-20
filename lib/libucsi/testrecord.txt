@@ -25,11 +25,11 @@ PASS dvb/tot_section.h
 Descriptors:
 PASS mpeg/audio_stream_descriptor.h
 PASS mpeg/ca_descriptor.h
-     mpeg/copyright_descriptor.h
+PASS mpeg/copyright_descriptor.h
 PASS mpeg/data_stream_alignment_descriptor.h
-     mpeg/external_es_id_descriptor.h
+PASS mpeg/external_es_id_descriptor.h
      mpeg/fmc_descriptor.h
-     mpeg/fmxbuffer_size_descriptor.h
+PASS mpeg/fmxbuffer_size_descriptor.h
      mpeg/hierarchy_descriptor.h
      mpeg/ibp_descriptor.h
      mpeg/iod_descriptor.h
