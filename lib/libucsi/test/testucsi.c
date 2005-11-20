@@ -1141,15 +1141,178 @@ void parse_descriptor(struct descriptor *d, int indent)
 	}
 
 	case dtag_dvb_network_name:
+	{
+		struct dvb_network_name_descriptor *dx;
+
+		iprintf(indent, "DSC Decode dvb_network_name_descriptor\n");
+		dx = dvb_network_name_descriptor_codec(d);
+		if (dx == NULL) {
+			fprintf(stderr, "DSC XXXX dvb_network_name_descriptor decode error\n");
+			return;
+		}
+		iprintf(indent, "DSC name:%*s\n",
+			dvb_network_name_descriptor_name_length(dx),
+			dvb_network_name_descriptor_name(dx));
+		break;
+	}
+
 	case dtag_dvb_service_list:
+	{
+		struct dvb_service_list_descriptor *dx;
+		struct dvb_service_list_service *curs;
+
+		iprintf(indent, "DSC Decode dvb_service_list_descriptor\n");
+		dx = dvb_service_list_descriptor_codec(d);
+		if (dx == NULL) {
+			fprintf(stderr, "DSC XXXX dvb_service_list_descriptor decode error\n");
+			return;
+		}
+		dvb_service_list_descriptor_services_for_each(dx, curs) {
+			iprintf(indent+1, "DSC service_id:0x%04x service_type:0x%02x\n",
+				curs->service_id, curs->service_type);
+		}
+		break;
+	}
+
 	case dtag_dvb_stuffing:
+	{
+		struct dvb_stuffing_descriptor *dx;
+
+		iprintf(indent, "DSC Decode dvb_stuffing_descriptor\n");
+		dx = dvb_stuffing_descriptor_codec(d);
+		if (dx == NULL) {
+			fprintf(stderr, "DSC XXXX dvb_stuffing_descriptor decode error\n");
+			return;
+		}
+		hexdump(indent, "DSC",
+			dvb_stuffing_descriptor_data(dx),
+			dvb_stuffing_descriptor_data_length(dx));
+		break;
+	}
+
 	case dtag_dvb_satellite_delivery_system:
+	{
+		struct dvb_satellite_delivery_descriptor *dx;
+
+		iprintf(indent, "DSC Decode dvb_satellite_delivery_descriptor\n");
+		dx = dvb_satellite_delivery_descriptor_codec(d);
+		if (dx == NULL) {
+			fprintf(stderr, "DSC XXXX dvb_satellite_delivery_descriptor decode error\n");
+			return;
+		}
+		iprintf(indent, "DSC frequency:%i orbital_position:%i west_east:%i polarization:%i modulation:%i symbol_rate:%i fec_inner:%i\n",
+			dx->frequency, dx->orbital_position, dx->west_east_flag,
+			dx->polarization, dx->modulation, dx->symbol_rate, dx->fec_inner);
+		break;
+	}
+
 	case dtag_dvb_cable_delivery_system:
+	{
+		struct dvb_cable_delivery_descriptor *dx;
+
+		iprintf(indent, "DSC Decode dvb_cable_delivery_descriptor\n");
+		dx = dvb_cable_delivery_descriptor_codec(d);
+		if (dx == NULL) {
+			fprintf(stderr, "DSC XXXX dvb_cable_delivery_descriptor decode error\n");
+			return;
+		}
+		iprintf(indent, "DSC frequency:%i fec_outer:%i modulation:%i symbol_rate:%i fec_inner:%i\n",
+			dx->frequency, dx->fec_outer, dx->modulation,
+			dx->symbol_rate, dx->fec_inner);
+		break;
+	}
+
 	case dtag_dvb_vbi_data:
+	{
+		struct dvb_vbi_data_descriptor *dx;
+		struct dvb_vbi_data_entry *cur;
+
+		iprintf(indent, "DSC Decode dvb_vbi_data_descriptor\n");
+		dx = dvb_vbi_data_descriptor_codec(d);
+		if (dx == NULL) {
+			fprintf(stderr, "DSC XXXX dvb_vbi_data_descriptor decode error\n");
+			return;
+		}
+		dvb_vbi_data_descriptor_entries_for_each(dx, cur) {
+			iprintf(indent+1, "DSC data_service_id:0x%04x\n", cur->data_service_id);
+			hexdump(indent+1, "DSC", dvb_vbi_data_entry_data(cur), cur->data_length);
+		}
+		break;
+	}
+
 	case dtag_dvb_vbi_teletext:
+	{
+		struct dvb_vbi_teletext_descriptor *dx;
+		struct dvb_vbi_teletext_entry *cur;
+
+		iprintf(indent, "DSC Decode dvb_vbi_teletext_descriptor\n");
+		dx = dvb_vbi_teletext_descriptor_codec(d);
+		if (dx == NULL) {
+			fprintf(stderr, "DSC XXXX dvb_vbi_teletext_descriptor decode error\n");
+			return;
+		}
+		dvb_vbi_teletext_descriptor_entries_for_each(dx, cur) {
+			iprintf(indent+1, "DSC language_code:%3s type:% magazine_number:%i page_number\n",
+				cur->language_code,
+				cur->type, cur->magazine_number, cur->page_number);
+		}
+		break;
+	}
+
 	case dtag_dvb_bouquet_name:
+	{
+		struct dvb_bouquet_name_descriptor *dx;
+
+		iprintf(indent, "DSC Decode dvb_bouquet_name_descriptor\n");
+		dx = dvb_bouquet_name_descriptor_codec(d);
+		if (dx == NULL) {
+			fprintf(stderr, "DSC XXXX dvb_bouquet_name_descriptor decode error\n");
+			return;
+		}
+		iprintf(indent, "DSC name:%*s\n",
+			dvb_bouquet_name_descriptor_name_length(dx),
+			dvb_bouquet_name_descriptor_name(dx));
+		break;
+	}
+
 	case dtag_dvb_service:
-	case dtag_dvb_country:
+	{
+		struct dvb_service_descriptor *dx;
+		struct dvb_service_descriptor_part2 *part2;
+
+		iprintf(indent, "DSC Decode dvb_service_descriptor\n");
+		dx = dvb_service_descriptor_codec(d);
+		if (dx == NULL) {
+			fprintf(stderr, "DSC XXXX dvb_service_descriptor decode error\n");
+			return;
+		}
+		part2 = dvb_service_descriptor_part2(dx);
+		iprintf(indent, "DSC service_type provider_name:%*s service_name:%*s\n",
+			dx->service_provider_name_length,
+			dvb_service_descriptor_service_provider_name(dx),
+			part2->service_name_length,
+			dvb_service_descriptor_service_name(part2));
+		break;
+	}
+
+	case dtag_dvb_country_availability:
+	{
+		struct dvb_country_availability_descriptor *dx;
+		struct dvb_country_availability_entry *cur;
+
+		iprintf(indent, "DSC Decode dvb_country_availability_descriptor\n");
+		dx = dvb_country_availability_descriptor_codec(d);
+		if (dx == NULL) {
+			fprintf(stderr, "DSC XXXX dvb_country_availability_descriptor decode error\n");
+			return;
+		}
+		iprintf(indent, "DSC country_availability_flag:%i\n", dx->country_availability_flag);
+		dvb_country_availability_descriptor_countries_for_each(dx, cur) {
+			iprintf(indent+1, "DSC country_code:%3s\n", cur->country_code);
+		}
+		break;
+	}
+
 	case dtag_dvb_linkage:
 	case dtag_dvb_nvod_reference:
 	case dtag_dvb_time_shifted_service:

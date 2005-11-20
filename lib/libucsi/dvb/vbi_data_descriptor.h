@@ -44,7 +44,7 @@ struct dvb_vbi_data_descriptor {
  */
 struct dvb_vbi_data_entry {
 	uint8_t data_service_id;
-	uint8_t data_service_descriptor_length;
+	uint8_t data_length;
 	/* uint8_t data[] */
 } packed;
 
@@ -79,14 +79,10 @@ static inline struct dvb_vbi_data_descriptor*
 		if (pos > len)
 			return NULL;
 
-		pos += e->data_service_descriptor_length;
+		pos += e->data_length;
 
 		if (pos > len)
 			return NULL;
-
-		if (e->data_service_id == 0x01)
-			if (e->data_service_descriptor_length != sizeof(struct dvb_vbi_data_1))
-				return NULL;
 	}
 
 	return (struct dvb_vbi_data_descriptor*) d;
@@ -141,7 +137,7 @@ static inline struct dvb_vbi_data_entry*
 {
 	uint8_t *end = (uint8_t*) d + 2 + d->d.len;
 	uint8_t *next =	(uint8_t *) pos + sizeof(struct dvb_vbi_data_entry) +
-			pos->data_service_descriptor_length;
+			pos->data_length;
 
 	if (next >= end)
 		return NULL;

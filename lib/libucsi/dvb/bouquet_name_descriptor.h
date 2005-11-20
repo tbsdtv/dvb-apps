@@ -70,7 +70,7 @@ static inline uint8_t *
  * @return Length of the field in bytes.
  */
 static inline int
-	dvb_bouquet_name_descriptor_name_size(struct dvb_bouquet_name_descriptor *d)
+	dvb_bouquet_name_descriptor_name_length(struct dvb_bouquet_name_descriptor *d)
 {
 	return d->d.len;
 }

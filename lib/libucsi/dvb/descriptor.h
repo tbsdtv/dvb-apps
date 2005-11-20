@@ -89,7 +89,7 @@ enum dvb_descriptor_tag {
 	dtag_dvb_vbi_teletext			= 0x46,
 	dtag_dvb_bouquet_name			= 0x47,
 	dtag_dvb_service			= 0x48,
-	dtag_dvb_country			= 0x49,
+	dtag_dvb_country_availability		= 0x49,
 	dtag_dvb_linkage			= 0x4a,
 	dtag_dvb_nvod_reference			= 0x4b,
 	dtag_dvb_time_shifted_service		= 0x4c,
