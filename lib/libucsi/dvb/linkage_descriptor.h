@@ -174,15 +174,29 @@ static inline int
 }
 
 /**
+ * Accessor for a dvb_linkage_data_08 pointer.
+ *
+ * @param d dvb_linkage_descriptor pointer.
+ * @return Pointer to the data field.
+ */
+static inline struct dvb_linkage_data_08 *
+	dvb_linkage_data_08(struct dvb_linkage_descriptor *d)
+{
+	if (d->linkage_type != 0x08)
+		return NULL;
+	return (struct dvb_linkage_data_08 *) dvb_linkage_descriptor_data(d);
+}
+
+/**
  * Accessor for the data field of a dvb_linkage_data_08.
  *
  * @param d dvb_linkage_data_08 pointer.
  * @return Pointer to the data field.
  */
 static inline uint8_t *
-	dvb_linkage_data_08_data(struct dvb_linkage_data_08 *d)
+	dvb_linkage_data_08_data(struct dvb_linkage_descriptor *d)
 {
-	return (uint8_t *) d + sizeof(struct dvb_linkage_data_08);
+	return (uint8_t *) (dvb_linkage_descriptor_data(d) + sizeof(struct dvb_linkage_data_08));
 }
 
 /**
@@ -195,6 +209,20 @@ static inline int
 	dvb_linkage_data_08_data_length(struct dvb_linkage_descriptor *d)
 {
 	return dvb_linkage_descriptor_data_length(d) - sizeof(struct dvb_linkage_data_08);
+}
+
+/**
+ * Accessor for a dvb_linkage_data_0b pointer.
+ *
+ * @param d dvb_linkage_descriptor pointer.
+ * @return Pointer to the data field.
+ */
+static inline struct dvb_linkage_data_0b *
+	dvb_linkage_data_0b(struct dvb_linkage_descriptor *d)
+{
+	if (d->linkage_type != 0x0b)
+		return NULL;
+	return (struct dvb_linkage_data_0b *) dvb_linkage_descriptor_data(d);
 }
 
 /**
@@ -229,6 +257,20 @@ static inline uint8_t *
 	dvb_platform_name_text(struct dvb_platform_name *p)
 {
 	return (uint8_t *) p + sizeof(struct dvb_platform_name);
+}
+
+/**
+ * Accessor for a dvb_linkage_data_0c pointer.
+ *
+ * @param d dvb_linkage_descriptor pointer.
+ * @return Pointer to the data field.
+ */
+static inline struct dvb_linkage_data_0c *
+		dvb_linkage_data_0c(struct dvb_linkage_descriptor *d)
+{
+	if (d->linkage_type != 0x0c)
+		return NULL;
+	return (struct dvb_linkage_data_0c *) dvb_linkage_descriptor_data(d);
 }
 
 /**

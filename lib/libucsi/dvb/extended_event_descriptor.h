@@ -157,7 +157,7 @@ static inline struct dvb_extended_event_item_part2*
  * @return Pointer to the item field.
  */
 static inline uint8_t*
-	dvb_extended_event_item_item(struct dvb_extended_event_item_part2 *d)
+	dvb_extended_event_item_part2_item(struct dvb_extended_event_item_part2 *d)
 {
 	return (uint8_t*) d + sizeof(struct dvb_extended_event_item_part2);
 }
@@ -176,6 +176,18 @@ static inline struct dvb_extended_event_descriptor_part2*
 		 d->length_of_items);
 }
 
+/**
+ * Accessor for the text field of an dvb_extended_event_descriptor_part2.
+ *
+ * @param d dvb_extended_event_descriptor_part2 pointer.
+ * @return Pointer to the text field.
+ */
+static inline uint8_t*
+	dvb_extended_event_descriptor_part2_text(struct dvb_extended_event_descriptor_part2 *d)
+{
+	return (uint8_t*)
+		((uint8_t*) d + sizeof(struct dvb_extended_event_descriptor_part2));
+}
 
 
 
