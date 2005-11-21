@@ -51,7 +51,8 @@ struct dvb_linkage_data_08 {
   EBIT3(uint8_t hand_over_type		: 4;  ,
 	uint8_t reserved		: 3;  ,
 	uint8_t origin_type		: 1;  );
-	uint16_t id;
+	/* uint16_t network_id if hand_over_type == 1,2,3 */
+	/* uint16_t initial_service_id if origin_type = 0 */
 	/* uint8_t data[] */
 } packed;
 
@@ -86,7 +87,7 @@ struct dvb_platform_name {
  */
 struct dvb_linkage_data_0c {
 	uint8_t table_type;
-	/* bouquet_id if table_type == 0x02 */
+	/* uint16_t bouquet_id if table_type == 0x02 */
 } packed;
 
 
@@ -115,12 +116,33 @@ static inline struct dvb_linkage_descriptor*
 	pos += sizeof(struct dvb_linkage_descriptor) - 2;
 
 	if (p->linkage_type == 0x08) {
+		struct dvb_linkage_data_08 *d08;
+
 		if ((len - pos) < sizeof(struct dvb_linkage_data_08))
 			return NULL;
-		bswap16(buf+pos+1);
+		d08 = (struct dvb_linkage_data_08 *) (buf+pos);
+		pos += sizeof(struct dvb_linkage_data_08);
+
+		switch(d08->hand_over_type) {
+		case 1:
+		case 2:
+		case 3:
+			if ((len - pos) < 2)
+				return NULL;
+			bswap16(buf+pos);
+			pos += 2;
+			break;
+		}
+		if (d08->origin_type == 0) {
+			if ((len - pos) < 2)
+				return NULL;
+			bswap16(buf+pos);
+			pos+=2;
+		}
+
 	} else if (p->linkage_type == 0x0b) {
 		int pos2=0;
-		struct dvb_linkage_data_0b *l_0b = (struct dvb_linkage_data_0b *) buf + pos;
+		struct dvb_linkage_data_0b *l_0b = (struct dvb_linkage_data_0b *) (buf + pos);
 
 		if ((len - pos) < sizeof(struct dvb_linkage_data_0b))
 			return NULL;
@@ -131,19 +153,25 @@ static inline struct dvb_linkage_descriptor*
 
 		while (pos2 < l_0b->platform_id_data_length) {
 			struct dvb_platform_id *p_id = (struct dvb_platform_id *) (buf + pos + pos2);
-			bswap32(buf+pos+pos2);
+			if ((len - pos - pos2) < p_id->platform_name_loop_length)
+				return NULL;
+
 			pos2 += sizeof(struct dvb_platform_id) + p_id->platform_name_loop_length;
 		}
 
 		pos += pos2;
 	} else if (p->linkage_type == 0x0c) {
-		struct dvb_linkage_data_0c *l_0c = (struct dvb_linkage_data_0c *) buf + pos;
+		struct dvb_linkage_data_0c *l_0c = (struct dvb_linkage_data_0c *) (buf + pos);
 
 		if ((len - pos) < sizeof(struct dvb_linkage_data_0c))
 			return NULL;
+		pos += sizeof(struct dvb_linkage_data_0c);
 
-		if (l_0c->table_type == 0x02)
-			bswap16(buf+pos+1);
+		if (l_0c->table_type == 0x02) {
+			if ((len - pos) < 2)
+				return NULL;
+			bswap16(buf+pos);
+		}
 	}
 
 	return (struct dvb_linkage_descriptor*) d;
@@ -188,27 +216,92 @@ static inline struct dvb_linkage_data_08 *
 }
 
 /**
- * Accessor for the data field of a dvb_linkage_data_08.
+ * Accessor for the network_id field of a dvb_linkage_data_08.
  *
- * @param d dvb_linkage_data_08 pointer.
- * @return Pointer to the data field.
+ * @param d dvb_linkage_descriptor pointer
+ * @param d08 dvb_linkage_data_08 pointer.
+ * @return network_id, or -1 if not present
  */
-static inline uint8_t *
-	dvb_linkage_data_08_data(struct dvb_linkage_descriptor *d)
+static inline int
+	dvb_linkage_data_08_network_id(struct dvb_linkage_descriptor *d, struct dvb_linkage_data_08 *d08)
 {
-	return (uint8_t *) (dvb_linkage_descriptor_data(d) + sizeof(struct dvb_linkage_data_08));
+	if (d->linkage_type != 0x08)
+		return -1;
+
+	switch(d08->hand_over_type) {
+	case 1:
+	case 2:
+	case 3:
+		return *((uint16_t*) ((uint8_t*) d08 + sizeof(struct dvb_linkage_data_08)));
+	}
+
+	return -1;
 }
 
 /**
- * Determine the length of the data field of a dvb_linkage_data_08.
+ * Accessor for the initial_service_id field of a dvb_linkage_data_08.
  *
- * @param d dvb_linkage_data_08 pointer.
- * @return Length of the field in bytes.
+ * @param d dvb_linkage_descriptor pointer
+ * @param d08 dvb_linkage_data_08 pointer.
+ * @return initial_service_id, or -1 if not present
  */
 static inline int
-	dvb_linkage_data_08_data_length(struct dvb_linkage_descriptor *d)
+	dvb_linkage_data_08_initial_service_id(struct dvb_linkage_descriptor *d, struct dvb_linkage_data_08 *d08)
 {
-	return dvb_linkage_descriptor_data_length(d) - sizeof(struct dvb_linkage_data_08);
+	uint8_t *pos;
+
+	if (d->linkage_type != 0x08)
+		return -1;
+	if (d08->origin_type != 0)
+		return -1;
+
+	pos = ((uint8_t*) d08) + sizeof(struct dvb_linkage_data_08);
+	switch(d08->hand_over_type) {
+	case 1:
+	case 2:
+	case 3:
+		pos +=2;
+		break;
+	}
+
+	return *((uint16_t*) pos);
+}
+
+/**
+ * Accessor for the data field of a dvb_linkage_data_08.
+ *
+ * @param d dvb_linkage_descriptor pointer
+ * @param d08 dvb_linkage_data_08 pointer.
+ * @param length Pointer to int destination for data length.
+ * @return Pointer to the data field, or NULL if invalid
+ */
+static inline uint8_t *
+	dvb_linkage_data_08_data(struct dvb_linkage_descriptor *d, struct dvb_linkage_data_08 *d08, int *length)
+{
+	uint8_t *pos;
+	int used = 0;
+
+	if (d->linkage_type != 0x08) {
+		*length = 0;
+		return NULL;
+	}
+
+	pos = ((uint8_t*) d08) + sizeof(struct dvb_linkage_data_08);
+	switch(d08->hand_over_type) {
+	case 1:
+	case 2:
+	case 3:
+		pos += 2;
+		used += 2;
+		break;
+	}
+	if (d08->origin_type == 0) {
+		pos+=2;
+		used+=2;
+	}
+
+	*length = dvb_linkage_descriptor_data_length(d) - (sizeof(struct dvb_linkage_data_08) + used);
+	return pos;
 }
 
 /**
@@ -282,13 +375,10 @@ static inline struct dvb_linkage_data_0c *
 static inline int
 	dvb_linkage_data_0c_bouquet_id(struct dvb_linkage_data_0c *l_0c)
 {
-	uint8_t *b;
-
 	if (l_0c->table_type != 0x02)
 		return -1;
 
-	b = (uint8_t *) l_0c + 1;
-	return (int) (uint16_t) *b;
+	return *((uint16_t *) ((uint8_t*) l_0c + 1));
 }
 
 
