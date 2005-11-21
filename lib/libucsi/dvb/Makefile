@@ -62,6 +62,7 @@ INC = types.h \
       pdc_descriptor.h \
       private_data_specifier_descriptor.h \
       satellite_delivery_descriptor.h \
+      scrambling_descriptor.h \
       service_descriptor.h \
       service_list_descriptor.h \
       service_move_descriptor.h \

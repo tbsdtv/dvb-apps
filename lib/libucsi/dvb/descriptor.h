@@ -32,7 +32,6 @@ extern "C"
 #include <ucsi/dvb/announcement_support_descriptor.h>
 #include <ucsi/dvb/bouquet_name_descriptor.h>
 #include <ucsi/dvb/ca_identifier_descriptor.h>
-#include <ucsi/dvb/ca_system_descriptor.h>
 #include <ucsi/dvb/cable_delivery_descriptor.h>
 #include <ucsi/dvb/cell_frequency_link_descriptor.h>
 #include <ucsi/dvb/cell_list_descriptor.h>
@@ -58,6 +57,7 @@ extern "C"
 #include <ucsi/dvb/pdc_descriptor.h>
 #include <ucsi/dvb/private_data_specifier_descriptor.h>
 #include <ucsi/dvb/satellite_delivery_descriptor.h>
+#include <ucsi/dvb/scrambling_descriptor.h>
 #include <ucsi/dvb/service_descriptor.h>
 #include <ucsi/dvb/service_list_descriptor.h>
 #include <ucsi/dvb/service_move_descriptor.h>
@@ -117,6 +117,7 @@ enum dvb_descriptor_tag {
 	dtag_dvb_frequency_list			= 0x62,
 	dtag_dvb_partial_transport_stream	= 0x63,
 	dtag_dvb_data_broadcast			= 0x64,
+	dtag_dvb_scrambling			= 0x65,
 	dtag_dvb_data_broadcast_id		= 0x66,
 	dtag_dvb_transport_stream		= 0x67,
 	dtag_dvb_dsng				= 0x68,
@@ -127,9 +128,15 @@ enum dvb_descriptor_tag {
 	dtag_dvb_cell_frequency_link		= 0x6d,
 	dtag_dvb_announcement_support		= 0x6e,
 	dtag_dvb_application_signalling		= 0x6f,
-	dtag_dvb_adaption_field_data		= 0x70,
+	dtag_dvb_adaptation_field_data		= 0x70,
 	dtag_dvb_service_identifier		= 0x71,
 	dtag_dvb_service_availability		= 0x72,
+	dtag_dvb_default_authoritry		= 0x73,
+	dtag_dvb_related_content		= 0x74,
+	dtag_dvb_tva_id				= 0x75,
+	dtag_dvb_content_identifier		= 0x76,
+	dtag_dvb_time_slive_fec_identifier	= 0x77,
+	dtag_dvb_ecm_repetition_rate		= 0x78,
 } packed;
 
 #ifdef __cplusplus
