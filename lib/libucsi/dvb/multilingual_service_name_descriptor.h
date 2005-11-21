@@ -37,7 +37,7 @@ extern "C"
 struct dvb_multilingual_service_name_descriptor {
 	struct descriptor d;
 
-	/* struct dvb_multilingual_service_name service_names[] */
+	/* struct dvb_multilingual_service_name names[] */
 } packed;
 
 /**
@@ -109,7 +109,7 @@ static inline struct dvb_multilingual_service_name_descriptor*
  * @param d dvb_multilingual_service_name_descriptor pointer,
  * @param pos Variable containing pointer to the current dvb_multilingual_service_name.
  */
-#define dvb_multilingual_service_name_descriptor_for_each(d, pos) \
+#define dvb_multilingual_service_name_descriptor_names_for_each(d, pos) \
 	for ((pos) = dvb_multilingual_service_name_descriptor_names_first(d); \
 	     (pos); \
 	     (pos) = dvb_multilingual_service_name_descriptor_names_next(d, pos))
