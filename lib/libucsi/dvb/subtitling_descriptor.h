@@ -107,7 +107,7 @@ static inline struct dvb_subtitling_entry*
 }
 
 static inline struct dvb_subtitling_entry*
-	dvb_subtitling_descriptor_subtitles_next(struct dvb_local_time_offset_descriptor *d,
+	dvb_subtitling_descriptor_subtitles_next(struct dvb_subtitling_descriptor *d,
 						 struct dvb_subtitling_entry *pos)
 {
 	uint8_t *end = (uint8_t*) d + 2 + d->d.len;
