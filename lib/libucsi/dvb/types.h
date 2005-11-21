@@ -31,6 +31,7 @@ extern "C"
 
 typedef uint8_t dvbdate_t[5];
 typedef uint8_t dvbduration_t[3];
+typedef uint8_t dvbhhmm_t[2];
 
 /**
  * Convert from a 5 byte DVB UTC date to unix time.
@@ -66,6 +67,23 @@ extern int dvbduration_to_seconds(dvbduration_t dvbduration);
  * @param dvbduration Pointer to 3 byte DVB duration.
  */
 extern void seconds_to_dvbduration(int seconds, dvbduration_t dvbduration);
+
+/**
+ * Convert from a DVB BCD HHMM to a number of seconds.
+ *
+ * @param dvbduration Pointer to 2 byte DVB HHMM.
+ * @return Number of seconds.
+ */
+extern int dvbhhmm_to_seconds(dvbhhmm_t dvbhhmm);
+
+/**
+ * Convert from a number of seconds to a DVB 2 byte BCD HHMM.
+ *
+ * @param seconds The number of seconds.
+ * @param dvbduration Pointer to 2 byte DVB HHMM.
+ */
+extern void seconds_to_dvbhhmm(int seconds, dvbhhmm_t dvbhhmm);
+
 
 #ifdef __cplusplus
 }

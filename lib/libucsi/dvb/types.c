@@ -104,6 +104,28 @@ void seconds_to_dvbduration(int seconds, dvbduration_t dvbduration)
 	dvbduration[2] = int_to_bcd(seconds);
 }
 
+int dvbhhmm_to_seconds(dvbhhmm_t dvbhhmm)
+{
+	int seconds = 0;
+
+	seconds += (bcd_to_int(dvbhhmm[0]) * 60 * 60);
+	seconds += (bcd_to_int(dvbhhmm[1]) * 60);
+
+	return seconds;
+}
+
+void seconds_to_dvbhhmm(int seconds, dvbhhmm_t dvbhhmm)
+{
+	int hours, mins;
+
+	hours = seconds / (60*60);
+	seconds -= (hours * 60 * 60);
+	mins = seconds / 60;
+
+	dvbhhmm[0] = int_to_bcd(hours);
+	dvbhhmm[1] = int_to_bcd(mins);
+}
+
 int int_to_bcd(int intval)
 {
 	if ((intval > 99) | (intval < 0))
