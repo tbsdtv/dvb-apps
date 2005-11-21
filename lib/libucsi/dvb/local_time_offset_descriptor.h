@@ -49,9 +49,9 @@ struct dvb_local_time_offset {
   EBIT3(uint8_t country_region_id		: 6; ,
 	uint8_t reserved			: 1; ,
 	uint8_t local_time_offset_polarity	: 1; );
-	uint16_t local_time_offset;
+	dvbhhmm_t local_time_offset;
 	dvbdate_t time_of_change;
-	uint16_t next_time_offset;
+	dvbhhmm_t next_time_offset;
 } packed;
 
 /**
@@ -64,16 +64,12 @@ static inline struct dvb_local_time_offset_descriptor*
 	dvb_local_time_offset_descriptor_codec(struct descriptor* d)
 {
 	int len = d->len;
-	uint8_t* buf = (uint8_t*) d + 2;
 	int pos = 0;
 
 	if (len % sizeof(struct dvb_local_time_offset))
 		return NULL;
 
 	while(pos < len) {
-		bswap16(buf+pos+4);
-		bswap16(buf+pos+9);
-
 		pos += sizeof(struct dvb_local_time_offset);
 	}
 
