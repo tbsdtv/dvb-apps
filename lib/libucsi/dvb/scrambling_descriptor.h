@@ -19,8 +19,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef _UCSI_DVB_CA_SYSTEM_DESCRIPTOR
-#define _UCSI_DVB_CA_SYSTEM_DESCRIPTOR 1
+#ifndef _UCSI_DVB_SCRAMBLING_DESCRIPTOR
+#define _UCSI_DVB_SCRAMBLING_DESCRIPTOR 1
 
 #ifdef __cplusplus
 extern "C"
@@ -30,7 +30,29 @@ extern "C"
 #include <ucsi/descriptor.h>
 #include <ucsi/endianops.h>
 
-// FIXME: implement this from the DAVIC specs when/if available.
+/**
+ * dvb_scrambling_descriptor structure.
+ */
+struct dvb_scrambling_descriptor {
+	struct descriptor d;
+
+	uint8_t scrambling_mode;
+} packed;
+
+/**
+ * Process a dvb_scrambling_descriptor.
+ *
+ * @param d Generic descriptor structure.
+ * @return Pointer to dvb_scrambling_descriptor, or NULL on error.
+ */
+static inline struct dvb_scrambling_descriptor*
+	dvb_scrambling_descriptor_codec(struct descriptor* d)
+{
+	if (d->len != (sizeof(struct dvb_scrambling_descriptor) - 2))
+		return NULL;
+
+	return (struct dvb_scrambling_descriptor*) d;
+}
 
 #ifdef __cplusplus
 }
