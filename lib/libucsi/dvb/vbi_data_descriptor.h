@@ -49,9 +49,9 @@ struct dvb_vbi_data_entry {
 } packed;
 
 /**
- * Format of the dvb_vbi_data_entry data field, if data_service_id == 1.
+ * Format of the dvb_vbi_data_entry data field, if data_service_id == 1,2,4,5,6,7.
  */
-struct dvb_vbi_data_1 {
+struct dvb_vbi_data_x {
   EBIT3(uint8_t reserved 	: 2; ,
 	uint8_t field_parity 	: 1; ,
 	uint8_t line_offset	: 5; );
@@ -109,6 +109,28 @@ static inline uint8_t *
 	dvb_vbi_data_entry_data(struct dvb_vbi_data_entry *d)
 {
 	return (uint8_t *) d + sizeof(struct dvb_vbi_data_entry);
+}
+
+/**
+ * Get a pointer to the data field of a dvb_vbi_data_x for id 1,2,4,5,6,7.
+ *
+ * @param d dvb_vbi_data_entry structure.
+ * @return Pointer to the data field, or NULL if invalid
+ */
+static inline struct dvb_vbi_data_x*
+	dvb_vbi_data_entry_data_x(struct dvb_vbi_data_entry *d)
+{
+	switch(d->data_service_id) {
+	case 1:
+	case 2:
+	case 4:
+	case 5:
+	case 6:
+	case 7:
+		return (struct dvb_vbi_data_x*) ((uint8_t *) d + sizeof(struct dvb_vbi_data_entry));
+	}
+
+	return NULL;
 }
 
 
