@@ -37,8 +37,11 @@ struct dvb_terrestrial_delivery_descriptor {
 	struct descriptor d;
 
 	uint32_t centre_frequency;
-  EBIT2(uint8_t bandwidth		: 3; ,
-	uint8_t reserved_1		: 5; );
+  EBIT5(uint8_t bandwidth		: 3; ,
+	uint8_t priority		: 1; ,
+	uint8_t time_slicing_indicator	: 1; ,
+	uint8_t mpe_fec_indicator	: 1; ,
+	uint8_t reserved_1		: 2; );
   EBIT3(uint8_t constellation		: 2; ,
 	uint8_t hierarchy_information	: 3; ,
 	uint8_t code_rate_hp_stream	: 3; );
