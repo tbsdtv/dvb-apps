@@ -44,7 +44,7 @@ extern "C"
 #include <ucsi/mpeg/maximum_bitrate_descriptor.h>
 /*#include <ucsi/mpeg/metadata_descriptor.h>*/
 /*#include <ucsi/mpeg/metadata_pointer_descriptor.h>*/
-/*#include <ucsi/mpeg/metadata_std.h>*/
+#include <ucsi/mpeg/metadata_std_descriptor.h>
 #include <ucsi/mpeg/multiplex_buffer_descriptor.h>
 #include <ucsi/mpeg/multiplex_buffer_utilization_descriptor.h>
 #include <ucsi/mpeg/muxcode_descriptor.h>
