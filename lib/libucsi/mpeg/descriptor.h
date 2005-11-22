@@ -31,7 +31,7 @@ extern "C"
 #include <ucsi/mpeg/mpeg4_video_descriptor.h>
 #include <ucsi/mpeg/audio_stream_descriptor.h>
 #include <ucsi/mpeg/ca_descriptor.h>
-/*#include <ucsi/mpeg/content_labelling_descriptor.h>*/
+#include <ucsi/mpeg/content_labelling_descriptor.h>
 #include <ucsi/mpeg/copyright_descriptor.h>
 #include <ucsi/mpeg/data_stream_alignment_descriptor.h>
 #include <ucsi/mpeg/external_es_id_descriptor.h>
