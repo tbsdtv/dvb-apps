@@ -19,37 +19,41 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef _UCSI_MPEG_SECTION_H
-#define _UCSI_MPEG_SECTION_H 1
+#ifndef _UCSI_DVB_ADAPTATION_FIELD_DATA_DESCRIPTOR
+#define _UCSI_DVB_ADAPTATION_FIELD_DATA_DESCRIPTOR 1
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-#include <ucsi/mpeg/cat_section.h>
-#include <ucsi/mpeg/odsmt_section.h>
-#include <ucsi/mpeg/pat_section.h>
-#include <ucsi/mpeg/pmt_section.h>
-#include <ucsi/mpeg/tsdt_section.h>
-/*#include <ucsi/mpeg/metadata_section.h>*/
-
-#define TRANSPORT_PAT_PID 0x00
-#define TRANSPORT_CAT_PID 0x01
-#define TRANSPORT_TSDT_PID 0x02
+#include <ucsi/descriptor.h>
+#include <ucsi/endianops.h>
 
 /**
- * Enumeration of MPEG section tags.
+ * dvb_adaptation_field_data_descriptor structure.
  */
-enum mpeg_section_tag {
-	stag_mpeg_program_association			= 0x00,
-	stag_mpeg_conditional_access			= 0x01,
-	stag_mpeg_program_map				= 0x02,
-	stag_mpeg_transport_stream_description		= 0x03,
-	stag_mpeg_iso14496_scene_description		= 0x04,
-	stag_mpeg_iso14496_object_description		= 0x05,
-	stag_mpeg_metadata				= 0x06,
-};
+struct dvb_adaptation_field_data_descriptor {
+	struct descriptor d;
+
+  EBIT2(uint8_t reserved			: 7; ,
+	uint8_t announcement_switching_data	: 1; );
+} packed;
+
+/**
+ * Process a dvb_adaptation_field_data_descriptor.
+ *
+ * @param d Generic descriptor structure.
+ * @return Pointer to dvb_adaptation_field_data_descriptor, or NULL on error.
+ */
+static inline struct dvb_adaptation_field_data_descriptor*
+	dvb_adaptation_field_data_descriptor_codec(struct descriptor* d)
+{
+	if (d->len != (sizeof(struct dvb_adaptation_field_data_descriptor) - 2))
+		return NULL;
+
+	return (struct dvb_adaptation_field_data_descriptor*) d;
+}
 
 #ifdef __cplusplus
 }

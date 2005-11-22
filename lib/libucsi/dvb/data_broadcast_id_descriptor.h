@@ -31,6 +31,14 @@ extern "C"
 #include <ucsi/endianops.h>
 
 /**
+ * List of defined broadcast_ids
+ */
+enum dvb_data_broadcast_ids_tag {
+	bidtag_mhp_object_carousel		= 0x00f0,
+	bidtag_mhp_mpe				= 0x00f1,
+};
+
+/**
  * dvb_data_broadcast_id_descriptor structure.
  */
 struct dvb_data_broadcast_id_descriptor {

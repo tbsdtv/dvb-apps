@@ -28,8 +28,10 @@ extern "C"
 #endif
 
 #include <ucsi/dvb/ac3_descriptor.h>
+#include <ucsi/dvb/adaptation_field_data_descriptor.h>
 #include <ucsi/dvb/ancillary_data_descriptor.h>
 #include <ucsi/dvb/announcement_support_descriptor.h>
+#include <ucsi/dvb/application_signalling_descriptor.h>
 #include <ucsi/dvb/bouquet_name_descriptor.h>
 #include <ucsi/dvb/ca_identifier_descriptor.h>
 #include <ucsi/dvb/cable_delivery_descriptor.h>
@@ -37,9 +39,11 @@ extern "C"
 #include <ucsi/dvb/cell_list_descriptor.h>
 #include <ucsi/dvb/component_descriptor.h>
 #include <ucsi/dvb/content_descriptor.h>
+/*#include <ucsi/dvb/content_identifier_descriptor.h>*/
 #include <ucsi/dvb/country_availability_descriptor.h>
 #include <ucsi/dvb/data_broadcast_descriptor.h>
 #include <ucsi/dvb/data_broadcast_id_descriptor.h>
+#include <ucsi/dvb/default_authority_descriptor.h>
 #include <ucsi/dvb/dsng_descriptor.h>
 #include <ucsi/dvb/extended_event_descriptor.h>
 #include <ucsi/dvb/frequency_list_descriptor.h>
@@ -56,9 +60,12 @@ extern "C"
 #include <ucsi/dvb/partial_transport_stream_descriptor.h>
 #include <ucsi/dvb/pdc_descriptor.h>
 #include <ucsi/dvb/private_data_specifier_descriptor.h>
+#include <ucsi/dvb/related_content_descriptor.h>
 #include <ucsi/dvb/satellite_delivery_descriptor.h>
 #include <ucsi/dvb/scrambling_descriptor.h>
+#include <ucsi/dvb/service_availability_descriptor.h>
 #include <ucsi/dvb/service_descriptor.h>
+#include <ucsi/dvb/service_identifier_descriptor.h>
 #include <ucsi/dvb/service_list_descriptor.h>
 #include <ucsi/dvb/service_move_descriptor.h>
 #include <ucsi/dvb/short_event_descriptor.h>
@@ -72,8 +79,30 @@ extern "C"
 #include <ucsi/dvb/time_shifted_event_descriptor.h>
 #include <ucsi/dvb/time_shifted_service_descriptor.h>
 #include <ucsi/dvb/transport_stream_descriptor.h>
+#include <ucsi/dvb/tva_id_descriptor.h>
 #include <ucsi/dvb/vbi_data_descriptor.h>
 #include <ucsi/dvb/vbi_teletext_descriptor.h>
+
+/*
+#include <ucsi/dvb/rnt_rar_over_dvb_stream_descriptor.h>
+#include <ucsi/dvb/rnt_rar_over_ip_descriptor.h>
+#include <ucsi/dvb/rnt_rnt_scan_descriptor.h>
+   
+#include <ucsi/dvb/ait_application_descriptor.h>
+#include <ucsi/dvb/ait_application_name_descriptor.h>
+#include <ucsi/dvb/ait_transport_protocol_descriptor.h>
+#include <ucsi/dvb/ait_dvb_j_application_descriptor.h>
+#include <ucsi/dvb/ait_dvb_j_application_location_descriptor.h>
+#include <ucsi/dvb/ait_external_application_authorisation_descriptor.h>
+#include <ucsi/dvb/ait_dvb_html_application_descriptor.h>
+#include <ucsi/dvb/ait_dvb_html_application_location_descriptor.h>
+#include <ucsi/dvb/ait_dvb_html_application_boundary_descriptor.h>
+#include <ucsi/dvb/ait_application_icons_descriptor.h>
+#include <ucsi/dvb/ait_prefetch_descriptor.h>
+#include <ucsi/dvb/ait_dii_location_descriptor.h>
+#include <ucsi/dvb/ait_ip_signalling_descriptor.h>
+*/
+
 #include <ucsi/endianops.h>
 
 /**
@@ -131,12 +160,32 @@ enum dvb_descriptor_tag {
 	dtag_dvb_adaptation_field_data		= 0x70,
 	dtag_dvb_service_identifier		= 0x71,
 	dtag_dvb_service_availability		= 0x72,
-	dtag_dvb_default_authoritry		= 0x73,
+	dtag_dvb_default_authority		= 0x73,
 	dtag_dvb_related_content		= 0x74,
 	dtag_dvb_tva_id				= 0x75,
 	dtag_dvb_content_identifier		= 0x76,
-	dtag_dvb_time_slive_fec_identifier	= 0x77,
+	dtag_dvb_time_slice_fec_identifier	= 0x77,
 	dtag_dvb_ecm_repetition_rate		= 0x78,
+
+	/* descriptors which may only appear in an RNT */
+	dtag_dvb_rnt_rar_over_dvb_stream	= 0x40,
+	dtag_dvb_rnt_rar_over_ip		= 0x41,
+	dtag_dvb_rnt_rnt_scan			= 0x42,
+
+	/* descriptors which may only appear in an AIT */
+	dtag_dvb_ait_application		= 0x00,
+	dtag_dvb_ait_application_name		= 0x01,
+	dtag_dvb_ait_transport_protocol		= 0x02,
+	dtag_dvb_ait_dvb_j_application		= 0x03,
+	dtag_dvb_ait_dvb_j_application_location	= 0x04,
+	dtag_dvb_ait_external_application_authorisation	= 0x05,
+	dtag_dvb_ait_dvb_html_application	= 0x08,
+	dtag_dvb_ait_dvb_html_application_location = 0x09,
+	dtab_dvb_ait_dvb_html_application_boundary = 0x0a,
+	dtag_dvb_ait_application_icons		= 0x0b,
+	dtag_dvb_ait_prefetch			= 0x0c,
+	dtag_dvb_ait_dii_location		= 0x0d,
+	dtag_dvb_ait_ip_signalling		= 0x11,
 } packed;
 
 #ifdef __cplusplus

@@ -32,8 +32,10 @@ INC = types.h \
       tot_section.h \
       descriptor.h \
       ac3_descriptor.h \
+      adaptation_field_data_descriptor.h \
       ancillary_data_descriptor.h \
       announcement_support_descriptor.h \
+      application_signalling_descriptor.h \
       bouquet_name_descriptor.h \
       ca_identifier_descriptor.h \
       ca_system_descriptor.h \
@@ -45,6 +47,7 @@ INC = types.h \
       country_availability_descriptor.h \
       data_broadcast_descriptor.h \
       data_broadcast_id_descriptor.h \
+      default_authority_descriptor.h \
       dsng_descriptor.h \
       extended_event_descriptor.h \
       frequency_list_descriptor.h \
@@ -61,9 +64,12 @@ INC = types.h \
       partial_transport_stream_descriptor.h \
       pdc_descriptor.h \
       private_data_specifier_descriptor.h \
+      related_content_descriptor.h \
       satellite_delivery_descriptor.h \
       scrambling_descriptor.h \
+      service_availability_descriptor.h \
       service_descriptor.h \
+      service_identifier_descriptor.h \
       service_list_descriptor.h \
       service_move_descriptor.h \
       short_event_descriptor.h \
@@ -77,6 +83,7 @@ INC = types.h \
       time_shifted_event_descriptor.h \
       time_shifted_service_descriptor.h \
       transport_stream_descriptor.h \
+      tva_id_descriptor.h \
       vbi_data_descriptor.h \
       vbi_teletext_descriptor.h
 

@@ -27,10 +27,15 @@ extern "C"
 {
 #endif
 
+/*#include <ucsi/dvb/ait_section.h>*/
 #include <ucsi/dvb/bat_section.h>
+/*#include <ucsi/dvb/cit_section.h>*/
+/*#include <ucsi/dvb/container_section.h>*/
 #include <ucsi/dvb/dit_section.h>
 #include <ucsi/dvb/eit_section.h>
 #include <ucsi/dvb/nit_section.h>
+/*#include <ucsi/dvb/rct_section.h>*/
+/*#include <ucsi/dvb/rnt_section.h>*/
 #include <ucsi/dvb/rst_section.h>
 #include <ucsi/dvb/sdt_section.h>
 #include <ucsi/dvb/sit_section.h>
@@ -43,9 +48,11 @@ extern "C"
 #define TRANSPORT_SDT_PID 0x11
 #define TRANSPORT_BAT_PID 0x11
 #define TRANSPORT_EIT_PID 0x12
+#define TRANSPORT_CIT_PID 0x12
 #define TRANSPORT_RST_PID 0x13
 #define TRANSPORT_TDT_PID 0x14
 #define TRANSPORT_TOT_PID 0x14
+#define TRANSPORT_RNT_PID 0x16
 #define TRANSPORT_DIT_PID 0x1e
 #define TRANSPORT_SIT_PID 0x1f
 
@@ -72,6 +79,12 @@ enum dvb_section_tag {
 	stag_dvb_running_status					= 0x71,
 	stag_dvb_stuffing					= 0x72,
 	stag_dvb_time_offset					= 0x73,
+	stag_dvb_application_information			= 0x74,
+	stag_dvb_container					= 0x75,
+	stag_dvb_related_content				= 0x76,
+	stag_dvb_content_identifier				= 0x77,
+	stag_dvb_mpe_fec					= 0x78,
+	stag_dvb_resolution_provider_notification		= 0x79,
 
 	stag_dvb_discontinuity_information			= 0x7e,
 	stag_dvb_selection_information				= 0x7f,

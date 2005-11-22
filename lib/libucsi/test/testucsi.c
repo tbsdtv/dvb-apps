@@ -2061,6 +2061,12 @@ void parse_descriptor(struct descriptor *d, int indent)
 	case dtag_dvb_adaptation_field_data:
 	case dtag_dvb_service_identifier:
 	case dtag_dvb_service_availability:
+	case dtag_dvb_default_authority:
+	case dtag_dvb_related_content:
+	case dtag_dvb_tva_id:
+	case dtag_dvb_content_identifier:
+	case dtag_dvb_time_slice_fec_identifier:
+	case dtag_dvb_ecm_repetition_rate:
 	default:
 		fprintf(stderr, "DSC XXXX Unknown descriptor_tag:0x%02x\n", d->tag);
 		return;

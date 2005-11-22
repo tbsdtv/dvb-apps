@@ -31,6 +31,7 @@ extern "C"
 #include <ucsi/mpeg/mpeg4_video_descriptor.h>
 #include <ucsi/mpeg/audio_stream_descriptor.h>
 #include <ucsi/mpeg/ca_descriptor.h>
+/*#include <ucsi/mpeg/content_labelling_descriptor.h>*/
 #include <ucsi/mpeg/copyright_descriptor.h>
 #include <ucsi/mpeg/data_stream_alignment_descriptor.h>
 #include <ucsi/mpeg/external_es_id_descriptor.h>
@@ -41,6 +42,9 @@ extern "C"
 #include <ucsi/mpeg/iod_descriptor.h>
 #include <ucsi/mpeg/iso_639_language_descriptor.h>
 #include <ucsi/mpeg/maximum_bitrate_descriptor.h>
+/*#include <ucsi/mpeg/metadata_descriptor.h>*/
+/*#include <ucsi/mpeg/metadata_pointer_descriptor.h>*/
+/*#include <ucsi/mpeg/metadata_std.h>*/
 #include <ucsi/mpeg/multiplex_buffer_descriptor.h>
 #include <ucsi/mpeg/multiplex_buffer_utilization_descriptor.h>
 #include <ucsi/mpeg/muxcode_descriptor.h>
@@ -85,6 +89,10 @@ enum mpeg_descriptor_tag {
 	dtag_mpeg_muxcode			= 0x21,
 	dtag_mpeg_fmxbuffer_size		= 0x22,
 	dtag_mpeg_multiplex_buffer		= 0x23,
+	dtag_mpeg_content_labelling		= 0x24,
+	dtag_mpeg_metadata_pointer		= 0x25,
+	dtag_mpeg_metadata			= 0x26,
+	dtag_mpeg_metadata_std			= 0x27,
 };
 
 #ifdef __cplusplus

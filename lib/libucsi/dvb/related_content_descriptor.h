@@ -19,37 +19,35 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef _UCSI_MPEG_SECTION_H
-#define _UCSI_MPEG_SECTION_H 1
+#ifndef _UCSI_DVB_RELATED_CONTENT_DESCRIPTOR
+#define _UCSI_DVB_RELATED_CONTENT_DESCRIPTOR 1
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-#include <ucsi/mpeg/cat_section.h>
-#include <ucsi/mpeg/odsmt_section.h>
-#include <ucsi/mpeg/pat_section.h>
-#include <ucsi/mpeg/pmt_section.h>
-#include <ucsi/mpeg/tsdt_section.h>
-/*#include <ucsi/mpeg/metadata_section.h>*/
-
-#define TRANSPORT_PAT_PID 0x00
-#define TRANSPORT_CAT_PID 0x01
-#define TRANSPORT_TSDT_PID 0x02
+#include <ucsi/descriptor.h>
+#include <ucsi/endianops.h>
 
 /**
- * Enumeration of MPEG section tags.
+ * dvb_related_content_descriptor structure.
  */
-enum mpeg_section_tag {
-	stag_mpeg_program_association			= 0x00,
-	stag_mpeg_conditional_access			= 0x01,
-	stag_mpeg_program_map				= 0x02,
-	stag_mpeg_transport_stream_description		= 0x03,
-	stag_mpeg_iso14496_scene_description		= 0x04,
-	stag_mpeg_iso14496_object_description		= 0x05,
-	stag_mpeg_metadata				= 0x06,
-};
+struct dvb_related_content_descriptor {
+	struct descriptor d;
+} packed;
+
+/**
+ * Process a dvb_related_content_descriptor.
+ *
+ * @param d Generic descriptor pointer.
+ * @return dvb_related_content_descriptor pointer, or NULL on error.
+ */
+static inline struct dvb_related_content_descriptor*
+	dvb_related_content_descriptor_codec(struct descriptor* d)
+{
+	return (struct dvb_related_content_descriptor*) d;
+}
 
 #ifdef __cplusplus
 }
