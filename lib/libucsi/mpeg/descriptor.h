@@ -42,7 +42,7 @@ extern "C"
 #include <ucsi/mpeg/iod_descriptor.h>
 #include <ucsi/mpeg/iso_639_language_descriptor.h>
 #include <ucsi/mpeg/maximum_bitrate_descriptor.h>
-/*#include <ucsi/mpeg/metadata_descriptor.h>*/
+#include <ucsi/mpeg/metadata_descriptor.h>
 #include <ucsi/mpeg/metadata_pointer_descriptor.h>
 #include <ucsi/mpeg/metadata_std_descriptor.h>
 #include <ucsi/mpeg/multiplex_buffer_descriptor.h>
