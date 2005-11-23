@@ -179,7 +179,21 @@ static inline struct dvb_content_identifier_entry*
 	if (next >= end)
 		return NULL;
 
-	return (struct dvb_content_identifier_entry *) next;
+	switch(pos->crid_location) {
+	case 0:
+		if ((next+2) >= end)
+			return NULL;
+		if ((next+2+next[1]) >= end)
+			return NULL;
+		break;
+
+	case 1:
+		if ((next+3) >= end)
+			return NULL;
+		break;
+	}
+
+	return (struct dvb_content_identifier_entry*) next;
 }
 
 #ifdef __cplusplus

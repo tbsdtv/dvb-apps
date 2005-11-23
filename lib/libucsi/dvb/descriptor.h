@@ -83,11 +83,11 @@ extern "C"
 #include <ucsi/dvb/vbi_data_descriptor.h>
 #include <ucsi/dvb/vbi_teletext_descriptor.h>
 
-/*
 #include <ucsi/dvb/rnt_rar_over_dvb_stream_descriptor.h>
 #include <ucsi/dvb/rnt_rar_over_ip_descriptor.h>
 #include <ucsi/dvb/rnt_rnt_scan_descriptor.h>
-   
+
+/*
 #include <ucsi/dvb/ait_application_descriptor.h>
 #include <ucsi/dvb/ait_application_name_descriptor.h>
 #include <ucsi/dvb/ait_transport_protocol_descriptor.h>
