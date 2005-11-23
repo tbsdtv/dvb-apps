@@ -68,7 +68,7 @@ struct mpeg_content_labelling_descriptor_flags {
  */
 struct mpeg_content_reference_id {
 	uint8_t content_reference_id_record_length;
-	/* uint8_t content_reference_id[] */
+	/* uint8_t data[] */
 } packed;
 
 /**
@@ -94,7 +94,7 @@ struct mpeg_content_id {
  */
 struct mpeg_time_base_association {
 	uint8_t time_base_association_data_length;
-	/* uint8_t reserved[] */
+	/* uint8_t data[] */
 } packed;
 
 
@@ -224,6 +224,18 @@ static inline struct mpeg_content_reference_id*
 }
 
 /**
+ * Accessor for data field of an mpeg_content_reference_id.
+ *
+ * @param d The mpeg_content_reference_id structure.
+ * @return Pointer to the field.
+ */
+static inline uint8_t*
+	mpeg_content_reference_id_data(struct mpeg_content_reference_id *d)
+{
+	return (uint8_t*) d + sizeof(struct mpeg_content_reference_id);
+}
+
+/**
  * Accessor for time_base field of an mpeg_content_labelling_descriptor.
  *
  * @param d The mpeg_content_labelling_descriptor structure.
@@ -294,6 +306,19 @@ static inline struct mpeg_time_base_association*
 
 	return (struct mpeg_time_base_association *) buf;
 }
+
+/**
+ * Accessor for data field of an mpeg_time_base_association.
+ *
+ * @param d The mpeg_time_base_association structure.
+ * @return Pointer to the field.
+ */
+static inline uint8_t*
+	mpeg_time_base_association_data(struct mpeg_time_base_association *d)
+{
+	return (uint8_t*) d + sizeof(struct mpeg_time_base_association);
+}
+
 
 /**
  * Accessor for private_data field of an mpeg_content_labelling_descriptor.
