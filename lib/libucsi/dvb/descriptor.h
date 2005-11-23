@@ -39,7 +39,7 @@ extern "C"
 #include <ucsi/dvb/cell_list_descriptor.h>
 #include <ucsi/dvb/component_descriptor.h>
 #include <ucsi/dvb/content_descriptor.h>
-/*#include <ucsi/dvb/content_identifier_descriptor.h>*/
+#include <ucsi/dvb/content_identifier_descriptor.h>
 #include <ucsi/dvb/country_availability_descriptor.h>
 #include <ucsi/dvb/data_broadcast_descriptor.h>
 #include <ucsi/dvb/data_broadcast_id_descriptor.h>
