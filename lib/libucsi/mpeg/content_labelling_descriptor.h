@@ -31,8 +31,15 @@ extern "C"
 #include <ucsi/endianops.h>
 
 /**
- * mpeg_content_labelling_descriptor structure. This descriptor is particularly
- * horrible to decode :(
+ * Possible values for content_time_base_indicator.
+ */
+enum {
+	MPEG_CONTENT_TIME_BASE_STC			= 0x01,
+	MPEG_CONTENT_TIME_BASE_NPT			= 0x02,
+};
+
+/**
+ * mpeg_content_labelling_descriptor structure.
  */
 struct mpeg_content_labelling_descriptor {
 	struct descriptor d;

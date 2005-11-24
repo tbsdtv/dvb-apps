@@ -32,6 +32,15 @@ extern "C"
 #include <ucsi/types.h>
 
 /**
+ * Possible values for audio_type.
+ */
+enum {
+	MPEG_AUDIO_TYPE_CLEAN_EFFECTS 			= 0x01,
+	MPEG_AUDIO_TYPE_HEARING_IMPAIRED 		= 0x02,
+	MPEG_AUDIO_TYPE_VISUAL_IMPAIRED_COMMENTARY 	= 0x03,
+};
+
+/**
  * mpeg_iso_639_language_descriptor structure.
  */
 struct mpeg_iso_639_language_descriptor {

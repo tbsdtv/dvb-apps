@@ -30,6 +30,8 @@ extern "C"
 #include <ucsi/descriptor.h>
 #include <ucsi/endianops.h>
 
+// FIXME: the nibbles
+
 /**
  * dvb_content_descriptor structure.
  */

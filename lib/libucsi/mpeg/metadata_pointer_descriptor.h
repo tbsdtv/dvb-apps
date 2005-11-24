@@ -31,8 +31,17 @@ extern "C"
 #include <ucsi/endianops.h>
 
 /**
- * mpeg_metadata_pointer_descriptor structure. This descriptor is particularly
- * horrible to decode :(
+ * Possible values for the mpeg_carriage_flags field.
+ */
+enum {
+	MPEG_CARRIAGE_SAME_TS					= 0x00,
+	MPEG_CARRIAGE_DIFFERENT_TS				= 0x01,
+	MPEG_CARRIAGE_PS					= 0x02,
+	MPEG_CARRIAGE_OTHER					= 0x03,
+};
+
+/**
+ * mpeg_metadata_pointer_descriptor structure.
  */
 struct mpeg_metadata_pointer_descriptor {
 	struct descriptor d;

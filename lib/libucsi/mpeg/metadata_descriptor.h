@@ -31,8 +31,18 @@ extern "C"
 #include <ucsi/endianops.h>
 
 /**
- * mpeg_metadata_descriptor structure. This descriptor is particularly
- * horrible to decode :(
+ * Values for the decoder_config_flags field.
+ */
+enum {
+	MPEG_DECODER_CONFIG_NONE				= 0x00,
+	MPEG_DECODER_CONFIG_IN_DECODER_CONFIG			= 0x01,
+	MPEG_DECODER_CONFIG_SAME_METADATA_SERVICE		= 0x02,
+	MPEG_DECODER_CONFIG_DSMCC				= 0x03,
+	MPEG_DECODER_CONFIG_SAME_PROGRAM			= 0x04,
+};
+
+/**
+ * mpeg_metadata_descriptor structure.
  */
 struct mpeg_metadata_descriptor {
 	struct descriptor d;

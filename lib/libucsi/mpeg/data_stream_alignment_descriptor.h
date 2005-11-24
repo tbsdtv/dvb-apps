@@ -31,6 +31,18 @@ extern "C"
 #include <ucsi/endianops.h>
 
 /**
+ * Possible values for alignment_type.
+ */
+enum {
+	MPEG_DATA_STREAM_ALIGNMENT_VIDEO_SLICE_OR_AU		= 0x01,
+	MPEG_DATA_STREAM_ALIGNMENT_VIDEO_AU			= 0x02,
+	MPEG_DATA_STREAM_ALIGNMENT_VIDEO_GOP_OR_SEQ		= 0x03,
+	MPEG_DATA_STREAM_ALIGNMENT_VIDEO_SEQ			= 0x04,
+
+	MPEG_DATA_STREAM_ALIGNMENT_AUDIO_SYNC_WORD		= 0x01,
+};
+
+/**
  * mpeg_data_stream_alignment_descriptor structure.
  */
 struct mpeg_data_stream_alignment_descriptor {

@@ -31,11 +31,48 @@ extern "C"
 #include <ucsi/endianops.h>
 
 /**
+ * Possible values for announcement_support_indicator.
+ */
+enum {
+	DVB_ANNOUNCEMENT_SUPPORT_EMERGENCY		= 0x01,
+	DVB_ANNOUNCEMENT_SUPPORT_ROAD_TRAFFIC_FLASH	= 0x02,
+	DVB_ANNOUNCEMENT_SUPPORT_PUBLIC_TRANSPORT_FLASH	= 0x04,
+	DVB_ANNOUNCEMENT_SUPPORT_WARNING_MESSAGE	= 0x08,
+	DVB_ANNOUNCEMENT_SUPPORT_NEWS_FLASH		= 0x10,
+	DVB_ANNOUNCEMENT_SUPPORT_WEATHER_FLASH		= 0x20,
+	DVB_ANNOUNCEMENT_SUPPORT_EVENT_ANNOUNCEMENT	= 0x40,
+	DVB_ANNOUNCEMENT_SUPPORT_PERSONAL_CALL		= 0x80,
+};
+
+/**
+ * Possible values for announcement_type.
+ */
+enum {
+	DVB_ANNOUNCEMENT_TYPE_EMERGENCY			= 0x00,
+	DVB_ANNOUNCEMENT_TYPE_ROAD_TRAFFIC_FLASH	= 0x01,
+	DVB_ANNOUNCEMENT_TYPE_PUBLIC_TRANSPORT_FLASH	= 0x02,
+	DVB_ANNOUNCEMENT_TYPE_WARNING_MESSAGE		= 0x03,
+	DVB_ANNOUNCEMENT_TYPE_NEWS_FLASH		= 0x04,
+	DVB_ANNOUNCEMENT_TYPE_WEATHER_FLASH		= 0x05,
+	DVB_ANNOUNCEMENT_TYPE_EVENT_ANNOUNCEMENT	= 0x06,
+	DVB_ANNOUNCEMENT_TYPE_PERSONAL_CALL		= 0x07,
+};
+
+/**
+ * Possible values for reference_type.
+ */
+enum {
+	DVB_REFERENCE_TYPE_AUDIO			= 0x00,
+	DVB_REFERENCE_TYPE_OTHER_AUDIO			= 0x01,
+	DVB_REFERENCE_TYPE_OTHER_SERVICE		= 0x02,
+	DVB_REFERENCE_TYPE_OTHER_TS			= 0x03,
+};
+
+/**
  * dvb_announcement_support_descriptor structure.
  */
 struct dvb_announcement_support_descriptor {
 	struct descriptor d;
-
 	uint16_t announcement_support_indicator;
 	/* struct dvb_announcement_support_entry entries[] */
 } packed;

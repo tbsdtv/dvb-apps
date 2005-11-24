@@ -2049,11 +2049,15 @@ void parse_descriptor(struct descriptor *d, int indent)
 			fprintf(stderr, "DSC XXXX dvb_ancillary_data_descriptor decode error\n");
 			return;
 		}
-		iprintf(indent, "DSC ancillary_data_identifier:0x%02x\n",
-			dx->ancillary_data_identifier);
+		iprintf(indent, "DSC scale_factor_error_check:%i dab_ancillary_data:%i announcement_switching_data:%i extended_ancillary_data:%i dvd_video_ancillary_data:%i\n",
+			dx->scale_factor_error_check,
+			dx->dab_ancillary_data,
+			dx->announcement_switching_data,
+			dx->extended_ancillary_data,
+			dx->dvd_video_ancillary_data);
 		break;
 	}
-
+	   
 	case dtag_dvb_cell_list:
 	case dtag_dvb_cell_frequency_link:
 	case dtag_dvb_announcement_support:

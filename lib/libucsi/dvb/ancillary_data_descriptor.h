@@ -35,8 +35,12 @@ extern "C"
  */
 struct dvb_ancillary_data_descriptor {
 	struct descriptor d;
-
-	uint8_t ancillary_data_identifier;
+  EBIT6(uint8_t reserved			: 3; ,
+	uint8_t scale_factor_error_check	: 1; ,
+	uint8_t dab_ancillary_data		: 1; ,
+	uint8_t announcement_switching_data	: 1; ,
+	uint8_t extended_ancillary_data		: 1; ,
+	uint8_t dvd_video_ancillary_data	: 1; );
 } packed;
 
 /**

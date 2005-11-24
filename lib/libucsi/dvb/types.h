@@ -34,6 +34,16 @@ typedef uint8_t dvbduration_t[3];
 typedef uint8_t dvbhhmm_t[2];
 
 /**
+ * Running status values.
+ */
+enum {
+	DVB_RUNNING_STATUS_NOT_RUNNING			= 0x01,
+	DVB_RUNNING_STATUS_FEW_SECONDS			= 0x02,
+	DVB_RUNNING_STATUS_PAUSING			= 0x03,
+	DVB_RUNNING_STATUS_RUNNING			= 0x04,
+};
+
+/**
  * Convert from a 5 byte DVB UTC date to unix time.
  * Note: this functions expects the DVB date in network byte order.
  *

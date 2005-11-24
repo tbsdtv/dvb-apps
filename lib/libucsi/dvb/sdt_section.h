@@ -64,7 +64,7 @@ struct dvb_sdt_section * dvb_sdt_section_codec(struct section_ext *section);
 
 /**
  * Accessor for the transport_stream_id field of an SDT.
- * 
+ *
  * @param sdt SDT pointer.
  * @return The transport_stream_id.
  */
@@ -99,7 +99,7 @@ static inline uint16_t dvb_sdt_section_transport_stream_id(struct dvb_sdt_sectio
 
 
 
-   
+
 
 
 
