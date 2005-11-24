@@ -31,6 +31,18 @@ extern "C"
 #include <ucsi/endianops.h>
 
 /**
+ * Possible values for the data_service_id field.
+ */
+enum {
+	DVB_VBI_DATA_SERVICE_ID_EBU		= 0x01,
+	DVB_VBI_DATA_SERVICE_ID_INVERTED	= 0x02,
+	DVB_VBI_DATA_SERVICE_ID_VPS		= 0x04,
+	DVB_VBI_DATA_SERVICE_ID_WSS		= 0x05,
+	DVB_VBI_DATA_SERVICE_ID_CC		= 0x06,
+	DVB_VBI_DATA_SERVICE_ID_MONO_422	= 0x07,
+};
+
+/**
  * dvb_vbi_data_descriptor structure
  */
 struct dvb_vbi_data_descriptor {

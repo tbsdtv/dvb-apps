@@ -31,6 +31,28 @@ extern "C"
 #include <ucsi/endianops.h>
 
 /**
+ * Possible values for service_type.
+ */
+enum {
+	DVB_SERVICE_TYPE_DIGITAL_TV		= 0x01,
+	DVB_SERVICE_TYPE_DIGITAL_RADIO		= 0x02,
+	DVB_SERVICE_TYPE_TELETEXT		= 0x03,
+	DVB_SERVICE_TYPE_NVOD_REF		= 0x04,
+	DVB_SERVICE_TYPE_NVOD_TIMESHIFT		= 0x05,
+	DVB_SERVICE_TYPE_MOSAIC			= 0x06,
+	DVB_SERVICE_TYPE_PAL			= 0x07,
+	DVB_SERVICE_TYPE_SECAM			= 0x08,
+	DVB_SERVICE_TYPE_D_D2_MAC		= 0x09,
+	DVB_SERVICE_TYPE_FM_RADIO		= 0x0a,
+	DVB_SERVICE_TYPE_NTSC			= 0x0b,
+	DVB_SERVICE_TYPE_DATA_BCAST		= 0x0c,
+	DVB_SERVICE_TYPE_EN50221		= 0x0d,
+	DVB_SERVICE_TYPE_RCS_MAP		= 0x0e,
+	DVB_SERVICE_TYPE_RCS_FLS		= 0x0f,
+	DVB_SERVICE_TYPE_MHP			= 0x10,
+};
+
+/**
  * dvb_service_descriptor structure.
  */
 struct dvb_service_descriptor {

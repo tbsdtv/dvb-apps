@@ -32,6 +32,17 @@ extern "C"
 #include <ucsi/types.h>
 
 /**
+ * Possible values for the type field.
+ */
+enum {
+	DVB_TELETEXT_TYPE_INITIAL		= 0x01,
+	DVB_TELETEXT_TYPE_SUBTITLE		= 0x02,
+	DVB_TELETEXT_TYPE_ADDITIONAL		= 0x03,
+	DVB_TELETEXT_TYPE_SCHEDULE		= 0x04,
+	DVB_TELETEXT_TYPE_SUBTITLE_HEARING_IMPAIRED= 0x05,
+};
+
+/**
  * dvb_teletext_descriptor structure.
  */
 struct dvb_teletext_descriptor {

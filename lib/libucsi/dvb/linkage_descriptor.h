@@ -32,6 +32,41 @@ extern "C"
 #include <ucsi/types.h>
 
 /**
+ * Possible values for linkage_type.
+ */
+enum {
+	DVB_LINKAGE_TYPE_INFORMATION			= 0x01,
+	DVB_LINKAGE_TYPE_EPG				= 0x02,
+	DVB_LINKAGE_TYPE_CA_REPLACEMENT			= 0x03,
+	DVB_LINKAGE_TYPE_TS_WITH_BAT_NIT		= 0x04,
+	DVB_LINKAGE_TYPE_SERVICE_REPLACMENT		= 0x05,
+	DVB_LINKAGE_TYPE_DATA_BCAST			= 0x06,
+	DVB_LINKAGE_TYPE_RCS_MAP			= 0x07,
+	DVB_LINKAGE_TYPE_MOBILE_HANDOVER		= 0x08,
+	DVB_LINKAGE_TYPE_SOFTWARE_UPDATE		= 0x09,
+	DVB_LINKAGE_TYPE_TS_WITH_SSU_BAT_NIT		= 0x0a,
+	DVB_LINKAGE_TYPE_IP_MAC_NOTIFICATION		= 0x0b,
+	DVB_LINKAGE_TYPE_TS_WITH_INT_BAT_NIT		= 0x0c,
+};
+
+/**
+ * Possible values for hand_over_type.
+ */
+enum {
+	DVB_HAND_OVER_TYPE_IDENTICAL_NEIGHBOURING_COUNTRY	= 0x01,
+	DVB_HAND_OVER_TYPE_LOCAL_VARIATION			= 0x02,
+	DVB_HAND_OVER_TYPE_ASSOCIATED_SERVICE			= 0x03,
+};
+
+/**
+ * Possible values for origin_type.
+ */
+enum {
+	DVB_ORIGIN_TYPE_NIT				= 0x00,
+	DVB_ORIGIN_TYPE_SDT				= 0x01,
+};
+
+/**
  * dvb_linkage_descriptor structure.
  */
 struct dvb_linkage_descriptor {
