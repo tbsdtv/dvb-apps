@@ -31,6 +31,25 @@ extern "C"
 #include <ucsi/endianops.h>
 #include <ucsi/types.h>
 
+
+/**
+ * Possible values for the crid_type.
+ */
+enum {
+	DVB_CRID_TYPE_NONE		= 0x00,
+	DVB_CRID_TYPE_ITEM		= 0x01,
+	DVB_CRID_TYPE_SERIES		= 0x02,
+	DVB_CRID_TYPE_RECOMMENDATION	= 0x03,
+};
+
+/**
+ * Possible values for the crid_location.
+ */
+enum {
+	DVB_CRID_LOCATION_THIS_DESCRIPTOR	= 0x00,
+	DVB_CRID_LOCATION_CIT			= 0x01,
+};
+
 /**
  * dvb_content_identifier_descriptor structure.
  */

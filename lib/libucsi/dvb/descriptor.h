@@ -87,9 +87,10 @@ extern "C"
 #include <ucsi/dvb/rnt_rar_over_ip_descriptor.h>
 #include <ucsi/dvb/rnt_rnt_scan_descriptor.h>
 
-/*
 #include <ucsi/dvb/ait_application_descriptor.h>
 #include <ucsi/dvb/ait_application_name_descriptor.h>
+
+   /*
 #include <ucsi/dvb/ait_transport_protocol_descriptor.h>
 #include <ucsi/dvb/ait_dvb_j_application_descriptor.h>
 #include <ucsi/dvb/ait_dvb_j_application_location_descriptor.h>
@@ -97,7 +98,10 @@ extern "C"
 #include <ucsi/dvb/ait_dvb_html_application_descriptor.h>
 #include <ucsi/dvb/ait_dvb_html_application_location_descriptor.h>
 #include <ucsi/dvb/ait_dvb_html_application_boundary_descriptor.h>
+    */
+   
 #include <ucsi/dvb/ait_application_icons_descriptor.h>
+   /*
 #include <ucsi/dvb/ait_prefetch_descriptor.h>
 #include <ucsi/dvb/ait_dii_location_descriptor.h>
 #include <ucsi/dvb/ait_ip_signalling_descriptor.h>
