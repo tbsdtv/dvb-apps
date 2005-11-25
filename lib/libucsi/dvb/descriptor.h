@@ -94,7 +94,9 @@ extern "C"
 #include <ucsi/dvb/ait_transport_protocol_descriptor.h>
 #include <ucsi/dvb/ait_dvb_j_application_descriptor.h>
 #include <ucsi/dvb/ait_dvb_j_application_location_descriptor.h>
+    */
 #include <ucsi/dvb/ait_external_application_authorisation_descriptor.h>
+   /*
 #include <ucsi/dvb/ait_dvb_html_application_descriptor.h>
 #include <ucsi/dvb/ait_dvb_html_application_location_descriptor.h>
 #include <ucsi/dvb/ait_dvb_html_application_boundary_descriptor.h>
