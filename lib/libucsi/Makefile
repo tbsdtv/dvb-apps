@@ -23,7 +23,7 @@ INSTDIR= /usr/local
 
 .PHONY: symlink all mpeg dvb atsc test
 
-all: symlink $(STATICLIB) $(SHAREDLIB) test
+all: symlink $(STATICLIB) $(SHAREDLIB) 
 
 symlink:
 	@rm -f ucsi
