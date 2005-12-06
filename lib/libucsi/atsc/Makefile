@@ -18,8 +18,8 @@ $(TARGET): $(OBJ)
 	$(LD) $(LDFLAGS) $(OBJ) -o $(TARGET)
 
 install: $(LIB) $(INC)
-	mkdir -p $(INSTDIR)/include/dvb/si/atsc
-	cp -f $(INC) $(INSTDIR)/include/dvb/si/atsc
+	mkdir -p $(INSTDIR)/include/atsc
+	cp -f $(INC) $(INSTDIR)/include/atsc
 
 clean:
 	rm -f *.d *.o $(TARGET) test *~ *#
