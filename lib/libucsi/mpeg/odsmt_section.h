@@ -41,23 +41,28 @@ struct mpeg_odsmt_section {
 	/* uint8_t object_descriptors[] */
 } packed;
 
+struct mpeg_odsmt_stream_single
+{
+	uint16_t esid;
+	uint8_t es_info_length;
+	/* struct descriptor descriptors[] */
+} packed;
+
+struct mpeg_odsmt_stream_multi
+{
+	uint16_t esid;
+	uint8_t fmc;
+	uint8_t es_info_length;
+	/* struct descriptor descriptors[] */
+} packed;
+
 /**
  * Structure describing the stream information held in an mpeg_odsmt_section.
  */
 struct mpeg_odsmt_stream {
 	union {
-		struct mpeg_odsmt_stream_single {
-			uint16_t esid;
-			uint8_t es_info_length;
-			/* struct descriptor descriptors[] */
-		} single packed;
-
-		struct mpeg_odsmt_stream_multi {
-			uint16_t esid;
-			uint8_t fmc;
-			uint8_t es_info_length;
-			/* struct descriptor descriptors[] */
-		} multi packed;
+		struct mpeg_odsmt_stream_single single packed;
+		struct mpeg_odsmt_stream_multi multi packed;
 	} u packed;
 } packed;
 
@@ -71,7 +76,7 @@ extern struct mpeg_odsmt_section *mpeg_odsmt_section_codec(struct section_ext *s
 
 /**
  * Accessor for the PID field of an ODSMT.
- * 
+ *
  * @param odsmt odsmt pointer.
  * @return The pid.
  */
