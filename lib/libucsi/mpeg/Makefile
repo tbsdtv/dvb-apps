@@ -59,8 +59,8 @@ $(TARGET): $(OBJ)
 	$(LD) $(LDFLAGS) $(OBJ) -o $(TARGET)
 
 install: $(LIB) $(INC)
-	mkdir -p $(INSTDIR)/include/mpeg
-	cp -f $(INC) $(INSTDIR)/include/mpeg
+	mkdir -p $(INSTDIR)/include/ucsi/mpeg
+	cp -f $(INC) $(INSTDIR)/include/ucsi/mpeg
 
 clean:
 	rm -f *.d *.o $(TARGET) test *~ *#

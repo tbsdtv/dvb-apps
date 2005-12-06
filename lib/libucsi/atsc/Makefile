@@ -18,8 +18,8 @@ $(TARGET): $(OBJ)
 	$(LD) $(LDFLAGS) $(OBJ) -o $(TARGET)
 
 install: $(LIB) $(INC)
-	mkdir -p $(INSTDIR)/include/atsc
-	cp -f $(INC) $(INSTDIR)/include/atsc
+	mkdir -p $(INSTDIR)/include/ucsi/atsc
+	cp -f $(INC) $(INSTDIR)/include/ucsi/atsc
 
 clean:
 	rm -f *.d *.o $(TARGET) test *~ *#

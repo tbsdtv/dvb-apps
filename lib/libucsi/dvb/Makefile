@@ -105,8 +105,8 @@ $(TARGET): $(OBJ)
 	$(LD) $(LDFLAGS) $(OBJ) -o $(TARGET)
 
 install: $(LIB) $(INC)
-	mkdir -p $(INSTDIR)/include/dvb
-	cp -f $(INC) $(INSTDIR)/include/dvb
+	mkdir -p $(INSTDIR)/include/ucsi/dvb
+	cp -f $(INC) $(INSTDIR)/include/ucsi/dvb
 
 clean:
 	rm -f *.d *.o $(TARGET) test *~ *#

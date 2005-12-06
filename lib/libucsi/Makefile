@@ -44,11 +44,11 @@ install: $(SHAREDLIB) $(STATICLIB) $(INC)
 	make -C dvb install INSTDIR=$(INSTDIR)
 	make -C atsc install INSTDIR=$(INSTDIR)
 	mkdir -p $(INSTDIR)/lib
-	mkdir -p $(INSTDIR)/include
+	mkdir -p $(INSTDIR)/include/ucsi
 	cp -f $(STATICLIB) $(INSTDIR)/lib
 	cp -f $(SHAREDLIB) $(INSTDIR)/lib
 	strip $(INSTDIR)/lib/$(SHAREDLIB)
-	cp -f $(INC) $(INSTDIR)/include
+	cp -f $(INC) $(INSTDIR)/include/ucsi
 
 mpeg:
 	$(MAKE) -C mpeg
