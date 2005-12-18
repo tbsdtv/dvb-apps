@@ -46,6 +46,7 @@
 
 #include <linux/dvb/frontend.h>
 #include <linux/dvb/dmx.h>
+#include <linux/dvb/audio.h>
 #include "lnb.h"
 
 #ifndef TRUE
@@ -65,6 +66,7 @@
 
 #define FRONTENDDEVICE "/dev/dvb/adapter%d/frontend%d"
 #define DEMUXDEVICE "/dev/dvb/adapter%d/demux%d"
+#define AUDIODEVICE "/dev/dvb/adapter%d/audio%d"
 
 static struct lnb_types_st lnb_type;
 
@@ -80,6 +82,7 @@ static char *usage_str =
     "     -f number : use given frontend (default 0)\n"
     "     -d number : use given demux (default 0)\n"
     "     -c file   : read channels list from 'file'\n"
+    "     -b        : enable Audio Bypass (default no)\n"
     "     -x        : exit after tuning\n"
     "     -r        : set up /dev/dvb/adapterX/dvr0 for TS recording\n"
     "     -l lnb-type (DVB-S Only) (use -l help to print types) or \n"
@@ -292,10 +295,10 @@ static
 int zap_to(unsigned int adapter, unsigned int frontend, unsigned int demux,
       unsigned int sat_no, unsigned int freq, unsigned int pol,
       unsigned int sr, unsigned int vpid, unsigned int apid, int sid,
-      int dvr, int rec_psi)
+      int dvr, int rec_psi, int bypass)
 {
-   char fedev[128], dmxdev[128];
-   static int fefd, videofd, audiofd, patfd, pmtfd;
+   char fedev[128], dmxdev[128], auddev[128];
+   static int fefd, dmxfd, audiofd = -1, patfd, pmtfd;
    int pmtpid;
    uint32_t ifreq;
    int hiband, result;
@@ -304,6 +307,7 @@ int zap_to(unsigned int adapter, unsigned int frontend, unsigned int demux,
    if (!fefd) {
       snprintf(fedev, sizeof(fedev), FRONTENDDEVICE, adapter, frontend);
       snprintf(dmxdev, sizeof(dmxdev), DEMUXDEVICE, adapter, demux);
+      snprintf(auddev, sizeof(auddev), AUDIODEVICE, adapter, demux);
       printf("using '%s' and '%s'\n", fedev, dmxdev);
 
       if ((fefd = open(fedev, O_RDWR | O_NONBLOCK)) < 0) {
@@ -325,24 +329,20 @@ int zap_to(unsigned int adapter, unsigned int frontend, unsigned int demux,
 	 return FALSE;
       }
 
-      if ((videofd = open(dmxdev, O_RDWR)) < 0) {
+      if ((dmxfd = open(dmxdev, O_RDWR)) < 0) {
 	 perror("opening video demux failed");
 	 close(fefd);
 	 return FALSE;
       }
 
-      if ((audiofd = open(dmxdev, O_RDWR)) < 0) {
-	 perror("opening audio demux failed");
-	 close(videofd);
-	 close(fefd);
-	 return FALSE;
-      }
+      if (dvr == 0)	/* DMX_OUT_DECODER */
+	 audiofd = open(auddev, O_RDWR);
 
       if (rec_psi){
          if ((patfd = open(dmxdev, O_RDWR)) < 0) {
 	    perror("opening audio demux failed");
 	    close(audiofd);
-	    close(videofd);
+	    close(dmxfd);
 	    close(fefd);
 	    return FALSE;
          }
@@ -351,7 +351,7 @@ int zap_to(unsigned int adapter, unsigned int frontend, unsigned int demux,
 	    perror("opening audio demux failed");
 	    close(patfd);
 	    close(audiofd);
-	    close(videofd);
+	    close(dmxfd);
 	    close(fefd);
 	    return FALSE;
          }
@@ -375,8 +375,10 @@ int zap_to(unsigned int adapter, unsigned int frontend, unsigned int demux,
 
    if (diseqc(fefd, sat_no, pol, hiband))
       if (do_tune(fefd, ifreq, sr))
-	 if (set_demux(videofd, vpid, DMX_PES_VIDEO, dvr))
-	    if (set_demux(audiofd, apid, DMX_PES_AUDIO, dvr)) {
+	 if (set_demux(dmxfd, vpid, DMX_PES_VIDEO, dvr))
+	    if (audiofd >= 0)
+	       (void)ioctl(audiofd, AUDIO_SET_BYPASS_MODE, bypass);
+	    if (set_demux(dmxfd, apid, DMX_PES_AUDIO, dvr)) {
 	       if (rec_psi) {
 	          pmtpid = get_pmt_pid(dmxdev, sid);
 		  if (pmtpid < 0) {
@@ -399,8 +401,9 @@ int zap_to(unsigned int adapter, unsigned int frontend, unsigned int demux,
    if (!interactive) {
       close(patfd);
       close(pmtfd);
-      close(audiofd);
-      close(videofd);
+      if (audiofd >= 0)
+	 close(audiofd);
+      close(dmxfd);
       close(fefd);
    }
 
@@ -411,7 +414,8 @@ int zap_to(unsigned int adapter, unsigned int frontend, unsigned int demux,
 static int read_channels(const char *filename, int list_channels,
 			 uint32_t chan_no, const char *chan_name,
 			 unsigned int adapter, unsigned int frontend,
-			 unsigned int demux, int dvr, int rec_psi)
+			 unsigned int demux, int dvr, int rec_psi,
+			 int bypass)
 {
    FILE *cfp;
    char buf[4096];
@@ -504,6 +508,18 @@ again:
 	 if (!(field = strsep(&tmp, ":")))
 	    goto syntax_err;
 
+	 p = strchr(field, ';');
+
+	 if (p) {
+	    *p = '\0';
+	    p++;
+	    if (bypass) {
+	       if (!p || !*p)
+		  goto syntax_err;
+	       field = p;
+	    }
+	 }
+
 	 apid = strtoul(field, NULL, 0);
 	 if (!apid)
             apid = 0x1fff;
@@ -519,8 +535,8 @@ again:
 
 	 fclose(cfp);
 
-	 ret = zap_to(adapter, frontend, demux,
-		      sat_no, freq * 1000, pol, sr, vpid, apid, sid, dvr, rec_psi);
+	 ret = zap_to(adapter, frontend, demux, sat_no, freq * 1000,
+		      pol, sr, vpid, apid, sid, dvr, rec_psi, bypass);
 	 if (interactive)
 	    goto again;
 
@@ -584,16 +600,20 @@ int main(int argc, char *argv[])
    unsigned int chan_no = 0;
    const char *chan_name = NULL;
    unsigned int adapter = 0, frontend = 0, demux = 0, dvr = 0, rec_psi = 0;
+   int bypass = 0;
    int opt, copt = 0;
 
    lnb_type = *lnb_enum(0);
-   while ((opt = getopt(argc, argv, "hqrpn:a:f:d:c:l:xi")) != -1) {
+   while ((opt = getopt(argc, argv, "hqrpn:a:f:d:c:l:xib")) != -1) {
       switch (opt)
       {
 	 case '?':
 	 case 'h':
 	 default:
 	    bad_usage(argv[0], 0);
+	 case 'b':
+	    bypass = 1;
+	    break;
 	 case 'q':
 	    list_channels = 1;
 	    break;
@@ -669,7 +689,7 @@ int main(int argc, char *argv[])
       dvr=1;
 
    if (!read_channels(chanfile, list_channels, chan_no, chan_name,
-	    adapter, frontend, demux, dvr, rec_psi))
+	    adapter, frontend, demux, dvr, rec_psi, bypass))
       return TRUE;
 
    return FALSE;
