@@ -248,7 +248,7 @@ int FEReadStatus(int fd, fe_status_t *stat)
 {
 	int ans;
 
-	if ( (ans = ioctl(fd,FE_READ_STATUS,stat) < 0)){
+	if ((ans = ioctl(fd,FE_READ_STATUS,stat)) < 0) {
 		perror("FE READ STATUS: ");
 		return -1;
 	}

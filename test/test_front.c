@@ -40,7 +40,7 @@ int OSTSelftest(int fd)
 {
 	int ans;
 
-	if ( (ans = ioctl(fd,OST_SELFTEST,0) < 0)){
+	if ((ans = ioctl(fd,OST_SELFTEST,0)) < 0) {
 		perror("OST SELF TEST: ");
 		return -1;
 	}
@@ -52,7 +52,7 @@ int OSTSetPowerState(int fd, uint32_t state)
 {
 	int ans;
 
-	if ( (ans = ioctl(fd,OST_SET_POWER_STATE,state) < 0)){
+	if ((ans = ioctl(fd,OST_SET_POWER_STATE,state)) < 0) {
 		perror("OST SET POWER STATE: ");
 		return -1;
 	}
@@ -64,7 +64,7 @@ int OSTGetPowerState(int fd, uint32_t *state)
 {
 	int ans;
 
-	if ( (ans = ioctl(fd,OST_GET_POWER_STATE,state) < 0)){
+	if ((ans = ioctl(fd,OST_GET_POWER_STATE,state)) < 0) {
 		perror("OST GET POWER STATE: ");
 		return -1;
 	}
@@ -95,7 +95,7 @@ int FEReadStatus(int fd)
 	int ans;
 	feStatus stat;
 
-	if ( (ans = ioctl(fd,FE_READ_STATUS,&stat) < 0)){
+	if ((ans = ioctl(fd,FE_READ_STATUS,&stat)) < 0) {
 		perror("FE READ STATUS: ");
 		return -1;
 	}
@@ -116,7 +116,7 @@ int FEReadBER(int fd, uint32_t *ber)
 {
 	int ans;
 
-	if ( (ans = ioctl(fd,FE_READ_BER, ber) < 0)){
+	if ((ans = ioctl(fd,FE_READ_BER, ber)) < 0) {
 		perror("FE READ_BER: ");
 		return -1;
 	}
@@ -129,7 +129,7 @@ int FEReadSignalStrength(int fd, int32_t *strength)
 {
 	int ans;
 
-	if ( (ans = ioctl(fd,FE_READ_SIGNAL_STRENGTH, strength) < 0)){
+	if ((ans = ioctl(fd,FE_READ_SIGNAL_STRENGTH, strength)) < 0) {
 		perror("FE READ SIGNAL STRENGTH: ");
 		return -1;
 	}
@@ -142,7 +142,7 @@ int FEReadSNR(int fd, int32_t *snr)
 {
 	int ans;
 
-	if ( (ans = ioctl(fd,FE_READ_SNR, snr) < 0)){
+	if ((ans = ioctl(fd,FE_READ_SNR, snr)) < 0) {
 		perror("FE READ_SNR: ");
 		return -1;
 	}
@@ -156,7 +156,7 @@ int FEReadUncorrectedBlocks(int fd, uint32_t *ucb)
 {
 	int ans;
 
-	if ( (ans = ioctl(fd,FE_READ_UNCORRECTED_BLOCKS, ucb) < 0)){
+	if ((ans = ioctl(fd,FE_READ_UNCORRECTED_BLOCKS, ucb)) < 0) {
 		perror("FE READ UNCORRECTED BLOCKS: ");
 		return -1;
 	}
@@ -169,7 +169,7 @@ int FEGetNextFrequency(int fd, uint32_t *nfr)
 {
 	int ans;
 
-	if ( (ans = ioctl(fd,FE_GET_NEXT_FREQUENCY, nfr) < 0)){
+	if ((ans = ioctl(fd,FE_GET_NEXT_FREQUENCY, nfr)) < 0) {
 		perror("FE GET NEXT FREQUENCY: ");
 		return -1;
 	}
@@ -182,7 +182,7 @@ int FEGetNextSymbolRate(int fd, uint32_t *nsr)
 {
 	int ans;
 
-	if ( (ans = ioctl(fd,FE_GET_NEXT_SYMBOL_RATE, nsr) < 0)){
+	if ((ans = ioctl(fd,FE_GET_NEXT_SYMBOL_RATE, nsr)) < 0) {
 		perror("FE GET NEXT SYMBOL RATE: ");
 		return -1;
 	}
@@ -195,7 +195,7 @@ int QPSKTune(int fd, struct qpskParameters *param)
 {
 	int ans;
 
-	if ( (ans = ioctl(fd,QPSK_TUNE, param) < 0)){
+	if ((ans = ioctl(fd,QPSK_TUNE, param)) < 0) {
 		perror("QPSK TUNE: ");
 		return -1;
 	}
@@ -207,7 +207,7 @@ int QPSKGetEvent (int fd, struct qpskEvent *event)
 {
 	int ans;
 
-	if ( (ans = ioctl(fd,QPSK_GET_EVENT, event) < 0)){
+	if ((ans = ioctl(fd,QPSK_GET_EVENT, event)) < 0) {
 		perror("QPSK GET EVENT: ");
 		return -1;
 	}
@@ -219,7 +219,7 @@ int QPSKFEInfo (int fd, struct qpskFrontendInfo *info)
 {
 	int ans;
 
-	if ( (ans = ioctl(fd,QPSK_FE_INFO, info) < 0)){
+	if ((ans = ioctl(fd,QPSK_FE_INFO, info)) < 0) {
 		perror("QPSK FE INFO: ");
 		return -1;
 	}
@@ -238,7 +238,7 @@ int SecGetStatus (int fd, struct secStatus *state)
 {
 	int ans;
 
-	if ( (ans = ioctl(fd,SEC_GET_STATUS, state) < 0)){
+	if ((ans = ioctl(fd,SEC_GET_STATUS, state)) < 0) {
 		perror("QPSK GET EVENT: ");
 		return -1;
 	}

@@ -40,7 +40,7 @@ int videoStop(int fd)
 {
 	int ans;
 
-	if ( (ans = ioctl(fd,VIDEO_STOP,0) < 0)){
+	if ((ans = ioctl(fd,VIDEO_STOP,0)) < 0) {
 		perror("VIDEO STOP: ");
 		return -1;
 	}
@@ -52,7 +52,7 @@ int videoPlay(int fd)
 {
 	int ans;
 
-	if ( (ans = ioctl(fd,VIDEO_PLAY) < 0)){
+	if ((ans = ioctl(fd,VIDEO_PLAY)) < 0) {
 		perror("VIDEO PLAY: ");
 		return -1;
 	}
@@ -65,7 +65,7 @@ int videoFreeze(int fd)
 {
 	int ans;
 
-	if ( (ans = ioctl(fd,VIDEO_FREEZE) < 0)){
+	if ((ans = ioctl(fd,VIDEO_FREEZE)) < 0) {
 		perror("VIDEO FREEZE: ");
 		return -1;
 	}
@@ -78,7 +78,7 @@ int videoContinue(int fd)
 {
 	int ans;
 
-	if ( (ans = ioctl(fd,VIDEO_CONTINUE) < 0)){
+	if ((ans = ioctl(fd,VIDEO_CONTINUE)) < 0) {
 		perror("VIDEO CONTINUE: ");
 		return -1;
 	}
@@ -90,7 +90,7 @@ int videoSelectSource(int fd, video_stream_source_t source)
 {
 	int ans;
 
-	if ( (ans = ioctl(fd,VIDEO_SELECT_SOURCE, source) < 0)){
+	if ((ans = ioctl(fd,VIDEO_SELECT_SOURCE, source)) < 0) {
 		perror("VIDEO SELECT SOURCE: ");
 		return -1;
 	}
@@ -104,7 +104,7 @@ int videoSetBlank(int fd, boolean state)
 {
 	int ans;
 
-	if ( (ans = ioctl(fd,VIDEO_SET_BLANK, state) < 0)){
+	if ((ans = ioctl(fd,VIDEO_SET_BLANK, state)) < 0) {
 		perror("VIDEO SET BLANK: ");
 		return -1;
 	}
@@ -116,7 +116,7 @@ int videoFastForward(int fd,int nframes)
 {
 	int ans;
 
-	if ( (ans = ioctl(fd,VIDEO_FAST_FORWARD, nframes) < 0)){
+	if ((ans = ioctl(fd,VIDEO_FAST_FORWARD, nframes)) < 0) {
 		perror("VIDEO FAST FORWARD: ");
 		return -1;
 	}
@@ -128,7 +128,7 @@ int videoSlowMotion(int fd,int nframes)
 {
 	int ans;
 
-	if ( (ans = ioctl(fd,VIDEO_SLOWMOTION, nframes) < 0)){
+	if ((ans = ioctl(fd,VIDEO_SLOWMOTION, nframes)) < 0) {
 		perror("VIDEO SLOWMOTION: ");
 		return -1;
 	}
@@ -141,7 +141,7 @@ int videoGetStatus(int fd)
 	struct video_status stat;
 	int ans;
 
-	if ( (ans = ioctl(fd,VIDEO_GET_STATUS, &stat) < 0)){
+	if ((ans = ioctl(fd,VIDEO_GET_STATUS, &stat)) < 0) {
 		perror("VIDEO GET STATUS: ");
 		return -1;
 	}
@@ -213,7 +213,7 @@ int videoStillPicture(int fd, struct video_still_picture *sp)
 {
 	int ans;
 
-	if ( (ans = ioctl(fd,VIDEO_STILLPICTURE, sp) < 0)){
+	if ((ans = ioctl(fd,VIDEO_STILLPICTURE, sp)) < 0) {
 		perror("VIDEO STILLPICTURE: ");
 		return -1;
 	}

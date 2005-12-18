@@ -40,7 +40,7 @@ int audioStop(int fd)
 {
 	int ans;
 
-	if ( (ans = ioctl(fd,AUDIO_STOP,0) < 0)){
+	if ((ans = ioctl(fd,AUDIO_STOP,0)) < 0) {
 		perror("AUDIO STOP: ");
 		return -1;
 	}
@@ -52,7 +52,7 @@ int audioPlay(int fd)
 {
 	int ans;
 
-	if ( (ans = ioctl(fd,AUDIO_PLAY) < 0)){
+	if ((ans = ioctl(fd,AUDIO_PLAY)) < 0) {
 		perror("AUDIO PLAY: ");
 		return -1;
 	}
@@ -65,7 +65,7 @@ int audioPause(int fd)
 {
 	int ans;
 
-	if ( (ans = ioctl(fd,AUDIO_PAUSE) < 0)){
+	if ((ans = ioctl(fd,AUDIO_PAUSE)) < 0) {
 		perror("AUDIO PAUSE: ");
 		return -1;
 	}
@@ -78,7 +78,7 @@ int audioContinue(int fd)
 {
 	int ans;
 
-	if ( (ans = ioctl(fd,AUDIO_CONTINUE) < 0)){
+	if ((ans = ioctl(fd,AUDIO_CONTINUE)) < 0) {
 		perror("AUDIO CONTINUE: ");
 		return -1;
 	}
@@ -90,7 +90,7 @@ int audioSelectSource(int fd, audio_stream_source_t source)
 {
 	int ans;
 
-	if ( (ans = ioctl(fd,AUDIO_SELECT_SOURCE, source) < 0)){
+	if ((ans = ioctl(fd,AUDIO_SELECT_SOURCE, source)) < 0) {
 		perror("AUDIO SELECT SOURCE: ");
 		return -1;
 	}
@@ -104,7 +104,7 @@ int audioSetMute(int fd, boolean state)
 {
 	int ans;
 
-	if ( (ans = ioctl(fd,AUDIO_SET_MUTE, state) < 0)){
+	if ((ans = ioctl(fd,AUDIO_SET_MUTE, state)) < 0) {
 		perror("AUDIO SET MUTE: ");
 		return -1;
 	}
@@ -116,7 +116,7 @@ int audioSetAVSync(int fd,boolean state)
 {
 	int ans;
 
-	if ( (ans = ioctl(fd,AUDIO_SET_AV_SYNC, state) < 0)){
+	if ((ans = ioctl(fd,AUDIO_SET_AV_SYNC, state)) < 0) {
 		perror("AUDIO SET AV SYNC: ");
 		return -1;
 	}
@@ -128,8 +128,8 @@ int audioSetBypassMode(int fd,boolean mode)
 {
 	int ans;
 
-	if ( (ans = ioctl(fd,AUDIO_SET_BYPASS_MODE, mode) < 0)){
-		perror("AUDIO SET BYPASS MODE: ");
+	if ((ans = ioctl(fd,AUDIO_SET_BYPASS_MODE, mode)) < 0) {
+		printf("AUDIO SET BYPASS MODE not implemented?\n");
 		return -1;
 	}
 
@@ -141,7 +141,7 @@ int audioChannelSelect(int fd, audio_channel_select_t select)
 {
 	int ans;
 
-	if ( (ans = ioctl(fd,AUDIO_CHANNEL_SELECT, select) < 0)){
+	if ((ans = ioctl(fd,AUDIO_CHANNEL_SELECT, select)) < 0) {
 		perror("AUDIO CHANNEL SELECT: ");
 		return -1;
 	}
@@ -154,7 +154,7 @@ int audioGetStatus(int fd)
 	struct audio_status stat;
 	int ans;
 
-	if ( (ans = ioctl(fd,AUDIO_GET_STATUS, &stat) < 0)){
+	if ((ans = ioctl(fd,AUDIO_GET_STATUS, &stat)) < 0) {
 		perror("AUDIO GET STATUS: ");
 		return -1;
 	}
@@ -321,7 +321,7 @@ main(int argc, char **argv)
 
 
 	audioSetMute(fd,mute);
-	//	audioSetBypassMode(fd,false); // not implemented
+	audioSetBypassMode(fd,false);
 	//audioContinue(fd);
 	audioSelectSource(fd,AUDIO_SOURCE_MEMORY);
 	audioPlay(fd);
