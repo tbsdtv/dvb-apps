@@ -82,6 +82,7 @@ enum format {
 	OUTPUT_PIDS
 };
 static enum format output_format = OUTPUT_ZAP;
+static int output_format_set = 0;
 
 
 enum polarisation {
@@ -2120,7 +2121,8 @@ int main (int argc, char **argv)
 			break;
 		case 'c':
 			current_tp_only = 1;
-			output_format = OUTPUT_PIDS;
+			if (!output_format_set)
+				output_format = OUTPUT_PIDS;
 			break;
 		case 'n':
 			get_other_nits = 1;
@@ -2145,6 +2147,7 @@ int main (int argc, char **argv)
 				bad_usage(argv[0], 0);
 				return -1;
 			}
+			output_format_set = 1;
 			break;
 		case '5':
 			long_timeout = 1;
