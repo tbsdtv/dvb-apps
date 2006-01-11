@@ -65,13 +65,13 @@ int transport_packet_values_extract(struct transport_packet *pkt,
 			return -1;
 
 		if (extract & transport_value_pcr) {
-			uint64_t base = (pos[0] << 25) |
-					(pos[1] << 17) |
-					(pos[2] << 9) |
-					(pos[3] << 1) |
-					(pos[4] >> 7);
-			uint64_t ext = ((pos[4] & 1) << 8) |
-					pos[5];
+			uint64_t base = ((uint64_t) pos[0] << 25) |
+					((uint64_t) pos[1] << 17) |
+					((uint64_t) pos[2] << 9) |
+					((uint64_t) pos[3] << 1) |
+					((uint64_t) pos[4] >> 7);
+			uint64_t ext = (((uint64_t) pos[4] & 1) << 8) |
+					(uint64_t) pos[5];
 			out->pcr= base * 300ULL + ext;
 			extracted |= transport_value_pcr;
 		}
@@ -84,13 +84,13 @@ int transport_packet_values_extract(struct transport_packet *pkt,
 			return -1;
 
 		if (extract & transport_value_opcr) {
-			uint64_t base = (pos[0] << 25) |
-					(pos[1] << 17) |
-					(pos[2] << 9) |
-					(pos[3] << 1) |
-					(pos[4] >> 7);
-			uint64_t ext = ((pos[4] & 1) << 8) |
-					pos[5];
+			uint64_t base = ((uint64_t) pos[0] << 25) |
+					((uint64_t) pos[1] << 17) |
+					((uint64_t) pos[2] << 9) |
+					((uint64_t) pos[3] << 1) |
+					((uint64_t) pos[4] >> 7);
+			uint64_t ext = (((uint64_t) pos[4] & 1) << 8) |
+					(uint64_t) pos[5];
 			out->opcr= base * 300ULL + ext;
 			extracted |= transport_value_opcr;
 		}
