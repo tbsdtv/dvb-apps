@@ -27,5 +27,4 @@ release dist:
 	$(MAKE) -C lib/libdvben50221 $(MAKECMDGOALS)
 	$(MAKE) -C util $(MAKECMDGOALS)
 	$(MAKE) -C test $(MAKECMDGOALS)
-	$(MAKE) -C libs $(MAKECMDGOALS)
 	$(MAKE) -C apps $(MAKECMDGOALS)
