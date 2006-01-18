@@ -10,6 +10,7 @@ PASS mpeg/cat_section.h
 PASS mpeg/pat_section.h
 PASS mpeg/pmt_section.h
      mpeg/tsdt_section.h
+     mpeg/metadata_section.h
 PASS dvb/bat_section.h
      dvb/dit_section.h
 PASS dvb/eit_section.h
