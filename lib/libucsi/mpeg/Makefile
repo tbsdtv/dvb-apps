@@ -8,7 +8,8 @@ OBJ = cat_section.o \
       pat_section.o \
       pmt_section.o \
       tsdt_section.o \
-      odsmt_section.o
+      odsmt_section.o \
+      metadata_section.o
 
 INC = 	audio_stream_descriptor.h \
 	ca_descriptor.h \
@@ -27,6 +28,7 @@ INC = 	audio_stream_descriptor.h \
 	maximum_bitrate_descriptor.h \
 	metadata_descriptor.h \
 	metadata_pointer_descriptor.h \
+	metadata_section.h \
 	metadata_std_descriptor.h \
 	mpeg4_audio_descriptor.h \
 	mpeg4_video_descriptor.h \

@@ -19,40 +19,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef _UCSI_MPEG_SECTION_H
-#define _UCSI_MPEG_SECTION_H 1
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
-#include <ucsi/mpeg/cat_section.h>
-#include <ucsi/mpeg/odsmt_section.h>
-#include <ucsi/mpeg/pat_section.h>
-#include <ucsi/mpeg/pmt_section.h>
-#include <ucsi/mpeg/tsdt_section.h>
 #include <ucsi/mpeg/metadata_section.h>
 
-#define TRANSPORT_PAT_PID 0x00
-#define TRANSPORT_CAT_PID 0x01
-#define TRANSPORT_TSDT_PID 0x02
-
-/**
- * Enumeration of MPEG section tags.
- */
-enum mpeg_section_tag {
-	stag_mpeg_program_association			= 0x00,
-	stag_mpeg_conditional_access			= 0x01,
-	stag_mpeg_program_map				= 0x02,
-	stag_mpeg_transport_stream_description		= 0x03,
-	stag_mpeg_iso14496_scene_description		= 0x04,
-	stag_mpeg_iso14496_object_description		= 0x05,
-	stag_mpeg_metadata				= 0x06,
-};
-
-#ifdef __cplusplus
+struct mpeg_metadata_section * mpeg_metadata_section_codec(struct section_ext * ext)
+{
+	return (struct mpeg_metadata_section *)ext;
 }
-#endif
 
-#endif
