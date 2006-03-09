@@ -65,6 +65,17 @@ struct section_ext {
 } packed;
 
 /**
+ * Structure for keeping track of sections of a PSI table.
+ */
+struct psi_table_state {
+	uint8_t version_number;
+	uint8_t next_section_number;
+	uint8_t complete:1;
+	uint8_t new_table:1;
+} packed;
+
+
+/**
  * Process a section structure in-place.
  *
  * @param buf Pointer to the data.
@@ -111,8 +122,8 @@ static inline int section_check_crc(struct section *section)
 		return -1;
 	return 0;
 }
-   
-   
+
+
 /**
  * Decode an extended section structure.
  *
@@ -193,6 +204,46 @@ static inline int section_length(struct section *section)
 static inline int section_ext_length(struct section_ext * section)
 {
 	return section->length + sizeof(struct section) - CRC_SIZE;
+}
+
+/**
+ * Reset a psi_table_state structure.
+ *
+ * @param tstate The structure to reset.
+ */
+static inline void psi_table_state_reset(struct psi_table_state *tstate)
+{
+	tstate->version_number = 0xff;
+}
+
+/**
+ * Check if a supplied section_ext is something we want to process.
+ *
+ * @param section The parsed section_ext structure.
+ * @param tstate The state structure for this PSI table.
+ * @return 0=> not useful. nonzero => useful.
+ */
+static inline int section_ext_useful(struct section_ext *section, struct psi_table_state *tstate)
+{
+	if ((section->version_number == tstate->version_number) && tstate->complete)
+		return 0;
+	if ((section->version_number != tstate->version_number) && (section->section_number == 0)) {
+		tstate->next_section_number = 0;
+		tstate->complete = 0;
+		tstate->version_number = section->version_number;
+		tstate->new_table = 1;
+	} else if (section->section_number == tstate->next_section_number) {
+		tstate->new_table = 0;
+	} else {
+		return 0;
+	}
+
+	tstate->next_section_number++;
+	if (section->last_section_number < tstate->next_section_number) {
+		tstate->complete = 1;
+	}
+
+	return 1;
 }
 
 #ifdef __cplusplus
