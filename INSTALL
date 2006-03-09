@@ -7,4 +7,3 @@ Building and installing:
 
 $ make bindir=/usr/local/bin datadir=/usr/local/share libdir=/usr/local/lib
 $ make bindir=/usr/local/bin datadir=/usr/local/share libdir=/usr/local/lib DESTDIR=/foo/bar install
-
