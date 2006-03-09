@@ -34,31 +34,41 @@
 int dvbdemux_open_demux(int adapter, int demuxdevice, int nonblocking)
 {
 	char filename[PATH_MAX+1];
-	int extraflags = 0;
+	int flags = O_RDWR;
+	int fd;
 
 	if (nonblocking)
-		extraflags |= O_NONBLOCK;
+		flags |= O_NONBLOCK;
 
 	sprintf(filename, "/dev/dvb/adapter%i/demux%i", adapter, demuxdevice);
+	if ((fd = open(filename, flags)) < 0) {
+		// if that failed, try a flat /dev structure
+		sprintf(filename, "/dev/dvb%i.demux%i", adapter, demuxdevice);
+		fd = open(filename, flags);
+	}
 
-	return open(filename, O_RDWR | extraflags);
+	return fd;
 }
 
 int dvbdemux_open_dvr(int adapter, int dvrdevice, int readonly, int nonblocking)
 {
 	char filename[PATH_MAX+1];
-	int extraflags = 0;
+	int flags = O_RDWR;
+	int fd;
 
+	if (readonly)
+		flags = O_RDONLY;
 	if (nonblocking)
-		extraflags |= O_NONBLOCK;
+		flags |= O_NONBLOCK;
 
 	sprintf(filename, "/dev/dvb/adapter%i/dvr%i", adapter, dvrdevice);
-
-	if (readonly) {
-		return open(filename, O_RDONLY | extraflags);
-	} else {
-		return open(filename, O_RDWR | extraflags);
+	if ((fd = open(filename, flags)) < 0) {
+		// if that failed, try a flat /dev structure
+		sprintf(filename, "/dev/dvb%i.dvr%i", adapter, dvrdevice);
+		fd = open(filename, flags);
 	}
+
+	return fd;
 }
 
 int dvbdemux_set_section_filter(int fd, int pid,

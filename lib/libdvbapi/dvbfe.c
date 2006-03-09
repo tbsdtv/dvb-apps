@@ -163,15 +163,21 @@ dvbfe_handle_t dvbfe_open(int adapter, int frontend, int readonly)
 	int fd;
 	struct dvb_frontend_info info;
 
-	// open it
-	sprintf(filename, "/dev/dvb/adapter%i/frontend%i", adapter, frontend);
+	//  flags
+	int flags = O_RDWR;
 	if (readonly) {
-		fd = open(filename, O_RDONLY);
-	} else {
-		fd = open(filename, O_RDWR);
+		flags = O_RDONLY;
 	}
-	if (fd < 0)
-		return NULL;
+
+	// open it (try normal /dev structure first)
+	sprintf(filename, "/dev/dvb/adapter%i/frontend%i", adapter, frontend);
+	if ((fd = open(filename, flags)) < 0) {
+		// if that failed, try a flat /dev structure
+		sprintf(filename, "/dev/dvb%i.frontend%i", adapter, frontend);
+		if ((fd = open(filename, flags)) < 0) {
+			return NULL;
+		}
+	}
 
 	// determine fe type
 	if (ioctl(fd, FE_GET_INFO, &info)) {

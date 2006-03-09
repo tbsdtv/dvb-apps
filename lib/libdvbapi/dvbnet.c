@@ -32,10 +32,16 @@
 int dvbnet_open(int adapter, int netdeviceid)
 {
 	char filename[PATH_MAX+1];
+	int fd;
 
 	sprintf(filename, "/dev/dvb/adapter%i/net%i", adapter, netdeviceid);
+	if ((fd = open(filename, O_RDWR)) < 0) {
+		// if that failed, try a flat /dev structure
+		sprintf(filename, "/dev/dvb%i.net%i", adapter, netdeviceid);
+		fd = open(filename, O_RDWR);
+	}
 
-	return open(filename, O_RDWR);
+	return fd;
 }
 
 int dvbnet_add_interface(int fd, uint16_t pid, int encapsulation)
