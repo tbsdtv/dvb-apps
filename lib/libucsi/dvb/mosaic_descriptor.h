@@ -71,33 +71,38 @@ struct dvb_mosaic_info_part2 {
 	uint8_t cell_linkage_info;
 } packed;
 
+struct dvb_mosaic_linkage_01 {
+	uint16_t bouquet_id;
+} packed;
+
+struct dvb_mosaic_linkage_02 {
+	uint16_t original_network_id;
+	uint16_t transport_stream_id;
+	uint16_t service_id;
+} packed;
+
+struct dvb_mosaic_linkage_03 {
+	uint16_t original_network_id;
+	uint16_t transport_stream_id;
+	uint16_t service_id;
+} packed;
+
+struct dvb_mosaic_linkage_04 {
+	uint16_t original_network_id;
+	uint16_t transport_stream_id;
+	uint16_t service_id;
+	uint16_t event_id;
+} packed;
+
 /**
  * Structure describing the linkage field of a dvb_mosaic_info
  */
 struct dvb_mosaic_linkage {
 	union {
-		struct dvb_mosaic_linkage_01 {
-			uint16_t bouquet_id;
-		} packed linkage_01;
-
-		struct dvb_mosaic_linkage_02 {
-			uint16_t original_network_id;
-			uint16_t transport_stream_id;
-			uint16_t service_id;
-		} packed linkage_02;
-
-		struct dvb_mosaic_linkage_03 {
-			uint16_t original_network_id;
-			uint16_t transport_stream_id;
-			uint16_t service_id;
-		} packed linkage_03;
-
-		struct dvb_mosaic_linkage_04 {
-			uint16_t original_network_id;
-			uint16_t transport_stream_id;
-			uint16_t service_id;
-			uint16_t event_id;
-		} packed linkage_04;
+		struct dvb_mosaic_linkage_01 linkage_01;
+		struct dvb_mosaic_linkage_02 linkage_02;
+		struct dvb_mosaic_linkage_03 linkage_03;
+		struct dvb_mosaic_linkage_04 linkage_04;
 	} u;
 } packed;
 
@@ -110,8 +115,8 @@ static inline struct dvb_mosaic_descriptor*
 	dvb_mosaic_descriptor_codec(struct descriptor* d)
 {
 	uint8_t* buf = (uint8_t*) d + 2;
-	int pos = 0;
-	int len = d->len;
+	uint32_t pos = 0;
+	uint32_t len = d->len;
 	struct dvb_mosaic_descriptor * p =
 		(struct dvb_mosaic_descriptor *) d;
 

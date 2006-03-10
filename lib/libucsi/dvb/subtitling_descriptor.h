@@ -59,9 +59,9 @@ struct dvb_subtitling_entry {
 static inline struct dvb_subtitling_descriptor*
 	dvb_subtitling_descriptor_codec(struct descriptor* d)
 {
-	int pos = 0;
+	uint32_t pos = 0;
 	uint8_t* ptr = (uint8_t*) d + 2;
-	int len = d->len;
+	uint32_t len = d->len;
 
 	if (len % sizeof(struct dvb_subtitling_entry))
 		return NULL;

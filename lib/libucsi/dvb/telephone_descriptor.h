@@ -65,8 +65,8 @@ static inline struct dvb_telephone_descriptor*
 {
 	struct dvb_telephone_descriptor* p =
 		(struct dvb_telephone_descriptor*) d;
-	int pos = sizeof(struct dvb_telephone_descriptor) - 2;
-	int len = d->len;
+	uint32_t pos = sizeof(struct dvb_telephone_descriptor) - 2;
+	uint32_t len = d->len;
 
 	if (pos > len)
 		return NULL;

@@ -80,9 +80,9 @@ struct dvb_ait_application_descriptor_part2 {
 static inline struct dvb_ait_application_descriptor*
 	dvb_ait_application_descriptor_codec(struct descriptor* d)
 {
-	int pos = 0;
-	int pos2 = 0;
-	int len = d->len + 2;
+	uint32_t pos = 0;
+	uint32_t pos2 = 0;
+	uint32_t len = d->len + 2;
 	uint8_t* buf = (uint8_t*) d;
 	struct dvb_ait_application_descriptor *ret =
 		(struct dvb_ait_application_descriptor*) d;

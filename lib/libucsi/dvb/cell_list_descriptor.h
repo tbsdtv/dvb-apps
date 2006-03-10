@@ -72,10 +72,10 @@ struct dvb_subcell_list_entry {
 static inline struct dvb_cell_list_descriptor*
 	dvb_cell_list_descriptor_codec(struct descriptor* d)
 {
-	int pos = 0;
-	int pos2 = 0;
+	uint32_t pos = 0;
+	uint32_t pos2 = 0;
 	uint8_t* buf = (uint8_t*) d + 2;
-	int len = d->len;
+	uint32_t len = d->len;
 
 	while(pos < len) {
 		struct dvb_cell_list_entry *e =

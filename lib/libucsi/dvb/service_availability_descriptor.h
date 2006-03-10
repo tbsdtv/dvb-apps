@@ -50,9 +50,9 @@ struct dvb_service_availability_descriptor {
 static inline struct dvb_service_availability_descriptor*
 	dvb_service_availability_descriptor_codec(struct descriptor* d)
 {
-	int pos = 0;
+	uint32_t pos = 0;
 	uint8_t* buf = (uint8_t*) d + 2;
-	int len = d->len;
+	uint32_t len = d->len;
 
 	pos += sizeof(struct dvb_service_availability_descriptor) - 2;
 

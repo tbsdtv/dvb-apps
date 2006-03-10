@@ -55,7 +55,7 @@ static inline struct dvb_rnt_rar_over_ip_descriptor*
 	dvb_rnt_rar_over_ip_descriptor_codec(struct descriptor* d)
 {
 	uint8_t *buf = (uint8_t*) d;
-	int len = d->len + 2;
+	uint32_t len = d->len + 2;
 	struct dvb_rnt_rar_over_ip_descriptor *ret =
 		(struct dvb_rnt_rar_over_ip_descriptor *) buf;
 

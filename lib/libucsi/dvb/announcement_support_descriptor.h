@@ -108,9 +108,9 @@ struct dvb_announcement_support_reference {
 static inline struct dvb_announcement_support_descriptor*
 	dvb_announcement_support_descriptor_codec(struct descriptor* d)
 {
-	int pos = 0;
+	uint32_t pos = 0;
 	uint8_t* buf = (uint8_t*) d + 2;
-	int len = d->len;
+	uint32_t len = d->len;
 
 	if (len < (sizeof(struct dvb_announcement_support_descriptor) - 2))
 		return NULL;

@@ -60,8 +60,8 @@ static inline struct dvb_multilingual_component_descriptor*
 	dvb_multilingual_component_descriptor_codec(struct descriptor* d)
 {
 	uint8_t* buf = (uint8_t*) d + 2;
-	int pos = sizeof(struct dvb_multilingual_component_descriptor) - 2;
-	int len = d->len;
+	uint32_t pos = sizeof(struct dvb_multilingual_component_descriptor) - 2;
+	uint32_t len = d->len;
 
 	if (pos > len)
 		return NULL;

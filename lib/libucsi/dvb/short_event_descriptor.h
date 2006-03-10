@@ -64,8 +64,8 @@ static inline struct dvb_short_event_descriptor*
 	struct dvb_short_event_descriptor *p =
 		(struct dvb_short_event_descriptor*) d;
 	struct dvb_short_event_descriptor_part2 *p2;
-	int pos = sizeof(struct dvb_short_event_descriptor) - 2;
-	int len = d->len;
+	uint32_t pos = sizeof(struct dvb_short_event_descriptor) - 2;
+	uint32_t len = d->len;
 
 	if (pos > len)
 		return NULL;

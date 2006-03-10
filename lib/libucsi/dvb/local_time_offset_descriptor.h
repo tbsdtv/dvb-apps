@@ -63,8 +63,8 @@ struct dvb_local_time_offset {
 static inline struct dvb_local_time_offset_descriptor*
 	dvb_local_time_offset_descriptor_codec(struct descriptor* d)
 {
-	int len = d->len;
-	int pos = 0;
+	uint32_t len = d->len;
+	uint32_t pos = 0;
 
 	if (len % sizeof(struct dvb_local_time_offset))
 		return NULL;

@@ -77,8 +77,8 @@ static inline struct dvb_ait_application_icons_descriptor*
 	dvb_ait_application_icons_descriptor_codec(struct descriptor* d)
 {
 	uint8_t* buf = (uint8_t*) d;
-	int pos = 0;
-	int len = d->len + 2;
+	uint32_t pos = 0;
+	uint32_t len = d->len + 2;
 	struct dvb_ait_application_icons_descriptor *ret =
 		(struct dvb_ait_application_icons_descriptor *) d;
 

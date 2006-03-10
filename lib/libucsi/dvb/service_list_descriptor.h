@@ -56,8 +56,8 @@ struct dvb_service_list_service {
 static inline struct dvb_service_list_descriptor*
 	dvb_service_list_descriptor_codec(struct descriptor* d)
 {
-	int pos = 0;
-	int len = d->len;
+	uint32_t pos = 0;
+	uint32_t len = d->len;
 	uint8_t *p = (uint8_t*) d + 2;
 
 	if (len % sizeof(struct dvb_service_list_service))

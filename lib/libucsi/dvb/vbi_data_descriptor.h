@@ -79,8 +79,8 @@ static inline struct dvb_vbi_data_descriptor*
 	dvb_vbi_data_descriptor_codec(struct descriptor* d)
 {
 	uint8_t* p = (uint8_t*) d + 2;
-	int pos = 0;
-	int len = d->len;
+	uint32_t pos = 0;
+	uint32_t len = d->len;
 
 	while(pos < len) {
 		struct dvb_vbi_data_entry *e =

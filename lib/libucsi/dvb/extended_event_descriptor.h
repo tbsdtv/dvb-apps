@@ -82,8 +82,8 @@ static inline struct dvb_extended_event_descriptor*
 	dvb_extended_event_descriptor_codec(struct descriptor* d)
 {
 	uint8_t* buf = (uint8_t*) d + 2;
-	int pos = 0;
-	int len = d->len;
+	uint32_t pos = 0;
+	uint32_t len = d->len;
 	struct dvb_extended_event_descriptor * p =
 		(struct dvb_extended_event_descriptor *) d;
 	struct dvb_extended_event_descriptor_part2 *p2;

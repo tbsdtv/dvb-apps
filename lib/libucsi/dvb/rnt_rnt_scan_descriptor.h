@@ -59,8 +59,8 @@ static inline struct dvb_rnt_rnt_scan_descriptor*
 	dvb_rnt_rnt_scan_descriptor_codec(struct descriptor* d)
 {
 	uint8_t *buf = (uint8_t*) d;
-	int len = d->len +2;
-	int pos = 2;
+	uint32_t len = d->len +2;
+	uint32_t pos = 2;
 
 	if ((len-2) % sizeof(struct dvb_rnt_rnt_scan_entry))
 		return NULL;

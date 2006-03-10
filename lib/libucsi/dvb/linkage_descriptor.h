@@ -135,9 +135,9 @@ struct dvb_linkage_data_0c {
 static inline struct dvb_linkage_descriptor*
 	dvb_linkage_descriptor_codec(struct descriptor* d)
 {
-	int pos = 0;
+	uint32_t pos = 0;
 	uint8_t* buf = (uint8_t*) d + 2;
-	int len = d->len;
+	uint32_t len = d->len;
 	struct dvb_linkage_descriptor *p =
 		(struct dvb_linkage_descriptor*) d;
 
@@ -176,7 +176,7 @@ static inline struct dvb_linkage_descriptor*
 		}
 
 	} else if (p->linkage_type == 0x0b) {
-		int pos2=0;
+		uint32_t pos2=0;
 		struct dvb_linkage_data_0b *l_0b = (struct dvb_linkage_data_0b *) (buf + pos);
 
 		if ((len - pos) < sizeof(struct dvb_linkage_data_0b))

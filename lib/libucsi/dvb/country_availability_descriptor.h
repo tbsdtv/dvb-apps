@@ -58,7 +58,7 @@ struct dvb_country_availability_entry {
 static inline struct dvb_country_availability_descriptor*
 	dvb_country_availability_descriptor_codec(struct descriptor* d)
 {
-	int len = d->len;
+	uint32_t len = d->len;
 
 	if (len < (sizeof(struct dvb_country_availability_descriptor) - 2))
 		return NULL;

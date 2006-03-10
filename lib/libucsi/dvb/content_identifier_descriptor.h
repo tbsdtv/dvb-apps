@@ -94,8 +94,8 @@ struct dvb_content_identifier_entry_data_1 {
 static inline struct dvb_content_identifier_descriptor*
 	dvb_content_identifier_descriptor_codec(struct descriptor* d)
 {
-	int len = d->len + 2;
-	int pos = 2;
+	uint32_t len = d->len + 2;
+	uint32_t pos = 2;
 	uint8_t *buf = (uint8_t*) d;
 
 	while(pos < len) {

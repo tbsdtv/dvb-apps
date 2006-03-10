@@ -59,8 +59,8 @@ static inline struct dvb_ait_external_application_authorisation_descriptor*
 	dvb_ait_external_application_authorisation_descriptor_codec(struct descriptor* d)
 {
 	uint8_t* buf = (uint8_t*) d + 2;
-	int pos = 0;
-	int len = d->len;
+	uint32_t pos = 0;
+	uint32_t len = d->len;
 
 	if (len % sizeof(struct dvb_ait_external_application_authorisation))
 		return NULL;

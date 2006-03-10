@@ -66,8 +66,8 @@ static inline struct dvb_data_broadcast_descriptor*
 		(struct dvb_data_broadcast_descriptor *) d;
 	struct dvb_data_broadcast_descriptor_part2 *p2;
 	uint8_t* buf = (uint8_t*) d + 2;
-	int pos = sizeof(struct dvb_data_broadcast_descriptor) - 2;
-	int len = d->len;
+	uint32_t pos = sizeof(struct dvb_data_broadcast_descriptor) - 2;
+	uint32_t len = d->len;
 
 	if (pos > len)
 		return NULL;

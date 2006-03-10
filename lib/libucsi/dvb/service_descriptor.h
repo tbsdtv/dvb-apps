@@ -85,8 +85,8 @@ static inline struct dvb_service_descriptor*
 	struct dvb_service_descriptor *p =
 		(struct dvb_service_descriptor *) d;
 	struct dvb_service_descriptor_part2 *p2;
-	int pos = sizeof(struct dvb_service_descriptor) - 2;
-	int len = d->len;
+	uint32_t pos = sizeof(struct dvb_service_descriptor) - 2;
+	uint32_t len = d->len;
 
 	if (pos > len)
 		return NULL;

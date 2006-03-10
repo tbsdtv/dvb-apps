@@ -48,9 +48,9 @@ struct dvb_ca_identifier_descriptor {
 static inline struct dvb_ca_identifier_descriptor*
 	dvb_ca_identifier_descriptor_codec(struct descriptor* d)
 {
-	int len = d->len;
+	uint32_t len = d->len;
 	uint8_t *buf = (uint8_t*) d + 2;
-	int pos = 0;
+	uint32_t pos = 0;
 
 	if (len % 2)
 		return NULL;

@@ -57,8 +57,8 @@ struct dvb_application_signalling_entry {
 static inline struct dvb_application_signalling_descriptor*
 	dvb_application_signalling_descriptor_codec(struct descriptor* d)
 {
-	int pos = 0;
-	int len = d->len;
+	uint32_t pos = 0;
+	uint32_t len = d->len;
 	uint8_t* buf = (uint8_t*) d + 2;
 
 	pos += sizeof(struct dvb_application_signalling_descriptor) - 2;

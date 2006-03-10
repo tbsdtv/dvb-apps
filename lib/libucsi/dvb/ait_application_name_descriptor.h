@@ -59,8 +59,8 @@ static inline struct dvb_ait_application_name_descriptor*
 	dvb_ait_application_name_descriptor_codec(struct descriptor* d)
 {
 	uint8_t* buf = (uint8_t*) d + 2;
-	int pos = 0;
-	int len = d->len;
+	uint32_t pos = 0;
+	uint32_t len = d->len;
 
 	while(pos < len) {
 		struct dvb_ait_application_name *e =
