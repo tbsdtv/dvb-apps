@@ -69,7 +69,7 @@ struct section_ext {
  */
 struct psi_table_state {
 	uint8_t version_number;
-	uint8_t next_section_number;
+	uint16_t next_section_number;
 	uint8_t complete:1;
 	uint8_t new_table:1;
 } packed;
