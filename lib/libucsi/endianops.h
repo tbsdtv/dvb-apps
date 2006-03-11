@@ -41,6 +41,8 @@ extern "C"
 #define EBIT4(x1,x2,x3,x4) x1 x2 x3 x4
 #define EBIT5(x1,x2,x3,x4,x5) x1 x2 x3 x4 x5
 #define EBIT6(x1,x2,x3,x4,x5,x6) x1 x2 x3 x4 x5 x6
+#define EBIT7(x1,x2,x3,x4,x5,x6,x7) x1 x2 x3 x4 x5 x6 x7
+#define EBIT8(x1,x2,x3,x4,x5,x6,x7,x8) x1 x2 x3 x4 x5 x6 x7 x8
 
 static inline void bswap16(uint8_t * buf) {
 }
@@ -66,6 +68,8 @@ static inline void bswap48(uint8_t * buf) {
 #define EBIT4(x1,x2,x3,x4) x4 x3 x2 x1
 #define EBIT5(x1,x2,x3,x4,x5) x5 x4 x3 x2 x1
 #define EBIT6(x1,x2,x3,x4,x5,x6) x6 x5 x4 x3 x2 x1
+#define EBIT7(x1,x2,x3,x4,x5,x6,x7) x7 x6 x5 x4 x3 x2 x1
+#define EBIT8(x1,x2,x3,x4,x5,x6,x7,x8) x8 x7 x6 x5 x4 x3 x2 x1
 
 static inline void bswap16(uint8_t * buf) {
 	*((uint16_t*)buf) = bswap_16((*(uint16_t*)buf));
