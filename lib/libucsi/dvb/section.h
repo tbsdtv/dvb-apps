@@ -27,22 +27,31 @@ extern "C"
 {
 #endif
 
-/*#include <ucsi/dvb/ait_section.h>*/
 #include <ucsi/dvb/bat_section.h>
-/*#include <ucsi/dvb/cit_section.h>*/
-/*#include <ucsi/dvb/container_section.h>*/
 #include <ucsi/dvb/dit_section.h>
 #include <ucsi/dvb/eit_section.h>
 #include <ucsi/dvb/nit_section.h>
-/*#include <ucsi/dvb/rct_section.h>*/
-/*#include <ucsi/dvb/rnt_section.h>*/
 #include <ucsi/dvb/rst_section.h>
 #include <ucsi/dvb/sdt_section.h>
 #include <ucsi/dvb/sit_section.h>
 #include <ucsi/dvb/st_section.h>
 #include <ucsi/dvb/tdt_section.h>
 #include <ucsi/dvb/tot_section.h>
+#include <ucsi/dvb/tva_container_section.h>
 #include <ucsi/dvb/int_section.h>
+
+/**
+ * The following are not implemented just now.
+ */
+/*
+#include <ucsi/dvb/tva_related_content_section.h>
+#include <ucsi/dvb/tva_content_identifier_section.h>
+#include <ucsi/dvb/tva_resolution_provider_notification_section.h>
+#include <ucsi/dvb/ait_section.h>
+#include <ucsi/dvb/cit_section.h>
+#include <ucsi/dvb/rct_section.h>
+#include <ucsi/dvb/rnt_section.h>
+*/
 
 #define TRANSPORT_NIT_PID 0x10
 #define TRANSPORT_SDT_PID 0x11
@@ -67,7 +76,7 @@ enum dvb_section_tag {
 	stag_dvb_service_description_other			= 0x46,
 
 	stag_dvb_bouquet_association				= 0x4a,
-
+	stag_dvb_update_notification				= 0x4b, /* same syntax as IP_MAC */
 	stag_dvb_ip_mac_notification				= 0x4c,
 
 	stag_dvb_event_information_nownext_actual		= 0x4e,
@@ -80,11 +89,11 @@ enum dvb_section_tag {
 	stag_dvb_stuffing					= 0x72,
 	stag_dvb_time_offset					= 0x73,
 	stag_dvb_application_information			= 0x74,
-	stag_dvb_container					= 0x75,
-	stag_dvb_related_content				= 0x76,
-	stag_dvb_content_identifier				= 0x77,
+	stag_dvb_tva_container					= 0x75,
+	stag_dvb_tva_related_content				= 0x76,
+	stag_dvb_tva_content_identifier				= 0x77,
 	stag_dvb_mpe_fec					= 0x78,
-	stag_dvb_resolution_provider_notification		= 0x79,
+	stag_dvb_tva_resolution_provider_notification		= 0x79,
 
 	stag_dvb_discontinuity_information			= 0x7e,
 	stag_dvb_selection_information				= 0x7f,

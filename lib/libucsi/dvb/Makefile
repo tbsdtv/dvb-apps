@@ -15,6 +15,7 @@ OBJ = bat_section.o \
       st_section.o \
       tdt_section.o \
       tot_section.o \
+      tva_container_section.o \
       types.o
 
 INC = 	ac3_descriptor.h \
@@ -67,6 +68,7 @@ INC = 	ac3_descriptor.h \
 	rnt_rnt_scan_descriptor.h \
 	rst_section.h \
 	satellite_delivery_descriptor.h \
+	s2_satellite_delivery_descriptor.h \
 	scrambling_descriptor.h \
 	sdt_section.h \
 	section.h \
@@ -91,6 +93,7 @@ INC = 	ac3_descriptor.h \
 	tot_section.h \
 	transport_stream_descriptor.h \
 	tva_id_descriptor.h \
+	tva_container_section.h \
 	types.h \
 	vbi_data_descriptor.h \
 	vbi_teletext_descriptor.h

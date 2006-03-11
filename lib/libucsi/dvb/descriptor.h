@@ -62,6 +62,7 @@ extern "C"
 #include <ucsi/dvb/private_data_specifier_descriptor.h>
 #include <ucsi/dvb/related_content_descriptor.h>
 #include <ucsi/dvb/satellite_delivery_descriptor.h>
+#include <ucsi/dvb/s2_satellite_delivery_descriptor.h>
 #include <ucsi/dvb/scrambling_descriptor.h>
 #include <ucsi/dvb/service_availability_descriptor.h>
 #include <ucsi/dvb/service_descriptor.h>
@@ -82,34 +83,29 @@ extern "C"
 #include <ucsi/dvb/tva_id_descriptor.h>
 #include <ucsi/dvb/vbi_data_descriptor.h>
 #include <ucsi/dvb/vbi_teletext_descriptor.h>
-
 #include <ucsi/dvb/rnt_rar_over_dvb_stream_descriptor.h>
 #include <ucsi/dvb/rnt_rar_over_ip_descriptor.h>
 #include <ucsi/dvb/rnt_rnt_scan_descriptor.h>
-
 #include <ucsi/dvb/ait_application_descriptor.h>
 #include <ucsi/dvb/ait_application_name_descriptor.h>
+#include <ucsi/dvb/ait_external_application_authorisation_descriptor.h>
+#include <ucsi/dvb/ait_application_icons_descriptor.h>
+#include <ucsi/endianops.h>
 
-   /*
+/**
+ * The following are not implemented just now
+ */
+/*
 #include <ucsi/dvb/ait_transport_protocol_descriptor.h>
 #include <ucsi/dvb/ait_dvb_j_application_descriptor.h>
 #include <ucsi/dvb/ait_dvb_j_application_location_descriptor.h>
-    */
-#include <ucsi/dvb/ait_external_application_authorisation_descriptor.h>
-   /*
 #include <ucsi/dvb/ait_dvb_html_application_descriptor.h>
 #include <ucsi/dvb/ait_dvb_html_application_location_descriptor.h>
 #include <ucsi/dvb/ait_dvb_html_application_boundary_descriptor.h>
-    */
-   
-#include <ucsi/dvb/ait_application_icons_descriptor.h>
-   /*
 #include <ucsi/dvb/ait_prefetch_descriptor.h>
 #include <ucsi/dvb/ait_dii_location_descriptor.h>
 #include <ucsi/dvb/ait_ip_signalling_descriptor.h>
 */
-
-#include <ucsi/endianops.h>
 
 /**
  * Enumeration of DVB descriptor tags.
@@ -172,6 +168,7 @@ enum dvb_descriptor_tag {
 	dtag_dvb_content_identifier		= 0x76,
 	dtag_dvb_time_slice_fec_identifier	= 0x77,
 	dtag_dvb_ecm_repetition_rate		= 0x78,
+	dtag_dvb_s2_satellite_delivery_descriptor= 0x79,
 
 	/* descriptors which may only appear in an RNT */
 	dtag_dvb_rnt_rar_over_dvb_stream	= 0x40,

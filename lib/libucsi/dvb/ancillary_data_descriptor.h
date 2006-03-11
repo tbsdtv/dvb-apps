@@ -35,7 +35,9 @@ extern "C"
  */
 struct dvb_ancillary_data_descriptor {
 	struct descriptor d;
-  EBIT6(uint8_t reserved			: 3; ,
+  EBIT8(uint8_t reserved			: 1; ,
+	uint8_t rds_via_udcp			: 1; ,
+	uint8_t mpeg4_ancillary_data		: 1; ,
 	uint8_t scale_factor_error_check	: 1; ,
 	uint8_t dab_ancillary_data		: 1; ,
 	uint8_t announcement_switching_data	: 1; ,
