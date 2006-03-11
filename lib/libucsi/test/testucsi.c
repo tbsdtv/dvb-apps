@@ -1198,9 +1198,16 @@ void parse_descriptor(struct descriptor *d, int indent)
 			fprintf(stderr, "DSC XXXX dvb_satellite_delivery_descriptor decode error\n");
 			return;
 		}
-		iprintf(indent, "DSC frequency:%i orbital_position:%i west_east:%i polarization:%i modulation:%i symbol_rate:%i fec_inner:%i\n",
-			dx->frequency, dx->orbital_position, dx->west_east_flag,
-			dx->polarization, dx->modulation, dx->symbol_rate, dx->fec_inner);
+		iprintf(indent, "DSC frequency:%i orbital_position:%i west_east:%i polarization:%i roll_off:%i modulation_system:%i modulation_type: %i symbol_rate:%i fec_inner:%i\n",
+			dx->frequency,
+			dx->orbital_position,
+			dx->west_east_flag,
+			dx->polarization,
+			dx->roll_off,
+			dx->modulation_system,
+			dx->modulation_type,
+			dx->symbol_rate,
+			dx->fec_inner);
 		break;
 	}
 
@@ -2057,7 +2064,7 @@ void parse_descriptor(struct descriptor *d, int indent)
 			dx->dvd_video_ancillary_data);
 		break;
 	}
-	   
+
 	case dtag_dvb_cell_list:
 	case dtag_dvb_cell_frequency_link:
 	case dtag_dvb_announcement_support:
