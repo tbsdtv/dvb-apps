@@ -34,9 +34,9 @@ extern "C"
  * Possible values for coding_type.
  */
 enum {
-	DVB_CODING_TYPE_SATELLITE		= 0x00,
-	DVB_CODING_TYPE_CABLE			= 0x01,
-	DVB_CODING_TYPE_TERRESTRIAL		= 0x02,
+	DVB_CODING_TYPE_SATELLITE		= 0x01,
+	DVB_CODING_TYPE_CABLE			= 0x02,
+	DVB_CODING_TYPE_TERRESTRIAL		= 0x03,
 };
 
 /**
