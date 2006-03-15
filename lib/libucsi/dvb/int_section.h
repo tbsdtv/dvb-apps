@@ -176,7 +176,7 @@ static inline struct descriptor *
 static inline struct dvb_int_target *
 	dvb_int_section_target_loop_first(struct dvb_int_section *in)
 {
-	if (sizeof(struct dvb_int_section) + in->platform_descriptors_length >= section_ext_length((struct section_ext *) in))
+	if (sizeof(struct dvb_int_section) + in->platform_descriptors_length >= (uint32_t) section_ext_length((struct section_ext *) in))
 		return NULL;
 
 	return (struct dvb_int_target *)
