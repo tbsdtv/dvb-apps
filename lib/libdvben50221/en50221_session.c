@@ -137,7 +137,7 @@ int en50221_sl_send_data(en50221_session_layer sl, uint8_t session_number, uint8
         return -1;
     }
     if (private->sessions[session_number].slot_id == -1) {
-        private->error = EN50221ERR_BADSLOTID;
+        private->error = EN50221ERR_BADSESSIONNUMBER;
         return -1;
     }
 
