@@ -46,7 +46,7 @@
 struct en50221_session {
     uint32_t resource_id;
     int slot_id; // -1 if unused
-    uint8_t connection_id;
+    int connection_id; // -1 if unused
 
     en50221_sl_resource_callback callback;
     void *callback_arg;
@@ -65,14 +65,13 @@ struct en50221_session_layer_private
     struct en50221_session *sessions;
 };
 
-static void en50221_sl_transport_callback(void *arg, uint8_t *data, uint32_t data_length,
+static void en50221_sl_transport_callback(void *arg, int reason, uint8_t *data, uint32_t data_length,
                                           uint8_t slot_id, uint8_t connection_id);
 
 
 
 
 en50221_session_layer en50221_sl_create(en50221_transport_layer tl,
-                                        en50221_sl_lookup_callback lookup, void *lookup_arg,
                                         uint32_t max_sessions)
 {
     struct en50221_session_layer_private *private = NULL;
@@ -83,8 +82,8 @@ en50221_session_layer en50221_sl_create(en50221_transport_layer tl,
     if (private == NULL)
         goto error_exit;
     private->max_sessions = max_sessions;
-    private->lookup = lookup;
-    private->lookup_arg = lookup_arg;
+    private->lookup = NULL;
+    private->lookup_arg = NULL;
     private->tl = tl;
     private->error = 0;
 
@@ -96,6 +95,7 @@ en50221_session_layer en50221_sl_create(en50221_transport_layer tl,
     // set them up
     for(i=0; i< max_sessions; i++) {
         private->sessions[i].slot_id = -1;
+        private->sessions[i].connection_id = -1;
         private->sessions[i].callback = NULL;
     }
     en50221_tl_register_callback(tl, en50221_sl_transport_callback, private);
@@ -117,6 +117,14 @@ void en50221_sl_destroy(en50221_session_layer sl)
         }
         free(private);
     }
+}
+
+void en50221_sl_register_lookup_callback(en50221_session_layer sl, en50221_sl_lookup_callback callback, void *arg)
+{
+    struct en50221_session_layer_private *private = (struct en50221_session_layer_private *) sl;
+
+    private->lookup = callback;
+    private->lookup_arg = arg;
 }
 
 int en50221_sl_send_data(en50221_session_layer sl, uint8_t session_number, uint8_t *data, uint16_t data_length)
@@ -291,6 +299,7 @@ static void en50221_sl_handle_close_session_request(struct en50221_session_layer
         print(LOG_LEVEL, ERROR, 1, "Received unexpected session on invalid slot %i\n", slot_id);
     } else { // was ok!
         private->sessions[session_number].slot_id = -1;
+        private->sessions[session_number].connection_id = -1;
     }
 
     // sendit
@@ -345,11 +354,50 @@ static void en50221_sl_handle_session_package(struct en50221_session_layer_priva
                                                    data + 3, data_length - 3);
 }
 
-static void en50221_sl_transport_callback(void *arg, uint8_t *data, uint32_t data_length,
+static void en50221_sl_transport_callback(void *arg, int reason, uint8_t *data, uint32_t data_length,
                                           uint8_t slot_id, uint8_t connection_id)
 {
     struct en50221_session_layer_private *private = (struct en50221_session_layer_private *) arg;
+    int i;
 
+    // deal with the reason for this callback
+    switch(reason) {
+    case T_CALLBACK_REASON_DATA:
+        // fallthrough into rest of this function
+        break;
+
+    case T_CALLBACK_REASON_CONNECTIONCLOSE:
+        for(i=0; i< private->max_sessions; i++) {
+            if (private->sessions[i].connection_id == connection_id) {
+                private->sessions[i].slot_id = -1;
+                private->sessions[i].connection_id = -1;
+                if (private->sessions[i].callback)
+                    private->sessions[i].callback(private->sessions[i].callback_arg,
+                                                  S_CALLBACK_REASON_CLOSE,
+                                                  i,
+                                                  private->sessions[i].resource_id,
+                                                  NULL, 0);
+            }
+        }
+        return;
+
+    case T_CALLBACK_REASON_SLOTCLOSE:
+        for(i=0; i< private->max_sessions; i++) {
+            if (private->sessions[i].slot_id == slot_id) {
+                private->sessions[i].slot_id = -1;
+                private->sessions[i].connection_id = -1;
+                if (private->sessions[i].callback)
+                    private->sessions[i].callback(private->sessions[i].callback_arg,
+                                                  S_CALLBACK_REASON_CLOSE,
+                                                  i,
+                                                  private->sessions[i].resource_id,
+                                                  NULL, 0);
+            }
+        }
+        return;
+    }
+
+    // sanity check data length
     if (data_length < 1) {
         print(LOG_LEVEL, ERROR, 1, "Received data with invalid length from module on slot %i\n", slot_id);
         return;

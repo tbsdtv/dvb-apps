@@ -79,14 +79,10 @@ typedef int (*en50221_sl_lookup_callback)(void *arg, uint32_t resource_id,
  * Construct a new instance of the session layer.
  *
  * @param tl The en50221_transport_layer instance to use.
- * @param lookup Callback to look up a resource.
- * @param lookup_arg Argument to pass to lookup callback.
  * @param max_sessions Maximum number of sessions supported.
  * @return The en50221_session_layer instance, or NULL on error.
  */
-extern en50221_session_layer en50221_sl_create(en50221_transport_layer tl,
-                                               en50221_sl_lookup_callback lookup, void *lookup_arg,
-                                               uint32_t max_sessions);
+extern en50221_session_layer en50221_sl_create(en50221_transport_layer tl, uint32_t max_sessions);
 
 /**
  * Destroy an instance of the session layer.
@@ -94,6 +90,16 @@ extern en50221_session_layer en50221_sl_create(en50221_transport_layer tl,
  * @param tl The en50221_session_layer instance.
  */
 extern void en50221_sl_destroy(en50221_session_layer sl);
+
+/**
+ * Register the callback for resource lookup.
+ *
+ * @param sl The en50221_session_layer instance.
+ * @param callback The callback. Set to NULL to remove the callback completely.
+ * @param arg Private data passed as arg0 of the callback.
+ */
+extern void en50221_sl_register_lookup_callback(en50221_session_layer sl,
+                                                en50221_sl_lookup_callback callback, void *arg);
 
 /**
  * this function is used to take a data-block, pack into
