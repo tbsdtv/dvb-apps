@@ -28,7 +28,7 @@
 
 #include <stdlib.h>
 #include <stdint.h>
-#include <sys/poll.h>
+#include <sys/uio.h>
 
 /**
  * Opaque type representing a transport layer.
@@ -36,9 +36,9 @@
 typedef void *en50221_transport_layer;
 
 /**
- * Type definition for session callback function.
+ * Type definition for callback function.
  */
-typedef void (*en50221_session_callback)(void *private, uint8_t *data, uint32_t data_length,
+typedef void (*en50221_tl_callback)(void *private, uint8_t *data, uint32_t data_length,
 					 uint8_t slot_id, uint8_t connection_id);
 
 
@@ -92,16 +92,14 @@ extern void en50221_tl_destroy_slot(en50221_transport_layer tl, uint8_t slot_id)
 extern int en50221_tl_poll(en50221_transport_layer tl);
 
 /**
- * Register the callback to the session-layer - this is called
- * when a T_DATA_LAST came in, to make the session proceed this
- * data.
+ * Register the callback for data reception.
  *
  * @param tl The en50221_transport_layer instance.
  * @param callback The callback.
  * @param private Private data passed as arg0 of the callback.
  */
-extern void en50221_tl_register_session_callback(en50221_transport_layer tl,
-						 en50221_session_callback callback, void *private);
+extern void en50221_tl_register_callback(en50221_transport_layer tl,
+						 en50221_tl_callback callback, void *private);
 
 /**
  * Gets the ID of the slot an error occurred on.
@@ -127,13 +125,13 @@ extern int en50221_tl_get_error(en50221_transport_layer tl);
  * @param tl The en50221_transport_layer instance.
  * @param slot_id ID of the slot.
  * @param connection_id Connection id.
- * @param data Data to send.
- * @param data_length Length of data in bytes.
+ * @param vector iov to send.
+ * @param io_count Number of elements in vector.
  * @return 0 on success, or -1 on error.
  */
 extern int en50221_tl_send_data(en50221_transport_layer tl,
-  			        uint8_t slot_id, uint8_t connection_id, uint8_t *data,
-                                uint16_t data_length);
+  			                    uint8_t slot_id, uint8_t connection_id,
+                                struct iovec *vector, int iov_count);
 
 /**
  * Allocates a new transport connection.

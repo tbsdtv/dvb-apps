@@ -86,7 +86,7 @@ struct en50221_transport_layer_private
     int error;
     int error_slot;
 
-    en50221_session_callback callback;
+    en50221_tl_callback callback;
     void *callback_private;
 };
 
@@ -96,11 +96,9 @@ struct en50221_tpdu {
     int length_field_len; // this stores the length of the length field
     uint8_t connection_id;
     uint8_t *data;
-    uint16_t data_length; // *EXCLUDING* the connection_id field!
+    uint16_t data_length;
 };
 
-static int en50221_tl_write_tpdu(struct en50221_transport_layer_private *private, uint8_t slot_id,
-                                 uint8_t connection_id, struct en50221_tpdu *data);
 static int en50221_tl_proc_data_tc(struct en50221_transport_layer_private *tl, uint8_t slot_id,
                                    uint8_t *data, uint32_t data_length);
 static int en50221_tl_poll_tc(struct en50221_transport_layer_private *tl, uint8_t slot_id, uint8_t connection_id);
@@ -300,7 +298,7 @@ int en50221_tl_poll(en50221_transport_layer tl)
     return 0;
 }
 
-void en50221_tl_register_session_callback(en50221_transport_layer tl, en50221_session_callback callback, void *private_data)
+void en50221_tl_register_callback(en50221_transport_layer tl, en50221_tl_callback callback, void *private_data)
 {
     struct en50221_transport_layer_private *private = (struct en50221_transport_layer_private *) tl;
 
@@ -324,11 +322,11 @@ int en50221_tl_get_error(en50221_transport_layer tl)
 
 
 
-
-int en50221_tl_send_data(en50221_transport_layer tl, uint8_t slot_id, uint8_t connection_id, uint8_t *data,
-                         uint16_t data_length)
+int en50221_tl_send_data(en50221_transport_layer tl, uint8_t slot_id, uint8_t connection_id,
+                         struct iovec *vector, int iov_count)
 {
     struct en50221_transport_layer_private *private = (struct en50221_transport_layer_private *) tl;
+    struct iovec iov_out[5];
 
     if (slot_id >= private->max_slots) {
         private->error = EN50221ERR_BADSLOTID;
@@ -340,22 +338,40 @@ int en50221_tl_send_data(en50221_transport_layer tl, uint8_t slot_id, uint8_t co
         return -1;
     }
 
-    struct en50221_tpdu command;
-    command.tpdu_tag = T_DATA_LAST;
-    if ((command.length_field_len = asn_1_encode(data_length + 1, command.length_field, 3)) < 0) {
+    // calculate the total length of the data to send
+    if (iov_count > 4) {
+        // FIXME
+        return -1;
+    }
+    uint32_t length;
+    int i;
+    for(i=0; i< iov_count; i++) {
+        length += vector[i].iov_len;
+    }
+
+    // build the header
+    int length_field_len;
+    uint8_t hdr[10];
+    hdr[0] = T_DATA_LAST;
+    if ((length_field_len = asn_1_encode(length + 1, hdr+1, 3)) < 0) {
         private->error_slot = slot_id;
         private->error = EN50221ERR_ASNENCODE;
         return -1;
     }
-    command.connection_id = connection_id;
-    command.data = data;
-    command.data_length = data_length;
+    hdr[1+length_field_len] = connection_id;
+    iov_out[0].iov_base = hdr;
+    iov_out[0].iov_len = 1 + length_field_len + 1;
 
-    // sendit
-    int res = en50221_tl_write_tpdu(private, slot_id, connection_id, &command);
-    if (!res)
-        private->slots[slot_id].connections[connection_id].tx_time = time_ms();
-    return res;
+    // build the data
+    memcpy(&iov_out[1], vector, iov_count * sizeof(struct iovec));
+
+    // send it!
+    if (dvbca_link_writev(private->slots[slot_id].ca_hndl, connection_id, iov_out, iov_count+1)) {
+        private->error_slot = slot_id;
+        private->error = EN50221ERR_CAWRITE;
+        return -1;
+    }
+    return 0;
 }
 
 // create new transport connection
@@ -363,11 +379,12 @@ int en50221_tl_new_tc(en50221_transport_layer tl, uint8_t slot_id, uint8_t conne
 {
     struct en50221_transport_layer_private *private = (struct en50221_transport_layer_private *) tl;
 
+    // check
     if (slot_id >= private->max_slots) {
         private->error = EN50221ERR_BADSLOTID;
         return -1;
     }
-    if (connection_id > private->max_connections_per_slot) {
+    if (connection_id >= private->max_connections_per_slot) {
         private->error_slot = slot_id;
         private->error = EN50221ERR_BADCONNECTIONID;
         return -1;
@@ -381,23 +398,18 @@ int en50221_tl_new_tc(en50221_transport_layer tl, uint8_t slot_id, uint8_t conne
         return -1;
     }
 
-    // create the TPDU with CREATE_T_C and send it
-    struct en50221_tpdu command;
-    command.tpdu_tag = T_CREATE_T_C;
-    if ((command.length_field_len = asn_1_encode(1, command.length_field, 3)) < 0) {
-        private->error_slot = slot_id;
-        private->error = EN50221ERR_ASNENCODE;
-        return -1;
-    }
-    command.connection_id = conid;
-    command.data = NULL;
-    command.data_length = 0;
-    if (en50221_tl_write_tpdu(private, slot_id, connection_id, &command) < 0) {
+    // send command
+    uint8_t hdr[10];
+    hdr[0] = T_CREATE_T_C;
+    hdr[1] = 1;
+    hdr[2] = conid;
+    if (dvbca_link_write(private->slots[slot_id].ca_hndl, connection_id, hdr, 3) < 0) {
         private->slots[slot_id].connections[conid].state = T_STATE_IDLE;
+        private->error_slot = slot_id;
+        private->error = EN50221ERR_CAWRITE;
         return -1;
     }
-    private->slots[slot_id].connections[conid].tx_time = time_ms();
-
+    private->slots[slot_id].connections[connection_id].tx_time = time_ms();
     return conid;
 }
 
@@ -406,6 +418,7 @@ int en50221_tl_del_tc(en50221_transport_layer tl, uint8_t slot_id, uint8_t conne
 {
     struct en50221_transport_layer_private *private = (struct en50221_transport_layer_private *) tl;
 
+    // check
     if (slot_id >= private->max_slots) {
         private->error = EN50221ERR_BADSLOTID;
         return -1;
@@ -421,28 +434,25 @@ int en50221_tl_del_tc(en50221_transport_layer tl, uint8_t slot_id, uint8_t conne
         return -1;
     }
 
-    // create the TPDU with DELETE_T_C and send it
-    struct en50221_tpdu command;
-    command.tpdu_tag = T_DELETE_T_C;
-    if ((command.length_field_len = asn_1_encode(1, command.length_field, 3)) < 0) {
-        private->error_slot = slot_id;
-        private->error = EN50221ERR_ASNENCODE;
-        return -1;
-    }
-    command.connection_id = connection_id;
-    command.data = NULL;
-    command.data_length = 0;
-
+    // update the connection state
     private->slots[slot_id].connections[connection_id].state = T_STATE_IN_DELETION;
     if (private->slots[slot_id].connections[connection_id].chain_buffer) {
         free(private->slots[slot_id].connections[connection_id].chain_buffer);
         private->slots[slot_id].connections[connection_id].chain_buffer = NULL;
     }
 
-    int res = en50221_tl_write_tpdu(private, slot_id, connection_id, &command);
-    if (!res)
-        private->slots[slot_id].connections[connection_id].tx_time = time_ms();
-    return res;
+    // send command
+    uint8_t hdr[10];
+    hdr[0] = T_DELETE_T_C;
+    hdr[1] = 1;
+    hdr[2] = connection_id;
+    if (dvbca_link_write(private->slots[slot_id].ca_hndl, connection_id, hdr, 3) < 0) {
+        private->error_slot = slot_id;
+        private->error = EN50221ERR_CAWRITE;
+        return -1;
+    }
+    private->slots[slot_id].connections[connection_id].tx_time = time_ms();
+    return 0;
 }
 
 
@@ -450,24 +460,18 @@ int en50221_tl_del_tc(en50221_transport_layer tl, uint8_t slot_id, uint8_t conne
 // ask the module for new data
 static int en50221_tl_poll_tc(struct en50221_transport_layer_private *private, uint8_t slot_id, uint8_t connection_id)
 {
-    // create the TPDU with T_DATA_LAST(0x00) and send it
-    struct en50221_tpdu command;
-    command.tpdu_tag = T_DATA_LAST;
-    if ((command.length_field_len = asn_1_encode(1, command.length_field, 3)) < 0) {
+    // send command
+    uint8_t hdr[10];
+    hdr[0] = T_DATA_LAST;
+    hdr[1] = 1;
+    hdr[2] = connection_id;
+    if (dvbca_link_write(private->slots[slot_id].ca_hndl, connection_id, hdr, 3) < 0) {
         private->error_slot = slot_id;
-        private->error = EN50221ERR_ASNENCODE;
+        private->error = EN50221ERR_CAWRITE;
         return -1;
     }
-    command.connection_id = connection_id;
-    command.data = NULL;
-    command.data_length = 0;
-
     private->slots[slot_id].connections[connection_id].tx_time = time_ms();
-
-    int res = en50221_tl_write_tpdu(private, slot_id, connection_id, &command);
-    if (!res)
-        private->slots[slot_id].connections[connection_id].tx_time = time_ms();
-    return res;
+    return 0;
 }
 
 // handle incoming data
@@ -535,8 +539,8 @@ static int en50221_tl_proc_data_tc(struct en50221_transport_layer_private *priva
         num_units = 2;
     }
 
-    int8_t new_id;
-    struct en50221_tpdu command;
+    // process the units
+    uint8_t hdr[10];
     int i;
     int conid;
     for(i = 0; i < num_units; i++)
@@ -569,26 +573,23 @@ static int en50221_tl_proc_data_tc(struct en50221_transport_layer_private *priva
                 if (private->slots[slot_id].connections[unit.connection_id].state == T_STATE_ACTIVE ||
                     private->slots[slot_id].connections[unit.connection_id].state == T_STATE_IN_DELETION)
                 {
+                    // clear down the slot
                     private->slots[slot_id].connections[unit.connection_id].state = T_STATE_IDLE;
-                    private->slots[slot_id].connections[unit.connection_id].tx_time = 0;
                     if (private->slots[slot_id].connections[unit.connection_id].chain_buffer) {
                         free(private->slots[slot_id].connections[unit.connection_id].chain_buffer);
                         private->slots[slot_id].connections[unit.connection_id].chain_buffer = NULL;
                     }
 
-                    // create the TPDU with D_T_C_REPLY and send it
-                    command.tpdu_tag = T_D_T_C_REPLY;
-                    if ((command.length_field_len = asn_1_encode(1, command.length_field, 3)) < 0) {
+                    // send the reply
+                    hdr[0] = T_D_T_C_REPLY;
+                    hdr[1] = 1;
+                    hdr[2] = unit.connection_id;
+                    if (dvbca_link_write(private->slots[slot_id].ca_hndl, unit.connection_id, hdr, 3) < 0) {
                         private->error_slot = slot_id;
-                        private->error = EN50221ERR_ASNENCODE;
+                        private->error = EN50221ERR_CAWRITE;
                         return -1;
                     }
-                    command.connection_id = unit.connection_id;
-                    command.data = NULL;
-                    command.data_length = 0;
-                    if (en50221_tl_write_tpdu(private, slot_id, unit.connection_id, &command) < 0) {
-                        return -1;
-                    }
+                    private->slots[slot_id].connections[unit.connection_id].tx_time = 0;
                 }
                 else {
                     print(LOG_LEVEL, ERROR, 1, "Received T_DELETE_T_C for inactive connection from module on slot %02x\n",
@@ -617,39 +618,27 @@ static int en50221_tl_proc_data_tc(struct en50221_transport_layer_private *priva
                 if (conid == -1) {
                     print(LOG_LEVEL, ERROR, 1, "Too many connections requested by module on slot %02x\n", slot_id);
 
-                    // create the TPDU with T_T_C_ERROR and send it
-                    uint8_t buf[1];
-                    struct en50221_tpdu command;
-                    command.tpdu_tag = T_T_C_ERROR;
-                    if ((command.length_field_len = asn_1_encode(2, command.length_field, 3)) < 0) {
+                    // send the error
+                    hdr[0] = T_T_C_ERROR;
+                    hdr[1] = 2;
+                    hdr[2] = unit.connection_id;
+                    hdr[3] = 1;
+                    if (dvbca_link_write(private->slots[slot_id].ca_hndl, unit.connection_id, hdr, 4) < 0) {
                         private->error_slot = slot_id;
-                        private->error = EN50221ERR_ASNENCODE;
+                        private->error = EN50221ERR_CAWRITE;
                         return -1;
                     }
-                    command.connection_id = unit.connection_id;
-                    command.data = buf;
-                    command.data_length = 1;
-                    buf[0] = 1;
-                    if (en50221_tl_write_tpdu(private, slot_id, unit.connection_id, &command))
-                        return -1;
+                    private->slots[slot_id].connections[unit.connection_id].tx_time = 0;
                 } else {
-                    // send new_t_c back
-                    char buf[1];
-                    command.tpdu_tag = T_NEW_T_C;
-                    if ((command.length_field_len = asn_1_encode(2, command.length_field, 3)) < 0) {
+                    // send the new TC
+                    hdr[0] = T_NEW_T_C;
+                    hdr[1] = 1;
+                    hdr[2] = conid;
+                    if (dvbca_link_write(private->slots[slot_id].ca_hndl, unit.connection_id, hdr, 3) < 0) {
                         private->error_slot = slot_id;
-                        private->error = EN50221ERR_ASNENCODE;
+                        private->error = EN50221ERR_CAWRITE;
                         return -1;
                     }
-                    command.connection_id = unit.connection_id;
-                    command.data = buf;
-                    command.data_length = 1;
-                    buf[0] = new_id;
-                    if (en50221_tl_write_tpdu(private, slot_id, unit.connection_id, &command) < 0) {
-                        return -1;
-                    }
-
-                    // this is a reply - we don't expect a reply to the reply.
                     private->slots[slot_id].connections[unit.connection_id].tx_time = 0;
                 }
                 break;
@@ -766,17 +755,13 @@ static int en50221_tl_proc_data_tc(struct en50221_transport_layer_private *priva
 
                 // tell it to send the data if it says there is some
                 if (unit.data[0] & 0x80) {
-                    // the module has data to send, request it to send it now
-                    command.tpdu_tag = T_RCV;
-                    if ((command.length_field_len = asn_1_encode(1, command.length_field, 3)) < 0) {
+                    // send the RCV
+                    hdr[0] = T_RCV;
+                    hdr[1] = 1;
+                    hdr[2] = unit.connection_id;
+                    if (dvbca_link_write(private->slots[slot_id].ca_hndl, unit.connection_id, hdr, 3) < 0) {
                         private->error_slot = slot_id;
-                        private->error = EN50221ERR_ASNENCODE;
-                        return -1;
-                    }
-                    command.connection_id = unit.connection_id;
-                    command.data = NULL;
-                    command.data_length = 0;
-                    if (en50221_tl_write_tpdu(private, slot_id, unit.connection_id, &command) < 0) {
+                        private->error = EN50221ERR_CAWRITE;
                         return -1;
                     }
                     private->slots[slot_id].connections[unit.connection_id].tx_time = time_ms();
@@ -793,37 +778,6 @@ static int en50221_tl_proc_data_tc(struct en50221_transport_layer_private *priva
     }
 
     return 0;
-}
-
-static int en50221_tl_write_tpdu(struct en50221_transport_layer_private *private, uint8_t slot_id,
-                                 uint8_t connection_id, struct en50221_tpdu *data)
-{
-    uint8_t tpdu_hdr[10];
-    struct iovec iov_out[2];
-    int iov_count = 0;
-
-    // setup the header
-    memcpy(tpdu_hdr, &data->tpdu_tag, 1);
-    memcpy(tpdu_hdr + 1, data->length_field, data->length_field_len);
-    memcpy(tpdu_hdr + 1 + data->length_field_len, &data->connection_id, 1);
-    iov_out[iov_count].iov_base = tpdu_hdr;
-    iov_out[iov_count].iov_len = 1 + data->length_field_len + 1;
-    iov_count++;
-
-    // setup the data
-    if (data->data && (data->data_length)) {
-        iov_out[iov_count].iov_base = data->data;
-        iov_out[iov_count].iov_len = data->data_length;
-        iov_count++;
-    }
-
-    // send it!
-    int res = dvbca_link_writev(private->slots[slot_id].ca_hndl, connection_id, iov_out, iov_count);
-    if (res < 0) {
-        private->error_slot = slot_id;
-        private->error = EN50221ERR_CAWRITE;
-    }
-    return res;
 }
 
 static int en50221_tl_alloc_new_tc(struct en50221_transport_layer_private *private, uint8_t slot_id)
