@@ -340,7 +340,8 @@ int en50221_tl_send_data(en50221_transport_layer tl, uint8_t slot_id, uint8_t co
 
     // calculate the total length of the data to send
     if (iov_count > 4) {
-        // FIXME
+        private->error_slot = slot_id;
+        private->error = EN50221ERR_IOVLIMIT;
         return -1;
     }
     uint32_t length;

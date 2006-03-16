@@ -35,6 +35,7 @@
 #define EN50221ERR_ASNENCODE -9  /* ASN.1 encode failure - indicates library bug. */
 #define EN50221ERR_OUTOFCONNECTIONS -10 /* no more connections available. */
 #define EN50221ERR_OUTOFSLOTS -11 /* no more slots available - the offending slot_id will not be set. */
+#define EN50221ERR_IOVLIMIT -12 /* Too many struct iovecs were used. */
 
 #endif
 
