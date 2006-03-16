@@ -22,6 +22,7 @@
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <sys/time.h>
 
 #define ERROR		0
 #define NOTICE		1
@@ -53,5 +54,12 @@ static inline void vprint(char *fmt, ...)
 	va_end(args);
 }
 
+static inline uint32_t time_ms()
+{
+	struct timeval tv;
+	gettimeofday(&tv, 0);
+
+	return (tv.tv_sec * 1000) + (tv.tv_usec /1000);
+}
 
 #endif
