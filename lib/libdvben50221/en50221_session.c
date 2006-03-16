@@ -145,7 +145,7 @@ int en50221_sl_send_data(en50221_session_layer sl, uint8_t session_number, uint8
     uint8_t hdr[4];
     hdr[0] = ST_SESSION_NUMBER;
     hdr[1] = 2;
-    hdr[2] = session_number << 8;
+    hdr[2] = session_number >> 8;
     hdr[3] = session_number;
     iov[0].iov_base = hdr;
     iov[0].iov_len = 4;
@@ -282,7 +282,7 @@ static void en50221_sl_handle_close_session_request(struct en50221_session_layer
     hdr[0] = ST_CLOSE_SESSION_RES;
     hdr[1] = 3;
     hdr[2] = 0x00; // session closed
-    hdr[3] = session_number << 8;
+    hdr[3] = session_number >> 8;
     hdr[4] = session_number;
     iov[0].iov_base = hdr;
     iov[0].iov_len = 5;
