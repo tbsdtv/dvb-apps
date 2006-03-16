@@ -240,7 +240,7 @@ static void en50221_sl_handle_open_session_request(struct en50221_session_layer_
     hdr[7] = session_number >> 8;
     hdr[8] = session_number;
     iov[0].iov_base = hdr;
-    iov[0].iov_len = 4;
+    iov[0].iov_len = 9;
 
     // send this command
     if (en50221_tl_send_data(private->tl, slot_id, connection_id, iov, 2)) {
