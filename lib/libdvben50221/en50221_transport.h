@@ -30,16 +30,29 @@
 #include <stdint.h>
 #include <sys/uio.h>
 
+#define T_CALLBACK_REASON_DATA             0x00  // Data received
+#define T_CALLBACK_REASON_CONNECTIONCLOSE  0x01  // The supplied connection_id has been closed.
+#define T_CALLBACK_REASON_SLOTCLOSE        0x02  // All connections on the supplied slot_id have been closed.
+
+
 /**
  * Opaque type representing a transport layer.
  */
 typedef void *en50221_transport_layer;
 
 /**
- * Type definition for callback function.
+ * Type definition for callback function - used when data is received from a module.
+ *
+ * @param arg Private data.
+ * @param reason One of the T_CALLBACK_REASON_* values.
+ * @param data The data.
+ * @param data_length Length of the data.
+ * @param slot_id Slot_id the data was received from.
+ * @param connection_id Connection_id the data was received from.
  */
-typedef void (*en50221_tl_callback)(void *private, uint8_t *data, uint32_t data_length,
-					 uint8_t slot_id, uint8_t connection_id);
+typedef void (*en50221_tl_callback)(void *arg, int reason,
+                                    uint8_t *data, uint32_t data_length,
+					                uint8_t slot_id, uint8_t connection_id);
 
 
 /**
@@ -72,7 +85,7 @@ extern int en50221_tl_register_slot(en50221_transport_layer tl, int ca_hndl,
 
 /**
  * Destroy a registered slot - e.g. if a CAM is removed, or an error occurs. Does
- * not actually reset the CAM.
+ * not attempt to reset the CAM.
  *
  * @param tl The en50221_transport_layer instance.
  * @param slot_id Slot to destroy.
@@ -95,11 +108,11 @@ extern int en50221_tl_poll(en50221_transport_layer tl);
  * Register the callback for data reception.
  *
  * @param tl The en50221_transport_layer instance.
- * @param callback The callback.
- * @param private Private data passed as arg0 of the callback.
+ * @param callback The callback. Set to NULL to remove the callback completely.
+ * @param arg Private data passed as arg0 of the callback.
  */
 extern void en50221_tl_register_callback(en50221_transport_layer tl,
-						 en50221_tl_callback callback, void *private);
+						                 en50221_tl_callback callback, void *arg);
 
 /**
  * Gets the ID of the slot an error occurred on.

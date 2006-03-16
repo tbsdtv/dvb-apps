@@ -87,7 +87,7 @@ struct en50221_transport_layer_private
     int error_slot;
 
     en50221_tl_callback callback;
-    void *callback_private;
+    void *callback_arg;
 };
 
 struct en50221_tpdu {
@@ -120,7 +120,7 @@ en50221_transport_layer en50221_tl_create(uint8_t max_slots, uint8_t max_connect
     private->max_connections_per_slot = max_connections_per_slot;
     private->slots = NULL;
     private->callback = NULL;
-    private->callback_private = NULL;
+    private->callback_arg = NULL;
     private->error_slot = 0;
     private->error = 0;
 
@@ -229,6 +229,11 @@ void en50221_tl_destroy_slot(en50221_transport_layer tl, uint8_t slot_id)
         private->slots[slot_id].connections[i].chain_buffer = NULL;
         private->slots[slot_id].connections[i].buffer_length = 0;
     }
+
+    // tell upper layers
+    en50221_tl_callback cb = private->callback;
+    if (cb)
+        cb(private->callback_arg, T_CALLBACK_REASON_SLOTCLOSE, NULL, 0, slot_id, 0);
 }
 
 int en50221_tl_poll(en50221_transport_layer tl)
@@ -298,12 +303,12 @@ int en50221_tl_poll(en50221_transport_layer tl)
     return 0;
 }
 
-void en50221_tl_register_callback(en50221_transport_layer tl, en50221_tl_callback callback, void *private_data)
+void en50221_tl_register_callback(en50221_transport_layer tl, en50221_tl_callback callback, void *arg)
 {
     struct en50221_transport_layer_private *private = (struct en50221_transport_layer_private *) tl;
 
     private->callback = callback;
-    private->callback_private = private_data;
+    private->callback_arg = arg;
 }
 
 int en50221_tl_get_error_slot(en50221_transport_layer tl)
@@ -375,7 +380,6 @@ int en50221_tl_send_data(en50221_transport_layer tl, uint8_t slot_id, uint8_t co
     return 0;
 }
 
-// create new transport connection
 int en50221_tl_new_tc(en50221_transport_layer tl, uint8_t slot_id, uint8_t connection_id)
 {
     struct en50221_transport_layer_private *private = (struct en50221_transport_layer_private *) tl;
@@ -414,7 +418,6 @@ int en50221_tl_new_tc(en50221_transport_layer tl, uint8_t slot_id, uint8_t conne
     return conid;
 }
 
-// handle delete request
 int en50221_tl_del_tc(en50221_transport_layer tl, uint8_t slot_id, uint8_t connection_id)
 {
     struct en50221_transport_layer_private *private = (struct en50221_transport_layer_private *) tl;
@@ -453,6 +456,12 @@ int en50221_tl_del_tc(en50221_transport_layer tl, uint8_t slot_id, uint8_t conne
         return -1;
     }
     private->slots[slot_id].connections[connection_id].tx_time = time_ms();
+
+    // tell upper layers
+    en50221_tl_callback cb = private->callback;
+    if (cb)
+        cb(private->callback_arg, T_CALLBACK_REASON_CONNECTIONCLOSE, NULL, 0, slot_id, connection_id);
+
     return 0;
 }
 
@@ -591,6 +600,11 @@ static int en50221_tl_proc_data_tc(struct en50221_transport_layer_private *priva
                         return -1;
                     }
                     private->slots[slot_id].connections[unit.connection_id].tx_time = 0;
+
+                    // tell upper layers
+                    en50221_tl_callback cb = private->callback;
+                    if (cb)
+                        cb(private->callback_arg, T_CALLBACK_REASON_CONNECTIONCLOSE, NULL, 0, slot_id, unit.connection_id);
                 }
                 else {
                     print(LOG_LEVEL, ERROR, 1, "Received T_DELETE_T_C for inactive connection from module on slot %02x\n",
@@ -703,9 +717,10 @@ static int en50221_tl_proc_data_tc(struct en50221_transport_layer_private *priva
                 if (private->slots[slot_id].connections[unit.connection_id].chain_buffer == NULL)
                 {
                     // single package => dispatch immediately
-                    if (private->callback)
-                        private->callback(private->callback_private, unit.data, unit.data_length,
-                                          slot_id, unit.connection_id);
+                    en50221_tl_callback cb = private->callback;
+                    if (cb)
+                        cb(private->callback_arg, T_CALLBACK_REASON_DATA, unit.data, unit.data_length,
+                           slot_id, unit.connection_id);
                 }
                 else
                 {
@@ -727,9 +742,10 @@ static int en50221_tl_proc_data_tc(struct en50221_transport_layer_private *priva
                     private->slots[slot_id].connections[unit.connection_id].chain_buffer = NULL;
                     private->slots[slot_id].connections[unit.connection_id].buffer_length = 0;
 
-                    if (private->callback)
-                        private->callback(private->callback_private, new_data_buffer, new_data_length,
-                                          slot_id, unit.connection_id);
+                    en50221_tl_callback cb = private->callback;
+                    if (cb)
+                        cb(private->callback_arg, T_CALLBACK_REASON_DATA, new_data_buffer, new_data_length,
+                           slot_id, unit.connection_id);
 
                     free(new_data_buffer);
                 }
