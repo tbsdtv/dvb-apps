@@ -124,14 +124,21 @@ int dvbca_link_writev(int fd, uint8_t connection_id,
 int dvbca_link_read(int fd, uint8_t *connection_id,
 		     uint8_t *data, uint16_t data_length)
 {
-	uint8_t buffer[4096+2];
+	struct iovec iov[2];
+	uint8_t hdr[2];
 	int size;
 
-	if ((size = read(fd, buffer, sizeof(buffer))) < 0)
+	iov[0].iov_base = hdr;
+	iov[0].iov_len = 2;
+	iov[1].iov_base = data;
+	iov[1].iov_len = data_length;
+
+	if ((size = readv(fd, iov, 2)) < 2)
 		return -1;
 
-	*connection_id = buffer[1];
+	if (hdr[0] != 0)
+		return -1;
+	*connection_id = hdr[1];
 
-	memcpy(data, buffer+2, size-2);
-	return size;
+	return size - 2;
 }
