@@ -4,6 +4,7 @@
 
     Copyright (C) 2004, 2005 Manu Abraham (manu@kromtek.com)
     Copyright (C) 2005 Julian Scheel (julian at jusst dot de)
+    Copyright (C) 2006 Andrew de Quincey (adq_dvb@lidskialf.net)
 
     This library is free software; you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as
@@ -32,6 +33,14 @@
 #include "en50221_transport.h"
 #include "en50221_session.h"
 #include "en50221_errno.h"
+
+
+// these are the possible session statuses
+#define S_STATUS_OPEN                    0x00  // session is opened
+#define S_STATUS_CLOSE_NO_RES            0xF0  // could not open session, no proper resource available
+#define S_STATUS_CLOSE_RES_UNAVAILABLE   0xF1  // could not open session, resource unavailable
+#define S_STATUS_CLOSE_RES_LOW_VERSION   0xF2  // could not open session, resource version too low
+#define S_STATUS_CLOSE_RES_BUSY          0xF3  // could not open session, resource is busy
 
 #define ST_OPEN_SESSION_REQ     0x91    // h<--m
 #define ST_OPEN_SESSION_RES     0x92    // h-->m
@@ -204,11 +213,30 @@ static void en50221_sl_handle_open_session_request(struct en50221_session_layer_
 
     // get the resource id and look it up
     uint32_t resource_id = (data[1] << 24) | (data[2] << 16) | (data[3] << 8) | data[4];
-    void *arg;
-    en50221_sl_resource_callback resource_callback = NULL;
+
+    // look up the resource
     int status = S_STATUS_CLOSE_NO_RES;
+    void *arg = NULL;
+    en50221_sl_resource_callback resource_callback = NULL;
     if (private->lookup) {
-        status = private->lookup(private->lookup_arg, resource_id, &arg, &resource_callback);
+        status = private->lookup(private->lookup_arg, resource_id, &resource_callback, &arg);
+        switch(status) {
+        case 0:
+            status = S_STATUS_OPEN;
+            break;
+
+        case -1:
+            status = S_STATUS_CLOSE_NO_RES;
+            break;
+
+        case -2:
+            status = S_STATUS_CLOSE_RES_LOW_VERSION;
+            break;
+
+        case -3:
+            status = S_STATUS_CLOSE_RES_UNAVAILABLE;
+            break;
+        }
     }
 
     // if we found it, deal with it
@@ -222,7 +250,15 @@ static void en50221_sl_handle_open_session_request(struct en50221_session_layer_
                 break;
             }
         }
-        if (session_number == -1) {
+
+        // if we found one, create the session
+        if (session_number != -1) {
+            if (resource_callback) {
+                if (resource_callback(arg, S_CALLBACK_REASON_CONNECTING, session_number, resource_id, NULL, 0)) {
+                    status = S_STATUS_CLOSE_RES_BUSY;
+                }
+            }
+        } else {
             print(LOG_LEVEL, ERROR, 1, "Ran out of sessions for module on slot %02x\n", slot_id);
             status = S_STATUS_CLOSE_NO_RES;
         }
@@ -255,9 +291,9 @@ static void en50221_sl_handle_open_session_request(struct en50221_session_layer_
     private->sessions[session_number].callback = resource_callback;
     private->sessions[session_number].callback_arg = arg;
 
-    // callback to announce creation
+    // connection successful
     if (resource_callback)
-        resource_callback(arg, S_CALLBACK_REASON_CONNECT, session_number, resource_id, NULL, 0);
+        resource_callback(arg, S_CALLBACK_REASON_CONNECTED, session_number, resource_id, NULL, 0);
 }
 
 static void en50221_sl_handle_close_session_request(struct en50221_session_layer_private *private,
@@ -318,7 +354,8 @@ static void en50221_sl_handle_close_session_request(struct en50221_session_layer
 }
 
 static void en50221_sl_handle_session_package(struct en50221_session_layer_private *private,
-                                              uint8_t *data, uint32_t data_length, uint8_t slot_id, uint8_t connection_id)
+                                              uint8_t *data, uint32_t data_length,
+                                              uint8_t slot_id, uint8_t connection_id)
 {
     // check
     if (data_length < 3) {

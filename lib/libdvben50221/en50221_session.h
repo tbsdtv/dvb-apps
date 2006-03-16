@@ -29,16 +29,10 @@
 #include <stdint.h>
 #include "en50221_transport.h"
 
-// these are the possible session statuses
-#define S_STATUS_OPEN                    0x00  // session is opened
-#define S_STATUS_CLOSE_NO_RES            0xF0  // could not open session, no proper resource available
-#define S_STATUS_CLOSE_RES_UNAVAILABLE   0xF1  // could not open session, resource unavailable
-#define S_STATUS_CLOSE_RES_LOW_VERSION   0xF2  // could not open session, resource version too low
-#define S_STATUS_CLOSE_RES_BUSY          0xF3  // could not open sessionm resource is busy
-
-#define S_CALLBACK_REASON_CONNECT        0x00  // Session to resource created
-#define S_CALLBACK_REASON_DATA           0x01  // Data received for resource
-#define S_CALLBACK_REASON_CLOSE          0x02  // Session closed
+#define S_CALLBACK_REASON_CONNECTING     0x00  // Session connecting to resource - not established yet!
+#define S_CALLBACK_REASON_CONNECTED      0x01  // Session connection established succesfully
+#define S_CALLBACK_REASON_DATA           0x02  // Data received for resource
+#define S_CALLBACK_REASON_CLOSE          0x03  // Session closed
 
 
 /**
@@ -56,12 +50,13 @@ typedef void *en50221_session_layer;
  * @param resource_id Resource ID concerned.
  * @param data The data.
  * @param data_length Length of data in bytes.
+ * @return 0 on success, or -1 on failure.
  */
-typedef void (*en50221_sl_resource_callback)(void *arg,
-                                             int reason,
-                                             uint16_t session_number,
-                                             uint32_t resource_id,
-                                             uint8_t *data, uint32_t data_length);
+typedef int (*en50221_sl_resource_callback)(void *arg,
+                                            int reason,
+                                            uint16_t session_number,
+                                            uint32_t resource_id,
+                                            uint8_t *data, uint32_t data_length);
 
 /**
  * Type definition for resource lookup callback function - used by the session layer to look up requested resources.
@@ -70,10 +65,13 @@ typedef void (*en50221_sl_resource_callback)(void *arg,
  * @param resource_id Resource id to look up.
  * @param arg_out Output parameter for arg to pass to resource callback.
  * @param callback_out Output parameter for pointer to resource callback function.
- * @return One of the S_STATUS_* values above.
+ * @return 0 on success,
+ * -1 if the resource was not found,
+ * -2 if it exists, but had a lower version, or
+ * -3 if it exists, but was unavailable.
  */
 typedef int (*en50221_sl_lookup_callback)(void *arg, uint32_t resource_id,
-                                           void**arg_out, en50221_sl_resource_callback *callback_out);
+                                          en50221_sl_resource_callback *callback_out, void **arg_out);
 
 /**
  * Construct a new instance of the session layer.
