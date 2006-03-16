@@ -105,10 +105,10 @@ int dvbca_link_write(int fd, uint8_t connection_id,
 int dvbca_link_writev(int fd, uint8_t connection_id,
 		      struct iovec *vector, int count)
 {
-	struct iovec iov[5];
+	struct iovec iov[10];
 	uint8_t hdr[2];
 
-	if (count > 4)
+	if (count > 9)
 		return -1;
 
 	hdr[0] = 0;
