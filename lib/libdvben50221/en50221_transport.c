@@ -326,7 +326,7 @@ int en50221_tl_send_data(en50221_transport_layer tl, uint8_t slot_id, uint8_t co
                          struct iovec *vector, int iov_count)
 {
     struct en50221_transport_layer_private *private = (struct en50221_transport_layer_private *) tl;
-    struct iovec iov_out[5];
+    struct iovec iov_out[10];
 
     if (slot_id >= private->max_slots) {
         private->error = EN50221ERR_BADSLOTID;
@@ -339,7 +339,7 @@ int en50221_tl_send_data(en50221_transport_layer tl, uint8_t slot_id, uint8_t co
     }
 
     // calculate the total length of the data to send
-    if (iov_count > 4) {
+    if (iov_count > 9) {
         private->error_slot = slot_id;
         private->error = EN50221ERR_IOVLIMIT;
         return -1;
