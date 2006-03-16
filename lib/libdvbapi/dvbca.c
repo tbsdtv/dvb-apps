@@ -86,17 +86,39 @@ int dvbca_get_cam_state(int fd)
 }
 
 int dvbca_link_write(int fd, uint8_t connection_id,
-  		     uint8_t *data, uint16_t data_length)
+		     uint8_t *data, uint16_t data_length)
 {
-	uint8_t *tmp = malloc(data_length+2);
-	if (tmp == NULL)
+	struct iovec iov[2];
+	uint8_t hdr[2];
+
+	hdr[0] = 0;
+	hdr[1] = connection_id;
+	iov[0].iov_base = hdr;
+	iov[0].iov_len = 2;
+
+	iov[1].iov_base = data;
+	iov[1].iov_len = data_length;
+
+	return writev(fd, iov, 2);
+}
+
+int dvbca_link_writev(int fd, uint8_t connection_id,
+		      struct iovec *vector, int count)
+{
+	struct iovec iov[5];
+	uint8_t hdr[2];
+
+	if (count > 4)
 		return -1;
 
-	tmp[0] = 0;
-	tmp[1] = connection_id;
-	memcpy(tmp+2, data, data_length);
+	hdr[0] = 0;
+	hdr[1] = connection_id;
+	iov[0].iov_base = hdr;
+	iov[0].iov_len = 2;
 
-	return write(fd, tmp, data_length+2);
+	memcpy(&iov[1], vector, count * sizeof(struct iovec));
+
+	return writev(fd, iov, count+1);
 }
 
 int dvbca_link_read(int fd, uint8_t *connection_id,

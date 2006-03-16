@@ -27,6 +27,7 @@ extern "C"
 #endif
 
 #include <stdint.h>
+#include <sys/uio.h>
 
 /**
  * The types of CA interface we support.
@@ -86,7 +87,19 @@ extern int dvbca_get_cam_state(int fd);
  * @return 0 on success, or -1 on failure.
  */
 extern int dvbca_link_write(int fd, uint8_t connection_id,
-	    		    uint8_t *data, uint16_t data_length);
+			    uint8_t *data, uint16_t data_length);
+
+/**
+ * Write a message to a CAM using an iovec.
+ *
+ * @param fd File handle opened with dvbca_open.
+ * @param connection_id Connection ID of the message.
+ * @param vector struct iovec describing what to write.
+ * @param count Number of elements in the iovec.
+ * @return 0 on success, or -1 on failure.
+ */
+extern int dvbca_link_writev(int fd, uint8_t connection_id,
+			     struct iovec *vector, int count);
 
 /**
  * Read a message from a CA device.
