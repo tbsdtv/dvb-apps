@@ -62,4 +62,14 @@ struct en50221_app_public_resource_id *
  */
 uint8_t* en50221_app_encode_public_resource_id(struct en50221_app_public_resource_id *idf, uint8_t *data);
 
+/**
+ * Make a uint32_t formatted resource id.
+ *
+ * @param CLASS Class of resource.
+ * @param TYPE Type of resource.
+ * @param VERSION Version of resource.
+ * @return Formatted resource id.
+ */
+#define MKRID(CLASS, TYPE, VERSION) (((CLASS&0xffff)<<16) | ((TYPE&0x3ff)<<6) | (VERSION&0x3f))
+
 #endif
