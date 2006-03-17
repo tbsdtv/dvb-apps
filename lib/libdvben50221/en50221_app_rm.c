@@ -45,12 +45,15 @@ struct en50221_app_rm_private {
         int resources_count;
         en50221_session_layer *sl;
 
-        en50221_app_rm_resources_callback callback;
-        void *callback_arg;
+        en50221_app_rm_resourcelist_callback listcallback;
+        void *listcallback_arg;
+
+        en50221_app_rm_unknownresource_callback unknowncallback;
+        void *unknowncallback_arg;
 };
 
 
-static int en50221_app_rm_lookup(void *arg, uint32_t resource_id,
+static int en50221_app_rm_lookup(void *arg, uint8_t slot_id, uint32_t resource_id,
                                  en50221_sl_resource_callback *callback_out, void**arg_out);
 static int en50221_app_rm_resource_callback(void *arg,
                                             int reason,
@@ -73,7 +76,8 @@ en50221_app_rm en50221_app_rm_create(en50221_session_layer sl)
     private->resources = NULL;
     private->resources_count = 0;
     private->sl = sl;
-    private->callback = NULL;
+    private->listcallback = NULL;
+    private->unknowncallback = NULL;
 
     // register with... ourself!
     if (en50221_app_rm_register(private, MKRID(1,1,1), en50221_app_rm_resource_callback, private)) {
@@ -140,13 +144,22 @@ int en50221_app_rm_register(en50221_app_rm rm, uint32_t resource_id,
     return 0;
 }
 
-void en50221_rm_register_resources_callback(en50221_app_rm rm,
-                                            en50221_app_rm_resources_callback callback, void *arg)
+void en50221_rm_register_resourcelist_callback(en50221_app_rm rm,
+                                               en50221_app_rm_resourcelist_callback callback, void *arg)
 {
     struct en50221_app_rm_private *private = (struct en50221_app_rm_private *) rm;
 
-    private->callback = callback;
-    private->callback_arg = arg;
+    private->listcallback = callback;
+    private->listcallback_arg = arg;
+}
+
+void en50221_rm_register_unknownresource_callback(en50221_app_rm rm,
+                                                  en50221_app_rm_unknownresource_callback callback, void *arg)
+{
+    struct en50221_app_rm_private *private = (struct en50221_app_rm_private *) rm;
+
+    private->unknowncallback = callback;
+    private->unknowncallback_arg = arg;
 }
 
 
@@ -155,7 +168,7 @@ void en50221_rm_register_resources_callback(en50221_app_rm rm,
 
 
 
-static int en50221_app_rm_lookup(void *arg, uint32_t resource_id,
+static int en50221_app_rm_lookup(void *arg, uint8_t slot_id, uint32_t resource_id,
                                  en50221_sl_resource_callback *callback_out, void**arg_out)
 {
     struct en50221_app_rm_private *private = (struct en50221_app_rm_private *) arg;
@@ -189,6 +202,10 @@ static int en50221_app_rm_lookup(void *arg, uint32_t resource_id,
         }
     }
 
+    // call out to the app just in case
+    if (private->unknowncallback)
+        return private->unknowncallback(private->unknowncallback_arg, slot_id, resource_id, callback_out, arg_out);
+
     // didn't find it
     return -1;
 }
@@ -213,8 +230,8 @@ static void en50221_app_rm_handle_incoming_profile(struct en50221_app_rm_private
     int resources_count = asn_data_length / 4;
 
     // inform observer
-    if (private->callback)
-        private->callback(private->callback_arg,
+    if (private->listcallback)
+        private->listcallback(private->listcallback_arg,
                           slot_id, session_number, resources_count, (uint32_t*) (data+length_field_len));
 
     // after we registered the resources the cam supports. Now we should send an

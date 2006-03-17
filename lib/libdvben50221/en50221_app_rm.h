@@ -30,7 +30,7 @@
 
 
 /**
- * Type definition for resources callback function - called when we receive
+ * Type definition for resourcelist callback function - called when we receive
  * a list of resource ids supported by a CAM.
  *
  * @param arg Private argument.
@@ -39,8 +39,22 @@
  * @param resources_count Number of resources.
  * @param resources Pointer to resourceids themselves.
  */
-typedef void (*en50221_app_rm_resources_callback)(void *arg, uint8_t slot_id, uint16_t session_number,
-                                                  uint32_t resources_count, uint32_t *resources);
+typedef void (*en50221_app_rm_resourcelist_callback)(void *arg, uint8_t slot_id, uint16_t session_number,
+                                                     uint32_t resources_count, uint32_t *resources);
+
+/**
+ * Type definition for resourcelist callback function - called when we receive
+ * a request for a resourceid we don't recognise.
+ *
+ * @param arg Private argument.
+ * @param slot_id Slot id concerned.
+ * @param resource_id Resource id concerned.
+ * @param callback_out Output parameter for pointer to resource callback function.
+ * @param arg_out Output parameter for arg to pass to resource callback.
+ * @return 0 on success, or -1 on failure.
+ */
+typedef int (*en50221_app_rm_unknownresource_callback)(void *arg, uint8_t slot_id, uint32_t resource_id,
+                                                       en50221_sl_resource_callback *callback_out, void **arg_out);
 
 /**
  * Opaque type representing a resource manager.
@@ -81,7 +95,17 @@ extern int en50221_app_rm_register(en50221_app_rm rm, uint32_t resource_id,
  * @param callback The callback. Set to NULL to remove the callback completely.
  * @param arg Private data passed as arg0 of the callback.
  */
-extern void en50221_rm_register_resources_callback(en50221_app_rm rm,
-                                                   en50221_app_rm_resources_callback callback, void *arg);
+extern void en50221_rm_register_resourcelist_callback(en50221_app_rm rm,
+        en50221_app_rm_resourcelist_callback callback, void *arg);
+
+/**
+ * Register the callback for when we receive a request for an unknown resource.
+ *
+ * @param rm Resource manager instance.
+ * @param callback The callback. Set to NULL to remove the callback completely.
+ * @param arg Private data passed as arg0 of the callback.
+ */
+extern void en50221_rm_register_unknownresource_callback(en50221_app_rm rm,
+        en50221_app_rm_unknownresource_callback callback, void *arg);
 
 #endif
