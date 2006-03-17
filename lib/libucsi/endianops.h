@@ -44,22 +44,28 @@ extern "C"
 #define EBIT7(x1,x2,x3,x4,x5,x6,x7) x1 x2 x3 x4 x5 x6 x7
 #define EBIT8(x1,x2,x3,x4,x5,x6,x7,x8) x1 x2 x3 x4 x5 x6 x7 x8
 
-static inline void bswap16(uint8_t * buf) {
+static inline void bswap16(uint8_t *buf) {
+	(void) buf;
 }
 
-static inline void bswap32(uint8_t * buf) {
+static inline void bswap32(uint8_t *buf) {
+	(void) buf;
 }
 
-static inline void bswap64(uint8_t * buf) {
+static inline void bswap64(uint8_t *buf) {
+	(void) buf;
 }
 
-static inline void bswap24(uint8_t * buf) {
+static inline void bswap24(uint8_t *buf) {
+	(void) buf;
 }
 
-static inline void bswap40(uint8_t * buf) {
+static inline void bswap40(uint8_t *buf) {
+	(void) buf;
 }
 
-static inline void bswap48(uint8_t * buf) {
+static inline void bswap48(uint8_t *buf) {
+	(void) buf;
 }
 
 #else
