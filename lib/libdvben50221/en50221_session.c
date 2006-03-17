@@ -383,6 +383,8 @@ static void en50221_sl_handle_open_session_request(struct en50221_session_layer_
                                      slot_id, session_number, resource_id)) {
                     status = S_STATUS_CLOSE_RES_BUSY;
                 }
+            } else {
+                status = S_STATUS_CLOSE_RES_UNAVAILABLE;
             }
         } else {
             print(LOG_LEVEL, ERROR, 1, "Ran out of sessions for module on slot %02x\n", slot_id);

@@ -75,7 +75,7 @@ typedef int (*en50221_sl_lookup_callback)(void *arg, uint8_t slot_id, uint32_t r
 
 
 /**
- * Type definition for session callback function - used to inform top level applications when a CAM
+ * Type definition for session callback function - used to inform top level code when a CAM
  * modifies a session to a resource.
  *
  * @param arg Private argument.
