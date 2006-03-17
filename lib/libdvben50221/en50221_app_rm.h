@@ -28,6 +28,19 @@
 #include <stdint.h>
 #include "en50221_session.h"
 
+
+/**
+ * Type definition for resources callback function - called when we receive
+ * a list of resource ids supported by a CAM.
+ *
+ * @param arg Private argument.
+ * @param slot_id Slot id concerned.
+ * @param resources_count Number of resources.
+ * @param resources Pointer to resourceids themselves.
+ */
+typedef void (*en50221_app_rm_resources_callback)(void *arg, uint8_t slot_id,
+                                                  uint32_t resources_count, uint32_t *resources);
+
 /**
  * Opaque type representing a resource manager.
  */
@@ -39,14 +52,14 @@ typedef void *en50221_app_rm;
  * @param sl Session layer to communicate with.
  * @return Instance, or NULL on failure.
  */
-en50221_app_rm en50221_app_rm_create(en50221_session_layer *sl);
+extern en50221_app_rm en50221_app_rm_create(en50221_session_layer sl);
 
 /**
  * Destroy an instance of the resource manager.
  *
  * @param rm Instance to destroy.
  */
-void en50221_app_rm_destroy(en50221_app_rm *rm);
+extern void en50221_app_rm_destroy(en50221_app_rm rm);
 
 /**
  * Register a host-side resource provider with the resource manager.
@@ -57,17 +70,17 @@ void en50221_app_rm_destroy(en50221_app_rm *rm);
  * @param arg Private argument passed during calls to the callback.
  * @return 0 on success, or -1 on failure.
  */
-int en50221_app_rm_register(en50221_app_rm *rm, uint32_t resource_id,
+extern int en50221_app_rm_register(en50221_app_rm rm, uint32_t resource_id,
                             en50221_sl_resource_callback callback, void *arg);
 
 /**
- * Retrieve a list of resources hosted by the cam on a particular slot.
+ * Register the callback for when we receive a list of resources supported by a cam.
  *
  * @param rm Resource manager instance.
- * @param slot_id Slot ID concerned.
- * @param resources Will be updated to point to an array of resource ids.
- * @return The number of resources on success, or -1 on error.
+ * @param callback The callback. Set to NULL to remove the callback completely.
+ * @param arg Private data passed as arg0 of the callback.
  */
-int en50221_app_rm_get_supported_resources(en50221_app_rm *rm, uint8_t slot_id, uint32_t **resources);
+extern void en50221_rm_register_resources_callback(en50221_app_rm rm,
+                                                   en50221_app_rm_resources_callback callback, void *arg);
 
 #endif

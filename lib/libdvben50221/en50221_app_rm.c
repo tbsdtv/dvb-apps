@@ -40,19 +40,13 @@ struct en50221_resource {
         void *callback_arg;
 };
 
-struct en50221_session_info {
-        int slot_id;
-        uint32_t *resources;
-        int resources_count;
-};
-
 struct en50221_app_rm_private {
         struct en50221_resource *resources;
         int resources_count;
         en50221_session_layer *sl;
 
-        struct en50221_session_info *sessions;
-        uint32_t max_sessions;
+        en50221_app_rm_resources_callback callback;
+        void *callback_arg;
 };
 
 
@@ -67,7 +61,7 @@ static int en50221_app_rm_resource_callback(void *arg,
 
 
 
-en50221_app_rm en50221_app_rm_create(en50221_session_layer *sl)
+en50221_app_rm en50221_app_rm_create(en50221_session_layer sl)
 {
     struct en50221_app_rm_private *private = NULL;
 
@@ -79,18 +73,10 @@ en50221_app_rm en50221_app_rm_create(en50221_session_layer *sl)
     private->resources = NULL;
     private->resources_count = 0;
     private->sl = sl;
-    private->max_sessions = en50221_sl_get_max_sessions(sl);
-
-    // setup the session-specific information
-    private->sessions = malloc(sizeof(struct en50221_session_info) * private->max_sessions);
-    if (private->sessions == NULL) {
-        free(private);
-        return NULL;
-    }
-    memset(private->sessions, 0, sizeof(struct en50221_session_info) * private->max_sessions);
+    private->callback = NULL;
 
     // register with... ourself!
-    if (en50221_app_rm_register((en50221_app_rm) private, MKRID(1,1,1), en50221_app_rm_resource_callback, private)) {
+    if (en50221_app_rm_register(private, MKRID(1,1,1), en50221_app_rm_resource_callback, private)) {
         free(private->resources);
         free(private);
         return NULL;
@@ -103,7 +89,7 @@ en50221_app_rm en50221_app_rm_create(en50221_session_layer *sl)
     return private;
 }
 
-void en50221_app_rm_destroy(en50221_app_rm *rm)
+void en50221_app_rm_destroy(en50221_app_rm rm)
 {
     struct en50221_app_rm_private *private = (struct en50221_app_rm_private *) rm;
 
@@ -113,19 +99,10 @@ void en50221_app_rm_destroy(en50221_app_rm *rm)
     // free structure
     if (private->resources)
         free(private->resources);
-
-    if (private->sessions) {
-        uint32_t i;
-        for(i=0; i< private->max_sessions; i++) {
-            if (private->sessions[i].resources)
-                free(private->sessions[i].resources);
-        }
-        free(private->sessions);
-    }
     free(private);
 }
 
-int en50221_app_rm_register(en50221_app_rm *rm, uint32_t resource_id,
+int en50221_app_rm_register(en50221_app_rm rm, uint32_t resource_id,
                             en50221_sl_resource_callback callback, void *arg)
 {
     struct en50221_app_rm_private *private = (struct en50221_app_rm_private *) rm;
@@ -163,19 +140,13 @@ int en50221_app_rm_register(en50221_app_rm *rm, uint32_t resource_id,
     return 0;
 }
 
-int en50221_app_rm_get_supported_resources(en50221_app_rm *rm, uint8_t slot_id, uint32_t **resources)
+void en50221_rm_register_resources_callback(en50221_app_rm rm,
+                                            en50221_app_rm_resources_callback callback, void *arg)
 {
     struct en50221_app_rm_private *private = (struct en50221_app_rm_private *) rm;
-    int i;
 
-    for(i=0; i< private->resources_count; i++) {
-        if (private->sessions[i].slot_id == slot_id) {
-            *resources = private->sessions[i].resources;
-            return private->sessions[i].resources_count;
-        }
-    }
-
-    return -1;
+    private->callback = callback;
+    private->callback_arg = arg;
 }
 
 
@@ -223,7 +194,7 @@ static int en50221_app_rm_lookup(void *arg, uint32_t resource_id,
 }
 
 static void en50221_app_rm_handle_incoming_profile(struct en50221_app_rm_private *private,
-                                                   uint8_t slot_id, uint16_t session_number,
+                                                   uint8_t slot_id,
                                                    uint8_t *data, uint32_t data_length)
 {
     // first of all, decode the length field
@@ -241,26 +212,9 @@ static void en50221_app_rm_handle_incoming_profile(struct en50221_app_rm_private
     }
     int resources_count = asn_data_length / 4;
 
-    // check the session_number
-    if (session_number >= private->max_sessions) {
-        print(LOG_LEVEL, ERROR, 1, "Received bad session number\n");
-        return;
-    }
-
-    // free up any existing resources
-    if (private->sessions[session_number].resources)
-        free(private->sessions[session_number].resources);
-    private->sessions[session_number].resources_count = 0;
-
-    // allocate new memory for 'em and copy them into it
-    private->sessions[session_number].resources = malloc(resources_count*4);
-    if (private->sessions[session_number].resources == NULL) {
-        print(LOG_LEVEL, ERROR, 1, "Out of memory\n");
-        return;
-    }
-    memcpy(private->sessions[session_number].resources, data+length_field_len, resources_count*4);
-    private->sessions[session_number].resources_count = resources_count;
-    private->sessions[session_number].slot_id = slot_id;
+    // inform observer
+    if (private->callback)
+        private->callback(private->callback_arg, slot_id, resources_count, (uint32_t*) (data+length_field_len));
 
     // after we registered the resources the cam supports. Now we should send an
     // Profile Change on all sessions on this slot.
@@ -349,15 +303,6 @@ static int en50221_app_rm_resource_callback(void *arg,
         break;
 
     case S_CALLBACK_REASON_CLOSE:
-        if (session_number <= private->max_sessions) {
-            if (private->sessions[session_number].resources) {
-                free(private->sessions[session_number].resources);
-            }
-            private->sessions[session_number].slot_id = -1;
-            private->sessions[session_number].resources = NULL;
-            private->sessions[session_number].resources_count = 0;
-        }
-
         return 0;
     }
 
@@ -375,7 +320,7 @@ static int en50221_app_rm_resource_callback(void *arg,
             en50221_app_rm_send_profile_reply(private, session_number);
             break;
         case TAG_PROFILE:
-            en50221_app_rm_handle_incoming_profile(private, slot_id, session_number, data+3, data_length-3);
+            en50221_app_rm_handle_incoming_profile(private, slot_id, data+3, data_length-3);
             break;
         case TAG_PROFILE_CHANGE:
             en50221_app_rm_enquiry(private, session_number);
