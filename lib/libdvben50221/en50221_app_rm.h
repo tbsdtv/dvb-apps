@@ -35,10 +35,11 @@
  *
  * @param arg Private argument.
  * @param slot_id Slot id concerned.
+ * @param session_number Session number concerned.
  * @param resources_count Number of resources.
  * @param resources Pointer to resourceids themselves.
  */
-typedef void (*en50221_app_rm_resources_callback)(void *arg, uint8_t slot_id,
+typedef void (*en50221_app_rm_resources_callback)(void *arg, uint8_t slot_id, uint16_t session_number,
                                                   uint32_t resources_count, uint32_t *resources);
 
 /**

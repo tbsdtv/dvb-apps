@@ -194,7 +194,7 @@ static int en50221_app_rm_lookup(void *arg, uint32_t resource_id,
 }
 
 static void en50221_app_rm_handle_incoming_profile(struct en50221_app_rm_private *private,
-                                                   uint8_t slot_id,
+                                                   uint8_t slot_id, uint16_t session_number,
                                                    uint8_t *data, uint32_t data_length)
 {
     // first of all, decode the length field
@@ -214,7 +214,8 @@ static void en50221_app_rm_handle_incoming_profile(struct en50221_app_rm_private
 
     // inform observer
     if (private->callback)
-        private->callback(private->callback_arg, slot_id, resources_count, (uint32_t*) (data+length_field_len));
+        private->callback(private->callback_arg,
+                          slot_id, session_number, resources_count, (uint32_t*) (data+length_field_len));
 
     // after we registered the resources the cam supports. Now we should send an
     // Profile Change on all sessions on this slot.
@@ -320,7 +321,7 @@ static int en50221_app_rm_resource_callback(void *arg,
             en50221_app_rm_send_profile_reply(private, session_number);
             break;
         case TAG_PROFILE:
-            en50221_app_rm_handle_incoming_profile(private, slot_id, data+3, data_length-3);
+            en50221_app_rm_handle_incoming_profile(private, slot_id, session_number, data+3, data_length-3);
             break;
         case TAG_PROFILE_CHANGE:
             en50221_app_rm_enquiry(private, session_number);
