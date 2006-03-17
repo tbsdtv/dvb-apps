@@ -44,7 +44,7 @@ struct en50221_app_dvb_private {
         void *replace_callback_arg;
 };
 
-static int en50221_app_dvb_resource_callback(void *arg,
+static void en50221_app_dvb_resource_callback(void *arg,
                                              uint8_t slot_id,
                                              uint16_t session_number,
                                              uint32_t resource_id,
@@ -189,7 +189,7 @@ static void en50221_app_dvb_parse_clear_replace(struct en50221_app_dvb_private *
                                   replacement_ref, 0, 0);
 }
 
-static int en50221_app_dvb_resource_callback(void *arg,
+static void en50221_app_dvb_resource_callback(void *arg,
                                             uint8_t slot_id,
                                             uint16_t session_number,
                                             uint32_t resource_id,
@@ -200,7 +200,7 @@ static int en50221_app_dvb_resource_callback(void *arg,
     // get the tag
     if (data_length < 3) {
         print(LOG_LEVEL, ERROR, 1, "Received short data\n");
-        return -1;
+        return;
     }
     uint32_t tag = (data[0] << 16) | (data[1] << 8) | data[2];
 
@@ -217,8 +217,6 @@ static int en50221_app_dvb_resource_callback(void *arg,
             break;
         default:
             print(LOG_LEVEL, ERROR, 1, "Received unexpected tag %x\n", tag);
-            return -1;
+            break;
     }
-
-    return 0;
 }

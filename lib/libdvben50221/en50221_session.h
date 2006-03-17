@@ -50,9 +50,8 @@ typedef void *en50221_session_layer;
  * @param resource_id Resource id.
  * @param data The data.
  * @param data_length Length of data in bytes.
- * @return 0 on success, or -1 on failure.
  */
-typedef int (*en50221_sl_resource_callback)(void *arg, uint8_t slot_id,
+typedef void (*en50221_sl_resource_callback)(void *arg, uint8_t slot_id,
                                             uint16_t session_number, uint32_t resource_id,
                                             uint8_t *data, uint32_t data_length);
 

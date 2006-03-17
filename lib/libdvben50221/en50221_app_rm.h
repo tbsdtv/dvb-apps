@@ -54,7 +54,8 @@ typedef void (*en50221_app_rm_resourcelist_callback)(void *arg, uint8_t slot_id,
  * @return 0 on success, or -1 on failure.
  */
 typedef int (*en50221_app_rm_unknownresource_callback)(void *arg, uint8_t slot_id, uint32_t resource_id,
-                                                       en50221_sl_resource_callback *callback_out, void **arg_out);
+                                                       en50221_sl_resource_callback *callback_out,
+                                                       void **arg_out);
 
 /**
  * Opaque type representing a resource manager.
