@@ -89,7 +89,7 @@ extern int en50221_app_rm_register(en50221_app_rm rm, uint32_t resource_id,
                             en50221_sl_resource_callback callback, void *arg);
 
 /**
- * Register the callback for when we receive a list of resources supported by a cam.
+ * Register the callback for when we receive a list of resources supported by a CAM.
  *
  * @param rm Resource manager instance.
  * @param callback The callback. Set to NULL to remove the callback completely.
@@ -99,7 +99,7 @@ extern void en50221_rm_register_resourcelist_callback(en50221_app_rm rm,
         en50221_app_rm_resourcelist_callback callback, void *arg);
 
 /**
- * Register the callback for when we receive a request for an unknown resource.
+ * Register the callback for when we receive a request for an unknown resource from a CAM.
  *
  * @param rm Resource manager instance.
  * @param callback The callback. Set to NULL to remove the callback completely.

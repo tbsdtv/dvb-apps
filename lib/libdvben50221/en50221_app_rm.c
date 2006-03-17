@@ -316,6 +316,9 @@ static int en50221_app_rm_resource_callback(void *arg,
         en50221_app_rm_enquiry(private, session_number);
         return 0;
 
+    case S_CALLBACK_REASON_CONNECTFAIL:
+        return 0;
+
     case S_CALLBACK_REASON_DATA:
         // fallthrough into function
         break;
