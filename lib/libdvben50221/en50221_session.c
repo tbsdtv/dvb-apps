@@ -113,6 +113,8 @@ en50221_session_layer en50221_sl_create(en50221_transport_layer tl,
         private->sessions[i].state = S_STATE_IDLE;
         private->sessions[i].callback = NULL;
     }
+
+    // register ourselves with the transport layer
     en50221_tl_register_callback(tl, en50221_sl_transport_callback, private);
 
     return private;
@@ -392,19 +394,25 @@ static void en50221_sl_handle_open_session_request(struct en50221_session_layer_
     // send this command
     if (en50221_tl_send_data(private->tl, slot_id, connection_id, iov, 1)) {
         print(LOG_LEVEL, ERROR, 1, "Transport layer error %i occurred\n", en50221_tl_get_error(private->tl));
-        return;
+        status = S_STATUS_CLOSE_NO_RES;
     }
 
-    // setup the session
-    private->sessions[session_number].resource_id = resource_id;
-    private->sessions[session_number].slot_id = slot_id;
-    private->sessions[session_number].connection_id = connection_id;
-    private->sessions[session_number].callback = resource_callback;
-    private->sessions[session_number].callback_arg = arg;
+    if (status == S_STATUS_OPEN) {
+        // setup the session
+        private->sessions[session_number].state = S_STATE_ACTIVE;
+        private->sessions[session_number].resource_id = resource_id;
+        private->sessions[session_number].slot_id = slot_id;
+        private->sessions[session_number].connection_id = connection_id;
+        private->sessions[session_number].callback = resource_callback;
+        private->sessions[session_number].callback_arg = arg;
 
-    // connection successful
-    if (resource_callback)
-        resource_callback(arg, S_CALLBACK_REASON_CONNECTED, slot_id, session_number, resource_id, NULL, 0);
+        // connection successful
+        if (resource_callback)
+            resource_callback(arg, S_CALLBACK_REASON_CONNECTED, slot_id, session_number, resource_id, NULL, 0);
+    } else {
+        if (resource_callback)
+            resource_callback(arg, S_CALLBACK_REASON_CONNECTFAIL, slot_id, session_number, resource_id, NULL, 0);
+    }
 }
 
 static void en50221_sl_handle_close_session_request(struct en50221_session_layer_private *private,

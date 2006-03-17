@@ -31,8 +31,9 @@
 
 #define S_CALLBACK_REASON_CONNECTING     0x00  // Session connecting to resource - not established yet!
 #define S_CALLBACK_REASON_CONNECTED      0x01  // Session connection established succesfully
-#define S_CALLBACK_REASON_DATA           0x02  // Data received for resource
-#define S_CALLBACK_REASON_CLOSE          0x03  // Session closed
+#define S_CALLBACK_REASON_CONNECTFAIL    0x02  // Session connection failed
+#define S_CALLBACK_REASON_DATA           0x03  // Data received for resource
+#define S_CALLBACK_REASON_CLOSE          0x04  // Session closed
 
 
 /**
