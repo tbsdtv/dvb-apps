@@ -140,6 +140,12 @@ int en50221_sl_get_error(en50221_session_layer tl)
     return private->error;
 }
 
+int en50221_sl_get_max_sessions(en50221_session_layer tl)
+{
+    struct en50221_session_layer_private *private = (struct en50221_session_layer_private *) tl;
+    return private->max_sessions;
+}
+
 void en50221_sl_register_lookup_callback(en50221_session_layer sl, en50221_sl_lookup_callback callback, void *arg)
 {
     struct en50221_session_layer_private *private = (struct en50221_session_layer_private *) sl;
