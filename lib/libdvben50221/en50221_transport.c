@@ -326,8 +326,49 @@ int en50221_tl_get_error(en50221_transport_layer tl)
 
 
 
-
 int en50221_tl_send_data(en50221_transport_layer tl, uint8_t slot_id, uint8_t connection_id,
+                         uint8_t *data, uint32_t data_size)
+{
+    struct en50221_transport_layer_private *private = (struct en50221_transport_layer_private *) tl;
+
+    if (slot_id >= private->max_slots) {
+        private->error = EN50221ERR_BADSLOTID;
+        return -1;
+    }
+    if (connection_id >= private->max_connections_per_slot) {
+        private->error_slot = slot_id;
+        private->error = EN50221ERR_BADCONNECTIONID;
+        return -1;
+    }
+
+    // build the header
+    int length_field_len;
+    uint8_t hdr[10];
+    hdr[0] = T_DATA_LAST;
+    if ((length_field_len = asn_1_encode(data_size + 1, hdr + 1, 3)) < 0) {
+        private->error_slot = slot_id;
+        private->error = EN50221ERR_ASNENCODE;
+        return -1;
+    }
+    hdr[1 + length_field_len] = connection_id;
+
+    // build the iovs
+    struct iovec iov_out[2];
+    iov_out[0].iov_base = hdr;
+    iov_out[0].iov_len = 1 + length_field_len + 1;
+    iov_out[1].iov_base = data;
+    iov_out[1].iov_len = data_size;
+
+    // send it!
+    if (dvbca_link_writev(private->slots[slot_id].ca_hndl, connection_id, iov_out, 2)) {
+        private->error_slot = slot_id;
+        private->error = EN50221ERR_CAWRITE;
+        return -1;
+    }
+    return 0;
+}
+
+int en50221_tl_send_datav(en50221_transport_layer tl, uint8_t slot_id, uint8_t connection_id,
                          struct iovec *vector, int iov_count)
 {
     struct en50221_transport_layer_private *private = (struct en50221_transport_layer_private *) tl;

@@ -137,11 +137,26 @@ extern int en50221_tl_get_error(en50221_transport_layer tl);
  * @param tl The en50221_transport_layer instance.
  * @param slot_id ID of the slot.
  * @param connection_id Connection id.
+ * @param data Data to send.
+ * @param data_length Number of bytes to send.
+ * @return 0 on success, or -1 on error.
+ */
+extern int en50221_tl_send_data(en50221_transport_layer tl,
+                                uint8_t slot_id, uint8_t connection_id,
+                                uint8_t *data, uint32_t data_length);
+
+/**
+ * This function is used to take a data-block, pack into
+ * into a TPDU (DATA_LAST) and send it to the device
+ *
+ * @param tl The en50221_transport_layer instance.
+ * @param slot_id ID of the slot.
+ * @param connection_id Connection id.
  * @param vector iov to send.
  * @param io_count Number of elements in vector.
  * @return 0 on success, or -1 on error.
  */
-extern int en50221_tl_send_data(en50221_transport_layer tl,
+extern int en50221_tl_send_datav(en50221_transport_layer tl,
   			                    uint8_t slot_id, uint8_t connection_id,
                                 struct iovec *vector, int iov_count);
 

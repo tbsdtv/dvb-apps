@@ -196,7 +196,6 @@ int en50221_sl_create_session(en50221_session_layer sl, int slot_id, uint8_t con
     private->sessions[session_number].callback_arg = arg;
 
     // make up the header
-    struct iovec iov[1];
     uint8_t hdr[8];
     hdr[0] = ST_CREATE_SESSION;
     hdr[1] = 6;
@@ -206,11 +205,9 @@ int en50221_sl_create_session(en50221_session_layer sl, int slot_id, uint8_t con
     hdr[5] = resource_id;
     hdr[6] = session_number >> 8;
     hdr[7] = session_number;
-    iov[0].iov_base = hdr;
-    iov[0].iov_len = 8;
 
     // send this command
-    if (en50221_tl_send_data(private->tl, slot_id, connection_id, iov, 1)) {
+    if (en50221_tl_send_data(private->tl, slot_id, connection_id, hdr, 8)) {
         private->error = en50221_tl_get_error(private->tl);
         return -1;
     }
@@ -238,17 +235,14 @@ int en50221_sl_destroy_session(en50221_session_layer sl, int session_number)
     private->sessions[session_number].state = S_STATE_IN_DELETION;
 
     //  sendit
-    struct iovec iov[1];
     uint8_t hdr[4];
     hdr[0] = ST_CLOSE_SESSION_REQ;
     hdr[1] = 2;
     hdr[2] = session_number >> 8;
     hdr[3] = session_number;
-    iov[0].iov_base = hdr;
-    iov[0].iov_len = 4;
     uint8_t slot_id = private->sessions[session_number].slot_id;
     uint8_t connection_id = private->sessions[session_number].connection_id;
-    if (en50221_tl_send_data(private->tl, slot_id, connection_id, iov, 1)) {
+    if (en50221_tl_send_data(private->tl, slot_id, connection_id, hdr, 4)) {
         private->error = en50221_tl_get_error(private->tl);
         return -1;
     }
@@ -289,7 +283,48 @@ int en50221_sl_send_data(en50221_session_layer sl, uint8_t session_number, uint8
     // send this command
     uint8_t slot_id = private->sessions[session_number].slot_id;
     uint8_t connection_id = private->sessions[session_number].connection_id;
-    if (en50221_tl_send_data(private->tl, slot_id, connection_id, iov, 2)) {
+    if (en50221_tl_send_datav(private->tl, slot_id, connection_id, iov, 2)) {
+        private->error = en50221_tl_get_error(private->tl);
+        return -1;
+    }
+    return 0;
+}
+
+int en50221_sl_send_datav(en50221_session_layer sl, uint8_t session_number,
+                          struct iovec *vector, int iov_count)
+{
+    struct en50221_session_layer_private *private = (struct en50221_session_layer_private *) sl;
+    struct iovec out_iov[10];
+
+    if (session_number >= private->max_sessions) {
+        private->error = EN50221ERR_BADSESSIONNUMBER;
+        return -1;
+    }
+    if (!(private->sessions[session_number].state & S_STATE_ACTIVE)) {
+        private->error = EN50221ERR_BADSESSIONNUMBER;
+        return -1;
+    }
+    if (iov_count > 9) {
+        private->error = EN50221ERR_IOVLIMIT;
+        return -1;
+    }
+
+    // make up the header
+    uint8_t hdr[4];
+    hdr[0] = ST_SESSION_NUMBER;
+    hdr[1] = 2;
+    hdr[2] = session_number >> 8;
+    hdr[3] = session_number;
+    out_iov[0].iov_base = hdr;
+    out_iov[0].iov_len = 4;
+
+    // make up the data
+    memcpy(&out_iov[1], vector, iov_count * sizeof(struct iovec));
+
+    // send this command
+    uint8_t slot_id = private->sessions[session_number].slot_id;
+    uint8_t connection_id = private->sessions[session_number].connection_id;
+    if (en50221_tl_send_datav(private->tl, slot_id, connection_id, out_iov, iov_count+1)) {
         private->error = en50221_tl_get_error(private->tl);
         return -1;
     }
@@ -324,8 +359,6 @@ int en50221_sl_broadcast_data(en50221_session_layer sl, int slot_id, uint32_t re
 static void en50221_sl_handle_open_session_request(struct en50221_session_layer_private *private,
                                      uint8_t *data, uint32_t data_length, uint8_t slot_id, uint8_t connection_id)
 {
-    struct iovec iov[2];
-
     // check
     if (data_length < 5) {
         print(LOG_LEVEL, ERROR, 1, "Received data with invalid length from module on slot %02x\n", slot_id);
@@ -403,11 +436,9 @@ static void en50221_sl_handle_open_session_request(struct en50221_session_layer_
     hdr[6] = resource_id;
     hdr[7] = session_number >> 8;
     hdr[8] = session_number;
-    iov[0].iov_base = hdr;
-    iov[0].iov_len = 9;
 
     // send this command
-    if (en50221_tl_send_data(private->tl, slot_id, connection_id, iov, 1)) {
+    if (en50221_tl_send_data(private->tl, slot_id, connection_id, hdr, 9)) {
         print(LOG_LEVEL, ERROR, 1, "Transport layer error %i occurred\n", en50221_tl_get_error(private->tl));
         status = S_STATUS_CLOSE_NO_RES;
     }
@@ -450,15 +481,12 @@ static void en50221_sl_handle_close_session_request(struct en50221_session_layer
     uint16_t session_number = (data[1] << 8) | data[2];
 
     // make up the response
-    struct iovec iov[1];
     uint8_t hdr[5];
     hdr[0] = ST_CLOSE_SESSION_RES;
     hdr[1] = 3;
     hdr[2] = 0x00; // session closed
     hdr[3] = session_number >> 8;
     hdr[4] = session_number;
-    iov[0].iov_base = hdr;
-    iov[0].iov_len = 5;
 
     // check session number is ok
     int success = 0;
@@ -476,7 +504,7 @@ static void en50221_sl_handle_close_session_request(struct en50221_session_layer
     }
 
     // sendit
-    if (en50221_tl_send_data(private->tl, slot_id, connection_id, iov, 1)) {
+    if (en50221_tl_send_data(private->tl, slot_id, connection_id, hdr, 5)) {
         print(LOG_LEVEL, ERROR, 1, "Transport layer reports error %i on slot %i\n",
               en50221_tl_get_error(private->tl), slot_id);
     }
