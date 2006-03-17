@@ -65,6 +65,6 @@ uint8_t* en50221_app_encode_public_resource_id(struct en50221_app_public_resourc
  * @param VERSION Version of resource.
  * @return Formatted resource id.
  */
-#define MKRID(CLASS, TYPE, VERSION) (((CLASS&0xffff)<<16) | ((TYPE&0x3ff)<<6) | (VERSION&0x3f))
+#define MKRID(CLASS, TYPE, VERSION) ((((CLASS)&0xffff)<<16) | (((TYPE)&0x3ff)<<6) | ((VERSION)&0x3f))
 
 #endif
