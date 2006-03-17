@@ -115,14 +115,14 @@ extern void en50221_sl_register_lookup_callback(en50221_session_layer sl,
  * @param resource_id The resource_id to connect to.
  * @param callback The callback for received data.
  * @param arg Argument to pass to the callback.
- * @return The session_number, or -1 on error.
+ * @return The new session_number, or -1 on error.
  */
 extern int en50221_sl_create_session(en50221_session_layer sl, int slot_id, uint8_t connection_id,
                                      uint32_t resource_id,
                                      en50221_sl_resource_callback callback, void* arg);
 
 /**
- * Destroy a session. Can only be used on sessions created with en50221_sl_create_session().
+ * Destroy a session.
  *
  * @param sl The en50221_session_layer instance.
  * @param session_number The session to destroy.
