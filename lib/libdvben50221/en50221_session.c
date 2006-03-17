@@ -76,6 +76,9 @@ struct en50221_session_layer_private
     en50221_sl_lookup_callback lookup;
     void *lookup_arg;
 
+    en50221_sl_connection_callback connection;
+    void *connection_arg;
+
     int error;
 
     struct en50221_session *sessions;
@@ -154,6 +157,15 @@ void en50221_sl_register_lookup_callback(en50221_session_layer sl, en50221_sl_lo
 
     private->lookup = callback;
     private->lookup_arg = arg;
+}
+
+void en50221_sl_register_connection_callback(en50221_session_layer sl,
+                                             en50221_sl_connection_callback callback, void *arg)
+{
+    struct en50221_session_layer_private *private = (struct en50221_session_layer_private *) sl;
+
+    private->connection = callback;
+    private->connection_arg = arg;
 }
 
 int en50221_sl_create_session(en50221_session_layer sl, int slot_id, uint8_t connection_id, uint32_t resource_id,
@@ -409,6 +421,11 @@ static void en50221_sl_handle_open_session_request(struct en50221_session_layer_
         // connection successful
         if (resource_callback)
             resource_callback(arg, S_CALLBACK_REASON_CONNECTED, slot_id, session_number, resource_id, NULL, 0);
+
+        if (private->connection)
+            private->connection(private->connection_arg, 0,
+                                slot_id, connection_id, session_number, resource_id);
+
     } else {
         if (resource_callback)
             resource_callback(arg, S_CALLBACK_REASON_CONNECTFAIL, slot_id, session_number, resource_id, NULL, 0);
@@ -443,6 +460,7 @@ static void en50221_sl_handle_close_session_request(struct en50221_session_layer
     iov[0].iov_len = 5;
 
     // check session number is ok
+    int success = 0;
     if (session_number >= private->max_sessions) {
         hdr[2] = 0xF0; // session close error
         print(LOG_LEVEL, ERROR, 1, "Received bad session id %i\n", slot_id);
@@ -453,7 +471,7 @@ static void en50221_sl_handle_close_session_request(struct en50221_session_layer
         hdr[2] = 0xF0; // session close error
         print(LOG_LEVEL, ERROR, 1, "Received unexpected session on invalid slot %i\n", slot_id);
     } else { // was ok!
-        private->sessions[session_number].state = S_STATE_IDLE;
+        success = 1;
     }
 
     // sendit
@@ -461,8 +479,10 @@ static void en50221_sl_handle_close_session_request(struct en50221_session_layer
         print(LOG_LEVEL, ERROR, 1, "Transport layer reports error %i on slot %i\n",
               en50221_tl_get_error(private->tl), slot_id);
     }
+    if (!success)
+        return;
 
-    // callback to announce destruction
+    // callback to announce destruction to resource
     if (private->sessions[session_number].callback)
         private->sessions[session_number].callback(private->sessions[session_number].callback_arg,
                                                    S_CALLBACK_REASON_CLOSE,
@@ -470,6 +490,14 @@ static void en50221_sl_handle_close_session_request(struct en50221_session_layer
                                                    session_number,
                                                    private->sessions[session_number].resource_id,
                                                    NULL, 0);
+
+    if (private->connection)
+        private->connection(private->connection_arg, 1,
+                            slot_id, connection_id, session_number,
+                            private->sessions[session_number].resource_id);
+
+    // done - mark it as idle
+    private->sessions[session_number].state = S_STATE_IDLE;
 }
 
 static void en50221_sl_handle_create_session_response(struct en50221_session_layer_private *private,

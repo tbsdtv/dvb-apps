@@ -77,6 +77,22 @@ typedef int (*en50221_sl_resource_callback)(void *arg,
 typedef int (*en50221_sl_lookup_callback)(void *arg, uint8_t slot_id, uint32_t resource_id,
                                           en50221_sl_resource_callback *callback_out, void **arg_out);
 
+
+/**
+ * Type definition for connection callback function - used to inform top level applications when a CAM
+ * successfully connects/disconnects from a resource.
+ *
+ * @param arg Private argument.
+ * @param type 0=>connect, 1=>disconnect.
+ * @param slot_id Slot id the request came from.
+ * @param connection_id Connection id.
+ * @param session_number Session number.
+ * @param resource_id Resource id.
+ */
+typedef void (*en50221_sl_connection_callback)(void *arg, int type,
+                                               uint8_t slot_id, uint8_t connection_id,
+                                               uint16_t session_number, uint32_t resource_id);
+
 /**
  * Construct a new instance of the session layer.
  *
@@ -118,6 +134,16 @@ extern int en50221_sl_get_max_sessions(en50221_session_layer tl);
  */
 extern void en50221_sl_register_lookup_callback(en50221_session_layer sl,
                                                 en50221_sl_lookup_callback callback, void *arg);
+
+/**
+ * Register the callback for informing about connections from a cam.
+ *
+ * @param sl The en50221_session_layer instance.
+ * @param callback The callback. Set to NULL to remove the callback completely.
+ * @param arg Private data passed as arg0 of the callback.
+ */
+extern void en50221_sl_register_connection_callback(en50221_session_layer sl,
+                                                    en50221_sl_connection_callback callback, void *arg);
 
 /**
  * Create a new session to a module in a slot.
