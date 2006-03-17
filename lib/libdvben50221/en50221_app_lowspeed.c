@@ -135,7 +135,6 @@ int en50221_app_lowspeed_send_comms_data(en50221_app_lowspeed lowspeed,
 
     // the spec defines this limit
     if (tx_data_length > 254) {
-        // FIXME: error
         return -1;
     }
 
@@ -147,7 +146,6 @@ int en50221_app_lowspeed_send_comms_data(en50221_app_lowspeed lowspeed,
     // encode the length field
     int length_field_len;
     if ((length_field_len = asn_1_encode(tx_data_length+1, buf+3, 3)) < 0) {
-        // FIXME: error
         return -1;
     }
 
