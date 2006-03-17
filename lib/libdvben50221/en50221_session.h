@@ -64,15 +64,16 @@ typedef int (*en50221_sl_resource_callback)(void *arg,
  * Type definition for resource lookup callback function - used by the session layer to look up requested resources.
  *
  * @param arg Private argument.
+ * @param slot_id Slot id the request came from.
  * @param resource_id Resource id to look up.
- * @param arg_out Output parameter for arg to pass to resource callback.
  * @param callback_out Output parameter for pointer to resource callback function.
+ * @param arg_out Output parameter for arg to pass to resource callback.
  * @return 0 on success,
  * -1 if the resource was not found,
  * -2 if it exists, but had a lower version, or
  * -3 if it exists, but was unavailable.
  */
-typedef int (*en50221_sl_lookup_callback)(void *arg, uint32_t resource_id,
+typedef int (*en50221_sl_lookup_callback)(void *arg, uint8_t slot_id, uint32_t resource_id,
                                           en50221_sl_resource_callback *callback_out, void **arg_out);
 
 /**

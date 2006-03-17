@@ -330,7 +330,7 @@ static void en50221_sl_handle_open_session_request(struct en50221_session_layer_
     void *arg = NULL;
     en50221_sl_resource_callback resource_callback = NULL;
     if (private->lookup) {
-        status = private->lookup(private->lookup_arg, resource_id, &resource_callback, &arg);
+        status = private->lookup(private->lookup_arg, slot_id, resource_id, &resource_callback, &arg);
         switch(status) {
         case 0:
             status = S_STATUS_OPEN;
