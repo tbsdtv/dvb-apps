@@ -86,7 +86,7 @@ void en50221_app_ai_register_callback(en50221_app_ai ai, en50221_app_ai_callback
     private->callback_arg = arg;
 }
 
-int en50221_app_ai_enquiry(en50221_app_ai ai, uint8_t session_number)
+int en50221_app_ai_enquiry(en50221_app_ai ai, uint16_t session_number)
 {
     struct en50221_app_ai_private *private = (struct en50221_app_ai_private *) ai;
     uint8_t data[3];
@@ -98,7 +98,7 @@ int en50221_app_ai_enquiry(en50221_app_ai ai, uint8_t session_number)
     return en50221_sl_send_data(private->sl, session_number, data, 3);
 }
 
-int en50221_app_ai_entermenu(en50221_app_ai ai, uint8_t session_number)
+int en50221_app_ai_entermenu(en50221_app_ai ai, uint16_t session_number)
 {
     struct en50221_app_ai_private *private = (struct en50221_app_ai_private *) ai;
     uint8_t data[3];
@@ -111,7 +111,7 @@ int en50221_app_ai_entermenu(en50221_app_ai ai, uint8_t session_number)
 }
 
 static void en50221_app_ai_parse_app_info(struct en50221_app_ai_private *private,
-                                          uint8_t slot_id, uint8_t session_number,
+                                          uint8_t slot_id, uint16_t session_number,
                                           uint8_t *data, uint32_t data_length)
 {
     // parse the length field

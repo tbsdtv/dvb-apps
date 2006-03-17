@@ -42,7 +42,7 @@
  * @param menu_string_length Length of menu string.
  * @param menu_string The menu string itself.
  */
-typedef void (*en50221_app_ai_callback)(void *arg, uint8_t slot_id, uint8_t session_number,
+typedef void (*en50221_app_ai_callback)(void *arg, uint8_t slot_id, uint16_t session_number,
                                         uint8_t application_type, uint16_t application_manufacturer,
                                         uint16_t manufacturer_code, uint8_t menu_string_length,
                                         uint8_t *menu_string);
@@ -84,7 +84,7 @@ extern void en50221_app_ai_register_callback(en50221_app_ai ai, en50221_app_ai_c
  * @param session_number Session to send on.
  * @return 0 on success, -1 on failure.
  */
-extern int en50221_app_ai_enquiry(en50221_app_ai ai, uint8_t session_number);
+extern int en50221_app_ai_enquiry(en50221_app_ai ai, uint16_t session_number);
 
 /**
  * send a enter_menu tag, this will make the application
@@ -94,6 +94,6 @@ extern int en50221_app_ai_enquiry(en50221_app_ai ai, uint8_t session_number);
  * @param session_number Session to send on.
  * @return 0 on success, -1 on failure.
  */
-extern int en50221_app_ai_entermenu(en50221_app_ai ai, uint8_t session_number);
+extern int en50221_app_ai_entermenu(en50221_app_ai ai, uint16_t session_number);
 
 #endif
