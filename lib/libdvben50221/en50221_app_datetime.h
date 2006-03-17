@@ -73,7 +73,7 @@ extern void en50221_app_datetime_register_enquiry_callback(en50221_app_datetime 
         en50221_app_datetime_enquiry_callback callback, void *arg);
 
 /**
- * Send an ask release request to the CAM.
+ * Send the time to the CAM.
  *
  * @param datetime datetime resource instance.
  * @param session_number Session number to send it on.
