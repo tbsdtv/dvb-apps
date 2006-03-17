@@ -45,7 +45,6 @@ struct en50221_app_dvb_private {
 };
 
 static int en50221_app_dvb_resource_callback(void *arg,
-                                             int reason,
                                              uint8_t slot_id,
                                              uint16_t session_number,
                                              uint32_t resource_id,
@@ -191,32 +190,12 @@ static void en50221_app_dvb_parse_clear_replace(struct en50221_app_dvb_private *
 }
 
 static int en50221_app_dvb_resource_callback(void *arg,
-                                            int reason,
                                             uint8_t slot_id,
                                             uint16_t session_number,
                                             uint32_t resource_id,
                                             uint8_t *data, uint32_t data_length)
 {
     struct en50221_app_dvb_private *private = (struct en50221_app_dvb_private *) arg;
-
-    // deal with the reason
-    switch(reason) {
-    case S_CALLBACK_REASON_CONNECTING:
-        return 0;
-
-    case S_CALLBACK_REASON_CONNECTED:
-        return 0;
-
-    case S_CALLBACK_REASON_CONNECTFAIL:
-        return 0;
-
-    case S_CALLBACK_REASON_DATA:
-        // fallthrough into function
-        break;
-
-    case S_CALLBACK_REASON_CLOSE:
-        return 0;
-    }
 
     // get the tag
     if (data_length < 3) {

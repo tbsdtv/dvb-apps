@@ -76,8 +76,8 @@ struct en50221_session_layer_private
     en50221_sl_lookup_callback lookup;
     void *lookup_arg;
 
-    en50221_sl_connection_callback connection;
-    void *connection_arg;
+    en50221_sl_session_callback session;
+    void *session_arg;
 
     int error;
 
@@ -159,13 +159,13 @@ void en50221_sl_register_lookup_callback(en50221_session_layer sl, en50221_sl_lo
     private->lookup_arg = arg;
 }
 
-void en50221_sl_register_connection_callback(en50221_session_layer sl,
-                                             en50221_sl_connection_callback callback, void *arg)
+void en50221_sl_register_session_callback(en50221_session_layer sl,
+                                          en50221_sl_session_callback callback, void *arg)
 {
     struct en50221_session_layer_private *private = (struct en50221_session_layer_private *) sl;
 
-    private->connection = callback;
-    private->connection_arg = arg;
+    private->session = callback;
+    private->session_arg = arg;
 }
 
 int en50221_sl_create_session(en50221_session_layer sl, int slot_id, uint8_t connection_id, uint32_t resource_id,
@@ -378,8 +378,9 @@ static void en50221_sl_handle_open_session_request(struct en50221_session_layer_
 
         // if we found one, create the session
         if (session_number != -1) {
-            if (resource_callback) {
-                if (resource_callback(arg, S_CALLBACK_REASON_CONNECTING, slot_id, session_number, resource_id, NULL, 0)) {
+            if (private->session) {
+                if (private->session(private->session_arg, S_SCALLBACK_REASON_CONNECTING,
+                                     slot_id, session_number, resource_id)) {
                     status = S_STATUS_CLOSE_RES_BUSY;
                 }
             }
@@ -419,16 +420,14 @@ static void en50221_sl_handle_open_session_request(struct en50221_session_layer_
         private->sessions[session_number].callback_arg = arg;
 
         // connection successful
-        if (resource_callback)
-            resource_callback(arg, S_CALLBACK_REASON_CONNECTED, slot_id, session_number, resource_id, NULL, 0);
-
-        if (private->connection)
-            private->connection(private->connection_arg, 0,
-                                slot_id, connection_id, session_number, resource_id);
+        if (private->session)
+            private->session(private->session_arg, S_SCALLBACK_REASON_CONNECTED,
+                                slot_id, session_number, resource_id);
 
     } else {
-        if (resource_callback)
-            resource_callback(arg, S_CALLBACK_REASON_CONNECTFAIL, slot_id, session_number, resource_id, NULL, 0);
+        if (private->session)
+            private->session(private->session_arg, S_SCALLBACK_REASON_CONNECTFAIL,
+                                slot_id, session_number, resource_id);
     }
 }
 
@@ -483,17 +482,9 @@ static void en50221_sl_handle_close_session_request(struct en50221_session_layer
         return;
 
     // callback to announce destruction to resource
-    if (private->sessions[session_number].callback)
-        private->sessions[session_number].callback(private->sessions[session_number].callback_arg,
-                                                   S_CALLBACK_REASON_CLOSE,
-                                                   slot_id,
-                                                   session_number,
-                                                   private->sessions[session_number].resource_id,
-                                                   NULL, 0);
-
-    if (private->connection)
-        private->connection(private->connection_arg, 1,
-                            slot_id, connection_id, session_number,
+    if (private->session)
+        private->session(private->session_arg, S_SCALLBACK_REASON_CLOSE,
+                            slot_id, session_number,
                             private->sessions[session_number].resource_id);
 
     // done - mark it as idle
@@ -612,7 +603,6 @@ static void en50221_sl_handle_session_package(struct en50221_session_layer_priva
     // the resource the ability to send response-packages
     if (private->sessions[session_number].callback)
         private->sessions[session_number].callback(private->sessions[session_number].callback_arg,
-                                                   S_CALLBACK_REASON_DATA,
                                                    slot_id,
                                                    session_number,
                                                    private->sessions[session_number].resource_id,
@@ -633,33 +623,29 @@ static void en50221_sl_transport_callback(void *arg, int reason, uint8_t *data, 
 
     case T_CALLBACK_REASON_CONNECTIONCLOSE:
         for(i=0; i< private->max_sessions; i++) {
-            if (private->sessions[i].connection_id == connection_id) {
-                private->sessions[i].slot_id = -1;
-                private->sessions[i].connection_id = -1;
-                if (private->sessions[i].callback)
-                    private->sessions[i].callback(private->sessions[i].callback_arg,
-                                                  S_CALLBACK_REASON_CLOSE,
-                                                  slot_id,
-                                                  i,
-                                                  private->sessions[i].resource_id,
-                                                  NULL, 0);
-            }
+            if (private->sessions[i].state == S_STATE_IDLE)
+                continue;
+            if (private->sessions[i].connection_id != connection_id)
+                continue;
+
+            if (private->session)
+                private->session(private->session_arg, S_SCALLBACK_REASON_CLOSE,
+                                 private->sessions[i].slot_id, i, private->sessions[i].resource_id);
+            private->sessions[i].state = S_STATE_IDLE;
         }
         return;
 
     case T_CALLBACK_REASON_SLOTCLOSE:
         for(i=0; i< private->max_sessions; i++) {
-            if (private->sessions[i].slot_id == slot_id) {
-                private->sessions[i].slot_id = -1;
-                private->sessions[i].connection_id = -1;
-                if (private->sessions[i].callback)
-                    private->sessions[i].callback(private->sessions[i].callback_arg,
-                                                  S_CALLBACK_REASON_CLOSE,
-                                                  slot_id,
-                                                  i,
-                                                  private->sessions[i].resource_id,
-                                                  NULL, 0);
-            }
+            if (private->sessions[i].state == S_STATE_IDLE)
+                continue;
+            if (private->sessions[i].slot_id != slot_id)
+                continue;
+
+            if (private->session)
+                private->session(private->session_arg, S_SCALLBACK_REASON_CLOSE,
+                                 slot_id, i, private->sessions[i].resource_id);
+            private->sessions[i].state = S_STATE_IDLE;
         }
         return;
     }

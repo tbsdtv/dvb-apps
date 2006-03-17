@@ -29,11 +29,10 @@
 #include <stdint.h>
 #include <en50221_transport.h>
 
-#define S_CALLBACK_REASON_CONNECTING     0x00  // Session connecting to resource - not established yet!
-#define S_CALLBACK_REASON_CONNECTED      0x01  // Session connection established succesfully
-#define S_CALLBACK_REASON_CONNECTFAIL    0x02  // Session connection failed
-#define S_CALLBACK_REASON_DATA           0x03  // Data received for resource
-#define S_CALLBACK_REASON_CLOSE          0x04  // Session closed
+#define S_SCALLBACK_REASON_CONNECTING     0x00  // Session connecting to resource (check for availability)
+#define S_SCALLBACK_REASON_CONNECTED      0x01  // Session connection established succesfully
+#define S_SCALLBACK_REASON_CONNECTFAIL    0x02  // Session connection failed
+#define S_SCALLBACK_REASON_CLOSE          0x03  // Session closed
 
 
 /**
@@ -46,19 +45,15 @@ typedef void *en50221_session_layer;
  * arrives for a particular resource.
  *
  * @param arg Private argument.
- * @param reason One of the S_CALLBACK_REASON_* values.
- * @param slot_id The slot_id the request originated in.
- * @param session_number Session it arrived on.
- * @param resource_id Resource ID concerned.
+ * @param slot_id Slot id concerned.
+ * @param session_number Session number.
+ * @param resource_id Resource id.
  * @param data The data.
  * @param data_length Length of data in bytes.
  * @return 0 on success, or -1 on failure.
  */
-typedef int (*en50221_sl_resource_callback)(void *arg,
-                                            int reason,
-                                            uint8_t slot_id,
-                                            uint16_t session_number,
-                                            uint32_t resource_id,
+typedef int (*en50221_sl_resource_callback)(void *arg, uint8_t slot_id,
+                                            uint16_t session_number, uint32_t resource_id,
                                             uint8_t *data, uint32_t data_length);
 
 /**
@@ -80,19 +75,18 @@ typedef int (*en50221_sl_lookup_callback)(void *arg, uint8_t slot_id, uint32_t r
 
 
 /**
- * Type definition for connection callback function - used to inform top level applications when a CAM
- * successfully connects/disconnects from a resource.
+ * Type definition for session callback function - used to inform top level applications when a CAM
+ * modifies a session to a resource.
  *
  * @param arg Private argument.
- * @param reason 0=>connect, 1=>disconnect.
- * @param slot_id Slot id the request came from.
- * @param connection_id Connection id.
+ * @param reason One of the S_CCALLBACK_REASON_* values above.
+ * @param slot_id Slot id concerned.
  * @param session_number Session number.
  * @param resource_id Resource id.
+ * @return 0 on sucess, or -1 on error.
  */
-typedef void (*en50221_sl_connection_callback)(void *arg, int reason,
-                                               uint8_t slot_id, uint8_t connection_id,
-                                               uint16_t session_number, uint32_t resource_id);
+typedef int (*en50221_sl_session_callback)(void *arg, int reason,
+                                           uint8_t slot_id, uint16_t session_number, uint32_t resource_id);
 
 /**
  * Construct a new instance of the session layer.
@@ -137,14 +131,14 @@ extern void en50221_sl_register_lookup_callback(en50221_session_layer sl,
                                                 en50221_sl_lookup_callback callback, void *arg);
 
 /**
- * Register the callback for informing about connections from a cam.
+ * Register the callback for informing about session from a cam.
  *
  * @param sl The en50221_session_layer instance.
  * @param callback The callback. Set to NULL to remove the callback completely.
  * @param arg Private data passed as arg0 of the callback.
  */
-extern void en50221_sl_register_connection_callback(en50221_session_layer sl,
-                                                    en50221_sl_connection_callback callback, void *arg);
+extern void en50221_sl_register_session_callback(en50221_session_layer sl,
+                                                 en50221_sl_session_callback callback, void *arg);
 
 /**
  * Create a new session to a module in a slot.
