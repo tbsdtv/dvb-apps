@@ -131,12 +131,13 @@ static void en50221_app_datetime_parse_enquiry(struct en50221_app_datetime_priva
 }
 
 static void en50221_app_datetime_resource_callback(void *arg,
-                                            uint8_t slot_id,
-                                            uint16_t session_number,
-                                            uint32_t resource_id,
-                                            uint8_t *data, uint32_t data_length)
+                                                   uint8_t slot_id,
+                                                   uint16_t session_number,
+                                                   uint32_t resource_id,
+                                                   uint8_t *data, uint32_t data_length)
 {
     struct en50221_app_datetime_private *private = (struct en50221_app_datetime_private *) arg;
+    (void) resource_id;
 
     // get the tag
     if (data_length < 3) {

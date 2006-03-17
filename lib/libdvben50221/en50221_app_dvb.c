@@ -196,6 +196,7 @@ static void en50221_app_dvb_resource_callback(void *arg,
                                             uint8_t *data, uint32_t data_length)
 {
     struct en50221_app_dvb_private *private = (struct en50221_app_dvb_private *) arg;
+    (void) resource_id;
 
     // get the tag
     if (data_length < 3) {
