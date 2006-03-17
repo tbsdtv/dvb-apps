@@ -27,11 +27,6 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#define A_CALLBACK_REASON_CONNECT        0x00  // Session to resource created
-#define A_CALLBACK_REASON_DATA           0x01  // Data received for resource
-#define A_CALLBACK_REASON_CLOSE          0x02  // Session closed
-
-
 // we will ignore private resource (resource_id_type==3),
 // because they are not used by any modules at all and
 // would need special code for any private resource anyway
