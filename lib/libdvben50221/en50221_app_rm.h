@@ -49,7 +49,7 @@ en50221_app_rm en50221_app_rm_create(en50221_session_layer *sl);
 void en50221_app_rm_destroy(en50221_app_rm *rm);
 
 /**
- * Register a resource provider with the resource manager.
+ * Register a host-side resource provider with the resource manager.
  *
  * @param rm Resource manager instance.
  * @param resource_id Resource identifier.
@@ -61,7 +61,7 @@ int en50221_app_rm_register(en50221_app_rm *rm, uint32_t resource_id,
                             en50221_sl_resource_callback callback, void *arg);
 
 /**
- * Retrieve a list of resources supported by a particular slot.
+ * Retrieve a list of resources hosted by the cam on a particular slot.
  *
  * @param rm Resource manager instance.
  * @param slot_id Slot ID concerned.
