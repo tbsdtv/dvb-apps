@@ -62,7 +62,8 @@ typedef int (*en50221_sl_resource_callback)(void *arg,
                                             uint8_t *data, uint32_t data_length);
 
 /**
- * Type definition for resource lookup callback function - used by the session layer to look up requested resources.
+ * Type definition for resource lookup callback function - used by the session layer to
+ * look up requested resources.
  *
  * @param arg Private argument.
  * @param slot_id Slot id the request came from.
@@ -83,13 +84,13 @@ typedef int (*en50221_sl_lookup_callback)(void *arg, uint8_t slot_id, uint32_t r
  * successfully connects/disconnects from a resource.
  *
  * @param arg Private argument.
- * @param type 0=>connect, 1=>disconnect.
+ * @param reason 0=>connect, 1=>disconnect.
  * @param slot_id Slot id the request came from.
  * @param connection_id Connection id.
  * @param session_number Session number.
  * @param resource_id Resource id.
  */
-typedef void (*en50221_sl_connection_callback)(void *arg, int type,
+typedef void (*en50221_sl_connection_callback)(void *arg, int reason,
                                                uint8_t slot_id, uint8_t connection_id,
                                                uint16_t session_number, uint32_t resource_id);
 
