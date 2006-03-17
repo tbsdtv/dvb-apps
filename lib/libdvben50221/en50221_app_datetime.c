@@ -23,6 +23,7 @@
 
 #include <string.h>
 #include <dvbmisc.h>
+#include <ucsi/dvb/types.h>
 #include "en50221_session.h"
 #include "en50221_app_utils.h"
 #include "en50221_app_datetime.h"
@@ -87,7 +88,7 @@ void en50221_app_datetime_register_enquiry_callback(en50221_app_datetime datetim
 
 int en50221_app_datetime_send(en50221_app_datetime datetime,
                               uint16_t session_number,
-                              uint8_t utc_time[5],
+                              time_t utc_time,
                               int time_offset)
 {
     struct en50221_app_datetime_private *private = (struct en50221_app_datetime_private *) datetime;
@@ -99,12 +100,12 @@ int en50221_app_datetime_send(en50221_app_datetime datetime,
     data[2] = TAG_DATE_TIME & 0xFF;
     if (time_offset != -1) {
         data[3] = 7;
-        memcpy(data+4, utc_time, 5);
+        unixtime_to_dvbdate(utc_time, data+4);
         data[9] = time_offset >> 8;
         data[10] = time_offset;
     } else {
         data[3] = 5;
-        memcpy(data+4, utc_time, 5);
+        unixtime_to_dvbdate(utc_time, data+4);
     }
     return en50221_sl_send_data(private->sl, session_number, data, data_length);
 }

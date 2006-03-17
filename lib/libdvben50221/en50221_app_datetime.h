@@ -77,14 +77,14 @@ extern void en50221_app_datetime_register_enquiry_callback(en50221_app_datetime 
  *
  * @param datetime datetime resource instance.
  * @param session_number Session number to send it on.
- * @param utc_time UTC time in dvb time/date format
+ * @param utc_time UTC time in unix time format.
  * @param time_offset If -1, the field will not be transmitted, otherwise it is the offset between
  * UTC and local time in minutes.
  * @return 0 on success, -1 on failure.
  */
 extern int en50221_app_datetime_send(en50221_app_datetime datetime,
                                      uint16_t session_number,
-                                     uint8_t utc_time[5],
+                                     time_t utc_time,
                                      int time_offset);
 
 #endif
