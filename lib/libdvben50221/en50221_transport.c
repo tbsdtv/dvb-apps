@@ -415,6 +415,9 @@ int en50221_tl_new_tc(en50221_transport_layer tl, uint8_t slot_id, uint8_t conne
         return -1;
     }
     private->slots[slot_id].connections[connection_id].tx_time = time_ms();
+
+    // FIXME: this should block until we get a response from the module!
+
     return conid;
 }
 
@@ -461,6 +464,8 @@ int en50221_tl_del_tc(en50221_transport_layer tl, uint8_t slot_id, uint8_t conne
     en50221_tl_callback cb = private->callback;
     if (cb)
         cb(private->callback_arg, T_CALLBACK_REASON_CONNECTIONCLOSE, NULL, 0, slot_id, connection_id);
+
+    // FIXME: this should block until we get a response from the module!
 
     return 0;
 }

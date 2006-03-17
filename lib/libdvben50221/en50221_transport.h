@@ -123,13 +123,12 @@ extern void en50221_tl_register_callback(en50221_transport_layer tl,
 extern int en50221_tl_get_error_slot(en50221_transport_layer tl);
 
 /**
- * Gets the error code of the error.
+ * Gets the last error.
  *
  * @param tl The en50221_transport_layer instance.
  * @return One of the EN50221ERR_* values.
  */
 extern int en50221_tl_get_error(en50221_transport_layer tl);
-
 
 /**
  * This function is used to take a data-block, pack into
