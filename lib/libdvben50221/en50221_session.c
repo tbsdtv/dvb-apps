@@ -276,7 +276,7 @@ int en50221_sl_send_data(en50221_session_layer sl, uint8_t session_number, uint8
     return 0;
 }
 
-int en50221_sl_broadcast_data(en50221_session_layer sl, uint32_t resource_id,
+int en50221_sl_broadcast_data(en50221_session_layer sl, int slot_id, uint32_t resource_id,
                               uint8_t *data, uint16_t data_length)
 {
     struct en50221_session_layer_private *private = (struct en50221_session_layer_private *) sl;
@@ -285,6 +285,8 @@ int en50221_sl_broadcast_data(en50221_session_layer sl, uint32_t resource_id,
     for(i = 0; i < private->max_sessions; i++)
     {
         if (!(private->sessions[i].state & S_STATE_ACTIVE))
+            continue;
+        if ((slot_id != -1) && (slot_id != private->sessions[i].slot_id))
             continue;
 
         if (private->sessions[i].resource_id == resource_id) {
@@ -357,7 +359,7 @@ static void en50221_sl_handle_open_session_request(struct en50221_session_layer_
         // if we found one, create the session
         if (session_number != -1) {
             if (resource_callback) {
-                if (resource_callback(arg, S_CALLBACK_REASON_CONNECTING, session_number, resource_id, NULL, 0)) {
+                if (resource_callback(arg, S_CALLBACK_REASON_CONNECTING, slot_id, session_number, resource_id, NULL, 0)) {
                     status = S_STATUS_CLOSE_RES_BUSY;
                 }
             }
@@ -396,7 +398,7 @@ static void en50221_sl_handle_open_session_request(struct en50221_session_layer_
 
     // connection successful
     if (resource_callback)
-        resource_callback(arg, S_CALLBACK_REASON_CONNECTED, session_number, resource_id, NULL, 0);
+        resource_callback(arg, S_CALLBACK_REASON_CONNECTED, slot_id, session_number, resource_id, NULL, 0);
 }
 
 static void en50221_sl_handle_close_session_request(struct en50221_session_layer_private *private,
@@ -450,6 +452,7 @@ static void en50221_sl_handle_close_session_request(struct en50221_session_layer
     if (private->sessions[session_number].callback)
         private->sessions[session_number].callback(private->sessions[session_number].callback_arg,
                                                    S_CALLBACK_REASON_CLOSE,
+                                                   slot_id,
                                                    session_number,
                                                    private->sessions[session_number].resource_id,
                                                    NULL, 0);
@@ -568,6 +571,7 @@ static void en50221_sl_handle_session_package(struct en50221_session_layer_priva
     if (private->sessions[session_number].callback)
         private->sessions[session_number].callback(private->sessions[session_number].callback_arg,
                                                    S_CALLBACK_REASON_DATA,
+                                                   slot_id,
                                                    session_number,
                                                    private->sessions[session_number].resource_id,
                                                    data + 3, data_length - 3);
@@ -593,6 +597,7 @@ static void en50221_sl_transport_callback(void *arg, int reason, uint8_t *data, 
                 if (private->sessions[i].callback)
                     private->sessions[i].callback(private->sessions[i].callback_arg,
                                                   S_CALLBACK_REASON_CLOSE,
+                                                  slot_id,
                                                   i,
                                                   private->sessions[i].resource_id,
                                                   NULL, 0);
@@ -608,6 +613,7 @@ static void en50221_sl_transport_callback(void *arg, int reason, uint8_t *data, 
                 if (private->sessions[i].callback)
                     private->sessions[i].callback(private->sessions[i].callback_arg,
                                                   S_CALLBACK_REASON_CLOSE,
+                                                  slot_id,
                                                   i,
                                                   private->sessions[i].resource_id,
                                                   NULL, 0);

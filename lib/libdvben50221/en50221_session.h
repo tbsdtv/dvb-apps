@@ -46,6 +46,7 @@ typedef void *en50221_session_layer;
  *
  * @param arg Private argument.
  * @param reason One of the S_CALLBACK_REASON_* values.
+ * @param slot_id The slot_id the request originated in.
  * @param session_number Session it arrived on.
  * @param resource_id Resource ID concerned.
  * @param data The data.
@@ -54,6 +55,7 @@ typedef void *en50221_session_layer;
  */
 typedef int (*en50221_sl_resource_callback)(void *arg,
                                             int reason,
+                                            uint8_t slot_id,
                                             uint16_t session_number,
                                             uint32_t resource_id,
                                             uint8_t *data, uint32_t data_length);
@@ -147,11 +149,13 @@ extern int en50221_sl_send_data(en50221_transport_layer tl, uint8_t session_numb
  * to resource res
  *
  * @param tl The en50221_transport_layer instance to use.
+ * @param slot_id Set to -1 to send to any slot. Other values will send to only that slot.
  * @param resource_id Resource id concerned.
  * @param data Data to send.
  * @param data_length Length of data in bytes.
  * @return 0 on success, or -1 on error.
  */
-extern int en50221_sl_broadcast_data(en50221_transport_layer tl, uint32_t resource_id, uint8_t *data, uint16_t data_length);
+extern int en50221_sl_broadcast_data(en50221_transport_layer tl, int slot_id, uint32_t resource_id,
+                                     uint8_t *data, uint16_t data_length);
 
 #endif
