@@ -50,12 +50,19 @@
 #define ST_CLOSE_SESSION_RES    0x96    // h<->m
 #define ST_SESSION_NUMBER       0x90    // h<->m
 
+#define S_STATE_IDLE            0x00    // this session is not in use
+#define S_STATE_ACTIVE          0x01    // this session is in use
+#define S_STATE_IN_CREATION     0x02    // this session waits for a ST_CREATE_SESSION_RES to become active
+#define S_STATE_IN_DELETION     0x04    // this session waits for ST_CLOSE_SESSION_RES to become idle again
+
+
 // for each session we store its identifier, the resource-id
 // it is linked to and the callback of the specific resource
 struct en50221_session {
+    uint8_t state;
     uint32_t resource_id;
-    int slot_id; // -1 if unused
-    int connection_id; // -1 if unused
+    uint8_t slot_id;
+    uint8_t connection_id;
 
     en50221_sl_resource_callback callback;
     void *callback_arg;
@@ -103,8 +110,7 @@ en50221_session_layer en50221_sl_create(en50221_transport_layer tl,
 
     // set them up
     for(i=0; i< max_sessions; i++) {
-        private->sessions[i].slot_id = -1;
-        private->sessions[i].connection_id = -1;
+        private->sessions[i].state = S_STATE_IDLE;
         private->sessions[i].callback = NULL;
     }
     en50221_tl_register_callback(tl, en50221_sl_transport_callback, private);
@@ -128,12 +134,109 @@ void en50221_sl_destroy(en50221_session_layer sl)
     }
 }
 
+int en50221_sl_get_error(en50221_session_layer tl)
+{
+    struct en50221_session_layer_private *private = (struct en50221_session_layer_private *) tl;
+    return private->error;
+}
+
 void en50221_sl_register_lookup_callback(en50221_session_layer sl, en50221_sl_lookup_callback callback, void *arg)
 {
     struct en50221_session_layer_private *private = (struct en50221_session_layer_private *) sl;
 
     private->lookup = callback;
     private->lookup_arg = arg;
+}
+
+int en50221_sl_create_session(en50221_session_layer sl, int slot_id, uint8_t connection_id, uint32_t resource_id,
+                              en50221_sl_resource_callback callback, void* arg)
+{
+    struct en50221_session_layer_private *private = (struct en50221_session_layer_private *) sl;
+
+    // lookup next free session_id:
+    int session_number = -1;
+    int i;
+    for(i = 0; i < private->max_sessions; i++) {
+        if (private->sessions[i].state == S_STATE_IDLE) {
+            session_number = i;
+            break;
+        }
+    }
+    if (session_number == -1) {
+        private->error = EN50221ERR_BADSESSIONNUMBER;
+        return -1;
+    }
+
+    // setup the session
+    private->sessions[session_number].state = S_STATE_IN_CREATION;
+    private->sessions[session_number].resource_id = resource_id;
+    private->sessions[session_number].slot_id = slot_id;
+    private->sessions[session_number].connection_id = connection_id;
+    private->sessions[session_number].callback = callback;
+    private->sessions[session_number].callback_arg = arg;
+
+    // make up the header
+    struct iovec iov[1];
+    uint8_t hdr[8];
+    hdr[0] = ST_CREATE_SESSION;
+    hdr[1] = 6;
+    hdr[2] = resource_id >> 24;
+    hdr[3] = resource_id >> 16;
+    hdr[4] = resource_id >> 8;
+    hdr[5] = resource_id;
+    hdr[6] = session_number >> 8;
+    hdr[7] = session_number;
+    iov[0].iov_base = hdr;
+    iov[0].iov_len = 8;
+
+    // send this command
+    if (en50221_tl_send_data(private->tl, slot_id, connection_id, iov, 1)) {
+        private->error = en50221_tl_get_error(private->tl);
+        return -1;
+    }
+
+    // FIXME: we should wait until the response is received!
+
+    // ok.
+    return session_number;
+}
+
+int en50221_sl_destroy_session(en50221_session_layer sl, int session_number)
+{
+    struct en50221_session_layer_private *private = (struct en50221_session_layer_private *) sl;
+
+    if (session_number >= private->max_sessions) {
+        private->error = EN50221ERR_BADSESSIONNUMBER;
+        return -1;
+    }
+    if (!(private->sessions[session_number].state & (S_STATE_ACTIVE|S_STATE_IN_DELETION))) {
+        private->error = EN50221ERR_BADSESSIONNUMBER;
+        return -1;
+    }
+
+    // setup the session
+    private->sessions[session_number].state = S_STATE_IN_DELETION;
+
+    //  sendit
+    struct iovec iov[1];
+    uint8_t hdr[4];
+    hdr[0] = ST_CLOSE_SESSION_REQ;
+    hdr[1] = 2;
+    hdr[2] = session_number >> 8;
+    hdr[3] = session_number;
+    iov[0].iov_base = hdr;
+    iov[0].iov_len = 4;
+    uint8_t slot_id = private->sessions[session_number].slot_id;
+    uint8_t connection_id = private->sessions[session_number].connection_id;
+    if (en50221_tl_send_data(private->tl, slot_id, connection_id, iov, 1)) {
+        private->error = en50221_tl_get_error(private->tl);
+        return -1;
+    }
+
+    // FIXME: wait until the response is received!
+
+
+    return 0;
 }
 
 int en50221_sl_send_data(en50221_session_layer sl, uint8_t session_number, uint8_t *data, uint16_t data_length)
@@ -145,7 +248,7 @@ int en50221_sl_send_data(en50221_session_layer sl, uint8_t session_number, uint8
         private->error = EN50221ERR_BADSESSIONNUMBER;
         return -1;
     }
-    if (private->sessions[session_number].slot_id == -1) {
+    if (!(private->sessions[session_number].state & S_STATE_ACTIVE)) {
         private->error = EN50221ERR_BADSESSIONNUMBER;
         return -1;
     }
@@ -181,7 +284,7 @@ int en50221_sl_broadcast_data(en50221_session_layer sl, uint32_t resource_id,
 
     for(i = 0; i < private->max_sessions; i++)
     {
-        if (private->sessions[i].slot_id == -1)
+        if (!(private->sessions[i].state & S_STATE_ACTIVE))
             continue;
 
         if (private->sessions[i].resource_id == resource_id) {
@@ -245,7 +348,7 @@ static void en50221_sl_handle_open_session_request(struct en50221_session_layer_
         // lookup next free session_id:
         int i;
         for(i = 0; i < private->max_sessions; i++) {
-            if (private->sessions[i].slot_id == -1) {
+            if (private->sessions[i].state & S_STATE_IDLE) {
                 session_number = i;
                 break;
             }
@@ -279,7 +382,7 @@ static void en50221_sl_handle_open_session_request(struct en50221_session_layer_
     iov[0].iov_len = 9;
 
     // send this command
-    if (en50221_tl_send_data(private->tl, slot_id, connection_id, iov, 2)) {
+    if (en50221_tl_send_data(private->tl, slot_id, connection_id, iov, 1)) {
         print(LOG_LEVEL, ERROR, 1, "Transport layer error %i occurred\n", en50221_tl_get_error(private->tl));
         return;
     }
@@ -334,8 +437,7 @@ static void en50221_sl_handle_close_session_request(struct en50221_session_layer
         hdr[2] = 0xF0; // session close error
         print(LOG_LEVEL, ERROR, 1, "Received unexpected session on invalid slot %i\n", slot_id);
     } else { // was ok!
-        private->sessions[session_number].slot_id = -1;
-        private->sessions[session_number].connection_id = -1;
+        private->sessions[session_number].state = S_STATE_IDLE;
     }
 
     // sendit
@@ -351,6 +453,83 @@ static void en50221_sl_handle_close_session_request(struct en50221_session_layer
                                                    session_number,
                                                    private->sessions[session_number].resource_id,
                                                    NULL, 0);
+}
+
+static void en50221_sl_handle_create_session_response(struct en50221_session_layer_private *private,
+    uint8_t *data, uint32_t data_length, uint8_t slot_id, uint8_t connection_id)
+{
+    // check
+    if (data_length < 9) {
+        print(LOG_LEVEL, ERROR, 1, "Received data with invalid length from module on slot %02x\n", slot_id);
+        return;
+    }
+    if (data[0] != 7) {
+        print(LOG_LEVEL, ERROR, 1, "Received data with invalid length from module on slot %02x\n", slot_id);
+        return;
+    }
+
+    // extract session number
+    uint16_t session_number = (data[5] << 8) | data[6];
+
+    // check session number is ok
+    if (session_number >= private->max_sessions) {
+        print(LOG_LEVEL, ERROR, 1, "Received bad session id %i\n", slot_id);
+        return;
+    } else if (slot_id != private->sessions[session_number].slot_id) {
+        print(LOG_LEVEL, ERROR, 1, "Received unexpected session on invalid slot %i\n", slot_id);
+        return;
+    } else if (connection_id != private->sessions[session_number].connection_id) {
+        print(LOG_LEVEL, ERROR, 1, "Received unexpected session on invalid slot %i\n", slot_id);
+        return;
+    }
+
+    // extract status
+    if (data[1] != S_STATUS_OPEN) {
+        print(LOG_LEVEL, ERROR, 1, "Session creation failed 0x%02x\n", data[1]);
+        private->sessions[session_number].state = S_STATE_IDLE;
+        return;
+    }
+
+    // completed
+    private->sessions[session_number].state = S_STATE_ACTIVE;
+}
+
+static void en50221_sl_handle_close_session_response(struct en50221_session_layer_private *private,
+        uint8_t *data, uint32_t data_length, uint8_t slot_id, uint8_t connection_id)
+{
+    // check
+    if (data_length < 5) {
+        print(LOG_LEVEL, ERROR, 1, "Received data with invalid length from module on slot %02x\n", slot_id);
+        return;
+    }
+    if (data[0] != 3) {
+        print(LOG_LEVEL, ERROR, 1, "Received data with invalid length from module on slot %02x\n", slot_id);
+        return;
+    }
+
+    // extract session number
+    uint16_t session_number = (data[1] << 8) | data[2];
+
+    // check session number is ok
+    if (session_number >= private->max_sessions) {
+        print(LOG_LEVEL, ERROR, 1, "Received bad session id %i\n", slot_id);
+        return;
+    } else if (slot_id != private->sessions[session_number].slot_id) {
+        print(LOG_LEVEL, ERROR, 1, "Received unexpected session on invalid slot %i\n", slot_id);
+        return;
+    } else if (connection_id != private->sessions[session_number].connection_id) {
+        print(LOG_LEVEL, ERROR, 1, "Received unexpected session on invalid slot %i\n", slot_id);
+        return;
+    }
+
+    // extract status
+    if (data[1] != S_STATUS_OPEN) {
+        print(LOG_LEVEL, ERROR, 1, "Session close failed 0x%02x\n", data[1]);
+        // just fallthrough anyway
+    }
+
+    // completed
+    private->sessions[session_number].state = S_STATE_IDLE;
 }
 
 static void en50221_sl_handle_session_package(struct en50221_session_layer_private *private,
@@ -377,6 +556,9 @@ static void en50221_sl_handle_session_package(struct en50221_session_layer_priva
         return;
     } else if (connection_id != private->sessions[session_number].connection_id) {
         print(LOG_LEVEL, ERROR, 1, "Received unexpected session on invalid slot %i\n", slot_id);
+        return;
+    } else if (!(private->sessions[session_number].state & S_STATE_ACTIVE)) {
+        print(LOG_LEVEL, ERROR, 1, "Received data with bad session_number from module on slot %i\n", slot_id);
         return;
     }
 
@@ -457,11 +639,11 @@ static void en50221_sl_transport_callback(void *arg, int reason, uint8_t *data, 
             break;
 
         case ST_CREATE_SESSION_RES:
-            print(LOG_LEVEL, ERROR, 1, "Received ST_CREATE_SESSION_RES from module on slot %i\n", slot_id);
+            en50221_sl_handle_create_session_response(private, data+1, data_length-1, slot_id, connection_id);
             break;
 
         case ST_CLOSE_SESSION_RES:
-            print(LOG_LEVEL, ERROR, 1, "Received ST_CLOSE_SESSION_RES from module on slot %i", slot_id);
+            en50221_sl_handle_close_session_response(private, data+1, data_length-1, slot_id, connection_id);
             break;
 
         default:
