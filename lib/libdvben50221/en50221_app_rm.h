@@ -95,7 +95,7 @@ extern int en50221_app_rm_register(en50221_app_rm rm, uint32_t resource_id,
  * @param callback The callback. Set to NULL to remove the callback completely.
  * @param arg Private data passed as arg0 of the callback.
  */
-extern void en50221_rm_register_resourcelist_callback(en50221_app_rm rm,
+extern void en50221_app_rm_register_resourcelist_callback(en50221_app_rm rm,
         en50221_app_rm_resourcelist_callback callback, void *arg);
 
 /**
@@ -105,7 +105,7 @@ extern void en50221_rm_register_resourcelist_callback(en50221_app_rm rm,
  * @param callback The callback. Set to NULL to remove the callback completely.
  * @param arg Private data passed as arg0 of the callback.
  */
-extern void en50221_rm_register_unknownresource_callback(en50221_app_rm rm,
+extern void en50221_app_rm_register_unknownresource_callback(en50221_app_rm rm,
         en50221_app_rm_unknownresource_callback callback, void *arg);
 
 #endif

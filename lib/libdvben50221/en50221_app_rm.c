@@ -144,7 +144,7 @@ int en50221_app_rm_register(en50221_app_rm rm, uint32_t resource_id,
     return 0;
 }
 
-void en50221_rm_register_resourcelist_callback(en50221_app_rm rm,
+void en50221_app_rm_register_resourcelist_callback(en50221_app_rm rm,
                                                en50221_app_rm_resourcelist_callback callback, void *arg)
 {
     struct en50221_app_rm_private *private = (struct en50221_app_rm_private *) rm;
@@ -153,7 +153,7 @@ void en50221_rm_register_resourcelist_callback(en50221_app_rm rm,
     private->listcallback_arg = arg;
 }
 
-void en50221_rm_register_unknownresource_callback(en50221_app_rm rm,
+void en50221_app_rm_register_unknownresource_callback(en50221_app_rm rm,
                                                   en50221_app_rm_unknownresource_callback callback, void *arg)
 {
     struct en50221_app_rm_private *private = (struct en50221_app_rm_private *) rm;
