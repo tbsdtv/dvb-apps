@@ -318,6 +318,14 @@ static void en50221_app_lowspeed_parse_command(struct en50221_app_lowspeed_priva
             }
             command.u.get_next_buffer.phase_id = data[0];
             break;
+
+        case COMMS_COMMAND_ID_DISCONNECT_ON_CHANNEL:
+        case COMMS_COMMAND_ID_ENQUIRE_STATUS:
+            break;
+
+        default:
+            print(LOG_LEVEL, ERROR, 1, "Received unexpected command_id %02x\n", command_id);
+            return;
     }
 
     // tell the app
@@ -362,6 +370,7 @@ static void en50221_app_lowspeed_resource_callback(void *arg,
                                             uint8_t *data, uint32_t data_length)
 {
     struct en50221_app_lowspeed_private *private = (struct en50221_app_lowspeed_private *) arg;
+    (void)resource_id;
 
     // get the tag
     if (data_length < 3) {
