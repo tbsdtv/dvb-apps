@@ -121,7 +121,7 @@ extern en50221_app_lowspeed en50221_app_lowspeed_create(struct en50221_app_send_
 /**
  * Destroy an instance of the lowspeed resource.
  *
- * @param rm Instance to destroy.
+ * @param lowspeed Instance to destroy.
  */
 extern void en50221_app_lowspeed_destroy(en50221_app_lowspeed lowspeed);
 

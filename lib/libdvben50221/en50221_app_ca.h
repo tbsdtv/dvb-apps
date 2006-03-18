@@ -131,7 +131,7 @@ extern en50221_app_ca en50221_app_ca_create(struct en50221_app_send_functions *f
 /**
  * Destroy an instance of the ca resource.
  *
- * @param rm Instance to destroy.
+ * @param ca Instance to destroy.
  */
 extern void en50221_app_ca_destroy(en50221_app_ca ca);
 

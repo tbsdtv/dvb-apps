@@ -58,7 +58,7 @@ extern en50221_app_datetime en50221_app_datetime_create(struct en50221_app_send_
 /**
  * Destroy an instance of the datetime resource.
  *
- * @param rm Instance to destroy.
+ * @param datetime Instance to destroy.
  */
 extern void en50221_app_datetime_destroy(en50221_app_datetime datetime);
 

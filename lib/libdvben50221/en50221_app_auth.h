@@ -61,7 +61,7 @@ extern en50221_app_auth en50221_app_auth_create(struct en50221_app_send_function
 /**
  * Destroy an instance of the auth resource.
  *
- * @param rm Instance to destroy.
+ * @param auth Instance to destroy.
  */
 extern void en50221_app_auth_destroy(en50221_app_auth auth);
 

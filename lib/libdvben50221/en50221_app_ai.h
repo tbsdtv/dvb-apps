@@ -65,7 +65,7 @@ extern en50221_app_ai en50221_app_ai_create(struct en50221_app_send_functions *f
 /**
  * Destroy an instance of an application information resource.
  *
- * @param rm Instance to destroy.
+ * @param ai Instance to destroy.
  */
 extern void en50221_app_ai_destroy(en50221_app_ai ai);
 

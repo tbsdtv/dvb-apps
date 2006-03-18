@@ -61,7 +61,7 @@ extern en50221_app_teletext en50221_app_teletext_create(struct en50221_app_send_
 /**
  * Destroy an instance of the teletext resource.
  *
- * @param rm Instance to destroy.
+ * @param teletext Instance to destroy.
  */
 extern void en50221_app_teletext_destroy(en50221_app_teletext teletext);
 

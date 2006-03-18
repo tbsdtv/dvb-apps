@@ -102,7 +102,7 @@ extern en50221_app_smartcard en50221_app_smartcard_create(struct en50221_app_sen
 /**
  * Destroy an instance of the smartcard resource.
  *
- * @param rm Instance to destroy.
+ * @param smartcard Instance to destroy.
  */
 extern void en50221_app_smartcard_destroy(en50221_app_smartcard smartcard);
 

@@ -71,7 +71,7 @@ extern en50221_app_epg en50221_app_epg_create(struct en50221_app_send_functions 
 /**
  * Destroy an instance of the epg resource.
  *
- * @param rm Instance to destroy.
+ * @param epg Instance to destroy.
  */
 extern void en50221_app_epg_destroy(en50221_app_epg epg);
 

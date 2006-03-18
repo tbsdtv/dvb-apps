@@ -92,7 +92,7 @@ extern en50221_app_dvb en50221_app_dvb_create(struct en50221_app_send_functions 
 /**
  * Destroy an instance of the dvb resource.
  *
- * @param rm Instance to destroy.
+ * @param dvb Instance to destroy.
  */
 extern void en50221_app_dvb_destroy(en50221_app_dvb dvb);
 
