@@ -223,7 +223,7 @@ static void en50221_app_rm_handle_incoming_profile(struct en50221_app_rm_private
     }
 
     // check it
-    if (asn_data_length > data_length) {
+    if (asn_data_length > (data_length-length_field_len)) {
         print(LOG_LEVEL, ERROR, 1, "Received short data\n");
         return;
     }

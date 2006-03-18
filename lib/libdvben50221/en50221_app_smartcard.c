@@ -228,7 +228,7 @@ static void en50221_app_smartcard_parse_send(struct en50221_app_smartcard_privat
         print(LOG_LEVEL, ERROR, 1, "Received short data\n");
         return;
     }
-    if (asn_data_length > data_length) {
+    if (asn_data_length > (data_length-length_field_len)) {
         print(LOG_LEVEL, ERROR, 1, "Received short data\n");
         return;
     }

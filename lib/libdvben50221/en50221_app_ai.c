@@ -132,7 +132,7 @@ static void en50221_app_ai_parse_app_info(struct en50221_app_ai_private *private
         print(LOG_LEVEL, ERROR, 1, "Received short data\n");
         return;
     }
-    if (data_length < ((uint32_t) length_field_len + asn_data_length)) {
+    if (asn_data_length > (data_length - length_field_len)) {
         print(LOG_LEVEL, ERROR, 1, "Received short data\n");
         return;
     }

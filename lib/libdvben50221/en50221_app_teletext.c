@@ -98,7 +98,7 @@ static void en50221_app_teletext_parse_ebu(struct en50221_app_teletext_private *
     }
 
     // check it
-    if (asn_data_length > data_length) {
+    if (asn_data_length > (data_length-length_field_len)) {
         print(LOG_LEVEL, ERROR, 1, "Received short data\n");
         return;
     }
