@@ -48,10 +48,10 @@ struct en50221_app_lowspeed_private {
 static int en50221_app_lowspeed_parse_connect_on_channel(struct en50221_app_lowspeed_command *command,
         uint8_t *data,
         int data_length);
-static void en50221_app_lowspeed_parse_command(struct en50221_app_lowspeed_private *private,
+static int en50221_app_lowspeed_parse_command(struct en50221_app_lowspeed_private *private,
                                                uint8_t slot_id, uint16_t session_number,
                                                uint8_t *data, uint32_t data_length);
-static void en50221_app_lowspeed_parse_send(struct en50221_app_lowspeed_private *private,
+static int en50221_app_lowspeed_parse_send(struct en50221_app_lowspeed_private *private,
                                             uint8_t slot_id, uint16_t session_number, int last_more,
                                             uint8_t *data, uint32_t data_length);
 
@@ -174,20 +174,15 @@ int en50221_app_lowspeed_message(en50221_app_lowspeed lowspeed,
     switch(tag)
     {
         case TAG_COMMS_COMMAND:
-            en50221_app_lowspeed_parse_command(private, slot_id, session_number, data+3, data_length-3);
-            break;
+            return en50221_app_lowspeed_parse_command(private, slot_id, session_number, data+3, data_length-3);
         case TAG_COMMS_SEND_LAST:
-            en50221_app_lowspeed_parse_send(private, slot_id, session_number, 1, data+3, data_length-3);
-            break;
+            return en50221_app_lowspeed_parse_send(private, slot_id, session_number, 1, data+3, data_length-3);
         case TAG_COMMS_SEND_MORE:
-            en50221_app_lowspeed_parse_send(private, slot_id, session_number, 0, data+3, data_length-3);
-            break;
-        default:
-            print(LOG_LEVEL, ERROR, 1, "Received unexpected tag %x\n", tag);
-            return -1;
+            return en50221_app_lowspeed_parse_send(private, slot_id, session_number, 0, data+3, data_length-3);
     }
 
-    return 0;
+    print(LOG_LEVEL, ERROR, 1, "Received unexpected tag %x\n", tag);
+    return -1;
 }
 
 
@@ -292,7 +287,7 @@ static int en50221_app_lowspeed_parse_connect_on_channel(struct en50221_app_lows
     return 0;
 }
 
-static void en50221_app_lowspeed_parse_command(struct en50221_app_lowspeed_private *private,
+static int en50221_app_lowspeed_parse_command(struct en50221_app_lowspeed_private *private,
                                                uint8_t slot_id, uint16_t session_number,
                                                uint8_t *data, uint32_t data_length)
 {
@@ -301,17 +296,17 @@ static void en50221_app_lowspeed_parse_command(struct en50221_app_lowspeed_priva
     int length_field_len;
     if ((length_field_len = asn_1_decode(&asn_data_length, data, data_length)) < 0) {
         print(LOG_LEVEL, ERROR, 1, "ASN.1 decode error\n");
-        return;
+        return -1;
     }
 
     // check it
     if (asn_data_length < 1) {
         print(LOG_LEVEL, ERROR, 1, "Received short data\n");
-        return;
+        return -1;
     }
     if (asn_data_length > (data_length-length_field_len)) {
         print(LOG_LEVEL, ERROR, 1, "Received short data\n");
-        return;
+        return -1;
     }
     data+=length_field_len;
 
@@ -325,13 +320,13 @@ static void en50221_app_lowspeed_parse_command(struct en50221_app_lowspeed_priva
     switch(command_id) {
         case COMMS_COMMAND_ID_CONNECT_ON_CHANNEL:
             if (en50221_app_lowspeed_parse_connect_on_channel(&command, data, asn_data_length)) {
-                return;
+                return -1;
             }
             break;
         case COMMS_COMMAND_ID_SET_PARAMS:
             if (asn_data_length != 2) {
                 print(LOG_LEVEL, ERROR, 1, "Received short data\n");
-                return;
+                return -1;
             }
             command.u.set_params.buffer_size = data[0];
             command.u.set_params.timeout = data[1];
@@ -339,7 +334,7 @@ static void en50221_app_lowspeed_parse_command(struct en50221_app_lowspeed_priva
         case COMMS_COMMAND_ID_GET_NEXT_BUFFER:
             if (asn_data_length != 1) {
                 print(LOG_LEVEL, ERROR, 1, "Received short data\n");
-                return;
+                return -1;
             }
             command.u.get_next_buffer.phase_id = data[0];
             break;
@@ -350,16 +345,18 @@ static void en50221_app_lowspeed_parse_command(struct en50221_app_lowspeed_priva
 
         default:
             print(LOG_LEVEL, ERROR, 1, "Received unexpected command_id %02x\n", command_id);
-            return;
+            return -1;
     }
 
     // tell the app
-    if (private->command_callback)
-        private->command_callback(private->command_callback_arg, slot_id, session_number,
+    if (private->command_callback) {
+        return private->command_callback(private->command_callback_arg, slot_id, session_number,
                                   command_id, &command);
+    }
+    return 0;
 }
 
-static void en50221_app_lowspeed_parse_send(struct en50221_app_lowspeed_private *private,
+static int en50221_app_lowspeed_parse_send(struct en50221_app_lowspeed_private *private,
                                             uint8_t slot_id, uint16_t session_number, int last_more,
                                             uint8_t *data, uint32_t data_length)
 {
@@ -368,22 +365,24 @@ static void en50221_app_lowspeed_parse_send(struct en50221_app_lowspeed_private 
     int length_field_len;
     if ((length_field_len = asn_1_decode(&asn_data_length, data, data_length)) < 0) {
         print(LOG_LEVEL, ERROR, 1, "ASN.1 decode error\n");
-        return;
+        return -1;
     }
 
     // check it
     if (asn_data_length < 1) {
         print(LOG_LEVEL, ERROR, 1, "Received short data\n");
-        return;
+        return -1;
     }
     if (asn_data_length > (data_length-length_field_len)) {
         print(LOG_LEVEL, ERROR, 1, "Received short data\n");
-        return;
+        return -1;
     }
     uint8_t phase_id = data[1];
 
     // tell the app
-    if (private->send_callback)
-        private->send_callback(private->send_callback_arg, slot_id, session_number, phase_id, last_more,
+    if (private->send_callback) {
+        return private->send_callback(private->send_callback_arg, slot_id, session_number, phase_id, last_more,
                                data+2, asn_data_length-1);
+    }
+    return 0;
 }

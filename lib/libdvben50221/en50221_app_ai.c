@@ -38,7 +38,7 @@ struct en50221_app_ai_private {
         void *callback_arg;
 };
 
-static void en50221_app_ai_parse_app_info(struct en50221_app_ai_private *private,
+static int en50221_app_ai_parse_app_info(struct en50221_app_ai_private *private,
                                           uint8_t slot_id, uint16_t session_number,
                                           uint8_t *data, uint32_t data_length);
 
@@ -117,14 +117,11 @@ int en50221_app_ai_message(en50221_app_ai ai,
     switch(tag)
     {
         case TAG_APP_INFO:
-            en50221_app_ai_parse_app_info(private, slot_id, session_number, data+3, data_length-3);
-            break;
-        default:
-            print(LOG_LEVEL, ERROR, 1, "Received unexpected tag %x\n", tag);
-            return -1;
+            return en50221_app_ai_parse_app_info(private, slot_id, session_number, data+3, data_length-3);
     }
 
-    return 0;
+    print(LOG_LEVEL, ERROR, 1, "Received unexpected tag %x\n", tag);
+    return -1;
 }
 
 
@@ -133,7 +130,7 @@ int en50221_app_ai_message(en50221_app_ai ai,
 
 
 
-static void en50221_app_ai_parse_app_info(struct en50221_app_ai_private *private,
+static int en50221_app_ai_parse_app_info(struct en50221_app_ai_private *private,
                                           uint8_t slot_id, uint16_t session_number,
                                           uint8_t *data, uint32_t data_length)
 {
@@ -142,17 +139,17 @@ static void en50221_app_ai_parse_app_info(struct en50221_app_ai_private *private
     uint16_t asn_data_length;
     if ((length_field_len = asn_1_decode(&asn_data_length, data, data_length)) < 0) {
         print(LOG_LEVEL, ERROR, 1, "Received data with invalid length from module on slot %02x\n", slot_id);
-        return;
+        return -1;
     }
 
     // check it
     if (asn_data_length < 6) {
         print(LOG_LEVEL, ERROR, 1, "Received short data\n");
-        return;
+        return -1;
     }
     if (asn_data_length > (data_length - length_field_len)) {
         print(LOG_LEVEL, ERROR, 1, "Received short data\n");
-        return;
+        return -1;
     }
     uint8_t *app_info = data + length_field_len;
 
@@ -166,12 +163,14 @@ static void en50221_app_ai_parse_app_info(struct en50221_app_ai_private *private
     // check the menu_string_length
     if (menu_string_length > (asn_data_length-6)) {
         print(LOG_LEVEL, ERROR, 1, "Received short data\n");
-        return;
+        return -1;
     }
 
     // tell the app
-    if (private->callback)
-        private->callback(private->callback_arg, slot_id, session_number,
+    if (private->callback) {
+        return private->callback(private->callback_arg, slot_id, session_number,
                           application_type, application_manufacturer,
                           manufacturer_code, menu_string_length, menu_string);
+    }
+    return 0;
 }

@@ -66,10 +66,10 @@ static void en50221_ca_try_move_pmt_descriptors(struct ca_pmt_descriptor **pmt_d
 static uint32_t en50221_ca_calculate_length(struct ca_pmt_descriptor *pmt_descriptors,
                                             uint32_t *pmt_descriptors_length,
                                             struct ca_pmt_stream *pmt_streams);
-static void en50221_app_ca_parse_info(struct en50221_app_ca_private *private,
+static int en50221_app_ca_parse_info(struct en50221_app_ca_private *private,
                                       uint8_t slot_id, uint16_t session_number,
                                       uint8_t *data, uint32_t data_length);
-static void en50221_app_ca_parse_reply(struct en50221_app_ca_private *private,
+static int en50221_app_ca_parse_reply(struct en50221_app_ca_private *private,
                                        uint8_t slot_id, uint16_t session_number,
                                        uint8_t *data, uint32_t data_length);
 
@@ -178,17 +178,13 @@ int en50221_app_ca_message(en50221_app_ca ca,
     switch(tag)
     {
         case TAG_CA_INFO:
-            en50221_app_ca_parse_info(private, slot_id, session_number, data+3, data_length-3);
-            break;
+            return en50221_app_ca_parse_info(private, slot_id, session_number, data+3, data_length-3);
         case TAG_CA_PMT_REPLY:
-            en50221_app_ca_parse_reply(private, slot_id, session_number, data+3, data_length-3);
-            break;
-        default:
-            print(LOG_LEVEL, ERROR, 1, "Received unexpected tag %x\n", tag);
-            return -1;
+            return en50221_app_ca_parse_reply(private, slot_id, session_number, data+3, data_length-3);
     }
 
-    return 0;
+    print(LOG_LEVEL, ERROR, 1, "Received unexpected tag %x\n", tag);
+    return -1;
 }
 
 int en50221_ca_format_pmt(struct mpeg_pmt_section *pmt, uint8_t *data, uint32_t data_length,
@@ -518,7 +514,7 @@ static uint32_t en50221_ca_calculate_length(struct ca_pmt_descriptor *pmt_descri
     return total_required_length;
 }
 
-static void en50221_app_ca_parse_info(struct en50221_app_ca_private *private,
+static int en50221_app_ca_parse_info(struct en50221_app_ca_private *private,
                                       uint8_t slot_id, uint16_t session_number,
                                       uint8_t *data, uint32_t data_length)
 {
@@ -527,13 +523,13 @@ static void en50221_app_ca_parse_info(struct en50221_app_ca_private *private,
     int length_field_len;
     if ((length_field_len = asn_1_decode(&asn_data_length, data, data_length)) < 0) {
         print(LOG_LEVEL, ERROR, 1, "ASN.1 decode error\n");
-        return;
+        return -1;
     }
 
     // check it
     if (asn_data_length > (data_length-length_field_len)) {
         print(LOG_LEVEL, ERROR, 1, "Received short data\n");
-        return;
+        return -1;
     }
     data+=length_field_len;
 
@@ -541,12 +537,14 @@ static void en50221_app_ca_parse_info(struct en50221_app_ca_private *private,
     uint32_t ca_id_count = asn_data_length / 2;
 
     // tell the app
-    if (private->ca_info_callback)
-        private->ca_info_callback(private->ca_info_callback_arg, slot_id, session_number,
+    if (private->ca_info_callback) {
+        return private->ca_info_callback(private->ca_info_callback_arg, slot_id, session_number,
                                   ca_id_count, (uint16_t*) data);
+    }
+    return 0;
 }
 
-static void en50221_app_ca_parse_reply(struct en50221_app_ca_private *private,
+static int en50221_app_ca_parse_reply(struct en50221_app_ca_private *private,
                                        uint8_t slot_id, uint16_t session_number,
                                        uint8_t *data, uint32_t data_length)
 {
@@ -555,17 +553,17 @@ static void en50221_app_ca_parse_reply(struct en50221_app_ca_private *private,
     int length_field_len;
     if ((length_field_len = asn_1_decode(&asn_data_length, data, data_length)) < 0) {
         print(LOG_LEVEL, ERROR, 1, "ASN.1 decode error\n");
-        return;
+        return -1;
     }
 
     // check it
     if (asn_data_length < 4) {
         print(LOG_LEVEL, ERROR, 1, "Received short data\n");
-        return;
+        return -1;
     }
     if (asn_data_length > (data_length-length_field_len)) {
         print(LOG_LEVEL, ERROR, 1, "Received short data\n");
-        return;
+        return -1;
     }
     data += length_field_len;
     data_length -= length_field_len;
@@ -579,8 +577,10 @@ static void en50221_app_ca_parse_reply(struct en50221_app_ca_private *private,
     }
 
     // tell the app
-    if (private->ca_pmt_reply_callback)
-        private->ca_pmt_reply_callback(private->ca_pmt_reply_callback_arg, slot_id, session_number,
+    if (private->ca_pmt_reply_callback) {
+        return private->ca_pmt_reply_callback(private->ca_pmt_reply_callback_arg, slot_id, session_number,
                                        (struct en50221_app_pmt_reply*) data,
                                        asn_data_length);
+    }
+    return 0;
 }

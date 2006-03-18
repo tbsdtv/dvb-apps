@@ -42,11 +42,11 @@ struct en50221_app_smartcard_private {
         void *send_callback_arg;
 };
 
-static void en50221_app_smartcard_parse_command(struct en50221_app_smartcard_private *private,
-        uint8_t slot_id, uint16_t session_number,
-        uint8_t *data, uint32_t data_length);
+static int en50221_app_smartcard_parse_command(struct en50221_app_smartcard_private *private,
+                                               uint8_t slot_id, uint16_t session_number,
+                                               uint8_t *data, uint32_t data_length);
 
-static void en50221_app_smartcard_parse_send(struct en50221_app_smartcard_private *private,
+static int en50221_app_smartcard_parse_send(struct en50221_app_smartcard_private *private,
                                              uint8_t slot_id, uint16_t session_number,
                                              uint8_t *data, uint32_t data_length);
 
@@ -198,17 +198,13 @@ int en50221_app_smartcard_message(en50221_app_smartcard smartcard,
     switch(tag)
     {
         case TAG_SMARTCARD_COMMAND:
-            en50221_app_smartcard_parse_command(private, slot_id, session_number, data+3, data_length-3);
-            break;
+            return en50221_app_smartcard_parse_command(private, slot_id, session_number, data+3, data_length-3);
         case TAG_SMARTCARD_SEND:
-            en50221_app_smartcard_parse_send(private, slot_id, session_number, data+3, data_length-3);
-            break;
-        default:
-            print(LOG_LEVEL, ERROR, 1, "Received unexpected tag %x\n", tag);
-            return -1;
+            return en50221_app_smartcard_parse_send(private, slot_id, session_number, data+3, data_length-3);
     }
 
-    return 0;
+    print(LOG_LEVEL, ERROR, 1, "Received unexpected tag %x\n", tag);
+    return -1;
 }
 
 
@@ -217,27 +213,29 @@ int en50221_app_smartcard_message(en50221_app_smartcard smartcard,
 
 
 
-static void en50221_app_smartcard_parse_command(struct en50221_app_smartcard_private *private,
+static int en50221_app_smartcard_parse_command(struct en50221_app_smartcard_private *private,
                                                uint8_t slot_id, uint16_t session_number,
                                                uint8_t *data, uint32_t data_length)
 {
     if (data_length != 2) {
         print(LOG_LEVEL, ERROR, 1, "Received short data\n");
-        return;
+        return -1;
     }
     if (data[0] != 1) {
         print(LOG_LEVEL, ERROR, 1, "Received short data\n");
-        return;
+        return -1;
     }
     uint8_t command_id = data[1];
 
     // tell the app
-    if (private->command_callback)
-        private->command_callback(private->command_callback_arg, slot_id, session_number,
+    if (private->command_callback) {
+        return private->command_callback(private->command_callback_arg, slot_id, session_number,
                                   command_id);
+    }
+    return 0;
 }
 
-static void en50221_app_smartcard_parse_send(struct en50221_app_smartcard_private *private,
+static int en50221_app_smartcard_parse_send(struct en50221_app_smartcard_private *private,
                                             uint8_t slot_id, uint16_t session_number,
                                             uint8_t *data, uint32_t data_length)
 {
@@ -246,17 +244,17 @@ static void en50221_app_smartcard_parse_send(struct en50221_app_smartcard_privat
     int length_field_len;
     if ((length_field_len = asn_1_decode(&asn_data_length, data, data_length)) < 0) {
         print(LOG_LEVEL, ERROR, 1, "ASN.1 decode error\n");
-        return;
+        return -1;
     }
 
     // check it
     if (asn_data_length < 8) {
         print(LOG_LEVEL, ERROR, 1, "Received short data\n");
-        return;
+        return -1;
     }
     if (asn_data_length > (data_length-length_field_len)) {
         print(LOG_LEVEL, ERROR, 1, "Received short data\n");
-        return;
+        return -1;
     }
     data += length_field_len;
 
@@ -271,12 +269,14 @@ static void en50221_app_smartcard_parse_send(struct en50221_app_smartcard_privat
     // validate the length
     if ((length_in + 8) != asn_data_length) {
         print(LOG_LEVEL, ERROR, 1, "Received short data\n");
-        return;
+        return -1;
     }
     uint16_t length_out = (data[6+length_in]<<8)|data[6+length_in+1];
 
     // tell the app
-    if (private->send_callback)
-        private->send_callback(private->send_callback_arg, slot_id, session_number,
+    if (private->send_callback) {
+        return private->send_callback(private->send_callback_arg, slot_id, session_number,
                                CLA, INS, P1, P2, data_in, length_in, length_out);
+    }
+    return 0;
 }

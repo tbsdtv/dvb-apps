@@ -45,15 +45,15 @@ struct en50221_app_rm_private {
         void *changedcallback_arg;
 };
 
-static void en50221_app_rm_parse_profile_enq(struct en50221_app_rm_private *private,
+static int en50221_app_rm_parse_profile_enq(struct en50221_app_rm_private *private,
                                              uint8_t slot_id, uint16_t session_number,
                                              uint8_t *data, uint32_t data_length);
-static void en50221_app_rm_parse_profile_reply(struct en50221_app_rm_private *private,
+static int en50221_app_rm_parse_profile_reply(struct en50221_app_rm_private *private,
                                                uint8_t slot_id, uint16_t session_number,
                                                uint8_t *data, uint32_t data_length);
-static void en50221_app_rm_parse_profile_change(struct en50221_app_rm_private *private,
-        uint8_t slot_id, uint16_t session_number,
-        uint8_t *data, uint32_t data_length);
+static int en50221_app_rm_parse_profile_change(struct en50221_app_rm_private *private,
+                                                uint8_t slot_id, uint16_t session_number,
+                                                uint8_t *data, uint32_t data_length);
 
 
 en50221_app_rm en50221_app_rm_create(struct en50221_app_send_functions *funcs)
@@ -186,35 +186,32 @@ int en50221_app_rm_message(en50221_app_rm rm,
     switch(tag)
     {
         case TAG_PROFILE_ENQUIRY:
-            en50221_app_rm_parse_profile_enq(private, slot_id, session_number, data+3, data_length-3);
-            break;
+            return en50221_app_rm_parse_profile_enq(private, slot_id, session_number, data+3, data_length-3);
         case TAG_PROFILE:
-            en50221_app_rm_parse_profile_reply(private, slot_id, session_number, data+3, data_length-3);
-            break;
+            return en50221_app_rm_parse_profile_reply(private, slot_id, session_number, data+3, data_length-3);
         case TAG_PROFILE_CHANGE:
-            en50221_app_rm_parse_profile_change(private, slot_id, session_number, data+3, data_length-3);
-            break;
-        default:
-            print(LOG_LEVEL, ERROR, 1, "Received unexpected tag %x\n", tag);
-            return -1;
+            return en50221_app_rm_parse_profile_change(private, slot_id, session_number, data+3, data_length-3);
     }
 
-    return 0;
+    print(LOG_LEVEL, ERROR, 1, "Received unexpected tag %x\n", tag);
+    return -1;
 }
 
 
-static void en50221_app_rm_parse_profile_enq(struct en50221_app_rm_private *private,
+static int en50221_app_rm_parse_profile_enq(struct en50221_app_rm_private *private,
                                              uint8_t slot_id, uint16_t session_number,
                                              uint8_t *data, uint32_t data_length)
 {
     (void)data;
     (void)data_length;
 
-    if (private->enqcallback)
-        private->enqcallback(private->enqcallback_arg, slot_id, session_number);
+    if (private->enqcallback) {
+        return private->enqcallback(private->enqcallback_arg, slot_id, session_number);
+    }
+    return 0;
 }
 
-static void en50221_app_rm_parse_profile_reply(struct en50221_app_rm_private *private,
+static int en50221_app_rm_parse_profile_reply(struct en50221_app_rm_private *private,
                                                uint8_t slot_id, uint16_t session_number,
                                                uint8_t *data, uint32_t data_length)
 {
@@ -223,29 +220,33 @@ static void en50221_app_rm_parse_profile_reply(struct en50221_app_rm_private *pr
     int length_field_len;
     if ((length_field_len = asn_1_decode(&asn_data_length, data, data_length)) < 0) {
         print(LOG_LEVEL, ERROR, 1, "ASN.1 decode error\n");
-        return;
+        return -1;
     }
 
     // check it
     if (asn_data_length > (data_length-length_field_len)) {
         print(LOG_LEVEL, ERROR, 1, "Received short data\n");
-        return;
+        return -1;
     }
     uint32_t resources_count = asn_data_length / 4;
 
     // inform observer
-    if (private->replycallback)
-        private->replycallback(private->replycallback_arg,
+    if (private->replycallback) {
+        return private->replycallback(private->replycallback_arg,
                                slot_id, session_number, resources_count, (uint32_t*) (data+length_field_len));
+    }
+    return 0;
 }
 
-static void en50221_app_rm_parse_profile_change(struct en50221_app_rm_private *private,
+static int en50221_app_rm_parse_profile_change(struct en50221_app_rm_private *private,
                                                 uint8_t slot_id, uint16_t session_number,
                                                 uint8_t *data, uint32_t data_length)
 {
     (void)data;
     (void)data_length;
 
-    if (private->changedcallback)
-        private->changedcallback(private->changedcallback_arg, slot_id, session_number);
+    if (private->changedcallback) {
+        return private->changedcallback(private->changedcallback_arg, slot_id, session_number);
+    }
+    return 0;
 }

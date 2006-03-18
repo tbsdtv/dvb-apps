@@ -38,7 +38,7 @@ struct en50221_app_datetime_private {
         void *callback_arg;
 };
 
-static void en50221_app_datetime_parse_enquiry(struct en50221_app_datetime_private *private,
+static int en50221_app_datetime_parse_enquiry(struct en50221_app_datetime_private *private,
                                                uint8_t slot_id, uint16_t session_number,
                                                uint8_t *data, uint32_t data_length);
 
@@ -119,14 +119,11 @@ int en50221_app_datetime_message(en50221_app_datetime datetime,
     switch(tag)
     {
         case TAG_DATE_TIME_ENQUIRY:
-            en50221_app_datetime_parse_enquiry(private, slot_id, session_number, data+3, data_length-3);
-            break;
-        default:
-            print(LOG_LEVEL, ERROR, 1, "Received unexpected tag %x\n", tag);
-            return -1;
+            return en50221_app_datetime_parse_enquiry(private, slot_id, session_number, data+3, data_length-3);
     }
 
-    return 0;
+    print(LOG_LEVEL, ERROR, 1, "Received unexpected tag %x\n", tag);
+    return -1;
 }
 
 
@@ -138,22 +135,24 @@ int en50221_app_datetime_message(en50221_app_datetime datetime,
 
 
 
-static void en50221_app_datetime_parse_enquiry(struct en50221_app_datetime_private *private,
+static int en50221_app_datetime_parse_enquiry(struct en50221_app_datetime_private *private,
                                                uint8_t slot_id, uint16_t session_number,
                                                uint8_t *data, uint32_t data_length)
 {
     // validate data
     if (data_length != 2) {
         print(LOG_LEVEL, ERROR, 1, "Received short data\n");
-        return;
+        return -1;
     }
     if (data[0] != 1) {
         print(LOG_LEVEL, ERROR, 1, "Received short data\n");
-        return;
+        return -1;
     }
     uint8_t response_interval = data[1];
 
     // tell the app
-    if (private->callback)
-        private->callback(private->callback_arg, slot_id, session_number, response_interval);
+    if (private->callback) {
+        return private->callback(private->callback_arg, slot_id, session_number, response_interval);
+    }
+    return 0;
 }

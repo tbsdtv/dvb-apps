@@ -36,7 +36,7 @@ struct en50221_app_teletext_private {
         void *callback_arg;
 };
 
-static void en50221_app_teletext_parse_ebu(struct en50221_app_teletext_private *private,
+static int en50221_app_teletext_parse_ebu(struct en50221_app_teletext_private *private,
                                            uint8_t slot_id, uint16_t session_number,
                                            uint8_t *data, uint32_t data_length);
 
@@ -93,18 +93,15 @@ int en50221_app_teletext_resource_callback(en50221_app_teletext teletext,
     switch(tag)
     {
         case TAG_TELETEXT_EBU:
-            en50221_app_teletext_parse_ebu(private, slot_id, session_number, data+3, data_length-3);
-            break;
-        default:
-            print(LOG_LEVEL, ERROR, 1, "Received unexpected tag %x\n", tag);
-            return -1;
+            return en50221_app_teletext_parse_ebu(private, slot_id, session_number, data+3, data_length-3);
     }
 
-    return 0;
+    print(LOG_LEVEL, ERROR, 1, "Received unexpected tag %x\n", tag);
+    return -1;
 }
 
 
-static void en50221_app_teletext_parse_ebu(struct en50221_app_teletext_private *private,
+static int en50221_app_teletext_parse_ebu(struct en50221_app_teletext_private *private,
                                            uint8_t slot_id, uint16_t session_number,
                                            uint8_t *data, uint32_t data_length)
 {
@@ -113,19 +110,21 @@ static void en50221_app_teletext_parse_ebu(struct en50221_app_teletext_private *
     int length_field_len;
     if ((length_field_len = asn_1_decode(&asn_data_length, data, data_length)) < 0) {
         print(LOG_LEVEL, ERROR, 1, "ASN.1 decode error\n");
-        return;
+        return -1;
     }
 
     // check it
     if (asn_data_length > (data_length-length_field_len)) {
         print(LOG_LEVEL, ERROR, 1, "Received short data\n");
-        return;
+        return -1;
     }
     uint8_t *teletext_data = data + length_field_len;
 
     // tell the app
-    if (private->callback)
-        private->callback(private->callback_arg, slot_id, session_number,
+    if (private->callback) {
+        return private->callback(private->callback_arg, slot_id, session_number,
                           teletext_data, asn_data_length);
+    }
+    return 0;
 }
 

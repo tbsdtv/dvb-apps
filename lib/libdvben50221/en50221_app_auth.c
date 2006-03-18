@@ -37,7 +37,7 @@ struct en50221_app_auth_private {
         void *callback_arg;
 };
 
-static void en50221_app_auth_parse_request(struct en50221_app_auth_private *private,
+static int en50221_app_auth_parse_request(struct en50221_app_auth_private *private,
                                            uint8_t slot_id, uint16_t session_number,
                                            uint8_t *data, uint32_t data_length);
 
@@ -127,19 +127,16 @@ int en50221_app_auth_message(en50221_app_auth auth,
     switch(tag)
     {
         case TAG_AUTH_REQ:
-            en50221_app_auth_parse_request(private, slot_id, session_number, data+3, data_length-3);
-            break;
-        default:
-            print(LOG_LEVEL, ERROR, 1, "Received unexpected tag %x\n", tag);
-            return -1;
+            return en50221_app_auth_parse_request(private, slot_id, session_number, data+3, data_length-3);
     }
 
-    return 0;
+    print(LOG_LEVEL, ERROR, 1, "Received unexpected tag %x\n", tag);
+    return -1;
 }
 
 
 
-static void en50221_app_auth_parse_request(struct en50221_app_auth_private *private,
+static int en50221_app_auth_parse_request(struct en50221_app_auth_private *private,
                                            uint8_t slot_id, uint16_t session_number,
                                            uint8_t *data, uint32_t data_length)
 {
@@ -148,17 +145,17 @@ static void en50221_app_auth_parse_request(struct en50221_app_auth_private *priv
     int length_field_len;
     if ((length_field_len = asn_1_decode(&asn_data_length, data, data_length)) < 0) {
         print(LOG_LEVEL, ERROR, 1, "ASN.1 decode error\n");
-        return;
+        return -1;
     }
 
     // check it
     if (asn_data_length < 2) {
         print(LOG_LEVEL, ERROR, 1, "Received short data\n");
-        return;
+        return -1;
     }
     if (asn_data_length > (data_length-length_field_len)) {
         print(LOG_LEVEL, ERROR, 1, "Received short data\n");
-        return;
+        return -1;
     }
     uint8_t *auth_data = data + length_field_len;
 
@@ -166,7 +163,9 @@ static void en50221_app_auth_parse_request(struct en50221_app_auth_private *priv
     uint16_t auth_protocol_id = (auth_data[0]<<8) | auth_data[1];
 
     // tell the app
-    if (private->callback)
-        private->callback(private->callback_arg, slot_id, session_number,
+    if (private->callback) {
+        return private->callback(private->callback_arg, slot_id, session_number,
                           auth_protocol_id, auth_data+2, asn_data_length-2);
+    }
+    return 0;
 }
