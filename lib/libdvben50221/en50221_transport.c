@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
+#include <pthread.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <linux/delay.h>
@@ -70,7 +71,6 @@ struct en50221_connection {
 
 struct en50221_slot {
     int ca_hndl;
-    struct pollfd ca_poll;
     struct en50221_connection *connections;
 
     uint32_t response_timeout;
@@ -82,6 +82,8 @@ struct en50221_transport_layer_private
     uint8_t max_slots;
     uint8_t max_connections_per_slot;
     struct en50221_slot *slots;
+
+    pthread_mutex_t lock;
 
     int error;
     int error_slot;
@@ -147,6 +149,9 @@ en50221_transport_layer en50221_tl_create(uint8_t max_slots, uint8_t max_connect
             private->slots[i].connections[j].buffer_length = 0;
         }
     }
+
+    pthread_mutex_init(&private->lock, NULL);
+
     return private;
 
 error_exit:
@@ -174,6 +179,7 @@ void en50221_tl_destroy(en50221_transport_layer tl)
             }
             free(private->slots);
         }
+        pthread_mutex_destroy(&private->lock);
         free(private);
     }
 }
@@ -184,6 +190,8 @@ int en50221_tl_register_slot(en50221_transport_layer tl, int ca_hndl,
                              uint32_t response_timeout, uint32_t poll_delay)
 {
     struct en50221_transport_layer_private *private = (struct en50221_transport_layer_private *) tl;
+
+    pthread_mutex_lock(&private->lock);
 
     // we browse through the array of slots
     // to look for the first unused one
@@ -197,6 +205,7 @@ int en50221_tl_register_slot(en50221_transport_layer tl, int ca_hndl,
     }
     if (slot_id == -1) {
         private->error = EN50221ERR_OUTOFSLOTS;
+        pthread_mutex_unlock(&private->lock);
         return -1;
     }
 
@@ -204,9 +213,8 @@ int en50221_tl_register_slot(en50221_transport_layer tl, int ca_hndl,
     private->slots[slot_id].ca_hndl = ca_hndl;
     private->slots[slot_id].response_timeout = response_timeout;
     private->slots[slot_id].poll_delay = poll_delay;
-    private->slots[slot_id].ca_poll.fd = ca_hndl;
-    private->slots[slot_id].ca_poll.events=POLLIN|POLLPRI|POLLERR;
 
+    pthread_mutex_unlock(&private->lock);
     return slot_id;
 }
 
@@ -218,8 +226,10 @@ void en50221_tl_destroy_slot(en50221_transport_layer tl, uint8_t slot_id)
     if (slot_id >= private->max_slots)
         return;
 
+    // setup the slot
+    pthread_mutex_lock(&private->lock);
     private->slots[slot_id].ca_hndl = -1;
-    for(i=0; i<private->max_connections_per_slot; i++) {
+    for(i=1; i<private->max_connections_per_slot; i++) {
         private->slots[slot_id].connections[i].state = T_STATE_IDLE;
         private->slots[slot_id].connections[i].tx_time = 0;
         private->slots[slot_id].connections[i].last_poll_time = 0;
@@ -230,10 +240,14 @@ void en50221_tl_destroy_slot(en50221_transport_layer tl, uint8_t slot_id)
         private->slots[slot_id].connections[i].buffer_length = 0;
     }
 
-    // tell upper layers
+    // grab callback details
     en50221_tl_callback cb = private->callback;
+    void *cb_arg = private->callback_arg;
+    pthread_mutex_unlock(&private->lock);
+
+    // tell upper layers
     if (cb)
-        cb(private->callback_arg, T_CALLBACK_REASON_SLOTCLOSE, NULL, 0, slot_id, 0);
+        cb(cb_arg, T_CALLBACK_REASON_SLOTCLOSE, NULL, 0, slot_id, 0);
 }
 
 int en50221_tl_poll(en50221_transport_layer tl)
@@ -241,17 +255,25 @@ int en50221_tl_poll(en50221_transport_layer tl)
     struct en50221_transport_layer_private *private = (struct en50221_transport_layer_private *) tl;
     uint8_t data[4096];
     int slot_id;
+    struct pollfd ca_poll;
 
     for(slot_id = 0; slot_id < private->max_slots; slot_id++)
     {
-        // check if this slot is used
-        if (private->slots[slot_id].ca_hndl == -1)
+        // check if this slot is used and get its handle
+        pthread_mutex_lock(&private->lock);
+        if (private->slots[slot_id].ca_hndl == -1) {
+            pthread_mutex_unlock(&private->lock);
             continue;
-
+        }
         int ca_hndl = private->slots[slot_id].ca_hndl;
-        if (poll(&private->slots[slot_id].ca_poll, 1, 10))
+        pthread_mutex_unlock(&private->lock);
+
+        // is there data for us?
+        ca_poll.fd = ca_hndl;
+        ca_poll.events = POLLIN|POLLPRI|POLLERR;
+        if (poll(&ca_poll, 1, 10))
         {
-            if (private->slots[slot_id].ca_poll.revents & (POLLPRI | POLLIN)) {
+            if (ca_poll.revents & (POLLPRI | POLLIN)) {
                 uint8_t connection_id;
 
                 int readcnt = dvbca_link_read(ca_hndl, &connection_id, data, sizeof(data));
@@ -274,30 +296,44 @@ int en50221_tl_poll(en50221_transport_layer tl)
         }
         else
         {
+            // poll the connections
             int j;
             for(j=1; j < private->max_connections_per_slot; j++) {
-                if (private->slots[slot_id].connections[j].state != T_STATE_ACTIVE)
+                pthread_mutex_lock(&private->lock);
+                if (private->slots[slot_id].connections[j].state != T_STATE_ACTIVE) {
+                    pthread_mutex_unlock(&private->lock);
                     continue;
+                }
 
                 if ((private->slots[slot_id].connections[j].tx_time == 0) &&
                      ((private->slots[slot_id].connections[j].last_poll_time + private->slots[slot_id].poll_delay) > time_ms())) {
+                    private->slots[slot_id].connections[j].last_poll_time = time_ms();
+                    pthread_mutex_unlock(&private->lock);
                     if (en50221_tl_poll_tc(private, slot_id, j)) {
                         return -1;
                     }
-                    private->slots[slot_id].connections[j].last_poll_time = time_ms();
+                } else {
+                    pthread_mutex_unlock(&private->lock);
                 }
             }
         }
 
         // check for timeouts in connections
+        pthread_mutex_lock(&private->lock);
         int j;
         for(j=1; j < private->max_connections_per_slot; j++) {
-            if (private->slots[slot_id].connections[j].tx_time > (time_ms() + private->slots[slot_id].response_timeout)) {
+            if (private->slots[slot_id].connections[j].state != T_STATE_ACTIVE)
+                continue;
+
+            if (private->slots[slot_id].connections[j].tx_time >
+                (time_ms() + private->slots[slot_id].response_timeout)) {
                 private->error_slot = slot_id;
                 private->error = EN50221ERR_TIMEOUT;
+                pthread_mutex_unlock(&private->lock);
                 return -1;
             }
         }
+        pthread_mutex_unlock(&private->lock);
     }
 
     return 0;
@@ -307,8 +343,10 @@ void en50221_tl_register_callback(en50221_transport_layer tl, en50221_tl_callbac
 {
     struct en50221_transport_layer_private *private = (struct en50221_transport_layer_private *) tl;
 
+    pthread_mutex_lock(&private->lock);
     private->callback = callback;
     private->callback_arg = arg;
+    pthread_mutex_unlock(&private->lock);
 }
 
 int en50221_tl_get_error_slot(en50221_transport_layer tl)
@@ -331,15 +369,30 @@ int en50221_tl_send_data(en50221_transport_layer tl, uint8_t slot_id, uint8_t co
 {
     struct en50221_transport_layer_private *private = (struct en50221_transport_layer_private *) tl;
 
+    pthread_mutex_lock(&private->lock);
     if (slot_id >= private->max_slots) {
         private->error = EN50221ERR_BADSLOTID;
+        pthread_mutex_unlock(&private->lock);
+        return -1;
+    }
+    if (private->slots[slot_id].ca_hndl == -1) {
+        private->error = EN50221ERR_BADSLOTID;
+        pthread_mutex_unlock(&private->lock);
         return -1;
     }
     if (connection_id >= private->max_connections_per_slot) {
         private->error_slot = slot_id;
         private->error = EN50221ERR_BADCONNECTIONID;
+        pthread_mutex_unlock(&private->lock);
         return -1;
     }
+    if (private->slots[slot_id].connections[connection_id].state != T_STATE_ACTIVE) {
+        private->error = EN50221ERR_BADCONNECTIONID;
+        pthread_mutex_unlock(&private->lock);
+        return -1;
+    }
+    int ca_hndl = private->slots[slot_id].ca_hndl;
+    pthread_mutex_unlock(&private->lock);
 
     // build the header
     int length_field_len;
@@ -360,29 +413,45 @@ int en50221_tl_send_data(en50221_transport_layer tl, uint8_t slot_id, uint8_t co
     iov_out[1].iov_len = data_size;
 
     // send it!
-    if (dvbca_link_writev(private->slots[slot_id].ca_hndl, connection_id, iov_out, 2)) {
+    if (dvbca_link_writev(ca_hndl, connection_id, iov_out, 2)) {
         private->error_slot = slot_id;
         private->error = EN50221ERR_CAWRITE;
         return -1;
     }
+
     return 0;
 }
 
 int en50221_tl_send_datav(en50221_transport_layer tl, uint8_t slot_id, uint8_t connection_id,
-                         struct iovec *vector, int iov_count)
+                          struct iovec *vector, int iov_count)
 {
     struct en50221_transport_layer_private *private = (struct en50221_transport_layer_private *) tl;
     struct iovec iov_out[10];
 
+    pthread_mutex_lock(&private->lock);
     if (slot_id >= private->max_slots) {
         private->error = EN50221ERR_BADSLOTID;
+        pthread_mutex_unlock(&private->lock);
+        return -1;
+    }
+    if (private->slots[slot_id].ca_hndl == -1) {
+        private->error = EN50221ERR_BADSLOTID;
+        pthread_mutex_unlock(&private->lock);
         return -1;
     }
     if (connection_id >= private->max_connections_per_slot) {
         private->error_slot = slot_id;
         private->error = EN50221ERR_BADCONNECTIONID;
+        pthread_mutex_unlock(&private->lock);
         return -1;
     }
+    if (private->slots[slot_id].connections[connection_id].state != T_STATE_ACTIVE) {
+        private->error = EN50221ERR_BADCONNECTIONID;
+        pthread_mutex_unlock(&private->lock);
+        return -1;
+    }
+    int ca_hndl = private->slots[slot_id].ca_hndl;
+    pthread_mutex_unlock(&private->lock);
 
     // calculate the total length of the data to send
     if (iov_count > 9) {
@@ -413,11 +482,12 @@ int en50221_tl_send_datav(en50221_transport_layer tl, uint8_t slot_id, uint8_t c
     memcpy(&iov_out[1], vector, iov_count * sizeof(struct iovec));
 
     // send it!
-    if (dvbca_link_writev(private->slots[slot_id].ca_hndl, connection_id, iov_out, iov_count+1)) {
+    if (dvbca_link_writev(ca_hndl, connection_id, iov_out, iov_count+1)) {
         private->error_slot = slot_id;
         private->error = EN50221ERR_CAWRITE;
         return -1;
     }
+
     return 0;
 }
 
@@ -426,13 +496,26 @@ int en50221_tl_new_tc(en50221_transport_layer tl, uint8_t slot_id, uint8_t conne
     struct en50221_transport_layer_private *private = (struct en50221_transport_layer_private *) tl;
 
     // check
+    pthread_mutex_lock(&private->lock);
     if (slot_id >= private->max_slots) {
         private->error = EN50221ERR_BADSLOTID;
+        pthread_mutex_unlock(&private->lock);
+        return -1;
+    }
+    if (private->slots[slot_id].ca_hndl == -1) {
+        private->error = EN50221ERR_BADSLOTID;
+        pthread_mutex_unlock(&private->lock);
         return -1;
     }
     if (connection_id >= private->max_connections_per_slot) {
         private->error_slot = slot_id;
         private->error = EN50221ERR_BADCONNECTIONID;
+        pthread_mutex_unlock(&private->lock);
+        return -1;
+    }
+    if (private->slots[slot_id].connections[connection_id].state != T_STATE_ACTIVE) {
+        private->error = EN50221ERR_BADCONNECTIONID;
+        pthread_mutex_unlock(&private->lock);
         return -1;
     }
 
@@ -441,23 +524,24 @@ int en50221_tl_new_tc(en50221_transport_layer tl, uint8_t slot_id, uint8_t conne
     if (conid == -1) {
         private->error_slot = slot_id;
         private->error = EN50221ERR_OUTOFCONNECTIONS;
+        pthread_mutex_unlock(&private->lock);
         return -1;
     }
+    private->slots[slot_id].connections[connection_id].tx_time = time_ms();
+    int ca_hndl = private->slots[slot_id].ca_hndl;
+    pthread_mutex_unlock(&private->lock);
 
     // send command
     uint8_t hdr[10];
     hdr[0] = T_CREATE_T_C;
     hdr[1] = 1;
     hdr[2] = conid;
-    if (dvbca_link_write(private->slots[slot_id].ca_hndl, connection_id, hdr, 3) < 0) {
+    if (dvbca_link_write(ca_hndl, connection_id, hdr, 3) < 0) {
         private->slots[slot_id].connections[conid].state = T_STATE_IDLE;
         private->error_slot = slot_id;
         private->error = EN50221ERR_CAWRITE;
         return -1;
     }
-    private->slots[slot_id].connections[connection_id].tx_time = time_ms();
-
-    // FIXME: this should block until we get a response from the module!
 
     return conid;
 }
@@ -467,18 +551,22 @@ int en50221_tl_del_tc(en50221_transport_layer tl, uint8_t slot_id, uint8_t conne
     struct en50221_transport_layer_private *private = (struct en50221_transport_layer_private *) tl;
 
     // check
+    pthread_mutex_lock(&private->lock);
     if (slot_id >= private->max_slots) {
         private->error = EN50221ERR_BADSLOTID;
+        pthread_mutex_unlock(&private->lock);
         return -1;
     }
     if ((connection_id == 0) || (connection_id >= private->max_connections_per_slot)) {
         private->error_slot = slot_id;
         private->error = EN50221ERR_BADCONNECTIONID;
+        pthread_mutex_unlock(&private->lock);
         return -1;
     }
     if (private->slots[slot_id].connections[connection_id].state != T_STATE_ACTIVE) {
         private->error_slot = slot_id;
         private->error = EN50221ERR_BADSTATE;
+        pthread_mutex_unlock(&private->lock);
         return -1;
     }
 
@@ -488,25 +576,29 @@ int en50221_tl_del_tc(en50221_transport_layer tl, uint8_t slot_id, uint8_t conne
         free(private->slots[slot_id].connections[connection_id].chain_buffer);
         private->slots[slot_id].connections[connection_id].chain_buffer = NULL;
     }
+    private->slots[slot_id].connections[connection_id].tx_time = time_ms();
+
+    int ca_hndl = private->slots[slot_id].ca_hndl;
+    pthread_mutex_unlock(&private->lock);
 
     // send command
     uint8_t hdr[10];
     hdr[0] = T_DELETE_T_C;
     hdr[1] = 1;
     hdr[2] = connection_id;
-    if (dvbca_link_write(private->slots[slot_id].ca_hndl, connection_id, hdr, 3) < 0) {
+    if (dvbca_link_write(ca_hndl, connection_id, hdr, 3) < 0) {
         private->error_slot = slot_id;
         private->error = EN50221ERR_CAWRITE;
         return -1;
     }
-    private->slots[slot_id].connections[connection_id].tx_time = time_ms();
 
     // tell upper layers
+    pthread_mutex_lock(&private->lock);
     en50221_tl_callback cb = private->callback;
+    void *cb_arg = private->callback_arg;
+    pthread_mutex_unlock(&private->lock);
     if (cb)
-        cb(private->callback_arg, T_CALLBACK_REASON_CONNECTIONCLOSE, NULL, 0, slot_id, connection_id);
-
-    // FIXME: this should block until we get a response from the module!
+        cb(cb_arg, T_CALLBACK_REASON_CONNECTIONCLOSE, NULL, 0, slot_id, connection_id);
 
     return 0;
 }
@@ -516,17 +608,19 @@ int en50221_tl_del_tc(en50221_transport_layer tl, uint8_t slot_id, uint8_t conne
 // ask the module for new data
 static int en50221_tl_poll_tc(struct en50221_transport_layer_private *private, uint8_t slot_id, uint8_t connection_id)
 {
+    int ca_hndl = private->slots[slot_id].ca_hndl;
+    private->slots[slot_id].connections[connection_id].tx_time = time_ms();
+
     // send command
     uint8_t hdr[10];
     hdr[0] = T_DATA_LAST;
     hdr[1] = 1;
     hdr[2] = connection_id;
-    if (dvbca_link_write(private->slots[slot_id].ca_hndl, connection_id, hdr, 3) < 0) {
+    if (dvbca_link_write(ca_hndl, connection_id, hdr, 3) < 0) {
         private->error_slot = slot_id;
         private->error = EN50221ERR_CAWRITE;
         return -1;
     }
-    private->slots[slot_id].connections[connection_id].tx_time = time_ms();
     return 0;
 }
 
@@ -612,19 +706,23 @@ static int en50221_tl_proc_data_tc(struct en50221_transport_layer_private *priva
         switch(unit.tpdu_tag)
         {
             case T_C_T_C_REPLY:
+                pthread_mutex_lock(&private->lock);
                 // set this connection to state active
                 if (private->slots[slot_id].connections[unit.connection_id].state == T_STATE_IN_CREATION) {
                     private->slots[slot_id].connections[unit.connection_id].state = T_STATE_ACTIVE;
                     private->slots[slot_id].connections[unit.connection_id].tx_time = 0;
+                    pthread_mutex_unlock(&private->lock);
                 } else {
                     print(LOG_LEVEL, ERROR, 1, "Received T_C_T_C_REPLY for connection not in "
                             "T_STATE_IN_CREATION from module on slot %02x\n", slot_id);
                     private->error_slot = slot_id;
                     private->error = EN50221ERR_BADCAMDATA;
+                    pthread_mutex_unlock(&private->lock);
                     return -1;
                 }
                 break;
             case T_DELETE_T_C:
+                pthread_mutex_lock(&private->lock);
                 // immediately delete this connection and send D_T_C_REPLY
                 if (private->slots[slot_id].connections[unit.connection_id].state == T_STATE_ACTIVE ||
                     private->slots[slot_id].connections[unit.connection_id].state == T_STATE_IN_DELETION)
@@ -635,81 +733,97 @@ static int en50221_tl_proc_data_tc(struct en50221_transport_layer_private *priva
                         free(private->slots[slot_id].connections[unit.connection_id].chain_buffer);
                         private->slots[slot_id].connections[unit.connection_id].chain_buffer = NULL;
                     }
+                    private->slots[slot_id].connections[unit.connection_id].tx_time = 0;
+                    int ca_hndl = private->slots[slot_id].ca_hndl;
+                    pthread_mutex_unlock(&private->lock);
 
                     // send the reply
                     hdr[0] = T_D_T_C_REPLY;
                     hdr[1] = 1;
                     hdr[2] = unit.connection_id;
-                    if (dvbca_link_write(private->slots[slot_id].ca_hndl, unit.connection_id, hdr, 3) < 0) {
+                    if (dvbca_link_write(ca_hndl, unit.connection_id, hdr, 3) < 0) {
                         private->error_slot = slot_id;
                         private->error = EN50221ERR_CAWRITE;
                         return -1;
                     }
-                    private->slots[slot_id].connections[unit.connection_id].tx_time = 0;
 
                     // tell upper layers
+                    pthread_mutex_lock(&private->lock);
                     en50221_tl_callback cb = private->callback;
+                    void *cb_arg = private->callback_arg;
+                    pthread_mutex_unlock(&private->lock);
                     if (cb)
-                        cb(private->callback_arg, T_CALLBACK_REASON_CONNECTIONCLOSE, NULL, 0, slot_id, unit.connection_id);
+                        cb(cb_arg, T_CALLBACK_REASON_CONNECTIONCLOSE, NULL, 0, slot_id, unit.connection_id);
                 }
                 else {
                     print(LOG_LEVEL, ERROR, 1, "Received T_DELETE_T_C for inactive connection from module on slot %02x\n",
                           slot_id);
                     private->error_slot = slot_id;
                     private->error = EN50221ERR_BADCAMDATA;
+                    pthread_mutex_unlock(&private->lock);
                     return -1;
                 }
                 break;
             case T_D_T_C_REPLY:
                 // delete this connection, should be in T_STATE_IN_DELETION already
+                pthread_mutex_lock(&private->lock);
                 if (private->slots[slot_id].connections[unit.connection_id].state == T_STATE_IN_DELETION) {
                     private->slots[slot_id].connections[unit.connection_id].state = T_STATE_IDLE;
                     private->slots[slot_id].connections[unit.connection_id].tx_time = 0;
+                    pthread_mutex_unlock(&private->lock);
                 } else {
                     print(LOG_LEVEL, ERROR, 1, "Received T_D_T_C_REPLY received for connection not in "
                             "T_STATE_IN_DELETION from module on slot %02x\n", slot_id);
                     private->error_slot = slot_id;
                     private->error = EN50221ERR_BADCAMDATA;
+                    pthread_mutex_unlock(&private->lock);
                     return -1;
                 }
                 break;
             case T_REQUEST_T_C:
                 // allocate a new connection if possible
+                pthread_mutex_lock(&private->lock);
                 conid = en50221_tl_alloc_new_tc(private, slot_id);
+                int ca_hndl = private->slots[slot_id].ca_hndl;
                 if (conid == -1) {
                     print(LOG_LEVEL, ERROR, 1, "Too many connections requested by module on slot %02x\n", slot_id);
+                    private->slots[slot_id].connections[unit.connection_id].tx_time = 0;
+                    pthread_mutex_unlock(&private->lock);
 
                     // send the error
                     hdr[0] = T_T_C_ERROR;
                     hdr[1] = 2;
                     hdr[2] = unit.connection_id;
                     hdr[3] = 1;
-                    if (dvbca_link_write(private->slots[slot_id].ca_hndl, unit.connection_id, hdr, 4) < 0) {
+                    if (dvbca_link_write(ca_hndl, unit.connection_id, hdr, 4) < 0) {
                         private->error_slot = slot_id;
                         private->error = EN50221ERR_CAWRITE;
                         return -1;
                     }
-                    private->slots[slot_id].connections[unit.connection_id].tx_time = 0;
                 } else {
+                    private->slots[slot_id].connections[unit.connection_id].tx_time = 0;
+                    pthread_mutex_unlock(&private->lock);
+
                     // send the new TC
                     hdr[0] = T_NEW_T_C;
                     hdr[1] = 1;
                     hdr[2] = conid;
-                    if (dvbca_link_write(private->slots[slot_id].ca_hndl, unit.connection_id, hdr, 3) < 0) {
+                    if (dvbca_link_write(ca_hndl, unit.connection_id, hdr, 3) < 0) {
                         private->error_slot = slot_id;
                         private->error = EN50221ERR_CAWRITE;
                         return -1;
                     }
-                    private->slots[slot_id].connections[unit.connection_id].tx_time = 0;
                 }
                 break;
             case T_DATA_MORE:
+                pthread_mutex_lock(&private->lock);
                 // connection in correct state?
                 if (private->slots[slot_id].connections[unit.connection_id].state != T_STATE_ACTIVE) {
                     print(LOG_LEVEL, ERROR, 1, "Received T_DATA_MORE for connection not in "
                             "T_STATE_ACTIVE from module on slot %02x\n", slot_id);
                     private->error_slot = slot_id;
                     private->error = EN50221ERR_BADCAMDATA;
+                    pthread_mutex_unlock(&private->lock);
                     return -1;
                 }
 
@@ -722,6 +836,7 @@ static int en50221_tl_proc_data_tc(struct en50221_transport_layer_private *priva
                     if (private->slots[slot_id].connections[unit.connection_id].chain_buffer == NULL) {
                         private->error_slot = slot_id;
                         private->error = EN50221ERR_OUTOFMEMORY;
+                        pthread_mutex_unlock(&private->lock);
                         return -1;
                     }
 
@@ -737,6 +852,7 @@ static int en50221_tl_proc_data_tc(struct en50221_transport_layer_private *priva
                     if (new_data_buffer == NULL) {
                         private->error_slot = slot_id;
                         private->error = EN50221ERR_OUTOFMEMORY;
+                        pthread_mutex_unlock(&private->lock);
                         return -1;
                     }
 
@@ -747,14 +863,17 @@ static int en50221_tl_proc_data_tc(struct en50221_transport_layer_private *priva
                            unit.data, unit.data_length);
                     private->slots[slot_id].connections[unit.connection_id].buffer_length = new_data_length;
                 }
+                pthread_mutex_unlock(&private->lock);
                 break;
             case T_DATA_LAST:
                 // connection in correct state?
+                pthread_mutex_lock(&private->lock);
                 if (private->slots[slot_id].connections[unit.connection_id].state != T_STATE_ACTIVE) {
                     print(LOG_LEVEL, ERROR, 1, "Received T_DATA_LAST received for connection not in "
                             "T_STATE_ACTIVE from module on slot %02x\n", slot_id);
                     private->error_slot = slot_id;
                     private->error = EN50221ERR_BADCAMDATA;
+                    pthread_mutex_unlock(&private->lock);
                     return -1;
                 }
 
@@ -764,8 +883,10 @@ static int en50221_tl_proc_data_tc(struct en50221_transport_layer_private *priva
                 {
                     // single package => dispatch immediately
                     en50221_tl_callback cb = private->callback;
+                    void *cb_arg = private->callback_arg;
+                    pthread_mutex_unlock(&private->lock);
                     if (cb)
-                        cb(private->callback_arg, T_CALLBACK_REASON_DATA, unit.data, unit.data_length,
+                        cb(cb_arg, T_CALLBACK_REASON_DATA, unit.data, unit.data_length,
                            slot_id, unit.connection_id);
                 }
                 else
@@ -778,6 +899,7 @@ static int en50221_tl_proc_data_tc(struct en50221_transport_layer_private *priva
                     if (new_data_buffer == NULL) {
                         private->error_slot = slot_id;
                         private->error = EN50221ERR_OUTOFMEMORY;
+                        pthread_mutex_unlock(&private->lock);
                         return -1;
                     }
 
@@ -788,21 +910,26 @@ static int en50221_tl_proc_data_tc(struct en50221_transport_layer_private *priva
                     private->slots[slot_id].connections[unit.connection_id].chain_buffer = NULL;
                     private->slots[slot_id].connections[unit.connection_id].buffer_length = 0;
 
+                    // tell the upper layers
                     en50221_tl_callback cb = private->callback;
+                    void *cb_arg = private->callback_arg;
+                    pthread_mutex_unlock(&private->lock);
                     if (cb)
-                        cb(private->callback_arg, T_CALLBACK_REASON_DATA, new_data_buffer, new_data_length,
+                        cb(cb_arg, T_CALLBACK_REASON_DATA, new_data_buffer, new_data_length,
                            slot_id, unit.connection_id);
 
                     free(new_data_buffer);
                 }
                 break;
             case T_SB:
+                pthread_mutex_lock(&private->lock);
                 // is the connection id ok?
                 if (private->slots[slot_id].connections[unit.connection_id].state != T_STATE_ACTIVE) {
                     print(LOG_LEVEL, ERROR, 1, "Received T_SB for connection not in T_STATE_ACTIVE from module on slot %02x\n",
                           slot_id);
                     private->error_slot = slot_id;
                     private->error = EN50221ERR_BADCAMDATA;
+                    pthread_mutex_unlock(&private->lock);
                     return -1;
                 }
 
@@ -811,6 +938,7 @@ static int en50221_tl_proc_data_tc(struct en50221_transport_layer_private *priva
                     print(LOG_LEVEL, ERROR, 1, "Recieved T_SB with invalid length from module on slot %02x\n", slot_id);
                     private->error_slot = slot_id;
                     private->error = EN50221ERR_BADCAMDATA;
+                    pthread_mutex_unlock(&private->lock);
                     return -1;
                 }
                 print(LOG_LEVEL, ERROR, 1, "Recieved unexpected TPDU tag %02x from module on slot %02x\n",
@@ -818,16 +946,21 @@ static int en50221_tl_proc_data_tc(struct en50221_transport_layer_private *priva
 
                 // tell it to send the data if it says there is some
                 if (unit.data[0] & 0x80) {
+                    private->slots[slot_id].connections[unit.connection_id].tx_time = time_ms();
+                    int ca_hndl = private->slots[slot_id].ca_hndl;
+                    pthread_mutex_unlock(&private->lock);
+
                     // send the RCV
                     hdr[0] = T_RCV;
                     hdr[1] = 1;
                     hdr[2] = unit.connection_id;
-                    if (dvbca_link_write(private->slots[slot_id].ca_hndl, unit.connection_id, hdr, 3) < 0) {
+                    if (dvbca_link_write(ca_hndl, unit.connection_id, hdr, 3) < 0) {
                         private->error_slot = slot_id;
                         private->error = EN50221ERR_CAWRITE;
                         return -1;
                     }
-                    private->slots[slot_id].connections[unit.connection_id].tx_time = time_ms();
+                } else {
+                    pthread_mutex_unlock(&private->lock);
                 }
                 break;
 
