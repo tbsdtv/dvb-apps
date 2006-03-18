@@ -113,14 +113,6 @@ extern void en50221_sl_destroy(en50221_session_layer sl);
 extern int en50221_sl_get_error(en50221_session_layer tl);
 
 /**
- * Gets the maximum number of supported sessions.
- *
- * @param tl The en50221_session_layer instance.
- * @return The number.
- */
-extern int en50221_sl_get_max_sessions(en50221_session_layer tl);
-
-/**
  * Register the callback for resource lookup.
  *
  * @param sl The en50221_session_layer instance.
