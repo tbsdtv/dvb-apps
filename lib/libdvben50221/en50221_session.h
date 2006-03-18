@@ -166,39 +166,39 @@ extern int en50221_sl_destroy_session(en50221_session_layer sl, int session_numb
  * this function is used to take a data-block, pack into
  * into a SPDU (SESSION_NUMBER) and send it to the transport layer
  *
- * @param tl The en50221_transport_layer instance to use.
+ * @param sl The en50221_session_layer instance to use.
  * @param session_number Session number concerned.
  * @param data Data to send.
  * @param data_length Length of data in bytes.
  * @return 0 on success, or -1 on error.
  */
-extern int en50221_sl_send_data(en50221_transport_layer tl, uint8_t session_number, uint8_t *data, uint16_t data_length);
+extern int en50221_sl_send_data(en50221_session_layer sl, uint8_t session_number, uint8_t *data, uint16_t data_length);
 
 /**
  * this function is used to take a data-block, pack into
  * into a SPDU (SESSION_NUMBER) and send it to the transport layer
  *
- * @param tl The en50221_transport_layer instance to use.
+ * @param sl The en50221_session_layer instance to use.
  * @param session_number Session number concerned.
  * @param vector IOVEC to send.
  * @param iov_count Number of elements in io vector.
  * @return 0 on success, or -1 on error.
  */
-extern int en50221_sl_send_datav(en50221_transport_layer tl, uint8_t session_number,
+extern int en50221_sl_send_datav(en50221_session_layer sl, uint8_t session_number,
                                  struct iovec *vector, int iov_count);
 
 /**
  * this is used to send a message to all sessions, linked
  * to resource res
  *
- * @param tl The en50221_transport_layer instance to use.
+ * @param tl The en50221_session_layer instance to use.
  * @param slot_id Set to -1 to send to any slot. Other values will send to only that slot.
  * @param resource_id Resource id concerned.
  * @param data Data to send.
  * @param data_length Length of data in bytes.
  * @return 0 on success, or -1 on error.
  */
-extern int en50221_sl_broadcast_data(en50221_transport_layer tl, int slot_id, uint32_t resource_id,
+extern int en50221_sl_broadcast_data(en50221_session_layer sl, int slot_id, uint32_t resource_id,
                                      uint8_t *data, uint16_t data_length);
 
 #endif
