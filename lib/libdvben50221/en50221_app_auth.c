@@ -39,15 +39,12 @@ struct en50221_app_auth_private {
         void *callback_arg;
 };
 
-static void en50221_app_auth_resource_callback(void *arg,
-                                             uint8_t slot_id,
-                                             uint16_t session_number,
-                                             uint32_t resource_id,
-                                             uint8_t *data, uint32_t data_length);
+static void en50221_app_auth_parse_request(struct en50221_app_auth_private *private,
+                                           uint8_t slot_id, uint16_t session_number,
+                                           uint8_t *data, uint32_t data_length);
 
 
-
-en50221_app_auth en50221_app_auth_create(en50221_session_layer sl, en50221_app_rm rm)
+en50221_app_auth en50221_app_auth_create(en50221_session_layer sl)
 {
     struct en50221_app_auth_private *private = NULL;
 
@@ -58,12 +55,6 @@ en50221_app_auth en50221_app_auth_create(en50221_session_layer sl, en50221_app_r
     }
     private->sl = sl;
     private->callback = NULL;
-
-    // register with the RM
-    if (en50221_app_rm_register(rm, MKRID(16,1,1), en50221_app_auth_resource_callback, private)) {
-        free(private);
-        return NULL;
-    }
 
     // done
     return private;
@@ -119,6 +110,35 @@ int en50221_app_auth_send(en50221_app_auth auth,
     return en50221_sl_send_datav(private->sl, session_number, iov, 2);
 }
 
+int en50221_app_auth_message(en50221_app_auth auth,
+                             uint8_t slot_id,
+                             uint16_t session_number,
+                             uint32_t resource_id,
+                             uint8_t *data, uint32_t data_length)
+{
+    struct en50221_app_auth_private *private = (struct en50221_app_auth_private *) auth;
+    (void) resource_id;
+
+    // get the tag
+    if (data_length < 3) {
+        print(LOG_LEVEL, ERROR, 1, "Received short data\n");
+        return -1;
+    }
+    uint32_t tag = (data[0] << 16) | (data[1] << 8) | data[2];
+
+    switch(tag)
+    {
+        case TAG_AUTH_REQ:
+            en50221_app_auth_parse_request(private, slot_id, session_number, data+3, data_length-3);
+            break;
+        default:
+            print(LOG_LEVEL, ERROR, 1, "Received unexpected tag %x\n", tag);
+            return -1;
+    }
+
+    return 0;
+}
+
 
 
 static void en50221_app_auth_parse_request(struct en50221_app_auth_private *private,
@@ -151,31 +171,4 @@ static void en50221_app_auth_parse_request(struct en50221_app_auth_private *priv
     if (private->callback)
         private->callback(private->callback_arg, slot_id, session_number,
                           auth_protocol_id, auth_data+2, asn_data_length-2);
-}
-
-static void en50221_app_auth_resource_callback(void *arg,
-                                               uint8_t slot_id,
-                                               uint16_t session_number,
-                                               uint32_t resource_id,
-                                               uint8_t *data, uint32_t data_length)
-{
-    struct en50221_app_auth_private *private = (struct en50221_app_auth_private *) arg;
-    (void) resource_id;
-
-    // get the tag
-    if (data_length < 3) {
-        print(LOG_LEVEL, ERROR, 1, "Received short data\n");
-        return;
-    }
-    uint32_t tag = (data[0] << 16) | (data[1] << 8) | data[2];
-
-    switch(tag)
-    {
-        case TAG_AUTH_REQ:
-            en50221_app_auth_parse_request(private, slot_id, session_number, data+3, data_length-3);
-            break;
-        default:
-            print(LOG_LEVEL, ERROR, 1, "Received unexpected tag %x\n", tag);
-            break;
-    }
 }

@@ -38,15 +38,13 @@ struct en50221_app_teletext_private {
         void *callback_arg;
 };
 
-static void en50221_app_teletext_resource_callback(void *arg,
-                                                   uint8_t slot_id,
-                                                   uint16_t session_number,
-                                                   uint32_t resource_id,
-                                                   uint8_t *data, uint32_t data_length);
+static void en50221_app_teletext_parse_ebu(struct en50221_app_teletext_private *private,
+                                           uint8_t slot_id, uint16_t session_number,
+                                           uint8_t *data, uint32_t data_length);
 
 
 
-en50221_app_teletext en50221_app_teletext_create(en50221_session_layer sl, en50221_app_rm rm)
+en50221_app_teletext en50221_app_teletext_create(en50221_session_layer sl)
 {
     struct en50221_app_teletext_private *private = NULL;
 
@@ -57,12 +55,6 @@ en50221_app_teletext en50221_app_teletext_create(en50221_session_layer sl, en502
     }
     private->sl = sl;
     private->callback = NULL;
-
-    // register with the RM
-    if (en50221_app_rm_register(rm, MKRID(128,1,1), en50221_app_teletext_resource_callback, private)) {
-        free(private);
-        return NULL;
-    }
 
     // done
     return private;
@@ -82,6 +74,35 @@ void en50221_app_teletext_register_callback(en50221_app_teletext teletext,
 
     private->callback = callback;
     private->callback_arg = arg;
+}
+
+int en50221_app_teletext_resource_callback(en50221_app_teletext teletext,
+                                           uint8_t slot_id,
+                                           uint16_t session_number,
+                                           uint32_t resource_id,
+                                           uint8_t *data, uint32_t data_length)
+{
+    struct en50221_app_teletext_private *private = (struct en50221_app_teletext_private *) teletext;
+    (void) resource_id;
+
+    // get the tag
+    if (data_length < 3) {
+        print(LOG_LEVEL, ERROR, 1, "Received short data\n");
+        return -1;
+    }
+    uint32_t tag = (data[0] << 16) | (data[1] << 8) | data[2];
+
+    switch(tag)
+    {
+        case TAG_TELETEXT_EBU:
+            en50221_app_teletext_parse_ebu(private, slot_id, session_number, data+3, data_length-3);
+            break;
+        default:
+            print(LOG_LEVEL, ERROR, 1, "Received unexpected tag %x\n", tag);
+            return -1;
+    }
+
+    return 0;
 }
 
 
@@ -110,29 +131,3 @@ static void en50221_app_teletext_parse_ebu(struct en50221_app_teletext_private *
                           teletext_data, asn_data_length);
 }
 
-static void en50221_app_teletext_resource_callback(void *arg,
-                                                   uint8_t slot_id,
-                                                   uint16_t session_number,
-                                                   uint32_t resource_id,
-                                                   uint8_t *data, uint32_t data_length)
-{
-    struct en50221_app_teletext_private *private = (struct en50221_app_teletext_private *) arg;
-    (void) resource_id;
-
-    // get the tag
-    if (data_length < 3) {
-        print(LOG_LEVEL, ERROR, 1, "Received short data\n");
-        return;
-    }
-    uint32_t tag = (data[0] << 16) | (data[1] << 8) | data[2];
-
-    switch(tag)
-    {
-        case TAG_TELETEXT_EBU:
-            en50221_app_teletext_parse_ebu(private, slot_id, session_number, data+3, data_length-3);
-            break;
-        default:
-            print(LOG_LEVEL, ERROR, 1, "Received unexpected tag %x\n", tag);
-            break;
-    }
-}

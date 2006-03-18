@@ -40,15 +40,13 @@ struct en50221_app_epg_private {
         void *callback_arg;
 };
 
-static void en50221_app_epg_resource_callback(void *arg,
-                                             uint8_t slot_id,
-                                             uint16_t session_number,
-                                             uint32_t resource_id,
-                                             uint8_t *data, uint32_t data_length);
+static void en50221_app_epg_parse_reply(struct en50221_app_epg_private *private,
+                                        uint8_t slot_id, uint16_t session_number,
+                                        uint8_t *data, uint32_t data_length);
 
 
 
-en50221_app_epg en50221_app_epg_create(en50221_session_layer sl, en50221_app_rm rm, uint8_t instance_number)
+en50221_app_epg en50221_app_epg_create(en50221_session_layer sl)
 {
     struct en50221_app_epg_private *private = NULL;
 
@@ -59,12 +57,6 @@ en50221_app_epg en50221_app_epg_create(en50221_session_layer sl, en50221_app_rm 
     }
     private->sl = sl;
     private->callback = NULL;
-
-    // register with the RM
-    if (en50221_app_rm_register(rm, MKRID(120,instance_number,1), en50221_app_epg_resource_callback, private)) {
-        free(private);
-        return NULL;
-    }
 
     // done
     return private;
@@ -116,6 +108,37 @@ int en50221_app_epg_enquire(en50221_app_epg epg,
     return en50221_sl_send_data(private->sl, session_number, data, 15);
 }
 
+int en50221_app_epg_message(en50221_app_epg epg,
+                            uint8_t slot_id,
+                            uint16_t session_number,
+                            uint32_t resource_id,
+                            uint8_t *data, uint32_t data_length)
+{
+    struct en50221_app_epg_private *private = (struct en50221_app_epg_private *) epg;
+    (void) resource_id;
+
+    // get the tag
+    if (data_length < 3) {
+        print(LOG_LEVEL, ERROR, 1, "Received short data\n");
+        return -1;
+    }
+    uint32_t tag = (data[0] << 16) | (data[1] << 8) | data[2];
+
+    switch(tag)
+    {
+        case TAG_EPG_REPLY:
+            en50221_app_epg_parse_reply(private, slot_id, session_number, data+3, data_length-3);
+            break;
+        default:
+            print(LOG_LEVEL, ERROR, 1, "Received unexpected tag %x\n", tag);
+            return -1;
+    }
+
+    return 0;
+}
+
+
+
 static void en50221_app_epg_parse_reply(struct en50221_app_epg_private *private,
                                         uint8_t slot_id, uint16_t session_number,
                                         uint8_t *data, uint32_t data_length)
@@ -134,31 +157,4 @@ static void en50221_app_epg_parse_reply(struct en50221_app_epg_private *private,
     // tell the app
     if (private->callback)
         private->callback(private->callback_arg, slot_id, session_number, event_status);
-}
-
-static void en50221_app_epg_resource_callback(void *arg,
-                                                   uint8_t slot_id,
-                                                   uint16_t session_number,
-                                                   uint32_t resource_id,
-                                                   uint8_t *data, uint32_t data_length)
-{
-    struct en50221_app_epg_private *private = (struct en50221_app_epg_private *) arg;
-    (void) resource_id;
-
-    // get the tag
-    if (data_length < 3) {
-        print(LOG_LEVEL, ERROR, 1, "Received short data\n");
-        return;
-    }
-    uint32_t tag = (data[0] << 16) | (data[1] << 8) | data[2];
-
-    switch(tag)
-    {
-        case TAG_EPG_REPLY:
-            en50221_app_epg_parse_reply(private, slot_id, session_number, data+3, data_length-3);
-            break;
-        default:
-            print(LOG_LEVEL, ERROR, 1, "Received unexpected tag %x\n", tag);
-            break;
-    }
 }

@@ -27,7 +27,8 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <en50221_session.h>
-#include <en50221_app_rm.h>
+
+#define EN50221_APP_TELETEXT_RESOURCEID(DEVICE_NUMBER) MKRID(128, 1, 1),
 
 
 /**
@@ -52,10 +53,9 @@ typedef void *en50221_app_teletext;
  * Create an instance of the teletext resource.
  *
  * @param sl Session layer to communicate with.
- * @param rm Resource Manager to register with
  * @return Instance, or NULL on failure.
  */
-extern en50221_app_teletext en50221_app_teletext_create(en50221_session_layer sl, en50221_app_rm rm);
+extern en50221_app_teletext en50221_app_teletext_create(en50221_session_layer sl);
 
 /**
  * Destroy an instance of the teletext resource.
@@ -73,5 +73,22 @@ extern void en50221_app_teletext_destroy(en50221_app_teletext teletext);
  */
 extern void en50221_app_teletext_register_callback(en50221_app_teletext teletext,
                                                    en50221_app_teletext_callback callback, void *arg);
+
+/**
+ * Pass data received for this resource into it for parsing.
+ *
+ * @param teletext teletext instance.
+ * @param slot_id Slot ID concerned.
+ * @param session_number Session number concerned.
+ * @param resource_id Resource ID concerned.
+ * @param data The data.
+ * @param data_length Length of data in bytes.
+ * @return 0 on success, -1 on failure.
+ */
+extern int en50221_app_teletext_message(en50221_app_teletext teletext,
+                                         uint8_t slot_id,
+                                         uint16_t session_number,
+                                         uint32_t resource_id,
+                                         uint8_t *data, uint32_t data_length);
 
 #endif

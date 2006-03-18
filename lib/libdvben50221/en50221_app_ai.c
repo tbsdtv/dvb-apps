@@ -40,15 +40,12 @@ struct en50221_app_ai_private {
         void *callback_arg;
 };
 
-static void en50221_app_ai_resource_callback(void *arg,
-                                            uint8_t slot_id,
-                                            uint16_t session_number,
-                                            uint32_t resource_id,
-                                            uint8_t *data, uint32_t data_length);
+static void en50221_app_ai_parse_app_info(struct en50221_app_ai_private *private,
+                                          uint8_t slot_id, uint16_t session_number,
+                                          uint8_t *data, uint32_t data_length);
 
 
-
-en50221_app_ai en50221_app_ai_create(en50221_session_layer sl, en50221_app_rm rm)
+en50221_app_ai en50221_app_ai_create(en50221_session_layer sl)
 {
     struct en50221_app_ai_private *private = NULL;
 
@@ -59,12 +56,6 @@ en50221_app_ai en50221_app_ai_create(en50221_session_layer sl, en50221_app_rm rm
     }
     private->sl = sl;
     private->callback = NULL;
-
-    // register with the RM
-    if (en50221_app_rm_register(rm, MKRID(2,1,1), en50221_app_ai_resource_callback, private)) {
-        free(private);
-        return NULL;
-    }
 
     // done
     return private;
@@ -107,6 +98,35 @@ int en50221_app_ai_entermenu(en50221_app_ai ai, uint16_t session_number)
     data[2] = TAG_ENTER_MENU & 0xFF;
 
     return en50221_sl_send_data(private->sl, session_number, data, 3);
+}
+
+int en50221_app_ai_message(en50221_app_ai ai,
+                           uint8_t slot_id,
+                           uint16_t session_number,
+                           uint32_t resource_id,
+                           uint8_t *data, uint32_t data_length)
+{
+    struct en50221_app_ai_private *private = (struct en50221_app_ai_private *) ai;
+    (void) resource_id;
+
+    // get the tag
+    if (data_length < 3) {
+        print(LOG_LEVEL, ERROR, 1, "Received short data\n");
+        return -1;
+    }
+    uint32_t tag = (data[0] << 16) | (data[1] << 8) | data[2];
+
+    switch(tag)
+    {
+        case TAG_APP_INFO:
+            en50221_app_ai_parse_app_info(private, slot_id, session_number, data+3, data_length-3);
+            break;
+        default:
+            print(LOG_LEVEL, ERROR, 1, "Received unexpected tag %x\n", tag);
+            return -1;
+    }
+
+    return 0;
 }
 
 
@@ -156,31 +176,4 @@ static void en50221_app_ai_parse_app_info(struct en50221_app_ai_private *private
         private->callback(private->callback_arg, slot_id, session_number,
                           application_type, application_manufacturer,
                           manufacturer_code, menu_string_length, menu_string);
-}
-
-static void en50221_app_ai_resource_callback(void *arg,
-                                            uint8_t slot_id,
-                                            uint16_t session_number,
-                                            uint32_t resource_id,
-                                            uint8_t *data, uint32_t data_length)
-{
-    struct en50221_app_ai_private *private = (struct en50221_app_ai_private *) arg;
-    (void) resource_id;
-
-    // get the tag
-    if (data_length < 3) {
-        print(LOG_LEVEL, ERROR, 1, "Received short data\n");
-        return;
-    }
-    uint32_t tag = (data[0] << 16) | (data[1] << 8) | data[2];
-
-    switch(tag)
-    {
-        case TAG_APP_INFO:
-            en50221_app_ai_parse_app_info(private, slot_id, session_number, data+3, data_length-3);
-            break;
-        default:
-            print(LOG_LEVEL, ERROR, 1, "Received unexpected tag %x\n", tag);
-            break;
-    }
 }

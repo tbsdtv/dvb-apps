@@ -27,7 +27,8 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <en50221_session.h>
-#include <en50221_app_rm.h>
+
+#define EN50221_APP_AI_RESOURCEID MKRID(2,1,1)
 
 /**
  * Type definition for application callback function - called when we receive
@@ -56,10 +57,9 @@ typedef void *en50221_app_ai;
  * Create an instance of an application information resource.
  *
  * @param sl Session layer to communicate with.
- * @param rm Resource manager instance to register with.
  * @return Instance, or NULL on failure.
  */
-extern en50221_app_rm en50221_app_ai_create(en50221_session_layer sl, en50221_app_rm rm);
+extern en50221_app_ai en50221_app_ai_create(en50221_session_layer sl);
 
 /**
  * Destroy an instance of an application information resource.
@@ -95,5 +95,22 @@ extern int en50221_app_ai_enquiry(en50221_app_ai ai, uint16_t session_number);
  * @return 0 on success, -1 on failure.
  */
 extern int en50221_app_ai_entermenu(en50221_app_ai ai, uint16_t session_number);
+
+/**
+ * Pass data received for this resource into it for parsing.
+ *
+ * @param ai Application information instance.
+ * @param slot_id Slot ID concerned.
+ * @param session_number Session number concerned.
+ * @param resource_id Resource ID concerned.
+ * @param data The data.
+ * @param data_length Length of data in bytes.
+ * @return 0 on success, -1 on failure.
+ */
+extern int en50221_app_ai_message(en50221_app_ai ai,
+                                  uint8_t slot_id,
+                                  uint16_t session_number,
+                                  uint32_t resource_id,
+                                  uint8_t *data, uint32_t data_length);
 
 #endif

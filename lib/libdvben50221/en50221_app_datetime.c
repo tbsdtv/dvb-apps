@@ -40,15 +40,13 @@ struct en50221_app_datetime_private {
         void *callback_arg;
 };
 
-static void en50221_app_datetime_resource_callback(void *arg,
-                                             uint8_t slot_id,
-                                             uint16_t session_number,
-                                             uint32_t resource_id,
-                                             uint8_t *data, uint32_t data_length);
+static void en50221_app_datetime_parse_enquiry(struct en50221_app_datetime_private *private,
+                                               uint8_t slot_id, uint16_t session_number,
+                                               uint8_t *data, uint32_t data_length);
 
 
 
-en50221_app_datetime en50221_app_datetime_create(en50221_session_layer sl, en50221_app_rm rm)
+en50221_app_datetime en50221_app_datetime_create(en50221_session_layer sl)
 {
     struct en50221_app_datetime_private *private = NULL;
 
@@ -59,12 +57,6 @@ en50221_app_datetime en50221_app_datetime_create(en50221_session_layer sl, en502
     }
     private->sl = sl;
     private->callback = NULL;
-
-    // register with the RM
-    if (en50221_app_rm_register(rm, MKRID(36,1,1), en50221_app_datetime_resource_callback, private)) {
-        free(private);
-        return NULL;
-    }
 
     // done
     return private;
@@ -110,6 +102,44 @@ int en50221_app_datetime_send(en50221_app_datetime datetime,
     return en50221_sl_send_data(private->sl, session_number, data, data_length);
 }
 
+int en50221_app_datetime_message(en50221_app_datetime datetime,
+                                  uint8_t slot_id,
+                                  uint16_t session_number,
+                                  uint32_t resource_id,
+                                  uint8_t *data, uint32_t data_length)
+{
+    struct en50221_app_datetime_private *private = (struct en50221_app_datetime_private *) datetime;
+    (void) resource_id;
+
+    // get the tag
+    if (data_length < 3) {
+        print(LOG_LEVEL, ERROR, 1, "Received short data\n");
+        return -1;
+    }
+    uint32_t tag = (data[0] << 16) | (data[1] << 8) | data[2];
+
+    switch(tag)
+    {
+        case TAG_DATE_TIME_ENQUIRY:
+            en50221_app_datetime_parse_enquiry(private, slot_id, session_number, data+3, data_length-3);
+            break;
+        default:
+            print(LOG_LEVEL, ERROR, 1, "Received unexpected tag %x\n", tag);
+            return -1;
+    }
+
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
 static void en50221_app_datetime_parse_enquiry(struct en50221_app_datetime_private *private,
                                                uint8_t slot_id, uint16_t session_number,
                                                uint8_t *data, uint32_t data_length)
@@ -128,31 +158,4 @@ static void en50221_app_datetime_parse_enquiry(struct en50221_app_datetime_priva
     // tell the app
     if (private->callback)
         private->callback(private->callback_arg, slot_id, session_number, response_interval);
-}
-
-static void en50221_app_datetime_resource_callback(void *arg,
-                                                   uint8_t slot_id,
-                                                   uint16_t session_number,
-                                                   uint32_t resource_id,
-                                                   uint8_t *data, uint32_t data_length)
-{
-    struct en50221_app_datetime_private *private = (struct en50221_app_datetime_private *) arg;
-    (void) resource_id;
-
-    // get the tag
-    if (data_length < 3) {
-        print(LOG_LEVEL, ERROR, 1, "Received short data\n");
-        return;
-    }
-    uint32_t tag = (data[0] << 16) | (data[1] << 8) | data[2];
-
-    switch(tag)
-    {
-        case TAG_DATE_TIME_ENQUIRY:
-            en50221_app_datetime_parse_enquiry(private, slot_id, session_number, data+3, data_length-3);
-            break;
-        default:
-            print(LOG_LEVEL, ERROR, 1, "Received unexpected tag %x\n", tag);
-            break;
-    }
 }

@@ -27,7 +27,8 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <en50221_session.h>
-#include <en50221_app_rm.h>
+
+#define EN50221_APP_DVB_RESOURCEID MKRID(32,1,1)
 
 
 /**
@@ -70,10 +71,9 @@ typedef void *en50221_app_dvb;
  * Create an instance of the dvb resource.
  *
  * @param sl Session layer to communicate with.
- * @param rm Resource Manager to register with
  * @return Instance, or NULL on failure.
  */
-extern en50221_app_dvb en50221_app_dvb_create(en50221_session_layer sl, en50221_app_rm rm);
+extern en50221_app_dvb en50221_app_dvb_create(en50221_session_layer sl);
 
 /**
  * Destroy an instance of the dvb resource.
@@ -110,5 +110,22 @@ extern void en50221_app_dvb_register_replace_callback(en50221_app_dvb dvb,
  * @return 0 on success, -1 on failure.
  */
 extern int en50221_app_dvb_ask_release(en50221_app_dvb dvb, uint16_t session_number);
+
+/**
+ * Pass data received for this resource into it for parsing.
+ *
+ * @param dvb dvb instance.
+ * @param slot_id Slot ID concerned.
+ * @param session_number Session number concerned.
+ * @param resource_id Resource ID concerned.
+ * @param data The data.
+ * @param data_length Length of data in bytes.
+ * @return 0 on success, -1 on failure.
+ */
+extern int en50221_app_dvb_message(en50221_app_dvb dvb,
+                                   uint8_t slot_id,
+                                   uint16_t session_number,
+                                   uint32_t resource_id,
+                                   uint8_t *data, uint32_t data_length);
 
 #endif

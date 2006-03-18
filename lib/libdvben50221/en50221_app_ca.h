@@ -27,7 +27,6 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <en50221_session.h>
-#include <en50221_app_rm.h>
 #include <ucsi/mpeg/pmt_section.h>
 #include <ucsi/dvb/descriptor.h>
 
@@ -49,6 +48,8 @@
 #define CA_ENABLE_DESCRAMBLING_NOT_POSSIBLE_NO_ENTITLEMENT  0x71
 #define CA_ENABLE_DESCRAMBLING_NOT_POSSIBLE_TECHNICAL       0x73
 
+
+#define EN50221_APP_CA_RESOURCEID MKRID(3,1,1)
 
 /**
  * PMT reply structure.
@@ -121,10 +122,9 @@ typedef void *en50221_app_ca;
  * Create an instance of the ca resource.
  *
  * @param sl Session layer to communicate with.
- * @param rm Resource Manager to register with
  * @return Instance, or NULL on failure.
  */
-extern en50221_app_ca en50221_app_ca_create(en50221_session_layer sl, en50221_app_rm rm);
+extern en50221_app_ca en50221_app_ca_create(en50221_session_layer sl);
 
 /**
  * Destroy an instance of the ca resource.
@@ -191,6 +191,23 @@ extern int en50221_ca_format_pmt(struct mpeg_pmt_section *pmt,
                                  uint8_t *data,
                                  uint32_t data_length,
                                  uint8_t ca_pmt_list_management, uint8_t ca_pmt_cmd_id);
+
+/**
+ * Pass data received for this resource into it for parsing.
+ *
+ * @param ca CA instance.
+ * @param slot_id Slot ID concerned.
+ * @param session_number Session number concerned.
+ * @param resource_id Resource ID concerned.
+ * @param data The data.
+ * @param data_length Length of data in bytes.
+ * @return 0 on success, -1 on failure.
+ */
+extern int en50221_app_ca_message(en50221_app_ca ca,
+                                  uint8_t slot_id,
+                                  uint16_t session_number,
+                                  uint32_t resource_id,
+                                  uint8_t *data, uint32_t data_length);
 
 
 

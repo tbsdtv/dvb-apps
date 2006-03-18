@@ -27,7 +27,6 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <en50221_session.h>
-#include <en50221_app_rm.h>
 
 #define EPG_COMMAND_ID_MMI                          0x02
 #define EPG_COMMAND_ID_QUERY                        0x03
@@ -39,6 +38,8 @@
 #define EPG_EVENTSTATUS_MMI_COMPLETE_UNKNOWN        0x04
 #define EPG_EVENTSTATUS_MMI_COMPLETE_AVAILABLE      0x05
 #define EPG_EVENTSTATUS_MMI_COMPLETE_NOT_AVAILABLE  0x06
+
+#define EN50221_APP_EPG_RESOURCEID(INSTANCE_NUM) MKRID(120,(INSTANCE_NUM),1)
 
 
 
@@ -62,12 +63,9 @@ typedef void *en50221_app_epg;
  * Create an instance of the epg resource.
  *
  * @param sl Session layer to communicate with.
- * @param rm Resource Manager to register with
- * @param instance_number Instance number for the EPG - to distinguish from any other EPG object.
  * @return Instance, or NULL on failure.
  */
-extern en50221_app_epg en50221_app_epg_create(en50221_session_layer sl, en50221_app_rm rm,
-                                              uint8_t instance_number);
+extern en50221_app_epg en50221_app_epg_create(en50221_session_layer sl);
 
 /**
  * Destroy an instance of the epg resource.
@@ -107,5 +105,22 @@ extern int en50221_app_epg_enquire(en50221_app_epg epg,
                                    uint16_t transport_stream_id,
                                    uint16_t service_id,
                                    uint16_t event_id);
+
+/**
+ * Pass data received for this resource into it for parsing.
+ *
+ * @param epg epg instance.
+ * @param slot_id Slot ID concerned.
+ * @param session_number Session number concerned.
+ * @param resource_id Resource ID concerned.
+ * @param data The data.
+ * @param data_length Length of data in bytes.
+ * @return 0 on success, -1 on failure.
+ */
+extern int en50221_app_epg_message(en50221_app_epg epg,
+                                   uint8_t slot_id,
+                                   uint16_t session_number,
+                                   uint32_t resource_id,
+                                   uint8_t *data, uint32_t data_length);
 
 #endif

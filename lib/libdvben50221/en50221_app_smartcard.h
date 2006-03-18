@@ -27,7 +27,6 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <en50221_session.h>
-#include <en50221_app_rm.h>
 
 #define SMARTCARD_COMMAND_ID_CONNECT            0x01
 #define SMARTCARD_COMMAND_ID_DISCONNECT         0x02
@@ -50,6 +49,9 @@
 #define SMARTCARD_STATUS_CARD_NO_CARD           0x05
 #define SMARTCARD_STATUS_CARD_UNRESPONSIVE_CARD 0x06
 #define SMARTCARD_STATUS_CARD_REFUSED_CARD      0x07
+
+#define EN50221_APP_SMARTCARD_RESOURCEID(DEVICE_NUMBER) MKRID(112, ((DEVICE_NUMBER)& 0x0f), 1),
+
 
 
 /**
@@ -91,12 +93,9 @@ typedef void *en50221_app_smartcard;
  * Create an instance of the smartcard resource.
  *
  * @param sl Session layer to communicate with.
- * @param rm Resource Manager to register with.
- * @param device_number Number of the particular device.
  * @return Instance, or NULL on failure.
  */
-extern en50221_app_smartcard en50221_app_smartcard_create(en50221_session_layer sl, en50221_app_rm rm,
-                                                          uint8_t device_number);
+extern en50221_app_smartcard en50221_app_smartcard_create(en50221_session_layer sl);
 
 /**
  * Destroy an instance of the smartcard resource.
@@ -160,5 +159,22 @@ extern int en50221_app_smartcard_receive(en50221_app_smartcard smartcard,
                                          uint32_t data_length,
                                          uint8_t SW1,
                                          uint8_t SW2);
+
+/**
+ * Pass data received for this resource into it for parsing.
+ *
+ * @param smartcard smartcard instance.
+ * @param slot_id Slot ID concerned.
+ * @param session_number Session number concerned.
+ * @param resource_id Resource ID concerned.
+ * @param data The data.
+ * @param data_length Length of data in bytes.
+ * @return 0 on success, -1 on failure.
+ */
+extern int en50221_app_smartcard_message(en50221_app_smartcard smartcard,
+                                         uint8_t slot_id,
+                                         uint16_t session_number,
+                                         uint32_t resource_id,
+                                         uint8_t *data, uint32_t data_length);
 
 #endif

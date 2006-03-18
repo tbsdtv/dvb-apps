@@ -33,35 +33,29 @@
 #define TAG_PROFILE                     0x9f8011
 #define TAG_PROFILE_CHANGE              0x9f8012
 
-struct en50221_resource {
-        struct en50221_app_public_resource_id id;
-
-        en50221_sl_resource_callback callback;
-        void *callback_arg;
-};
 
 struct en50221_app_rm_private {
-        struct en50221_resource *resources;
-        int resources_count;
         en50221_session_layer *sl;
 
-        en50221_app_rm_resourcelist_callback listcallback;
-        void *listcallback_arg;
+        en50221_app_rm_enq_callback enqcallback;
+        void *enqcallback_arg;
 
-        en50221_app_rm_unknownresource_callback unknowncallback;
-        void *unknowncallback_arg;
+        en50221_app_rm_reply_callback replycallback;
+        void *replycallback_arg;
+
+        en50221_app_rm_changed_callback changedcallback;
+        void *changedcallback_arg;
 };
 
-
-static int en50221_app_rm_lookup(void *arg, uint8_t slot_id, uint32_t resource_id,
-                                 en50221_sl_resource_callback *callback_out, void**arg_out);
-
-static void en50221_app_rm_resource_callback(void *arg,
-                                            uint8_t slot_id,
-                                            uint16_t session_number,
-                                            uint32_t resource_id,
-                                            uint8_t *data, uint32_t data_length);
-
+static void en50221_app_rm_parse_profile_enq(struct en50221_app_rm_private *private,
+                                             uint8_t slot_id, uint16_t session_number,
+                                             uint8_t *data, uint32_t data_length);
+static void en50221_app_rm_parse_profile_reply(struct en50221_app_rm_private *private,
+                                               uint8_t slot_id, uint16_t session_number,
+                                               uint8_t *data, uint32_t data_length);
+static void en50221_app_rm_parse_profile_change(struct en50221_app_rm_private *private,
+        uint8_t slot_id, uint16_t session_number,
+        uint8_t *data, uint32_t data_length);
 
 
 en50221_app_rm en50221_app_rm_create(en50221_session_layer sl)
@@ -73,21 +67,10 @@ en50221_app_rm en50221_app_rm_create(en50221_session_layer sl)
     if (private == NULL) {
         return NULL;
     }
-    private->resources = NULL;
-    private->resources_count = 0;
     private->sl = sl;
-    private->listcallback = NULL;
-    private->unknowncallback = NULL;
-
-    // register with... ourself!
-    if (en50221_app_rm_register(private, MKRID(1,1,1), en50221_app_rm_resource_callback, private)) {
-        free(private->resources);
-        free(private);
-        return NULL;
-    }
-
-    // register lookup callback with the session layer
-    en50221_sl_register_lookup_callback(sl, en50221_app_rm_lookup, private);
+    private->enqcallback = NULL;
+    private->replycallback = NULL;
+    private->changedcallback = NULL;
 
     // done
     return private;
@@ -97,122 +80,145 @@ void en50221_app_rm_destroy(en50221_app_rm rm)
 {
     struct en50221_app_rm_private *private = (struct en50221_app_rm_private *) rm;
 
-    // deregister callback
-    en50221_sl_register_lookup_callback(private->sl, NULL, NULL);
-
     // free structure
-    if (private->resources)
-        free(private->resources);
     free(private);
 }
 
-int en50221_app_rm_register(en50221_app_rm rm, uint32_t resource_id,
-                            en50221_sl_resource_callback callback, void *arg)
+void en50221_app_rm_register_enq_callback(en50221_app_rm rm,
+                                          en50221_app_rm_enq_callback callback, void *arg)
 {
     struct en50221_app_rm_private *private = (struct en50221_app_rm_private *) rm;
-    struct en50221_app_public_resource_id new_id;
 
-    // parse the resource id
-    if (en50221_app_decode_public_resource_id(&new_id, resource_id) == NULL) {
+    private->enqcallback = callback;
+    private->enqcallback_arg = arg;
+}
+
+void en50221_app_rm_register_reply_callback(en50221_app_rm rm,
+                                           en50221_app_rm_reply_callback callback, void *arg)
+{
+    struct en50221_app_rm_private *private = (struct en50221_app_rm_private *) rm;
+
+    private->replycallback = callback;
+    private->replycallback_arg = arg;
+}
+
+void en50221_app_rm_register_changed_callback(en50221_app_rm rm,
+                                              en50221_app_rm_changed_callback callback, void *arg)
+{
+    struct en50221_app_rm_private *private = (struct en50221_app_rm_private *) rm;
+
+    private->changedcallback = callback;
+    private->changedcallback_arg = arg;
+}
+
+int en50221_app_rm_enq(en50221_app_rm rm, uint16_t session_number)
+{
+    struct en50221_app_rm_private *private = (struct en50221_app_rm_private *) rm;
+    uint8_t buf[10];
+
+    // set up the tag
+    buf[0] = (TAG_PROFILE_ENQUIRY >> 16) & 0xFF;
+    buf[1] = (TAG_PROFILE_ENQUIRY >> 8) & 0xFF;
+    buf[2] = TAG_PROFILE_ENQUIRY & 0xFF;
+
+    // create the data and send it
+    return en50221_sl_send_data(private->sl, session_number, buf, 3);
+}
+
+int en50221_app_rm_reply(en50221_app_rm rm, uint16_t session_number,
+                         uint32_t resource_id_count,
+                         uint32_t *resource_ids)
+{
+    struct en50221_app_rm_private *private = (struct en50221_app_rm_private *) rm;
+    uint8_t buf[10];
+
+    // set up the tag
+    buf[0] = (TAG_PROFILE >> 16) & 0xFF;
+    buf[1] = (TAG_PROFILE >> 8) & 0xFF;
+    buf[2] = TAG_PROFILE & 0xFF;
+
+    // encode the length field
+    int length_field_len;
+    if ((length_field_len = asn_1_encode(resource_id_count*4, buf+3, 3)) < 0) {
         return -1;
     }
 
-    // allocate new resources array
-    struct en50221_resource *resources_new =
-            realloc(private->resources, (private->resources_count + 1) * sizeof(struct en50221_resource));
-    if (resources_new == NULL) {
+    // build the iovecs
+    struct iovec iov[2];
+    iov[0].iov_base = buf;
+    iov[0].iov_len = 3+length_field_len;
+    iov[1].iov_base = (uint8_t*) resource_ids;
+    iov[1].iov_len = resource_id_count * 4;
+
+    // create the data and send it
+    return en50221_sl_send_datav(private->sl, session_number, iov, 2);
+}
+
+int en50221_app_rm_changed(en50221_app_rm rm, uint16_t session_number)
+{
+    struct en50221_app_rm_private *private = (struct en50221_app_rm_private *) rm;
+    uint8_t buf[10];
+
+    // set up the tag
+    buf[0] = (TAG_PROFILE_CHANGE >> 16) & 0xFF;
+    buf[1] = (TAG_PROFILE_CHANGE >> 8) & 0xFF;
+    buf[2] = TAG_PROFILE_CHANGE & 0xFF;
+
+    // create the data and send it
+    return en50221_sl_send_data(private->sl, session_number, buf, 3);
+}
+
+int en50221_app_rm_message(en50221_app_rm rm,
+                           uint8_t slot_id,
+                           uint16_t session_number,
+                           uint32_t resource_id,
+                           uint8_t *data, uint32_t data_length)
+{
+    struct en50221_app_rm_private *private = (struct en50221_app_rm_private *) rm;
+    (void) resource_id;
+
+    // get the tag
+    if (data_length < 3) {
+        print(LOG_LEVEL, ERROR, 1, "Received short data\n");
         return -1;
     }
-    private->resources = resources_new;
+    uint32_t tag = (data[0] << 16) | (data[1] << 8) | data[2];
 
-    // set everything up
-    private->resources[private->resources_count].id.resource_class = new_id.resource_class;
-    private->resources[private->resources_count].id.resource_type = new_id.resource_type;
-    private->resources[private->resources_count].id.resource_version = new_id.resource_version;
-    private->resources[private->resources_count].callback = callback;
-    private->resources[private->resources_count].callback_arg = arg;
-    private->resources_count++;
+    // dispatch it
+    switch(tag)
+    {
+        case TAG_PROFILE_ENQUIRY:
+            en50221_app_rm_parse_profile_enq(private, slot_id, session_number, data+3, data_length-3);
+            break;
+        case TAG_PROFILE:
+            en50221_app_rm_parse_profile_reply(private, slot_id, session_number, data+3, data_length-3);
+            break;
+        case TAG_PROFILE_CHANGE:
+            en50221_app_rm_parse_profile_change(private, slot_id, session_number, data+3, data_length-3);
+            break;
+        default:
+            print(LOG_LEVEL, ERROR, 1, "Received unexpected tag %x\n", tag);
+            return -1;
+    }
 
-    // broadcast a profile change message
-    uint8_t pc_data[3];
-    pc_data[0] = (TAG_PROFILE_CHANGE >> 16) & 0xFF;
-    pc_data[1] = (TAG_PROFILE_CHANGE >> 8) & 0xFF;
-    pc_data[2] = TAG_PROFILE_CHANGE & 0xFF;
-    en50221_sl_broadcast_data(private, -1, MKRID(1,1,1), pc_data, 3);
-
-    // success
     return 0;
 }
 
-void en50221_app_rm_register_resourcelist_callback(en50221_app_rm rm,
-                                               en50221_app_rm_resourcelist_callback callback, void *arg)
-{
-    struct en50221_app_rm_private *private = (struct en50221_app_rm_private *) rm;
 
-    private->listcallback = callback;
-    private->listcallback_arg = arg;
+static void en50221_app_rm_parse_profile_enq(struct en50221_app_rm_private *private,
+                                             uint8_t slot_id, uint16_t session_number,
+                                             uint8_t *data, uint32_t data_length)
+{
+    (void)data;
+    (void)data_length;
+
+    if (private->enqcallback)
+        private->enqcallback(private->enqcallback_arg, slot_id, session_number);
 }
 
-void en50221_app_rm_register_unknownresource_callback(en50221_app_rm rm,
-                                                  en50221_app_rm_unknownresource_callback callback, void *arg)
-{
-    struct en50221_app_rm_private *private = (struct en50221_app_rm_private *) rm;
-
-    private->unknowncallback = callback;
-    private->unknowncallback_arg = arg;
-}
-
-
-
-
-
-
-
-static int en50221_app_rm_lookup(void *arg, uint8_t slot_id, uint32_t resource_id,
-                                 en50221_sl_resource_callback *callback_out, void**arg_out)
-{
-    struct en50221_app_rm_private *private = (struct en50221_app_rm_private *) arg;
-    struct en50221_app_public_resource_id search_id;
-    int i;
-
-    // decode the supplied id
-    if (en50221_app_decode_public_resource_id(&search_id, resource_id) == NULL) {
-        // it was a private ID which we do not support... for the moment anyway
-        return -1;
-    }
-
-    // search for it
-    for(i=0; i < private->resources_count; i++) {
-        if ((private->resources[i].id.resource_class == search_id.resource_class) &&
-            (private->resources[i].id.resource_type == search_id.resource_type)) {
-
-            // resource version is less than expected
-            if (private->resources[i].id.resource_version < search_id.resource_version) {
-                return -2;
-            }
-
-            // we're suppose to wait for a profile change message before allowing anything because we're
-            // meant to have a global list of resources. As we have a slot-specific list, we don't need to
-            // bother doing this.
-
-            // all was ok
-            *callback_out = private->resources[i].callback;
-            *arg_out = private->resources[i].callback_arg;
-            return 0;
-        }
-    }
-
-    // call out to the app just in case
-    if (private->unknowncallback)
-        return private->unknowncallback(private->unknowncallback_arg, slot_id, resource_id, callback_out, arg_out);
-
-    // didn't find it
-    return -1;
-}
-
-static void en50221_app_rm_handle_incoming_profile(struct en50221_app_rm_private *private,
-                                                   uint8_t slot_id, uint16_t session_number,
-                                                   uint8_t *data, uint32_t data_length)
+static void en50221_app_rm_parse_profile_reply(struct en50221_app_rm_private *private,
+                                               uint8_t slot_id, uint16_t session_number,
+                                               uint8_t *data, uint32_t data_length)
 {
     // first of all, decode the length field
     uint16_t asn_data_length;
@@ -227,107 +233,21 @@ static void en50221_app_rm_handle_incoming_profile(struct en50221_app_rm_private
         print(LOG_LEVEL, ERROR, 1, "Received short data\n");
         return;
     }
-    int resources_count = asn_data_length / 4;
+    uint32_t resources_count = asn_data_length / 4;
 
     // inform observer
-    if (private->listcallback)
-        private->listcallback(private->listcallback_arg,
-                          slot_id, session_number, resources_count, (uint32_t*) (data+length_field_len));
-
-    // after we registered the resources the cam supports. Now we should send an
-    // Profile Change on all sessions on this slot.
-    uint8_t pc_data[3];
-    pc_data[0] = (TAG_PROFILE_CHANGE >> 16) & 0xFF;
-    pc_data[1] = (TAG_PROFILE_CHANGE >> 8) & 0xFF;
-    pc_data[2] = TAG_PROFILE_CHANGE & 0xFF;
-    en50221_sl_broadcast_data(private, slot_id, MKRID(1,1,1), pc_data, 3);
+    if (private->replycallback)
+        private->replycallback(private->replycallback_arg,
+                               slot_id, session_number, resources_count, (uint32_t*) (data+length_field_len));
 }
 
-static void en50221_app_rm_send_profile_reply(struct en50221_app_rm_private *private, uint8_t session_number)
+static void en50221_app_rm_parse_profile_change(struct en50221_app_rm_private *private,
+                                                uint8_t slot_id, uint16_t session_number,
+                                                uint8_t *data, uint32_t data_length)
 {
-    // first of all, encode the length field
-    uint8_t length_field[3];
-    int length_field_len;
-    if ((length_field_len = asn_1_encode((private->resources_count*4), length_field, 3)) < 0) {
-        print(LOG_LEVEL, ERROR, 1, "ASN.1 encode error\n");
-        return;
-    }
+    (void)data;
+    (void)data_length;
 
-    // now allocate memory for the reply
-    uint16_t data_length = 3+length_field_len+(private->resources_count*4);
-    uint8_t *data = malloc(data_length);
-    if (data == NULL) {
-        print(LOG_LEVEL, ERROR, 1, "Out of memory\n");
-        return;
-    }
-
-    // create the data
-    data[0] = (TAG_PROFILE >> 16) & 0xFF;
-    data[1] = (TAG_PROFILE >> 8) & 0xFF;
-    data[2] = TAG_PROFILE & 0xFF;
-    memcpy(data+3, length_field, length_field_len);
-
-    // now append the resources
-    uint16_t offset = 3+length_field_len;
-    int i;
-    for(i = 0; i < private->resources_count; i++)
-    {
-        en50221_app_encode_public_resource_id(&private->resources[i].id, data+offset);
-        offset+=4;
-    }
-
-    // sendit
-    if (en50221_sl_send_data(private->sl, session_number, data, data_length)) {
-        print(LOG_LEVEL, ERROR, 1, "Session layer reports error %i\n", en50221_sl_get_error(private->sl));
-    }
-
-    // cleanup
-    free(data);
-}
-
-static void en50221_app_rm_enquiry(struct en50221_app_rm_private *private, uint8_t session_number)
-{
-    char data[3];
-
-    data[0] = (TAG_PROFILE_ENQUIRY >> 16) & 0xFF;
-    data[1] = (TAG_PROFILE_ENQUIRY >> 8) & 0xFF;
-    data[2] = TAG_PROFILE_ENQUIRY & 0xFF;
-
-    if (en50221_sl_send_data(private->sl, session_number, data, 3)) {
-        print(LOG_LEVEL, ERROR, 1, "Session layer reports error %i\n", en50221_sl_get_error(private->sl));
-    }
-}
-
-static void en50221_app_rm_resource_callback(void *arg,
-                                            uint8_t slot_id,
-                                            uint16_t session_number,
-                                            uint32_t resource_id,
-                                            uint8_t *data, uint32_t data_length)
-{
-    struct en50221_app_rm_private *private = (struct en50221_app_rm_private *) arg;
-    (void) resource_id;
-
-    // get the tag
-    if (data_length < 3) {
-        print(LOG_LEVEL, ERROR, 1, "Received short data\n");
-        return;
-    }
-    uint32_t tag = (data[0] << 16) | (data[1] << 8) | data[2];
-
-    // dispatch it
-    switch(tag)
-    {
-        case TAG_PROFILE_ENQUIRY:
-            en50221_app_rm_send_profile_reply(private, session_number);
-            break;
-        case TAG_PROFILE:
-            en50221_app_rm_handle_incoming_profile(private, slot_id, session_number, data+3, data_length-3);
-            break;
-        case TAG_PROFILE_CHANGE:
-            en50221_app_rm_enquiry(private, session_number);
-            break;
-        default:
-            print(LOG_LEVEL, ERROR, 1, "Received unexpected tag %x\n", tag);
-            break;
-    }
+    if (private->changedcallback)
+        private->changedcallback(private->changedcallback_arg, slot_id, session_number);
 }

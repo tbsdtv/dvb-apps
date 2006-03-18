@@ -61,11 +61,6 @@ struct ca_pmt_stream {
     struct ca_pmt_stream *next;
 };
 
-static void en50221_app_ca_resource_callback(void *arg,
-                                             uint8_t slot_id,
-                                             uint16_t session_number,
-                                             uint32_t resource_id,
-                                             uint8_t *data, uint32_t data_length);
 static struct ca_pmt_descriptor *en50221_ca_extract_pmt_descriptors(struct mpeg_pmt_section *pmt);
 static struct ca_pmt_stream *en50221_ca_extract_streams(struct mpeg_pmt_section *pmt);
 static void en50221_ca_try_move_pmt_descriptors(struct ca_pmt_descriptor **pmt_descriptors,
@@ -73,10 +68,16 @@ static void en50221_ca_try_move_pmt_descriptors(struct ca_pmt_descriptor **pmt_d
 static uint32_t en50221_ca_calculate_length(struct ca_pmt_descriptor *pmt_descriptors,
                                             uint32_t *pmt_descriptors_length,
                                             struct ca_pmt_stream *pmt_streams);
+static void en50221_app_ca_parse_info(struct en50221_app_ca_private *private,
+                                      uint8_t slot_id, uint16_t session_number,
+                                      uint8_t *data, uint32_t data_length);
+static void en50221_app_ca_parse_reply(struct en50221_app_ca_private *private,
+                                       uint8_t slot_id, uint16_t session_number,
+                                       uint8_t *data, uint32_t data_length);
 
 
 
-en50221_app_ca en50221_app_ca_create(en50221_session_layer sl, en50221_app_rm rm)
+en50221_app_ca en50221_app_ca_create(en50221_session_layer sl)
 {
     struct en50221_app_ca_private *private = NULL;
 
@@ -88,14 +89,6 @@ en50221_app_ca en50221_app_ca_create(en50221_session_layer sl, en50221_app_rm rm
     private->sl = sl;
     private->ca_info_callback = NULL;
     private->ca_pmt_reply_callback = NULL;
-
-    // register with the RM
-    if (en50221_app_rm_register(rm,
-                                MKRID(3, 1, 1),
-                                en50221_app_ca_resource_callback, private)) {
-        free(private);
-        return NULL;
-    }
 
     // done
     return private;
@@ -166,6 +159,38 @@ int en50221_app_ca_pmt(en50221_app_ca ca,
 
     // create the data and send it
     return en50221_sl_send_datav(private->sl, session_number, iov, 2);
+}
+
+int en50221_app_ca_message(en50221_app_ca ca,
+                           uint8_t slot_id,
+                           uint16_t session_number,
+                           uint32_t resource_id,
+                           uint8_t *data, uint32_t data_length)
+{
+    struct en50221_app_ca_private *private = (struct en50221_app_ca_private *) ca;
+    (void)resource_id;
+
+    // get the tag
+    if (data_length < 3) {
+        print(LOG_LEVEL, ERROR, 1, "Received short data\n");
+        return -1;
+    }
+    uint32_t tag = (data[0] << 16) | (data[1] << 8) | data[2];
+
+    switch(tag)
+    {
+        case TAG_CA_INFO:
+            en50221_app_ca_parse_info(private, slot_id, session_number, data+3, data_length-3);
+            break;
+        case TAG_CA_PMT_REPLY:
+            en50221_app_ca_parse_reply(private, slot_id, session_number, data+3, data_length-3);
+            break;
+        default:
+            print(LOG_LEVEL, ERROR, 1, "Received unexpected tag %x\n", tag);
+            return -1;
+    }
+
+    return 0;
 }
 
 int en50221_ca_format_pmt(struct mpeg_pmt_section *pmt, uint8_t *data, uint32_t data_length,
@@ -560,34 +585,4 @@ static void en50221_app_ca_parse_reply(struct en50221_app_ca_private *private,
         private->ca_pmt_reply_callback(private->ca_pmt_reply_callback_arg, slot_id, session_number,
                                        (struct en50221_app_pmt_reply*) data,
                                        asn_data_length);
-}
-
-static void en50221_app_ca_resource_callback(void *arg,
-                                             uint8_t slot_id,
-                                             uint16_t session_number,
-                                             uint32_t resource_id,
-                                             uint8_t *data, uint32_t data_length)
-{
-    struct en50221_app_ca_private *private = (struct en50221_app_ca_private *) arg;
-    (void)resource_id;
-
-    // get the tag
-    if (data_length < 3) {
-        print(LOG_LEVEL, ERROR, 1, "Received short data\n");
-        return;
-    }
-    uint32_t tag = (data[0] << 16) | (data[1] << 8) | data[2];
-
-    switch(tag)
-    {
-        case TAG_CA_INFO:
-            en50221_app_ca_parse_info(private, slot_id, session_number, data+3, data_length-3);
-            break;
-        case TAG_CA_PMT_REPLY:
-            en50221_app_ca_parse_reply(private, slot_id, session_number, data+3, data_length-3);
-            break;
-        default:
-            print(LOG_LEVEL, ERROR, 1, "Received unexpected tag %x\n", tag);
-            break;
-    }
 }

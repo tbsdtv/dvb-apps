@@ -27,7 +27,6 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <en50221_session.h>
-#include <en50221_app_rm.h>
 
 #define COMMS_COMMAND_ID_CONNECT_ON_CHANNEL     0x01
 #define COMMS_COMMAND_ID_DISCONNECT_ON_CHANNEL  0x02
@@ -44,6 +43,9 @@
 #define COMMS_REPLY_ID_STATUS_REPLY             0x04
 #define COMMS_REPLY_ID_GET_NEXT_BUFFER_ACK      0x05
 #define COMMS_REPLY_ID_SEND_ACK                 0x06
+
+#define EN50221_APP_LOWSPEED_RESOURCEID(DEVICE_TYPE, DEVICE_NUMBER) MKRID(96,((DEVICE_TYPE)<<2)|((DEVICE_NUMBER) & 0x03),1)
+
 
 /**
  * Structure holding information on a received comms command.
@@ -110,12 +112,9 @@ typedef void *en50221_app_lowspeed;
  *
  * @param sl Session layer to communicate with.
  * @param rm Resource Manager to register with
- * @param device_type Device type.
- * @param device_number Number of the particular device.
  * @return Instance, or NULL on failure.
  */
-extern en50221_app_lowspeed en50221_app_lowspeed_create(en50221_session_layer sl, en50221_app_rm rm,
-                                                        uint8_t device_type, uint8_t device_number);
+extern en50221_app_lowspeed en50221_app_lowspeed_create(en50221_session_layer sl);
 
 /**
  * Destroy an instance of the lowspeed resource.
@@ -173,5 +172,22 @@ extern int en50221_app_lowspeed_send_comms_data(en50221_app_lowspeed lowspeed,
                                                 uint8_t phase_id,
                                                 uint32_t tx_data_length,
                                                 uint8_t *tx_data);
+
+/**
+ * Pass data received for this resource into it for parsing.
+ *
+ * @param lowspeed lowspeed instance.
+ * @param slot_id Slot ID concerned.
+ * @param session_number Session number concerned.
+ * @param resource_id Resource ID concerned.
+ * @param data The data.
+ * @param data_length Length of data in bytes.
+ * @return 0 on success, -1 on failure.
+ */
+extern int en50221_app_lowspeed_message(en50221_app_lowspeed lowspeed,
+                                        uint8_t slot_id,
+                                        uint16_t session_number,
+                                        uint32_t resource_id,
+                                        uint8_t *data, uint32_t data_length);
 
 #endif

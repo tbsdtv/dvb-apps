@@ -48,16 +48,19 @@ struct en50221_app_lowspeed_private {
         void *send_callback_arg;
 };
 
-static void en50221_app_lowspeed_resource_callback(void *arg,
-                                                    uint8_t slot_id,
-                                                    uint16_t session_number,
-                                                    uint32_t resource_id,
-                                                    uint8_t *data, uint32_t data_length);
+static int en50221_app_lowspeed_parse_connect_on_channel(struct en50221_app_lowspeed_command *command,
+        uint8_t *data,
+        int data_length);
+static void en50221_app_lowspeed_parse_command(struct en50221_app_lowspeed_private *private,
+                                               uint8_t slot_id, uint16_t session_number,
+                                               uint8_t *data, uint32_t data_length);
+static void en50221_app_lowspeed_parse_send(struct en50221_app_lowspeed_private *private,
+                                            uint8_t slot_id, uint16_t session_number, int last_more,
+                                            uint8_t *data, uint32_t data_length);
 
 
 
-en50221_app_lowspeed en50221_app_lowspeed_create(en50221_session_layer sl, en50221_app_rm rm,
-                                                 uint8_t device_type, uint8_t device_number)
+en50221_app_lowspeed en50221_app_lowspeed_create(en50221_session_layer sl)
 {
     struct en50221_app_lowspeed_private *private = NULL;
 
@@ -69,14 +72,6 @@ en50221_app_lowspeed en50221_app_lowspeed_create(en50221_session_layer sl, en502
     private->sl = sl;
     private->command_callback = NULL;
     private->send_callback = NULL;
-
-    // register with the RM
-    if (en50221_app_rm_register(rm,
-                                MKRID(96, (device_type<<2)|(device_number & 0x03), 1),
-                                en50221_app_lowspeed_resource_callback, private)) {
-        free(private);
-        return NULL;
-    }
 
     // done
     return private;
@@ -161,6 +156,41 @@ int en50221_app_lowspeed_send_comms_data(en50221_app_lowspeed lowspeed,
 
     // create the data and send it
     return en50221_sl_send_datav(private->sl, session_number, iov, 2);
+}
+
+int en50221_app_lowspeed_message(en50221_app_lowspeed lowspeed,
+                                 uint8_t slot_id,
+                                 uint16_t session_number,
+                                 uint32_t resource_id,
+                                 uint8_t *data, uint32_t data_length)
+{
+    struct en50221_app_lowspeed_private *private = (struct en50221_app_lowspeed_private *) lowspeed;
+    (void)resource_id;
+
+    // get the tag
+    if (data_length < 3) {
+        print(LOG_LEVEL, ERROR, 1, "Received short data\n");
+        return -1;
+    }
+    uint32_t tag = (data[0] << 16) | (data[1] << 8) | data[2];
+
+    switch(tag)
+    {
+        case TAG_COMMS_COMMAND:
+            en50221_app_lowspeed_parse_command(private, slot_id, session_number, data+3, data_length-3);
+            break;
+        case TAG_COMMS_SEND_LAST:
+            en50221_app_lowspeed_parse_send(private, slot_id, session_number, 1, data+3, data_length-3);
+            break;
+        case TAG_COMMS_SEND_MORE:
+            en50221_app_lowspeed_parse_send(private, slot_id, session_number, 0, data+3, data_length-3);
+            break;
+        default:
+            print(LOG_LEVEL, ERROR, 1, "Received unexpected tag %x\n", tag);
+            return -1;
+    }
+
+    return 0;
 }
 
 
@@ -359,37 +389,4 @@ static void en50221_app_lowspeed_parse_send(struct en50221_app_lowspeed_private 
     if (private->send_callback)
         private->send_callback(private->send_callback_arg, slot_id, session_number, phase_id, last_more,
                                data+2, asn_data_length-1);
-}
-
-static void en50221_app_lowspeed_resource_callback(void *arg,
-                                            uint8_t slot_id,
-                                            uint16_t session_number,
-                                            uint32_t resource_id,
-                                            uint8_t *data, uint32_t data_length)
-{
-    struct en50221_app_lowspeed_private *private = (struct en50221_app_lowspeed_private *) arg;
-    (void)resource_id;
-
-    // get the tag
-    if (data_length < 3) {
-        print(LOG_LEVEL, ERROR, 1, "Received short data\n");
-        return;
-    }
-    uint32_t tag = (data[0] << 16) | (data[1] << 8) | data[2];
-
-    switch(tag)
-    {
-        case TAG_COMMS_COMMAND:
-            en50221_app_lowspeed_parse_command(private, slot_id, session_number, data+3, data_length-3);
-            break;
-        case TAG_COMMS_SEND_LAST:
-            en50221_app_lowspeed_parse_send(private, slot_id, session_number, 1, data+3, data_length-3);
-            break;
-        case TAG_COMMS_SEND_MORE:
-            en50221_app_lowspeed_parse_send(private, slot_id, session_number, 0, data+3, data_length-3);
-            break;
-        default:
-            print(LOG_LEVEL, ERROR, 1, "Received unexpected tag %x\n", tag);
-            break;
-    }
 }

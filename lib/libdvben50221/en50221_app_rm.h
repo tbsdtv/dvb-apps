@@ -28,34 +28,41 @@
 #include <stdint.h>
 #include <en50221_session.h>
 
+#define EN50221_APP_RM_RESOURCEID(DEVICE_TYPE, DEVICE_NUMBER) MKRID(1,1,1)
 
 /**
- * Type definition for resourcelist callback function - called when we receive
- * a list of resource ids supported by a CAM.
+ * Type definition for profile_enq callback function - called when we receive
+ * a profile_enq from a CAM.
  *
  * @param arg Private argument.
  * @param slot_id Slot id concerned.
  * @param session_number Session number concerned.
- * @param resources_count Number of resources.
- * @param resources Pointer to resourceids themselves.
  */
-typedef void (*en50221_app_rm_resourcelist_callback)(void *arg, uint8_t slot_id, uint16_t session_number,
-                                                     uint32_t resources_count, uint32_t *resources);
+typedef void (*en50221_app_rm_enq_callback)(void *arg, uint8_t slot_id, uint16_t session_number);
 
 /**
- * Type definition for resourcelist callback function - called when we receive
- * a request for a resourceid we don't recognise.
+ * Type definition for profile_reply callback function - called when we receive
+ * a profile_reply from a CAM.
  *
  * @param arg Private argument.
  * @param slot_id Slot id concerned.
- * @param resource_id Resource id concerned.
- * @param callback_out Output parameter for pointer to resource callback function.
- * @param arg_out Output parameter for arg to pass to resource callback.
- * @return 0 on success, or -1 on failure.
+ * @param resource_id_count Number of resource_ids.
+ * @param resource_ids The resource ids themselves.
  */
-typedef int (*en50221_app_rm_unknownresource_callback)(void *arg, uint8_t slot_id, uint32_t resource_id,
-                                                       en50221_sl_resource_callback *callback_out,
-                                                       void **arg_out);
+typedef void (*en50221_app_rm_reply_callback)(void *arg, uint8_t slot_id, uint32_t resource_id,
+                                                      uint32_t resource_id_count,
+                                                      uint32_t *resource_ids);
+/**
+ * Type definition for profile_changed callback function - called when we receive
+ * a profile_changed from a CAM.
+ *
+ * @param arg Private argument.
+ * @param slot_id Slot id concerned.
+ * @param session_number Session number concerned.
+ */
+typedef void (*en50221_app_rm_changed_callback)(void *arg, uint8_t slot_id, uint16_t session_number);
+
+
 
 /**
  * Opaque type representing a resource manager.
@@ -78,35 +85,81 @@ extern en50221_app_rm en50221_app_rm_create(en50221_session_layer sl);
 extern void en50221_app_rm_destroy(en50221_app_rm rm);
 
 /**
- * Register a host-side resource provider with the resource manager.
- *
- * @param rm Resource manager instance.
- * @param resource_id Resource identifier.
- * @param callback Callback called when this resource receives an event.
- * @param arg Private argument passed during calls to the callback.
- * @return 0 on success, or -1 on failure.
- */
-extern int en50221_app_rm_register(en50221_app_rm rm, uint32_t resource_id,
-                            en50221_sl_resource_callback callback, void *arg);
-
-/**
- * Register the callback for when we receive a list of resources supported by a CAM.
+ * Register the callback for when we receive a profile_enq from a CAM.
  *
  * @param rm Resource manager instance.
  * @param callback The callback. Set to NULL to remove the callback completely.
  * @param arg Private data passed as arg0 of the callback.
  */
-extern void en50221_app_rm_register_resourcelist_callback(en50221_app_rm rm,
-        en50221_app_rm_resourcelist_callback callback, void *arg);
+extern void en50221_app_rm_register_enq_callback(en50221_app_rm rm,
+        en50221_app_rm_enq_callback callback, void *arg);
 
 /**
- * Register the callback for when we receive a request for an unknown resource from a CAM.
+ * Register the callback for when we receive a profile_reply from a CAM.
  *
  * @param rm Resource manager instance.
  * @param callback The callback. Set to NULL to remove the callback completely.
  * @param arg Private data passed as arg0 of the callback.
  */
-extern void en50221_app_rm_register_unknownresource_callback(en50221_app_rm rm,
-        en50221_app_rm_unknownresource_callback callback, void *arg);
+extern void en50221_app_rm_register_reply_callback(en50221_app_rm rm,
+        en50221_app_rm_reply_callback callback, void *arg);
+
+/**
+ * Register the callback for when we receive a profile_changed from a CAM.
+ *
+ * @param rm Resource manager instance.
+ * @param callback The callback. Set to NULL to remove the callback completely.
+ * @param arg Private data passed as arg0 of the callback.
+ */
+extern void en50221_app_rm_register_changed_callback(en50221_app_rm rm,
+        en50221_app_rm_changed_callback callback, void *arg);
+
+/**
+ * Send a profile_enq to a CAM.
+ *
+ * @param rm Resource manager resource instance.
+ * @param session_number Session number to send it on.
+ * @return 0 on success, -1 on failure.
+ */
+extern int en50221_app_rm_enq(en50221_app_rm rm, uint16_t session_number);
+
+/**
+ * Send a profile_reply to a CAM.
+ *
+ * @param rm Resource manager resource instance.
+ * @param session_number Session number to send it on.
+ * @param resource_id_count Number of resource ids.
+ * @param resource_ids The resource IDs themselves
+ * @return 0 on success, -1 on failure.
+ */
+extern int en50221_app_rm_reply(en50221_app_rm rm, uint16_t session_number,
+                                uint32_t resource_id_count,
+                                uint32_t *resource_ids);
+
+/**
+ * Send a profile_changed to a CAM.
+ *
+ * @param rm Resource manager resource instance.
+ * @param session_number Session number to send it on.
+ * @return 0 on success, -1 on failure.
+ */
+extern int en50221_app_rm_changed(en50221_app_rm rm, uint16_t session_number);
+
+/**
+ * Pass data received for this resource into it for parsing.
+ *
+ * @param rm rm instance.
+ * @param slot_id Slot ID concerned.
+ * @param session_number Session number concerned.
+ * @param resource_id Resource ID concerned.
+ * @param data The data.
+ * @param data_length Length of data in bytes.
+ * @return 0 on success, -1 on failure.
+ */
+extern int en50221_app_rm_message(en50221_app_rm rm,
+                                  uint8_t slot_id,
+                                  uint16_t session_number,
+                                  uint32_t resource_id,
+                                  uint8_t *data, uint32_t data_length);
 
 #endif
