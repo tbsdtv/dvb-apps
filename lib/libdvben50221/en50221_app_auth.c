@@ -23,6 +23,7 @@
 
 #include <string.h>
 #include <dvbmisc.h>
+#include <pthread.h>
 #include "en50221_app_auth.h"
 #include "asn_1.h"
 
@@ -35,6 +36,8 @@ struct en50221_app_auth_private {
 
         en50221_app_auth_request_callback callback;
         void *callback_arg;
+
+        pthread_mutex_t lock;
 };
 
 static int en50221_app_auth_parse_request(struct en50221_app_auth_private *private,
@@ -54,6 +57,8 @@ en50221_app_auth en50221_app_auth_create(struct en50221_app_send_functions *func
     private->funcs = funcs;
     private->callback = NULL;
 
+    pthread_mutex_init(&private->lock, NULL);
+
     // done
     return private;
 }
@@ -62,6 +67,7 @@ void en50221_app_auth_destroy(en50221_app_auth auth)
 {
     struct en50221_app_auth_private *private = (struct en50221_app_auth_private *) auth;
 
+    pthread_mutex_destroy(&private->lock);
     free(private);
 }
 
@@ -70,8 +76,10 @@ void en50221_app_auth_register_request_callback(en50221_app_auth auth,
 {
     struct en50221_app_auth_private *private = (struct en50221_app_auth_private *) auth;
 
+    pthread_mutex_lock(&private->lock);
     private->callback = callback;
     private->callback_arg = arg;
+    pthread_mutex_unlock(&private->lock);
 }
 
 int en50221_app_auth_send(en50221_app_auth auth,
@@ -163,9 +171,12 @@ static int en50221_app_auth_parse_request(struct en50221_app_auth_private *priva
     uint16_t auth_protocol_id = (auth_data[0]<<8) | auth_data[1];
 
     // tell the app
-    if (private->callback) {
-        return private->callback(private->callback_arg, slot_id, session_number,
-                          auth_protocol_id, auth_data+2, asn_data_length-2);
+    pthread_mutex_lock(&private->lock);
+    en50221_app_auth_request_callback cb = private->callback;
+    void *cb_arg = private->callback_arg;
+    pthread_mutex_unlock(&private->lock);
+    if (cb) {
+        return cb(cb_arg, slot_id, session_number, auth_protocol_id, auth_data+2, asn_data_length-2);
     }
     return 0;
 }

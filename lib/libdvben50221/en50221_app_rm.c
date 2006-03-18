@@ -23,6 +23,7 @@
 
 #include <string.h>
 #include <dvbmisc.h>
+#include <pthread.h>
 #include "en50221_app_rm.h"
 #include "asn_1.h"
 
@@ -43,6 +44,8 @@ struct en50221_app_rm_private {
 
         en50221_app_rm_changed_callback changedcallback;
         void *changedcallback_arg;
+
+        pthread_mutex_t lock;
 };
 
 static int en50221_app_rm_parse_profile_enq(struct en50221_app_rm_private *private,
@@ -70,6 +73,8 @@ en50221_app_rm en50221_app_rm_create(struct en50221_app_send_functions *funcs)
     private->replycallback = NULL;
     private->changedcallback = NULL;
 
+    pthread_mutex_init(&private->lock, NULL);
+
     // done
     return private;
 }
@@ -78,7 +83,7 @@ void en50221_app_rm_destroy(en50221_app_rm rm)
 {
     struct en50221_app_rm_private *private = (struct en50221_app_rm_private *) rm;
 
-    // free structure
+    pthread_mutex_destroy(&private->lock);
     free(private);
 }
 
@@ -87,8 +92,10 @@ void en50221_app_rm_register_enq_callback(en50221_app_rm rm,
 {
     struct en50221_app_rm_private *private = (struct en50221_app_rm_private *) rm;
 
+    pthread_mutex_lock(&private->lock);
     private->enqcallback = callback;
     private->enqcallback_arg = arg;
+    pthread_mutex_unlock(&private->lock);
 }
 
 void en50221_app_rm_register_reply_callback(en50221_app_rm rm,
@@ -96,8 +103,10 @@ void en50221_app_rm_register_reply_callback(en50221_app_rm rm,
 {
     struct en50221_app_rm_private *private = (struct en50221_app_rm_private *) rm;
 
+    pthread_mutex_lock(&private->lock);
     private->replycallback = callback;
     private->replycallback_arg = arg;
+    pthread_mutex_unlock(&private->lock);
 }
 
 void en50221_app_rm_register_changed_callback(en50221_app_rm rm,
@@ -105,8 +114,10 @@ void en50221_app_rm_register_changed_callback(en50221_app_rm rm,
 {
     struct en50221_app_rm_private *private = (struct en50221_app_rm_private *) rm;
 
+    pthread_mutex_lock(&private->lock);
     private->changedcallback = callback;
     private->changedcallback_arg = arg;
+    pthread_mutex_unlock(&private->lock);
 }
 
 int en50221_app_rm_enq(en50221_app_rm rm, uint16_t session_number)
@@ -205,8 +216,12 @@ static int en50221_app_rm_parse_profile_enq(struct en50221_app_rm_private *priva
     (void)data;
     (void)data_length;
 
-    if (private->enqcallback) {
-        return private->enqcallback(private->enqcallback_arg, slot_id, session_number);
+    pthread_mutex_lock(&private->lock);
+    en50221_app_rm_enq_callback cb = private->enqcallback;
+    void *cb_arg = private->enqcallback_arg;
+    pthread_mutex_unlock(&private->lock);
+    if (cb) {
+        return cb(cb_arg, slot_id, session_number);
     }
     return 0;
 }
@@ -231,9 +246,12 @@ static int en50221_app_rm_parse_profile_reply(struct en50221_app_rm_private *pri
     uint32_t resources_count = asn_data_length / 4;
 
     // inform observer
-    if (private->replycallback) {
-        return private->replycallback(private->replycallback_arg,
-                               slot_id, session_number, resources_count, (uint32_t*) (data+length_field_len));
+    pthread_mutex_lock(&private->lock);
+    en50221_app_rm_reply_callback cb = private->replycallback;
+    void *cb_arg = private->replycallback_arg;
+    pthread_mutex_unlock(&private->lock);
+    if (cb) {
+        return cb(cb_arg, slot_id, session_number, resources_count, (uint32_t*) (data+length_field_len));
     }
     return 0;
 }
@@ -245,8 +263,12 @@ static int en50221_app_rm_parse_profile_change(struct en50221_app_rm_private *pr
     (void)data;
     (void)data_length;
 
-    if (private->changedcallback) {
-        return private->changedcallback(private->changedcallback_arg, slot_id, session_number);
+    pthread_mutex_lock(&private->lock);
+    en50221_app_rm_changed_callback cb = private->changedcallback;
+    void *cb_arg = private->changedcallback_arg;
+    pthread_mutex_unlock(&private->lock);
+    if (cb) {
+        return cb(cb_arg, slot_id, session_number);
     }
     return 0;
 }

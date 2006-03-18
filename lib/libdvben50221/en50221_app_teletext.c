@@ -23,6 +23,7 @@
 
 #include <string.h>
 #include <dvbmisc.h>
+#include <pthread.h>
 #include "en50221_app_teletext.h"
 #include "asn_1.h"
 
@@ -34,6 +35,8 @@ struct en50221_app_teletext_private {
 
         en50221_app_teletext_callback callback;
         void *callback_arg;
+
+        pthread_mutex_t lock;
 };
 
 static int en50221_app_teletext_parse_ebu(struct en50221_app_teletext_private *private,
@@ -54,6 +57,8 @@ en50221_app_teletext en50221_app_teletext_create(struct en50221_app_send_functio
     private->funcs = funcs;
     private->callback = NULL;
 
+    pthread_mutex_init(&private->lock, NULL);
+
     // done
     return private;
 }
@@ -62,6 +67,7 @@ void en50221_app_teletext_destroy(en50221_app_teletext teletext)
 {
     struct en50221_app_teletext_private *private = (struct en50221_app_teletext_private *) teletext;
 
+    pthread_mutex_destroy(&private->lock);
     free(private);
 }
 
@@ -70,8 +76,10 @@ void en50221_app_teletext_register_callback(en50221_app_teletext teletext,
 {
     struct en50221_app_teletext_private *private = (struct en50221_app_teletext_private *) teletext;
 
+    pthread_mutex_lock(&private->lock);
     private->callback = callback;
     private->callback_arg = arg;
+    pthread_mutex_unlock(&private->lock);
 }
 
 int en50221_app_teletext_resource_callback(en50221_app_teletext teletext,
@@ -121,9 +129,12 @@ static int en50221_app_teletext_parse_ebu(struct en50221_app_teletext_private *p
     uint8_t *teletext_data = data + length_field_len;
 
     // tell the app
-    if (private->callback) {
-        return private->callback(private->callback_arg, slot_id, session_number,
-                          teletext_data, asn_data_length);
+    pthread_mutex_lock(&private->lock);
+    en50221_app_teletext_callback cb = private->callback;
+    void *cb_arg = private->callback_arg;
+    pthread_mutex_unlock(&private->lock);
+    if (cb) {
+        return cb(cb_arg, slot_id, session_number, teletext_data, asn_data_length);
     }
     return 0;
 }

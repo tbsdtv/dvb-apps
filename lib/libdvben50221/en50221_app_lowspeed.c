@@ -23,6 +23,7 @@
 
 #include <string.h>
 #include <dvbmisc.h>
+#include <pthread.h>
 #include "en50221_app_lowspeed.h"
 #include "asn_1.h"
 
@@ -43,6 +44,8 @@ struct en50221_app_lowspeed_private {
 
         en50221_app_lowspeed_send_callback send_callback;
         void *send_callback_arg;
+
+        pthread_mutex_t lock;
 };
 
 static int en50221_app_lowspeed_parse_connect_on_channel(struct en50221_app_lowspeed_command *command,
@@ -70,6 +73,8 @@ en50221_app_lowspeed en50221_app_lowspeed_create(struct en50221_app_send_functio
     private->command_callback = NULL;
     private->send_callback = NULL;
 
+    pthread_mutex_init(&private->lock, NULL);
+
     // done
     return private;
 }
@@ -78,6 +83,7 @@ void en50221_app_lowspeed_destroy(en50221_app_lowspeed lowspeed)
 {
     struct en50221_app_lowspeed_private *private = (struct en50221_app_lowspeed_private *) lowspeed;
 
+    pthread_mutex_destroy(&private->lock);
     free(private);
 }
 
@@ -86,8 +92,10 @@ void en50221_app_lowspeed_register_command_callback(en50221_app_lowspeed lowspee
 {
     struct en50221_app_lowspeed_private *private = (struct en50221_app_lowspeed_private *) lowspeed;
 
+    pthread_mutex_lock(&private->lock);
     private->command_callback = callback;
     private->command_callback_arg = arg;
+    pthread_mutex_unlock(&private->lock);
 }
 
 void en50221_app_lowspeed_register_send_callback(en50221_app_lowspeed lowspeed,
@@ -95,8 +103,10 @@ void en50221_app_lowspeed_register_send_callback(en50221_app_lowspeed lowspeed,
 {
     struct en50221_app_lowspeed_private *private = (struct en50221_app_lowspeed_private *) lowspeed;
 
+    pthread_mutex_lock(&private->lock);
     private->send_callback = callback;
     private->send_callback_arg = arg;
+    pthread_mutex_unlock(&private->lock);
 }
 
 int en50221_app_lowspeed_send_comms_reply(en50221_app_lowspeed lowspeed,
@@ -349,9 +359,12 @@ static int en50221_app_lowspeed_parse_command(struct en50221_app_lowspeed_privat
     }
 
     // tell the app
-    if (private->command_callback) {
-        return private->command_callback(private->command_callback_arg, slot_id, session_number,
-                                  command_id, &command);
+    pthread_mutex_lock(&private->lock);
+    en50221_app_lowspeed_command_callback cb = private->command_callback;
+    void *cb_arg = private->command_callback_arg;
+    pthread_mutex_unlock(&private->lock);
+    if (cb) {
+        return cb(cb_arg, slot_id, session_number, command_id, &command);
     }
     return 0;
 }
@@ -380,9 +393,12 @@ static int en50221_app_lowspeed_parse_send(struct en50221_app_lowspeed_private *
     uint8_t phase_id = data[1];
 
     // tell the app
-    if (private->send_callback) {
-        return private->send_callback(private->send_callback_arg, slot_id, session_number, phase_id, last_more,
-                               data+2, asn_data_length-1);
+    pthread_mutex_lock(&private->lock);
+    en50221_app_lowspeed_send_callback cb = private->send_callback;
+    void *cb_arg = private->send_callback_arg;
+    pthread_mutex_unlock(&private->lock);
+    if (cb) {
+        return cb(cb_arg, slot_id, session_number, phase_id, last_more, data+2, asn_data_length-1);
     }
     return 0;
 }

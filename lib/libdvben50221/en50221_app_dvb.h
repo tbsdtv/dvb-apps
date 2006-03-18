@@ -48,20 +48,32 @@ typedef int (*en50221_app_dvb_tune_callback)(void *arg, uint8_t slot_id, uint16_
                                               uint16_t transport_stream_id, uint16_t service_id);
 
 /**
- * Type definition for replace - called when we receive a replace/clear_replace request from a CAM.
+ * Type definition for replace - called when we receive a replace request from a CAM.
  *
  * @param arg Private argument.
  * @param slot_id Slot id concerned.
  * @param session_number Session number concerned.
  * @param replacement_ref Replacement ref.
- * @param request_type 0=> replace, 1=> clear replace.
  * @param replaced_pid PID to replace.
  * @param replacement_pid PID to replace it with.
  * @return 0 on success, -1 on failure.
  */
 typedef int (*en50221_app_dvb_replace_callback)(void *arg, uint8_t slot_id, uint16_t session_number,
-                                                 uint8_t replacement_ref, uint8_t request_type,
+                                                 uint8_t replacement_ref,
                                                  uint16_t replaced_pid, uint16_t replacement_pid);
+
+
+/**
+ * Type definition for clear_replace - called when we receive a clear_replace request from a CAM.
+ *
+ * @param arg Private argument.
+ * @param slot_id Slot id concerned.
+ * @param session_number Session number concerned.
+ * @param replacement_ref Replacement ref.
+ * @return 0 on success, -1 on failure.
+ */
+typedef int (*en50221_app_dvb_clear_replace_callback)(void *arg, uint8_t slot_id, uint16_t session_number,
+                                                      uint8_t replacement_ref);
 
 
 /**
@@ -95,7 +107,7 @@ extern void en50221_app_dvb_register_tune_callback(en50221_app_dvb dvb,
         en50221_app_dvb_tune_callback callback, void *arg);
 
 /**
- * Register the callback for when we receive a replace/clear_replace request.
+ * Register the callback for when we receive a replace request.
  *
  * @param dvb DVB resource instance.
  * @param callback The callback. Set to NULL to remove the callback completely.
@@ -103,6 +115,16 @@ extern void en50221_app_dvb_register_tune_callback(en50221_app_dvb dvb,
  */
 extern void en50221_app_dvb_register_replace_callback(en50221_app_dvb dvb,
         en50221_app_dvb_replace_callback callback, void *arg);
+
+/**
+ * Register the callback for when we receive a clear replace request.
+ *
+ * @param dvb DVB resource instance.
+ * @param callback The callback. Set to NULL to remove the callback completely.
+ * @param arg Private data passed as arg0 of the callback.
+ */
+extern void en50221_app_dvb_register_clear_replace_callback(en50221_app_dvb dvb,
+        en50221_app_dvb_clear_replace_callback callback, void *arg);
 
 /**
  * Send an ask release request to the CAM.

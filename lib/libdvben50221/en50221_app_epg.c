@@ -23,6 +23,7 @@
 
 #include <string.h>
 #include <dvbmisc.h>
+#include <pthread.h>
 #include <ucsi/dvb/types.h>
 #include "en50221_app_epg.h"
 #include "asn_1.h"
@@ -36,6 +37,8 @@ struct en50221_app_epg_private {
 
         en50221_app_epg_reply_callback callback;
         void *callback_arg;
+
+        pthread_mutex_t lock;
 };
 
 static int en50221_app_epg_parse_reply(struct en50221_app_epg_private *private,
@@ -56,6 +59,8 @@ en50221_app_epg en50221_app_epg_create(struct en50221_app_send_functions *funcs)
     private->funcs = funcs;
     private->callback = NULL;
 
+    pthread_mutex_init(&private->lock, NULL);
+
     // done
     return private;
 }
@@ -64,6 +69,7 @@ void en50221_app_epg_destroy(en50221_app_epg epg)
 {
     struct en50221_app_epg_private *private = (struct en50221_app_epg_private *) epg;
 
+    pthread_mutex_destroy(&private->lock);
     free(private);
 }
 
@@ -72,8 +78,10 @@ void en50221_app_epg_register_enquiry_callback(en50221_app_epg epg,
 {
     struct en50221_app_epg_private *private = (struct en50221_app_epg_private *) epg;
 
+    pthread_mutex_lock(&private->lock);
     private->callback = callback;
     private->callback_arg = arg;
+    pthread_mutex_unlock(&private->lock);
 }
 
 int en50221_app_epg_enquire(en50221_app_epg epg,
@@ -150,8 +158,12 @@ static int en50221_app_epg_parse_reply(struct en50221_app_epg_private *private,
     uint8_t event_status = data[1];
 
     // tell the app
-    if (private->callback) {
-        return private->callback(private->callback_arg, slot_id, session_number, event_status);
+    pthread_mutex_lock(&private->lock);
+    en50221_app_epg_reply_callback cb = private->callback;
+    void *cb_arg = private->callback_arg;
+    pthread_mutex_unlock(&private->lock);
+    if (cb) {
+        return cb(cb_arg, slot_id, session_number, event_status);
     }
     return 0;
 }

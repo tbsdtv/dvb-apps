@@ -23,6 +23,7 @@
 
 #include <string.h>
 #include <dvbmisc.h>
+#include <pthread.h>
 #include <ucsi/dvb/types.h>
 #include "en50221_app_datetime.h"
 #include "asn_1.h"
@@ -36,6 +37,8 @@ struct en50221_app_datetime_private {
 
         en50221_app_datetime_enquiry_callback callback;
         void *callback_arg;
+
+        pthread_mutex_t lock;
 };
 
 static int en50221_app_datetime_parse_enquiry(struct en50221_app_datetime_private *private,
@@ -56,6 +59,8 @@ en50221_app_datetime en50221_app_datetime_create(struct en50221_app_send_functio
     private->funcs = funcs;
     private->callback = NULL;
 
+    pthread_mutex_init(&private->lock, NULL);
+
     // done
     return private;
 }
@@ -64,6 +69,7 @@ void en50221_app_datetime_destroy(en50221_app_datetime datetime)
 {
     struct en50221_app_datetime_private *private = (struct en50221_app_datetime_private *) datetime;
 
+    pthread_mutex_destroy(&private->lock);
     free(private);
 }
 
@@ -72,8 +78,10 @@ void en50221_app_datetime_register_enquiry_callback(en50221_app_datetime datetim
 {
     struct en50221_app_datetime_private *private = (struct en50221_app_datetime_private *) datetime;
 
+    pthread_mutex_lock(&private->lock);
     private->callback = callback;
     private->callback_arg = arg;
+    pthread_mutex_unlock(&private->lock);
 }
 
 int en50221_app_datetime_send(en50221_app_datetime datetime,
@@ -151,8 +159,12 @@ static int en50221_app_datetime_parse_enquiry(struct en50221_app_datetime_privat
     uint8_t response_interval = data[1];
 
     // tell the app
-    if (private->callback) {
-        return private->callback(private->callback_arg, slot_id, session_number, response_interval);
+    pthread_mutex_lock(&private->lock);
+    en50221_app_datetime_enquiry_callback cb = private->callback;
+    void *cb_arg = private->callback_arg;
+    pthread_mutex_unlock(&private->lock);
+    if (cb) {
+        return cb(cb_arg, slot_id, session_number, response_interval);
     }
     return 0;
 }

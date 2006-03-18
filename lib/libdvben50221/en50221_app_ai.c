@@ -23,6 +23,7 @@
 
 #include <string.h>
 #include <dvbmisc.h>
+#include <pthread.h>
 #include "en50221_app_ai.h"
 #include "asn_1.h"
 
@@ -36,6 +37,8 @@ struct en50221_app_ai_private {
 
         en50221_app_ai_callback callback;
         void *callback_arg;
+
+        pthread_mutex_t lock;
 };
 
 static int en50221_app_ai_parse_app_info(struct en50221_app_ai_private *private,
@@ -55,6 +58,8 @@ en50221_app_ai en50221_app_ai_create(struct en50221_app_send_functions *funcs)
     private->funcs = funcs;
     private->callback = NULL;
 
+    pthread_mutex_init(&private->lock, NULL);
+
     // done
     return private;
 }
@@ -63,6 +68,7 @@ void en50221_app_ai_destroy(en50221_app_ai ai)
 {
     struct en50221_app_ai_private *private = (struct en50221_app_ai_private *) ai;
 
+    pthread_mutex_destroy(&private->lock);
     free(private);
 }
 
@@ -70,8 +76,10 @@ void en50221_app_ai_register_callback(en50221_app_ai ai, en50221_app_ai_callback
 {
     struct en50221_app_ai_private *private = (struct en50221_app_ai_private *) ai;
 
+    pthread_mutex_lock(&private->lock);
     private->callback = callback;
     private->callback_arg = arg;
+    pthread_mutex_unlock(&private->lock);
 }
 
 int en50221_app_ai_enquiry(en50221_app_ai ai, uint16_t session_number)
@@ -167,10 +175,13 @@ static int en50221_app_ai_parse_app_info(struct en50221_app_ai_private *private,
     }
 
     // tell the app
-    if (private->callback) {
-        return private->callback(private->callback_arg, slot_id, session_number,
-                          application_type, application_manufacturer,
-                          manufacturer_code, menu_string_length, menu_string);
+    pthread_mutex_lock(&private->lock);
+    en50221_app_ai_callback cb = private->callback;
+    void *cb_arg = private->callback_arg;
+    pthread_mutex_unlock(&private->lock);
+    if (cb) {
+        return cb(cb_arg, slot_id, session_number, application_type,
+                  application_manufacturer, manufacturer_code, menu_string_length, menu_string);
     }
     return 0;
 }

@@ -23,6 +23,7 @@
 
 #include <string.h>
 #include <dvbmisc.h>
+#include <pthread.h>
 #include "en50221_app_ca.h"
 #include "asn_1.h"
 
@@ -40,6 +41,8 @@ struct en50221_app_ca_private {
 
     en50221_app_ca_pmt_reply_callback ca_pmt_reply_callback;
     void *ca_pmt_reply_callback_arg;
+
+    pthread_mutex_t lock;
 };
 
 struct ca_pmt_descriptor {
@@ -88,6 +91,8 @@ en50221_app_ca en50221_app_ca_create(struct en50221_app_send_functions *funcs)
     private->ca_info_callback = NULL;
     private->ca_pmt_reply_callback = NULL;
 
+    pthread_mutex_init(&private->lock, NULL);
+
     // done
     return private;
 }
@@ -96,6 +101,7 @@ void en50221_app_ca_destroy(en50221_app_ca ca)
 {
     struct en50221_app_ca_private *private = (struct en50221_app_ca_private *) ca;
 
+    pthread_mutex_destroy(&private->lock);
     free(private);
 }
 
@@ -104,8 +110,10 @@ void en50221_app_ca_register_ca_info_callback(en50221_app_ca ca,
 {
     struct en50221_app_ca_private *private = (struct en50221_app_ca_private *) ca;
 
+    pthread_mutex_lock(&private->lock);
     private->ca_info_callback = callback;
     private->ca_info_callback_arg = arg;
+    pthread_mutex_unlock(&private->lock);
 }
 
 void en50221_app_ca_register_ca_pmt_reply_callback(en50221_app_ca ca,
@@ -113,8 +121,10 @@ void en50221_app_ca_register_ca_pmt_reply_callback(en50221_app_ca ca,
 {
     struct en50221_app_ca_private *private = (struct en50221_app_ca_private *) ca;
 
+    pthread_mutex_lock(&private->lock);
     private->ca_pmt_reply_callback = callback;
     private->ca_pmt_reply_callback_arg = arg;
+    pthread_mutex_unlock(&private->lock);
 }
 
 int en50221_app_ca_info_enq(en50221_app_ca ca,
@@ -537,9 +547,12 @@ static int en50221_app_ca_parse_info(struct en50221_app_ca_private *private,
     uint32_t ca_id_count = asn_data_length / 2;
 
     // tell the app
-    if (private->ca_info_callback) {
-        return private->ca_info_callback(private->ca_info_callback_arg, slot_id, session_number,
-                                  ca_id_count, (uint16_t*) data);
+    pthread_mutex_lock(&private->lock);
+    en50221_app_ca_info_callback cb = private->ca_info_callback;
+    void *cb_arg = private->ca_info_callback_arg;
+    pthread_mutex_unlock(&private->lock);
+    if (cb) {
+        return cb(cb_arg, slot_id, session_number, ca_id_count, (uint16_t*) data);
     }
     return 0;
 }
@@ -577,10 +590,12 @@ static int en50221_app_ca_parse_reply(struct en50221_app_ca_private *private,
     }
 
     // tell the app
-    if (private->ca_pmt_reply_callback) {
-        return private->ca_pmt_reply_callback(private->ca_pmt_reply_callback_arg, slot_id, session_number,
-                                       (struct en50221_app_pmt_reply*) data,
-                                       asn_data_length);
+    pthread_mutex_lock(&private->lock);
+    en50221_app_ca_pmt_reply_callback cb = private->ca_pmt_reply_callback;
+    void *cb_arg = private->ca_pmt_reply_callback_arg;
+    pthread_mutex_unlock(&private->lock);
+    if (cb) {
+        return cb(cb_arg, slot_id, session_number, (struct en50221_app_pmt_reply*) data, asn_data_length);
     }
     return 0;
 }

@@ -23,6 +23,7 @@
 
 #include <string.h>
 #include <dvbmisc.h>
+#include <pthread.h>
 #include "en50221_app_smartcard.h"
 #include "asn_1.h"
 
@@ -40,6 +41,8 @@ struct en50221_app_smartcard_private {
 
         en50221_app_smartcard_send_callback send_callback;
         void *send_callback_arg;
+
+        pthread_mutex_t lock;
 };
 
 static int en50221_app_smartcard_parse_command(struct en50221_app_smartcard_private *private,
@@ -64,6 +67,8 @@ en50221_app_smartcard en50221_app_smartcard_create(struct en50221_app_send_funct
     private->command_callback = NULL;
     private->send_callback = NULL;
 
+    pthread_mutex_init(&private->lock, NULL);
+
     // done
     return private;
 }
@@ -72,6 +77,7 @@ void en50221_app_smartcard_destroy(en50221_app_smartcard smartcard)
 {
     struct en50221_app_smartcard_private *private = (struct en50221_app_smartcard_private *) smartcard;
 
+    pthread_mutex_destroy(&private->lock);
     free(private);
 }
 
@@ -80,8 +86,10 @@ void en50221_app_smartcard_register_command_callback(en50221_app_smartcard smart
 {
     struct en50221_app_smartcard_private *private = (struct en50221_app_smartcard_private *) smartcard;
 
+    pthread_mutex_lock(&private->lock);
     private->command_callback = callback;
     private->command_callback_arg = arg;
+    pthread_mutex_unlock(&private->lock);
 }
 
 void en50221_app_smartcard_register_send_callback(en50221_app_smartcard smartcard,
@@ -89,8 +97,10 @@ void en50221_app_smartcard_register_send_callback(en50221_app_smartcard smartcar
 {
     struct en50221_app_smartcard_private *private = (struct en50221_app_smartcard_private *) smartcard;
 
+    pthread_mutex_lock(&private->lock);
     private->send_callback = callback;
     private->send_callback_arg = arg;
+    pthread_mutex_unlock(&private->lock);
 }
 
 int en50221_app_smartcard_command_reply(en50221_app_smartcard smartcard,
@@ -228,9 +238,12 @@ static int en50221_app_smartcard_parse_command(struct en50221_app_smartcard_priv
     uint8_t command_id = data[1];
 
     // tell the app
-    if (private->command_callback) {
-        return private->command_callback(private->command_callback_arg, slot_id, session_number,
-                                  command_id);
+    pthread_mutex_lock(&private->lock);
+    en50221_app_smartcard_command_callback cb = private->command_callback;
+    void *cb_arg = private->command_callback_arg;
+    pthread_mutex_unlock(&private->lock);
+    if (cb) {
+        return cb(cb_arg, slot_id, session_number, command_id);
     }
     return 0;
 }
@@ -274,9 +287,12 @@ static int en50221_app_smartcard_parse_send(struct en50221_app_smartcard_private
     uint16_t length_out = (data[6+length_in]<<8)|data[6+length_in+1];
 
     // tell the app
-    if (private->send_callback) {
-        return private->send_callback(private->send_callback_arg, slot_id, session_number,
-                               CLA, INS, P1, P2, data_in, length_in, length_out);
+    pthread_mutex_lock(&private->lock);
+    en50221_app_smartcard_send_callback cb = private->send_callback;
+    void *cb_arg = private->send_callback_arg;
+    pthread_mutex_unlock(&private->lock);
+    if (cb) {
+        return cb(cb_arg, slot_id, session_number, CLA, INS, P1, P2, data_in, length_in, length_out);
     }
     return 0;
 }
