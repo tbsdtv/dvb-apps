@@ -23,9 +23,6 @@
 
 #include <string.h>
 #include <dvbmisc.h>
-#include <ucsi/dvb/descriptor.h>
-#include "en50221_session.h"
-#include "en50221_app_utils.h"
 #include "en50221_app_lowspeed.h"
 #include "asn_1.h"
 
@@ -39,7 +36,7 @@
 #define TAG_COMMS_RECV_MORE     0x9f8c06
 
 struct en50221_app_lowspeed_private {
-        en50221_session_layer *sl;
+        struct en50221_app_send_functions *funcs;
 
         en50221_app_lowspeed_command_callback command_callback;
         void *command_callback_arg;
@@ -60,7 +57,7 @@ static void en50221_app_lowspeed_parse_send(struct en50221_app_lowspeed_private 
 
 
 
-en50221_app_lowspeed en50221_app_lowspeed_create(en50221_session_layer sl)
+en50221_app_lowspeed en50221_app_lowspeed_create(struct en50221_app_send_functions *funcs)
 {
     struct en50221_app_lowspeed_private *private = NULL;
 
@@ -69,7 +66,7 @@ en50221_app_lowspeed en50221_app_lowspeed_create(en50221_session_layer sl)
     if (private == NULL) {
         return NULL;
     }
-    private->sl = sl;
+    private->funcs = funcs;
     private->command_callback = NULL;
     private->send_callback = NULL;
 
@@ -116,7 +113,7 @@ int en50221_app_lowspeed_send_comms_reply(en50221_app_lowspeed lowspeed,
     data[3] = 2;
     data[4] = comms_reply_id;
     data[5] = return_value;
-    return en50221_sl_send_data(private->sl, session_number, data, 6);
+    return private->funcs->send_data(private->funcs->arg, session_number, data, 6);
 }
 
 int en50221_app_lowspeed_send_comms_data(en50221_app_lowspeed lowspeed,
@@ -155,7 +152,7 @@ int en50221_app_lowspeed_send_comms_data(en50221_app_lowspeed lowspeed,
     iov[1].iov_len = tx_data_length;
 
     // create the data and send it
-    return en50221_sl_send_datav(private->sl, session_number, iov, 2);
+    return private->funcs->send_datav(private->funcs->arg, session_number, iov, 2);
 }
 
 int en50221_app_lowspeed_message(en50221_app_lowspeed lowspeed,

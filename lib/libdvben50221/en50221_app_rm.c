@@ -23,8 +23,6 @@
 
 #include <string.h>
 #include <dvbmisc.h>
-#include "en50221_session.h"
-#include "en50221_app_utils.h"
 #include "en50221_app_rm.h"
 #include "asn_1.h"
 
@@ -35,7 +33,7 @@
 
 
 struct en50221_app_rm_private {
-        en50221_session_layer *sl;
+        struct en50221_app_send_functions *funcs;
 
         en50221_app_rm_enq_callback enqcallback;
         void *enqcallback_arg;
@@ -58,7 +56,7 @@ static void en50221_app_rm_parse_profile_change(struct en50221_app_rm_private *p
         uint8_t *data, uint32_t data_length);
 
 
-en50221_app_rm en50221_app_rm_create(en50221_session_layer sl)
+en50221_app_rm en50221_app_rm_create(struct en50221_app_send_functions *funcs)
 {
     struct en50221_app_rm_private *private = NULL;
 
@@ -67,7 +65,7 @@ en50221_app_rm en50221_app_rm_create(en50221_session_layer sl)
     if (private == NULL) {
         return NULL;
     }
-    private->sl = sl;
+    private->funcs = funcs;
     private->enqcallback = NULL;
     private->replycallback = NULL;
     private->changedcallback = NULL;
@@ -122,7 +120,7 @@ int en50221_app_rm_enq(en50221_app_rm rm, uint16_t session_number)
     buf[2] = TAG_PROFILE_ENQUIRY & 0xFF;
 
     // create the data and send it
-    return en50221_sl_send_data(private->sl, session_number, buf, 3);
+    return private->funcs->send_data(private->funcs->arg, session_number, buf, 3);
 }
 
 int en50221_app_rm_reply(en50221_app_rm rm, uint16_t session_number,
@@ -151,7 +149,7 @@ int en50221_app_rm_reply(en50221_app_rm rm, uint16_t session_number,
     iov[1].iov_len = resource_id_count * 4;
 
     // create the data and send it
-    return en50221_sl_send_datav(private->sl, session_number, iov, 2);
+    return private->funcs->send_datav(private->funcs->arg, session_number, iov, 2);
 }
 
 int en50221_app_rm_changed(en50221_app_rm rm, uint16_t session_number)
@@ -165,7 +163,7 @@ int en50221_app_rm_changed(en50221_app_rm rm, uint16_t session_number)
     buf[2] = TAG_PROFILE_CHANGE & 0xFF;
 
     // create the data and send it
-    return en50221_sl_send_data(private->sl, session_number, buf, 3);
+    return private->funcs->send_data(private->funcs->arg, session_number, buf, 3);
 }
 
 int en50221_app_rm_message(en50221_app_rm rm,

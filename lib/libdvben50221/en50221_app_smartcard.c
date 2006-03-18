@@ -23,9 +23,6 @@
 
 #include <string.h>
 #include <dvbmisc.h>
-#include <ucsi/dvb/descriptor.h>
-#include "en50221_session.h"
-#include "en50221_app_utils.h"
 #include "en50221_app_smartcard.h"
 #include "asn_1.h"
 
@@ -36,7 +33,7 @@
 #define TAG_SMARTCARD_RCV           0x9f8e03
 
 struct en50221_app_smartcard_private {
-        en50221_session_layer *sl;
+        struct en50221_app_send_functions *funcs;
 
         en50221_app_smartcard_command_callback command_callback;
         void *command_callback_arg;
@@ -54,7 +51,7 @@ static void en50221_app_smartcard_parse_send(struct en50221_app_smartcard_privat
                                              uint8_t *data, uint32_t data_length);
 
 
-en50221_app_smartcard en50221_app_smartcard_create(en50221_session_layer sl)
+en50221_app_smartcard en50221_app_smartcard_create(struct en50221_app_send_functions *funcs)
 {
     struct en50221_app_smartcard_private *private = NULL;
 
@@ -63,7 +60,7 @@ en50221_app_smartcard en50221_app_smartcard_create(en50221_session_layer sl)
     if (private == NULL) {
         return NULL;
     }
-    private->sl = sl;
+    private->funcs = funcs;
     private->command_callback = NULL;
     private->send_callback = NULL;
 
@@ -140,7 +137,7 @@ int en50221_app_smartcard_command_reply(en50221_app_smartcard smartcard,
         iov_count = 1;
     }
 
-    return en50221_sl_send_datav(private->sl, session_number, iovec, iov_count);
+    return private->funcs->send_datav(private->funcs->arg, session_number, iovec, iov_count);
 }
 
 int en50221_app_smartcard_receive(en50221_app_smartcard smartcard,
@@ -179,7 +176,7 @@ int en50221_app_smartcard_receive(en50221_app_smartcard smartcard,
     iov[2].iov_len = 2;
 
     // create the data and send it
-    return en50221_sl_send_datav(private->sl, session_number, iov, 3);
+    return private->funcs->send_datav(private->funcs->arg, session_number, iov, 3);
 }
 
 int en50221_app_smartcard_message(en50221_app_smartcard smartcard,

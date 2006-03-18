@@ -23,8 +23,6 @@
 
 #include <string.h>
 #include <dvbmisc.h>
-#include "en50221_session.h"
-#include "en50221_app_utils.h"
 #include "en50221_app_teletext.h"
 #include "asn_1.h"
 
@@ -32,7 +30,7 @@
 #define TAG_TELETEXT_EBU      0x9f9000
 
 struct en50221_app_teletext_private {
-        en50221_session_layer *sl;
+        struct en50221_app_send_functions *funcs;
 
         en50221_app_teletext_callback callback;
         void *callback_arg;
@@ -44,7 +42,7 @@ static void en50221_app_teletext_parse_ebu(struct en50221_app_teletext_private *
 
 
 
-en50221_app_teletext en50221_app_teletext_create(en50221_session_layer sl)
+en50221_app_teletext en50221_app_teletext_create(struct en50221_app_send_functions *funcs)
 {
     struct en50221_app_teletext_private *private = NULL;
 
@@ -53,7 +51,7 @@ en50221_app_teletext en50221_app_teletext_create(en50221_session_layer sl)
     if (private == NULL) {
         return NULL;
     }
-    private->sl = sl;
+    private->funcs = funcs;
     private->callback = NULL;
 
     // done

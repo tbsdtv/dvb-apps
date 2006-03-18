@@ -26,7 +26,7 @@
 
 #include <stdlib.h>
 #include <stdint.h>
-#include <en50221_session.h>
+#include <en50221_app_utils.h>
 
 #define EPG_COMMAND_ID_MMI                          0x02
 #define EPG_COMMAND_ID_QUERY                        0x03
@@ -62,10 +62,10 @@ typedef void *en50221_app_epg;
 /**
  * Create an instance of the epg resource.
  *
- * @param sl Session layer to communicate with.
+ * @param funcs Send functions to use.
  * @return Instance, or NULL on failure.
  */
-extern en50221_app_epg en50221_app_epg_create(en50221_session_layer sl);
+extern en50221_app_epg en50221_app_epg_create(struct en50221_app_send_functions *funcs);
 
 /**
  * Destroy an instance of the epg resource.

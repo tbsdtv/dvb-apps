@@ -23,8 +23,6 @@
 
 #include <string.h>
 #include <dvbmisc.h>
-#include "en50221_session.h"
-#include "en50221_app_utils.h"
 #include "en50221_app_auth.h"
 #include "asn_1.h"
 
@@ -33,7 +31,7 @@
 #define TAG_AUTH_RESP      0x9f8201
 
 struct en50221_app_auth_private {
-        en50221_session_layer *sl;
+        struct en50221_app_send_functions *funcs;
 
         en50221_app_auth_request_callback callback;
         void *callback_arg;
@@ -44,7 +42,7 @@ static void en50221_app_auth_parse_request(struct en50221_app_auth_private *priv
                                            uint8_t *data, uint32_t data_length);
 
 
-en50221_app_auth en50221_app_auth_create(en50221_session_layer sl)
+en50221_app_auth en50221_app_auth_create(struct en50221_app_send_functions *funcs)
 {
     struct en50221_app_auth_private *private = NULL;
 
@@ -53,7 +51,7 @@ en50221_app_auth en50221_app_auth_create(en50221_session_layer sl)
     if (private == NULL) {
         return NULL;
     }
-    private->sl = sl;
+    private->funcs = funcs;
     private->callback = NULL;
 
     // done
@@ -107,7 +105,7 @@ int en50221_app_auth_send(en50221_app_auth auth,
     iov[1].iov_len = auth_data_length;
 
     // sendit
-    return en50221_sl_send_datav(private->sl, session_number, iov, 2);
+    return private->funcs->send_datav(private->funcs->arg, session_number, iov, 2);
 }
 
 int en50221_app_auth_message(en50221_app_auth auth,

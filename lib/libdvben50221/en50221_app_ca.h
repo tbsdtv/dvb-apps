@@ -26,7 +26,7 @@
 
 #include <stdlib.h>
 #include <stdint.h>
-#include <en50221_session.h>
+#include <en50221_app_utils.h>
 #include <ucsi/mpeg/pmt_section.h>
 #include <ucsi/dvb/descriptor.h>
 
@@ -121,10 +121,10 @@ typedef void *en50221_app_ca;
 /**
  * Create an instance of the ca resource.
  *
- * @param sl Session layer to communicate with.
+ * @param funcs Send functions to use.
  * @return Instance, or NULL on failure.
  */
-extern en50221_app_ca en50221_app_ca_create(en50221_session_layer sl);
+extern en50221_app_ca en50221_app_ca_create(struct en50221_app_send_functions *funcs);
 
 /**
  * Destroy an instance of the ca resource.

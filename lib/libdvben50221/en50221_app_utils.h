@@ -26,6 +26,7 @@
 
 #include <stdlib.h>
 #include <stdint.h>
+#include <sys/uio.h>
 
 // we will ignore private resource (resource_id_type==3),
 // because they are not used by any modules at all and
@@ -34,6 +35,27 @@ struct en50221_app_public_resource_id {
     uint16_t resource_class;
     uint16_t resource_type;
     uint8_t resource_version;
+};
+
+/**
+ * An abstraction away from hardcoded send functions so different layers may be
+ * slotted in under the application layer.
+ */
+struct en50221_app_send_functions {
+    /**
+     * Argument to pass to these functions.
+     */
+    void *arg;
+
+    /**
+     * Send data.
+     */
+    int (*send_data)(void *arg, uint8_t session_number, uint8_t *data, uint16_t data_length);
+
+    /**
+     * Send vector data.
+     */
+    int (*send_datav)(void *arg, uint8_t session_number, struct iovec *vector, int iov_count);
 };
 
 /**

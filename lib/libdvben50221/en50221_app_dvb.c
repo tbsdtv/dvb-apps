@@ -23,8 +23,6 @@
 
 #include <string.h>
 #include <dvbmisc.h>
-#include "en50221_session.h"
-#include "en50221_app_utils.h"
 #include "en50221_app_dvb.h"
 #include "asn_1.h"
 
@@ -35,7 +33,7 @@
 #define TAG_ASK_RELEASE         0x9f8403
 
 struct en50221_app_dvb_private {
-        en50221_session_layer *sl;
+        struct en50221_app_send_functions *funcs;
 
         en50221_app_dvb_tune_callback tune_callback;
         void *tune_callback_arg;
@@ -58,7 +56,7 @@ static void en50221_app_dvb_parse_clear_replace(struct en50221_app_dvb_private *
 
 
 
-en50221_app_dvb en50221_app_dvb_create(en50221_session_layer sl)
+en50221_app_dvb en50221_app_dvb_create(struct en50221_app_send_functions *funcs)
 {
     struct en50221_app_dvb_private *private = NULL;
 
@@ -67,7 +65,7 @@ en50221_app_dvb en50221_app_dvb_create(en50221_session_layer sl)
     if (private == NULL) {
         return NULL;
     }
-    private->sl = sl;
+    private->funcs = funcs;
     private->tune_callback = NULL;
     private->replace_callback = NULL;
 
@@ -109,7 +107,7 @@ int en50221_app_dvb_ask_release(en50221_app_dvb dvb, uint16_t session_number)
     data[1] = (TAG_ASK_RELEASE >> 8) & 0xFF;
     data[2] = TAG_ASK_RELEASE & 0xFF;
 
-    return en50221_sl_send_data(private->sl, session_number, data, 3);
+    return private->funcs->send_data(private->funcs->arg, session_number, data, 3);
 }
 
 int en50221_app_dvb_message(en50221_app_dvb dvb,

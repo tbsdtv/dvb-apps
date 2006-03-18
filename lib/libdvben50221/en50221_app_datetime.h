@@ -26,7 +26,7 @@
 
 #include <stdlib.h>
 #include <stdint.h>
-#include <en50221_session.h>
+#include <en50221_app_utils.h>
 
 #define EN50221_APP_DATETIME_RESOURCEID MKRID(36,1,1)
 
@@ -49,10 +49,10 @@ typedef void *en50221_app_datetime;
 /**
  * Create an instance of the datetime resource.
  *
- * @param sl Session layer to communicate with.
+ * @param funcs Send functions to use.
  * @return Instance, or NULL on failure.
  */
-extern en50221_app_datetime en50221_app_datetime_create(en50221_session_layer sl);
+extern en50221_app_datetime en50221_app_datetime_create(struct en50221_app_send_functions *funcs);
 
 /**
  * Destroy an instance of the datetime resource.

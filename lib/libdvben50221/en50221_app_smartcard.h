@@ -26,7 +26,7 @@
 
 #include <stdlib.h>
 #include <stdint.h>
-#include <en50221_session.h>
+#include <en50221_app_utils.h>
 
 #define SMARTCARD_COMMAND_ID_CONNECT            0x01
 #define SMARTCARD_COMMAND_ID_DISCONNECT         0x02
@@ -92,10 +92,10 @@ typedef void *en50221_app_smartcard;
 /**
  * Create an instance of the smartcard resource.
  *
- * @param sl Session layer to communicate with.
+ * @param funcs Send functions to use.
  * @return Instance, or NULL on failure.
  */
-extern en50221_app_smartcard en50221_app_smartcard_create(en50221_session_layer sl);
+extern en50221_app_smartcard en50221_app_smartcard_create(struct en50221_app_send_functions *funcs);
 
 /**
  * Destroy an instance of the smartcard resource.

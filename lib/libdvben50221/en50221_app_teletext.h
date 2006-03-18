@@ -26,7 +26,7 @@
 
 #include <stdlib.h>
 #include <stdint.h>
-#include <en50221_session.h>
+#include <en50221_app_utils.h>
 
 #define EN50221_APP_TELETEXT_RESOURCEID(DEVICE_NUMBER) MKRID(128, 1, 1),
 
@@ -52,10 +52,10 @@ typedef void *en50221_app_teletext;
 /**
  * Create an instance of the teletext resource.
  *
- * @param sl Session layer to communicate with.
+ * @param funcs Send functions to use.
  * @return Instance, or NULL on failure.
  */
-extern en50221_app_teletext en50221_app_teletext_create(en50221_session_layer sl);
+extern en50221_app_teletext en50221_app_teletext_create(struct en50221_app_send_functions *funcs);
 
 /**
  * Destroy an instance of the teletext resource.

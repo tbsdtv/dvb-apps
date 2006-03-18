@@ -23,8 +23,6 @@
 
 #include <string.h>
 #include <dvbmisc.h>
-#include "en50221_session.h"
-#include "en50221_app_utils.h"
 #include "en50221_app_ai.h"
 #include "asn_1.h"
 
@@ -34,7 +32,7 @@
 #define TAG_ENTER_MENU          0x9f8022
 
 struct en50221_app_ai_private {
-        en50221_session_layer *sl;
+        struct en50221_app_send_functions *funcs;
 
         en50221_app_ai_callback callback;
         void *callback_arg;
@@ -45,7 +43,7 @@ static void en50221_app_ai_parse_app_info(struct en50221_app_ai_private *private
                                           uint8_t *data, uint32_t data_length);
 
 
-en50221_app_ai en50221_app_ai_create(en50221_session_layer sl)
+en50221_app_ai en50221_app_ai_create(struct en50221_app_send_functions *funcs)
 {
     struct en50221_app_ai_private *private = NULL;
 
@@ -54,7 +52,7 @@ en50221_app_ai en50221_app_ai_create(en50221_session_layer sl)
     if (private == NULL) {
         return NULL;
     }
-    private->sl = sl;
+    private->funcs = funcs;
     private->callback = NULL;
 
     // done
@@ -85,7 +83,7 @@ int en50221_app_ai_enquiry(en50221_app_ai ai, uint16_t session_number)
     data[1] = (TAG_APP_INFO_ENQUIRY >> 8) & 0xFF;
     data[2] = TAG_APP_INFO_ENQUIRY & 0xFF;
 
-    return en50221_sl_send_data(private->sl, session_number, data, 3);
+    return private->funcs->send_data(private->funcs->arg, session_number, data, 3);
 }
 
 int en50221_app_ai_entermenu(en50221_app_ai ai, uint16_t session_number)
@@ -97,7 +95,7 @@ int en50221_app_ai_entermenu(en50221_app_ai ai, uint16_t session_number)
     data[1] = (TAG_ENTER_MENU >> 8) & 0xFF;
     data[2] = TAG_ENTER_MENU & 0xFF;
 
-    return en50221_sl_send_data(private->sl, session_number, data, 3);
+    return private->funcs->send_data(private->funcs->arg, session_number, data, 3);
 }
 
 int en50221_app_ai_message(en50221_app_ai ai,

@@ -24,8 +24,6 @@
 #include <string.h>
 #include <dvbmisc.h>
 #include <ucsi/dvb/types.h>
-#include "en50221_session.h"
-#include "en50221_app_utils.h"
 #include "en50221_app_epg.h"
 #include "asn_1.h"
 
@@ -34,7 +32,7 @@
 #define TAG_EPG_REPLY           0x9f8f01
 
 struct en50221_app_epg_private {
-        en50221_session_layer *sl;
+        struct en50221_app_send_functions *funcs;
 
         en50221_app_epg_reply_callback callback;
         void *callback_arg;
@@ -46,7 +44,7 @@ static void en50221_app_epg_parse_reply(struct en50221_app_epg_private *private,
 
 
 
-en50221_app_epg en50221_app_epg_create(en50221_session_layer sl)
+en50221_app_epg en50221_app_epg_create(struct en50221_app_send_functions *funcs)
 {
     struct en50221_app_epg_private *private = NULL;
 
@@ -55,7 +53,7 @@ en50221_app_epg en50221_app_epg_create(en50221_session_layer sl)
     if (private == NULL) {
         return NULL;
     }
-    private->sl = sl;
+    private->funcs = funcs;
     private->callback = NULL;
 
     // done
@@ -105,7 +103,7 @@ int en50221_app_epg_enquire(en50221_app_epg epg,
     data[12] = service_id;
     data[13] = event_id >> 8;
     data[14] = event_id;
-    return en50221_sl_send_data(private->sl, session_number, data, 15);
+    return private->funcs->send_data(private->funcs->arg, session_number, data, 15);
 }
 
 int en50221_app_epg_message(en50221_app_epg epg,

@@ -26,7 +26,7 @@
 
 #include <stdlib.h>
 #include <stdint.h>
-#include <en50221_session.h>
+#include <en50221_app_utils.h>
 
 #define EN50221_APP_AI_RESOURCEID MKRID(2,1,1)
 
@@ -56,10 +56,10 @@ typedef void *en50221_app_ai;
 /**
  * Create an instance of an application information resource.
  *
- * @param sl Session layer to communicate with.
+ * @param funcs Send functions to use.
  * @return Instance, or NULL on failure.
  */
-extern en50221_app_ai en50221_app_ai_create(en50221_session_layer sl);
+extern en50221_app_ai en50221_app_ai_create(struct en50221_app_send_functions *funcs);
 
 /**
  * Destroy an instance of an application information resource.

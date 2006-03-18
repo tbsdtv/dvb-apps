@@ -23,8 +23,6 @@
 
 #include <string.h>
 #include <dvbmisc.h>
-#include "en50221_session.h"
-#include "en50221_app_utils.h"
 #include "en50221_app_ca.h"
 #include "asn_1.h"
 
@@ -35,13 +33,13 @@
 #define TAG_CA_PMT_REPLY        0x9f8033
 
 struct en50221_app_ca_private {
-        en50221_session_layer *sl;
+    struct en50221_app_send_functions *funcs;
 
-        en50221_app_ca_info_callback ca_info_callback;
-        void *ca_info_callback_arg;
+    en50221_app_ca_info_callback ca_info_callback;
+    void *ca_info_callback_arg;
 
-        en50221_app_ca_pmt_reply_callback ca_pmt_reply_callback;
-        void *ca_pmt_reply_callback_arg;
+    en50221_app_ca_pmt_reply_callback ca_pmt_reply_callback;
+    void *ca_pmt_reply_callback_arg;
 };
 
 struct ca_pmt_descriptor {
@@ -77,7 +75,7 @@ static void en50221_app_ca_parse_reply(struct en50221_app_ca_private *private,
 
 
 
-en50221_app_ca en50221_app_ca_create(en50221_session_layer sl)
+en50221_app_ca en50221_app_ca_create(struct en50221_app_send_functions *funcs)
 {
     struct en50221_app_ca_private *private = NULL;
 
@@ -86,7 +84,7 @@ en50221_app_ca en50221_app_ca_create(en50221_session_layer sl)
     if (private == NULL) {
         return NULL;
     }
-    private->sl = sl;
+    private->funcs = funcs;
     private->ca_info_callback = NULL;
     private->ca_pmt_reply_callback = NULL;
 
@@ -128,7 +126,7 @@ int en50221_app_ca_info_enq(en50221_app_ca ca,
     data[0] = (TAG_CA_INFO_ENQUIRY >> 16) & 0xFF;
     data[1] = (TAG_CA_INFO_ENQUIRY >> 8) & 0xFF;
     data[2] = TAG_CA_INFO_ENQUIRY & 0xFF;
-    return en50221_sl_send_data(private->sl, session_number, data, 3);
+    return private->funcs->send_data(private->funcs->arg, session_number, data, 3);
 }
 
 int en50221_app_ca_pmt(en50221_app_ca ca,
@@ -158,7 +156,7 @@ int en50221_app_ca_pmt(en50221_app_ca ca,
     iov[1].iov_len = ca_pmt_length;
 
     // create the data and send it
-    return en50221_sl_send_datav(private->sl, session_number, iov, 2);
+    return private->funcs->send_datav(private->funcs->arg, session_number, iov, 2);
 }
 
 int en50221_app_ca_message(en50221_app_ca ca,

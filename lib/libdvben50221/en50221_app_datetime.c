@@ -24,8 +24,6 @@
 #include <string.h>
 #include <dvbmisc.h>
 #include <ucsi/dvb/types.h>
-#include "en50221_session.h"
-#include "en50221_app_utils.h"
 #include "en50221_app_datetime.h"
 #include "asn_1.h"
 
@@ -34,7 +32,7 @@
 #define TAG_DATE_TIME           0x9f8441
 
 struct en50221_app_datetime_private {
-        en50221_session_layer *sl;
+        struct en50221_app_send_functions *funcs;
 
         en50221_app_datetime_enquiry_callback callback;
         void *callback_arg;
@@ -46,7 +44,7 @@ static void en50221_app_datetime_parse_enquiry(struct en50221_app_datetime_priva
 
 
 
-en50221_app_datetime en50221_app_datetime_create(en50221_session_layer sl)
+en50221_app_datetime en50221_app_datetime_create(struct en50221_app_send_functions *funcs)
 {
     struct en50221_app_datetime_private *private = NULL;
 
@@ -55,7 +53,7 @@ en50221_app_datetime en50221_app_datetime_create(en50221_session_layer sl)
     if (private == NULL) {
         return NULL;
     }
-    private->sl = sl;
+    private->funcs = funcs;
     private->callback = NULL;
 
     // done
@@ -99,7 +97,7 @@ int en50221_app_datetime_send(en50221_app_datetime datetime,
         data[3] = 5;
         unixtime_to_dvbdate(utc_time, data+4);
     }
-    return en50221_sl_send_data(private->sl, session_number, data, data_length);
+    return private->funcs->send_data(private->funcs->arg, session_number, data, data_length);
 }
 
 int en50221_app_datetime_message(en50221_app_datetime datetime,

@@ -26,7 +26,8 @@
 
 #include <stdlib.h>
 #include <stdint.h>
-#include <en50221_session.h>
+#include <en50221_app_utils.h>
+#include <ucsi/dvb/descriptor.h>
 
 #define COMMS_COMMAND_ID_CONNECT_ON_CHANNEL     0x01
 #define COMMS_COMMAND_ID_DISCONNECT_ON_CHANNEL  0x02
@@ -110,11 +111,10 @@ typedef void *en50221_app_lowspeed;
 /**
  * Create an instance of the lowspeed resource.
  *
- * @param sl Session layer to communicate with.
- * @param rm Resource Manager to register with
+ * @param funcs Send functions to use.
  * @return Instance, or NULL on failure.
  */
-extern en50221_app_lowspeed en50221_app_lowspeed_create(en50221_session_layer sl);
+extern en50221_app_lowspeed en50221_app_lowspeed_create(struct en50221_app_send_functions *funcs);
 
 /**
  * Destroy an instance of the lowspeed resource.
