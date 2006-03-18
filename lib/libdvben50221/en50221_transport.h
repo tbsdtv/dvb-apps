@@ -34,6 +34,11 @@
 #define T_CALLBACK_REASON_CONNECTIONCLOSE  0x01  // The supplied connection_id has been closed.
 #define T_CALLBACK_REASON_SLOTCLOSE        0x02  // All connections on the supplied slot_id have been closed.
 
+// these are the states a TC can be in
+#define T_STATE_IDLE            0x00    // this transport connection is not in use
+#define T_STATE_ACTIVE          0xF0    // this transport connection is in use
+#define T_STATE_IN_CREATION     0xF1    // this transport waits for a T_C_T_C_REPLY to become active
+#define T_STATE_IN_DELETION     0xF2    // this transport waits for T_D_T_C_REPLY to become idle again
 
 /**
  * Opaque type representing a transport layer.
@@ -163,6 +168,10 @@ extern int en50221_tl_send_datav(en50221_transport_layer tl,
 /**
  * Allocates a new transport connection.
  *
+ * **IMPORTANT** When this function returns, it means the request to create a connection
+ * has been submitted. You will need to poll using en50221_tl_get_connection_stat() to find out
+ * if/when the connection is established.
+ *
  * @param tl The en50221_transport_layer instance.
  * @param slot_id ID of the slot.
  * @param connection_id Connection id to send the request _on_.
@@ -174,6 +183,10 @@ extern int en50221_tl_new_tc(en50221_transport_layer tl,
 /**
  * Deallocates a transport connection.
  *
+ * **IMPORTANT** When this function returns, it means the request to destroy a connection
+ * has been submitted. You will need to poll using en50221_tl_get_connection_stat() to find out
+ * if/when the connection is destroyed.
+ *
  * @param tl The en50221_transport_layer instance.
  * @param slot_id ID of the slot.
  * @param connection_id Connection id to send the request _on_.
@@ -181,5 +194,16 @@ extern int en50221_tl_new_tc(en50221_transport_layer tl,
  */
 extern int en50221_tl_del_tc(en50221_transport_layer tl,
  			     uint8_t slot_id, uint8_t connection_id);
+
+/**
+ * Checks the state of a connection.
+ *
+ * @param tl The en50221_transport_layer instance.
+ * @param slot_id ID of the slot.
+ * @param connection_id Connection id to send the request _on_.
+ * @return One of the T_STATE_* values.
+ */
+extern int en50221_tl_get_connection_state(en50221_transport_layer tl,
+                                           uint8_t slot_id, uint8_t connection_id);
 
 #endif

@@ -52,14 +52,6 @@
 #define T_DATA_MORE         0xA1 // convey data from higher      constructed h<->m
                                  // layers
 
-// these are the states a TC can be in
-// the values are not specified in the EN50221
-// so we use similiar values like descibed for
-// the Session Layer states
-#define T_STATE_IDLE            0x00    // this transport connection is not in use
-#define T_STATE_ACTIVE          0xF0    // this transport connection is in use
-#define T_STATE_IN_CREATION     0xF1    // this transport waits for a T_C_T_C_REPLY to become active
-#define T_STATE_IN_DELETION     0xF2    // this transport waits for T_D_T_C_REPLY to become idle again
 
 struct en50221_connection {
     uint32_t state;                  // the current state: idle/in_delete/in_create/active
@@ -361,9 +353,6 @@ int en50221_tl_get_error(en50221_transport_layer tl)
     return private->error;
 }
 
-
-
-
 int en50221_tl_send_data(en50221_transport_layer tl, uint8_t slot_id, uint8_t connection_id,
                          uint8_t *data, uint32_t data_size)
 {
@@ -602,6 +591,30 @@ int en50221_tl_del_tc(en50221_transport_layer tl, uint8_t slot_id, uint8_t conne
 
     return 0;
 }
+
+int en50221_tl_get_connection_state(en50221_transport_layer tl,
+                                    uint8_t slot_id, uint8_t connection_id)
+{
+    struct en50221_transport_layer_private *private = (struct en50221_transport_layer_private *) tl;
+
+    pthread_mutex_lock(&private->lock);
+    if (slot_id >= private->max_slots) {
+        private->error = EN50221ERR_BADSLOTID;
+        pthread_mutex_unlock(&private->lock);
+        return -1;
+    }
+    if (connection_id >= private->max_connections_per_slot) {
+        private->error_slot = slot_id;
+        private->error = EN50221ERR_BADCONNECTIONID;
+        pthread_mutex_unlock(&private->lock);
+        return -1;
+    }
+    int state = private->slots[slot_id].connections[connection_id].state;
+    pthread_mutex_unlock(&private->lock);
+
+    return state;
+}
+
 
 
 
