@@ -28,9 +28,13 @@
 #include <stdint.h>
 #include <sys/uio.h>
 
-// we will ignore private resource (resource_id_type==3),
-// because they are not used by any modules at all and
-// would need special code for any private resource anyway
+/**
+ * A decomposed public resource structure.
+ *
+ * we will ignore private resource (resource_id_type==3),
+ * because they are not used by any modules at all and
+ * would need special code for any private resource anyway.
+ */
 struct en50221_app_public_resource_id {
     uint16_t resource_class;
     uint16_t resource_type;
