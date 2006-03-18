@@ -169,7 +169,7 @@ extern int en50221_tl_send_datav(en50221_transport_layer tl,
  * Allocates a new transport connection.
  *
  * **IMPORTANT** When this function returns, it means the request to create a connection
- * has been submitted. You will need to poll using en50221_tl_get_connection_stat() to find out
+ * has been submitted. You will need to poll using en50221_tl_get_connection_state() to find out
  * if/when the connection is established.
  *
  * @param tl The en50221_transport_layer instance.
@@ -184,7 +184,7 @@ extern int en50221_tl_new_tc(en50221_transport_layer tl,
  * Deallocates a transport connection.
  *
  * **IMPORTANT** When this function returns, it means the request to destroy a connection
- * has been submitted. You will need to poll using en50221_tl_get_connection_stat() to find out
+ * has been submitted. You will need to poll using en50221_tl_get_connection_state() to find out
  * if/when the connection is destroyed.
  *
  * @param tl The en50221_transport_layer instance.
