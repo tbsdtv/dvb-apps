@@ -82,8 +82,9 @@ struct en50221_app_lowspeed_command {
  * @param session_number Session number concerned.
  * @param command_id One of the COMMS_COMMAND_ID_* values
  * @param command Pointer to a lowspeed command structure containing the command data.
+ * @return 0 on success, -1 on failure.
  */
-typedef void (*en50221_app_lowspeed_command_callback)(void *arg, uint8_t slot_id, uint16_t session_number,
+typedef int (*en50221_app_lowspeed_command_callback)(void *arg, uint8_t slot_id, uint16_t session_number,
                                                       uint8_t command_id,
                                                       struct en50221_app_lowspeed_command *command);
 
@@ -98,8 +99,9 @@ typedef void (*en50221_app_lowspeed_command_callback)(void *arg, uint8_t slot_id
  * @param last_more 0=> This is the last piece, 1=>More pieces follow.
  * @param data The data.
  * @param length Number of bytes.
+ * @return 0 on success, -1 on failure.
  */
-typedef void (*en50221_app_lowspeed_send_callback)(void *arg, uint8_t slot_id, uint16_t session_number,
+typedef int (*en50221_app_lowspeed_send_callback)(void *arg, uint8_t slot_id, uint16_t session_number,
                                                    uint8_t phase_id, int last_more,
                                                    uint8_t *data, uint32_t length);
 

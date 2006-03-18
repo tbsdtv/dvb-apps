@@ -61,8 +61,9 @@
  * @param slot_id Slot id concerned.
  * @param session_number Session number concerned.
  * @param command_id One of the SMARTCARD_COMMAND_ID_* values
+ * @return 0 on success, -1 on failure.
  */
-typedef void (*en50221_app_smartcard_command_callback)(void *arg, uint8_t slot_id, uint16_t session_number,
+typedef int (*en50221_app_smartcard_command_callback)(void *arg, uint8_t slot_id, uint16_t session_number,
                                                        uint8_t command_id);
 
 /**
@@ -78,8 +79,9 @@ typedef void (*en50221_app_smartcard_command_callback)(void *arg, uint8_t slot_i
  * @param in Data to send to the card
  * @param in_length Number of bytes to send.
  * @param out_length Number of bytes expected.
+ * @return 0 on success, -1 on failure.
  */
-typedef void (*en50221_app_smartcard_send_callback)(void *arg, uint8_t slot_id, uint16_t session_number,
+typedef int (*en50221_app_smartcard_send_callback)(void *arg, uint8_t slot_id, uint16_t session_number,
                                                     uint8_t CLA, uint8_t INS, uint8_t P1, uint8_t P2,
                                                     uint8_t *in, uint32_t in_length,
                                                     uint32_t out_length);

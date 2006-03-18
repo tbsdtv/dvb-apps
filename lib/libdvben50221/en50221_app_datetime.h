@@ -37,8 +37,9 @@
  * @param slot_id Slot id concerned.
  * @param session_number Session number concerned.
  * @param response_interval Response interval requested by CAM.
+ * @return 0 on success, -1 on failure.
  */
-typedef void (*en50221_app_datetime_enquiry_callback)(void *arg, uint8_t slot_id, uint16_t session_number,
+typedef int (*en50221_app_datetime_enquiry_callback)(void *arg, uint8_t slot_id, uint16_t session_number,
                                                       uint8_t response_interval);
 
 /**

@@ -37,8 +37,9 @@
  * @param arg Private argument.
  * @param slot_id Slot id concerned.
  * @param session_number Session number concerned.
+ * @return 0 on success, -1 on failure.
  */
-typedef void (*en50221_app_rm_enq_callback)(void *arg, uint8_t slot_id, uint16_t session_number);
+typedef int (*en50221_app_rm_enq_callback)(void *arg, uint8_t slot_id, uint16_t session_number);
 
 /**
  * Type definition for profile_reply callback function - called when we receive
@@ -48,8 +49,9 @@ typedef void (*en50221_app_rm_enq_callback)(void *arg, uint8_t slot_id, uint16_t
  * @param slot_id Slot id concerned.
  * @param resource_id_count Number of resource_ids.
  * @param resource_ids The resource ids themselves.
+ * @return 0 on success, -1 on failure.
  */
-typedef void (*en50221_app_rm_reply_callback)(void *arg, uint8_t slot_id, uint32_t resource_id,
+typedef int (*en50221_app_rm_reply_callback)(void *arg, uint8_t slot_id, uint32_t resource_id,
                                                       uint32_t resource_id_count,
                                                       uint32_t *resource_ids);
 /**
@@ -59,8 +61,9 @@ typedef void (*en50221_app_rm_reply_callback)(void *arg, uint8_t slot_id, uint32
  * @param arg Private argument.
  * @param slot_id Slot id concerned.
  * @param session_number Session number concerned.
+ * @return 0 on success, -1 on failure.
  */
-typedef void (*en50221_app_rm_changed_callback)(void *arg, uint8_t slot_id, uint16_t session_number);
+typedef int (*en50221_app_rm_changed_callback)(void *arg, uint8_t slot_id, uint16_t session_number);
 
 
 

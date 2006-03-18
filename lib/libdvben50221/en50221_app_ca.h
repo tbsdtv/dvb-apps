@@ -95,8 +95,9 @@ struct en50221_app_pmt_stream {
  * @param session_number Session number concerned.
  * @param ca_id_count Number of ca_system_ids.
  * @param ca_ids Pointer to list of ca_system_ids.
+ * @return 0 on success, -1 on failure.
  */
-typedef void (*en50221_app_ca_info_callback)(void *arg, uint8_t slot_id, uint16_t session_number,
+typedef int (*en50221_app_ca_info_callback)(void *arg, uint8_t slot_id, uint16_t session_number,
                                              uint32_t ca_id_count,
                                              uint16_t *ca_ids);
 
@@ -108,8 +109,9 @@ typedef void (*en50221_app_ca_info_callback)(void *arg, uint8_t slot_id, uint16_
  * @param session_number Session number concerned.
  * @param reply Pointer to a struct en50221_app_pmt_reply.
  * @param reply_size Total size of the struct en50221_app_pmt_reply in bytes.
+ * @return 0 on success, -1 on failure.
  */
-typedef void (*en50221_app_ca_pmt_reply_callback)(void *arg, uint8_t slot_id, uint16_t session_number,
+typedef int (*en50221_app_ca_pmt_reply_callback)(void *arg, uint8_t slot_id, uint16_t session_number,
                                                   struct en50221_app_pmt_reply *reply,
                                                   uint32_t reply_size);
 

@@ -41,8 +41,9 @@
  * @param original_network_id Original Network id requested by CAM.
  * @param transport_stream_id Transport stream id requested by CAM.
  * @param service_id Service id requested by CAM.
+ * @return 0 on success, -1 on failure.
  */
-typedef void (*en50221_app_dvb_tune_callback)(void *arg, uint8_t slot_id, uint16_t session_number,
+typedef int (*en50221_app_dvb_tune_callback)(void *arg, uint8_t slot_id, uint16_t session_number,
                                               uint16_t network_id, uint32_t original_network_id,
                                               uint16_t transport_stream_id, uint16_t service_id);
 
@@ -56,8 +57,9 @@ typedef void (*en50221_app_dvb_tune_callback)(void *arg, uint8_t slot_id, uint16
  * @param request_type 0=> replace, 1=> clear replace.
  * @param replaced_pid PID to replace.
  * @param replacement_pid PID to replace it with.
+ * @return 0 on success, -1 on failure.
  */
-typedef void (*en50221_app_dvb_replace_callback)(void *arg, uint8_t slot_id, uint16_t session_number,
+typedef int (*en50221_app_dvb_replace_callback)(void *arg, uint8_t slot_id, uint16_t session_number,
                                                  uint8_t replacement_ref, uint8_t request_type,
                                                  uint16_t replaced_pid, uint16_t replacement_pid);
 

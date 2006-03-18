@@ -39,10 +39,11 @@
  * @param auth_protocol_id Auth protocol id.
  * @param auth_data Data for the request.
  * @param auth_data_lenghth Number of bytes.
+ * @return 0 on success, -1 on failure.
  */
-typedef void (*en50221_app_auth_request_callback)(void *arg, uint8_t slot_id, uint16_t session_number,
-                                                  uint16_t auth_protcol_id, uint8_t *auth_data,
-                                                  uint32_t auth_data_length);
+typedef int (*en50221_app_auth_request_callback)(void *arg, uint8_t slot_id, uint16_t session_number,
+                                                 uint16_t auth_protcol_id, uint8_t *auth_data,
+                                                 uint32_t auth_data_length);
 
 /**
  * Opaque type representing a auth resource.

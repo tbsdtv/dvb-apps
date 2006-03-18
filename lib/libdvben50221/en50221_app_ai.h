@@ -42,11 +42,12 @@
  * @param manufacturer_code Manufacturer specific code.
  * @param menu_string_length Length of menu string.
  * @param menu_string The menu string itself.
+ * @return 0 on success, -1 on failure.
  */
-typedef void (*en50221_app_ai_callback)(void *arg, uint8_t slot_id, uint16_t session_number,
-                                        uint8_t application_type, uint16_t application_manufacturer,
-                                        uint16_t manufacturer_code, uint8_t menu_string_length,
-                                        uint8_t *menu_string);
+typedef int (*en50221_app_ai_callback)(void *arg, uint8_t slot_id, uint16_t session_number,
+                                       uint8_t application_type, uint16_t application_manufacturer,
+                                       uint16_t manufacturer_code, uint8_t menu_string_length,
+                                       uint8_t *menu_string);
 
 /**
  * Opaque type representing an application information resource.

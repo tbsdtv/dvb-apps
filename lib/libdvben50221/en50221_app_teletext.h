@@ -39,8 +39,9 @@
  * @param session_number Session number concerned.
  * @param teletext_data Data for the request.
  * @param teletext_data_lenghth Number of bytes.
+ * @return 0 on success, -1 on failure.
  */
-typedef void (*en50221_app_teletext_callback)(void *arg, uint8_t slot_id, uint16_t session_number,
+typedef int (*en50221_app_teletext_callback)(void *arg, uint8_t slot_id, uint16_t session_number,
                                               uint8_t *teletext_data,
                                               uint32_t teletext_data_length);
 
