@@ -30,6 +30,9 @@
 #include <stdint.h>
 #include <sys/uio.h>
 
+/**
+ * Callback reasons.
+ */
 #define T_CALLBACK_REASON_CONNECTIONOPEN       0x00  // A connection we opened _to_ the cam has been ACKed
 #define T_CALLBACK_REASON_CAMCONNECTIONOPEN    0x01  // The cam has opened a connection to _us_.
 #define T_CALLBACK_REASON_DATA                 0x02  // Data received
@@ -48,7 +51,14 @@
 typedef void *en50221_transport_layer;
 
 /**
- * Type definition for callback function - used when data is received from a module.
+ * Type definition for callback function - used when events are received from a module.
+ *
+ * **IMPORTANT** For all callback reasons except T_CALLBACK_REASON_DATA, an internal lock is held in the
+ * transport layer. Therefore, to avoid deadlock, you *must not* call back into the transport layer for
+ * these reasons.
+ *
+ * However, for T_CALLBACK_REASON_DATA, the internal lock is not held, so calling back into the transport
+ * layer is fine in this case.
  *
  * @param arg Private data.
  * @param reason One of the T_CALLBACK_REASON_* values.

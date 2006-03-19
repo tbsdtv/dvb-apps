@@ -519,25 +519,21 @@ int en50221_tl_new_tc(en50221_transport_layer tl, uint8_t slot_id, uint8_t conne
         return -1;
     }
     private->slots[slot_id].connections[connection_id].tx_time = time_ms();
-    int ca_hndl = private->slots[slot_id].ca_hndl;
-    pthread_mutex_unlock(&private->lock);
 
     // send command
     uint8_t hdr[10];
     hdr[0] = T_CREATE_T_C;
     hdr[1] = 1;
     hdr[2] = conid;
-    if (dvbca_link_write(ca_hndl, connection_id, hdr, 3) < 0) {
-        pthread_mutex_lock(&private->lock);
-        if (private->slots[slot_id].connections[conid].state == T_STATE_IN_CREATION) {
-            private->slots[slot_id].connections[conid].state = T_STATE_IDLE;
-        }
-        pthread_mutex_unlock(&private->lock);
+    if (dvbca_link_write(private->slots[slot_id].ca_hndl, connection_id, hdr, 3) < 0) {
+        private->slots[slot_id].connections[conid].state = T_STATE_IDLE;
         private->error_slot = slot_id;
         private->error = EN50221ERR_CAWRITE;
+        pthread_mutex_unlock(&private->lock);
         return -1;
     }
 
+    pthread_mutex_unlock(&private->lock);
     return conid;
 }
 
@@ -579,28 +575,25 @@ int en50221_tl_del_tc(en50221_transport_layer tl, uint8_t slot_id, uint8_t conne
     private->slots[slot_id].connections[connection_id].buffer_length = 0;
     private->slots[slot_id].connections[connection_id].tx_time = time_ms();
 
-    int ca_hndl = private->slots[slot_id].ca_hndl;
-    pthread_mutex_unlock(&private->lock);
-
     // send command
     uint8_t hdr[10];
     hdr[0] = T_DELETE_T_C;
     hdr[1] = 1;
     hdr[2] = connection_id;
-    if (dvbca_link_write(ca_hndl, connection_id, hdr, 3) < 0) {
+    if (dvbca_link_write(private->slots[slot_id].ca_hndl, connection_id, hdr, 3) < 0) {
         private->error_slot = slot_id;
         private->error = EN50221ERR_CAWRITE;
+        private->slots[slot_id].connections[connection_id].state = T_STATE_IDLE;
         // fallthrough
     }
 
     // tell upper layers
-    pthread_mutex_lock(&private->lock);
     en50221_tl_callback cb = private->callback;
     void *cb_arg = private->callback_arg;
-    pthread_mutex_unlock(&private->lock);
     if (cb)
         cb(cb_arg, T_CALLBACK_REASON_CONNECTIONCLOSE, NULL, 0, slot_id, connection_id);
 
+    pthread_mutex_unlock(&private->lock);
     return 0;
 }
 
@@ -766,13 +759,13 @@ static int en50221_tl_proc_data_tc(struct en50221_transport_layer_private *priva
                 if (private->slots[slot_id].connections[units[i].connection_id].state == T_STATE_IN_CREATION) {
                     private->slots[slot_id].connections[units[i].connection_id].state = T_STATE_ACTIVE;
                     private->slots[slot_id].connections[units[i].connection_id].tx_time = 0;
-                    en50221_tl_callback cb = private->callback;
-                    void *cb_arg = private->callback_arg;
-                    pthread_mutex_unlock(&private->lock);
 
                     // tell upper layers
+                    en50221_tl_callback cb = private->callback;
+                    void *cb_arg = private->callback_arg;
                     if (cb)
                         cb(cb_arg, T_CALLBACK_REASON_CONNECTIONOPEN, NULL, 0, slot_id, units[i].connection_id);
+                    pthread_mutex_unlock(&private->lock);
                 } else {
                     print(LOG_LEVEL, ERROR, 1, "Received T_C_T_C_REPLY for connection not in "
                             "T_STATE_IN_CREATION from module on slot %02x\n", slot_id);
@@ -786,7 +779,7 @@ static int en50221_tl_proc_data_tc(struct en50221_transport_layer_private *priva
                 pthread_mutex_lock(&private->lock);
                 // immediately delete this connection and send D_T_C_REPLY
                 if (private->slots[slot_id].connections[units[i].connection_id].state &
-                    (T_STATE_ACTIVE|T_STATE_IN_DELETION))
+                        (T_STATE_ACTIVE|T_STATE_IN_DELETION))
                 {
                     // clear down the slot
                     private->slots[slot_id].connections[units[i].connection_id].state = T_STATE_IDLE;
@@ -796,24 +789,24 @@ static int en50221_tl_proc_data_tc(struct en50221_transport_layer_private *priva
                     private->slots[slot_id].connections[units[i].connection_id].chain_buffer = NULL;
                     private->slots[slot_id].connections[units[i].connection_id].buffer_length = 0;
                     private->slots[slot_id].connections[units[i].connection_id].tx_time = 0;
-                    int ca_hndl = private->slots[slot_id].ca_hndl;
-                    en50221_tl_callback cb = private->callback;
-                    void *cb_arg = private->callback_arg;
-                    pthread_mutex_unlock(&private->lock);
 
                     // send the reply
                     hdr[0] = T_D_T_C_REPLY;
                     hdr[1] = 1;
                     hdr[2] = units[i].connection_id;
-                    if (dvbca_link_write(ca_hndl, units[i].connection_id, hdr, 3) < 0) {
+                    if (dvbca_link_write(private->slots[slot_id].ca_hndl, units[i].connection_id, hdr, 3) < 0) {
                         private->error_slot = slot_id;
                         private->error = EN50221ERR_CAWRITE;
+                        pthread_mutex_unlock(&private->lock);
                         return -1;
                     }
 
                     // tell upper layers
+                    en50221_tl_callback cb = private->callback;
+                    void *cb_arg = private->callback_arg;
                     if (cb)
                         cb(cb_arg, T_CALLBACK_REASON_CONNECTIONCLOSE, NULL, 0, slot_id, units[i].connection_id);
+                    pthread_mutex_unlock(&private->lock);
                 }
                 else {
                     print(LOG_LEVEL, ERROR, 1, "Received T_DELETE_T_C for inactive connection from module on slot %02x\n",
@@ -832,11 +825,11 @@ static int en50221_tl_proc_data_tc(struct en50221_transport_layer_private *priva
                     private->slots[slot_id].connections[units[i].connection_id].tx_time = 0;
                     pthread_mutex_unlock(&private->lock);
                 } else {
-                    pthread_mutex_unlock(&private->lock);
                     print(LOG_LEVEL, ERROR, 1, "Received T_D_T_C_REPLY received for connection not in "
                             "T_STATE_IN_DELETION from module on slot %02x\n", slot_id);
                     private->error_slot = slot_id;
                     private->error = EN50221ERR_BADCAMDATA;
+                    pthread_mutex_unlock(&private->lock);
                     return -1;
                 }
                 break;
@@ -862,7 +855,6 @@ static int en50221_tl_proc_data_tc(struct en50221_transport_layer_private *priva
                     }
                 } else {
                     private->slots[slot_id].connections[units[i].connection_id].tx_time = 0;
-                    pthread_mutex_unlock(&private->lock);
 
                     // send the new TC
                     hdr[0] = T_NEW_T_C;
@@ -870,30 +862,22 @@ static int en50221_tl_proc_data_tc(struct en50221_transport_layer_private *priva
                     hdr[2] = units[i].connection_id;
                     hdr[3] = conid;
                     if (dvbca_link_write(ca_hndl, units[i].connection_id, hdr, 4) < 0) {
-                        pthread_mutex_lock(&private->lock);
-                        if (private->slots[slot_id].connections[conid].state == T_STATE_IN_CREATION) {
-                            private->slots[slot_id].connections[conid].state = T_STATE_IDLE;
-                        }
-                        pthread_mutex_unlock(&private->lock);
+                        private->slots[slot_id].connections[conid].state = T_STATE_IDLE;
                         private->error_slot = slot_id;
                         private->error = EN50221ERR_CAWRITE;
+                        pthread_mutex_unlock(&private->lock);
                         return -1;
                     }
 
                     // mark it active
-                    en50221_tl_callback cb = NULL;
-                    void *cb_arg = NULL;
-                    pthread_mutex_lock(&private->lock);
-                    if (private->slots[slot_id].connections[conid].state == T_STATE_IN_CREATION) {
-                        private->slots[slot_id].connections[conid].state = T_STATE_ACTIVE;
-                        cb = private->callback;
-                        cb_arg = private->callback_arg;
-                    }
-                    pthread_mutex_unlock(&private->lock);
+                    private->slots[slot_id].connections[conid].state = T_STATE_ACTIVE;
 
                     // tell upper layers
+                    en50221_tl_callback cb = private->callback;
+                    void *cb_arg = private->callback_arg;
                     if (cb)
                         cb(cb_arg, T_CALLBACK_REASON_CAMCONNECTIONOPEN, NULL, 0, slot_id, conid);
+                    pthread_mutex_unlock(&private->lock);
                 }
                 break;
             case T_DATA_MORE:
