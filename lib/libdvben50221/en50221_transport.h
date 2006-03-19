@@ -32,9 +32,9 @@
 
 #define T_CALLBACK_REASON_CONNECTIONOPEN       0x00  // A connection we opened _to_ the cam has been ACKed
 #define T_CALLBACK_REASON_CAMCONNECTIONOPEN    0x01  // The cam has opened a connection to _us_.
-#define T_CALLBACK_REASON_DATA                 0x03  // Data received
-#define T_CALLBACK_REASON_CONNECTIONCLOSE      0x04  // The cam has told us to close a connection.
-#define T_CALLBACK_REASON_SLOTCLOSE            0x02  // The cam in the supplied slot id has been removed.
+#define T_CALLBACK_REASON_DATA                 0x02  // Data received
+#define T_CALLBACK_REASON_CONNECTIONCLOSE      0x03  // The cam has told us to close a connection.
+#define T_CALLBACK_REASON_SLOTCLOSE            0x04  // The cam in the supplied slot id has been removed.
 
 // these are the states a TC can be in
 #define T_STATE_IDLE            0x00    // this transport connection is not in use
