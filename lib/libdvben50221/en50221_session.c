@@ -723,6 +723,7 @@ static void en50221_sl_transport_callback(void *arg, int reason, uint8_t *data, 
         break;
 
     case T_CALLBACK_REASON_CONNECTIONOPEN:
+    {
         pthread_mutex_lock(&private->lock);
         en50221_sl_session_callback cb = private->session;
         void *cb_arg = private->session_arg;
@@ -730,8 +731,10 @@ static void en50221_sl_transport_callback(void *arg, int reason, uint8_t *data, 
             cb(cb_arg, S_SCALLBACK_REASON_TC_CONNECT, slot_id, connection_id, 0);
         pthread_mutex_unlock(&private->lock);
         return;
+    }
 
     case T_CALLBACK_REASON_CAMCONNECTIONOPEN:
+    {
         pthread_mutex_lock(&private->lock);
         en50221_sl_session_callback cb = private->session;
         void *cb_arg = private->session_arg;
@@ -739,6 +742,7 @@ static void en50221_sl_transport_callback(void *arg, int reason, uint8_t *data, 
             cb(cb_arg, S_SCALLBACK_REASON_TC_CAMCONNECT, slot_id, connection_id, 0);
         pthread_mutex_unlock(&private->lock);
         return;
+    }
 
     case T_CALLBACK_REASON_CONNECTIONCLOSE:
     {
