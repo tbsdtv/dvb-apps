@@ -29,10 +29,12 @@
 #include <stdint.h>
 #include <en50221_transport.h>
 
-#define S_SCALLBACK_REASON_CONNECTING     0x00  // Session connecting to resource (check for availability)
-#define S_SCALLBACK_REASON_CONNECTED      0x01  // Session connection established succesfully
-#define S_SCALLBACK_REASON_CONNECTFAIL    0x02  // Session connection failed
-#define S_SCALLBACK_REASON_CLOSE          0x03  // Session closed
+#define S_SCALLBACK_REASON_CAMCONNECTING  0x00  // CAM originated session connecting to resource (check for availability)
+#define S_SCALLBACK_REASON_CAMCONNECTED   0x01  // CAM originated session connection established succesfully
+#define S_SCALLBACK_REASON_CAMCONNECTFAIL 0x02  // CAM originated session connection failed
+#define S_SCALLBACK_REASON_CONNECTED      0x03  // Host originated session ACKed by CAM.
+#define S_SCALLBACK_REASON_CONNECTFAIL    0x04  // Host originated session NACKed by CAM.
+#define S_SCALLBACK_REASON_CLOSE          0x05  // Session closed
 
 
 /**

@@ -37,6 +37,7 @@
 #define EN50221ERR_OUTOFSLOTS -11 /* no more slots available - the offending slot_id will not be set. */
 #define EN50221ERR_IOVLIMIT -12 /* Too many struct iovecs were used. */
 #define EN50221ERR_BADSESSIONNUMBER -13 /* Bad session number suppplied by user. */
+#define EN50221ERR_OUTOFSESSIONS -14 /* no more sessions available. */
 
 #endif
 
