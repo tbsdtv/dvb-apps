@@ -34,6 +34,7 @@
 #include "en50221_transport.h"
 #include "en50221_session.h"
 #include "en50221_errno.h"
+#include "asn_1.h"
 
 
 // these are the possible session statuses
@@ -703,11 +704,40 @@ static void en50221_sl_handle_session_package(struct en50221_session_layer_priva
     uint32_t resource_id = private->sessions[session_number].resource_id;
     pthread_mutex_unlock(&private->lock);
 
-    // this resources callback is called
-    // we carry the session_number to give
-    // the resource the ability to send response-packages
-    if (cb)
-        cb(cb_arg, slot_id, session_number, resource_id, data + 3, data_length - 3);
+    // there can be > 1 APDU following the package - all for the same session/resource_id tho.
+    data += 3;
+    data_length -= 3;
+    while(data_length) {
+        // check length field
+        if (data_length < 3) {
+            print(LOG_LEVEL, ERROR, 1, "Received invalid sized session package from slot %i\n", slot_id);
+            return;
+        }
+
+        // parse the APDU's length field
+        int length_field_len;
+        uint16_t asn_data_length;
+        if ((length_field_len = asn_1_decode(&asn_data_length, data+3, data_length-3)) < 0) {
+            print(LOG_LEVEL, ERROR, 1, "Received invalid sized session package from slot %i\n", slot_id);
+            return;
+        }
+        uint32_t apdu_length = 3 + length_field_len + asn_data_length;
+
+        // check there is enough data
+        if (apdu_length > data_length) {
+            print(LOG_LEVEL, ERROR, 1, "Received invalid sized session package from slot %i\n", slot_id);
+            return;
+        }
+
+        // pass the APDU up to the higher layers
+        if (cb)
+            cb(cb_arg, slot_id, session_number, resource_id, data, apdu_length);
+
+        // next!
+        data += apdu_length;
+        data_length -= apdu_length;
+    }
+
 }
 
 static void en50221_sl_transport_callback(void *arg, int reason, uint8_t *data, uint32_t data_length,
