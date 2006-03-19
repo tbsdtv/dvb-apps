@@ -207,8 +207,12 @@ int en50221_sl_create_session(en50221_session_layer sl, int slot_id, uint8_t con
 
     // send this command
     if (en50221_tl_send_data(private->tl, slot_id, connection_id, hdr, 8)) {
+        pthread_mutex_lock(&private->lock);
+        if (private->sessions[session_number].state == S_STATE_IN_CREATION) {
+            private->sessions[session_number].state = S_STATE_IDLE;
+        }
+        pthread_mutex_unlock(&private->lock);
         private->error = en50221_tl_get_error(private->tl);
-        private->sessions[session_number].state = S_STATE_IDLE;
         return -1;
     }
 
@@ -249,6 +253,11 @@ int en50221_sl_destroy_session(en50221_session_layer sl, int session_number)
     hdr[2] = session_number >> 8;
     hdr[3] = session_number;
     if (en50221_tl_send_data(private->tl, slot_id, connection_id, hdr, 4)) {
+        pthread_mutex_lock(&private->lock);
+        if (private->sessions[session_number].state == S_STATE_IN_DELETION) {
+            private->sessions[session_number].state = S_STATE_IDLE;
+        }
+        pthread_mutex_unlock(&private->lock);
         private->error = en50221_tl_get_error(private->tl);
         return -1;
     }
@@ -301,7 +310,7 @@ int en50221_sl_send_datav(en50221_session_layer sl, uint8_t session_number,
 {
     struct en50221_session_layer_private *private = (struct en50221_session_layer_private *) sl;
 
-    pthread_mutex_unlock(&private->lock);
+    pthread_mutex_lock(&private->lock);
     if (session_number >= private->max_sessions) {
         private->error = EN50221ERR_BADSESSIONNUMBER;
         pthread_mutex_unlock(&private->lock);
@@ -683,7 +692,7 @@ static void en50221_sl_handle_session_package(struct en50221_session_layer_priva
         print(LOG_LEVEL, ERROR, 1, "Received unexpected session on invalid slot %i\n", slot_id);
         pthread_mutex_unlock(&private->lock);
         return;
-    } else if (!(private->sessions[session_number].state & S_STATE_ACTIVE)) {
+    } else if (private->sessions[session_number].state != S_STATE_ACTIVE) {
         print(LOG_LEVEL, ERROR, 1, "Received data with bad session_number from module on slot %i\n", slot_id);
         pthread_mutex_unlock(&private->lock);
         return;
@@ -714,8 +723,21 @@ static void en50221_sl_transport_callback(void *arg, int reason, uint8_t *data, 
         break;
 
     case T_CALLBACK_REASON_CONNECTIONOPEN:
+        pthread_mutex_lock(&private->lock);
+        en50221_sl_session_callback cb = private->session;
+        void *cb_arg = private->session_arg;
+        if (cb)
+            cb(cb_arg, S_SCALLBACK_REASON_TC_CONNECT, slot_id, connection_id, 0);
+        pthread_mutex_unlock(&private->lock);
+        return;
+
     case T_CALLBACK_REASON_CAMCONNECTIONOPEN:
-        // don't really care about these.
+        pthread_mutex_lock(&private->lock);
+        en50221_sl_session_callback cb = private->session;
+        void *cb_arg = private->session_arg;
+        if (cb)
+            cb(cb_arg, S_SCALLBACK_REASON_TC_CAMCONNECT, slot_id, connection_id, 0);
+        pthread_mutex_unlock(&private->lock);
         return;
 
     case T_CALLBACK_REASON_CONNECTIONCLOSE:
@@ -732,12 +754,10 @@ static void en50221_sl_transport_callback(void *arg, int reason, uint8_t *data, 
 
             uint8_t slot_id = private->sessions[i].slot_id;
             uint32_t resource_id = private->sessions[i].resource_id;
-            pthread_mutex_unlock(&private->lock);
 
             if (cb)
                 cb(cb_arg, S_SCALLBACK_REASON_CLOSE, slot_id, i, resource_id);
 
-            pthread_mutex_lock(&private->lock);
             private->sessions[i].state = S_STATE_IDLE;
         }
         pthread_mutex_unlock(&private->lock);
@@ -756,12 +776,10 @@ static void en50221_sl_transport_callback(void *arg, int reason, uint8_t *data, 
             if (private->sessions[i].slot_id != slot_id)
                 continue;
             uint32_t resource_id = private->sessions[i].resource_id;
-            pthread_mutex_unlock(&private->lock);
 
             if (cb)
                 cb(cb_arg, S_SCALLBACK_REASON_CLOSE, slot_id, i, resource_id);
 
-            pthread_mutex_lock(&private->lock);
             private->sessions[i].state = S_STATE_IDLE;
         }
         pthread_mutex_unlock(&private->lock);

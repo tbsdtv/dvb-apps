@@ -35,6 +35,8 @@
 #define S_SCALLBACK_REASON_CONNECTED      0x03  // Host originated session ACKed by CAM.
 #define S_SCALLBACK_REASON_CONNECTFAIL    0x04  // Host originated session NACKed by CAM.
 #define S_SCALLBACK_REASON_CLOSE          0x05  // Session closed
+#define S_SCALLBACK_REASON_TC_CONNECT     0x06  // A host originated transport connection has been established.
+#define S_SCALLBACK_REASON_TC_CAMCONNECT  0x07  // A CAM originated transport connection has been established.
 
 
 /**
