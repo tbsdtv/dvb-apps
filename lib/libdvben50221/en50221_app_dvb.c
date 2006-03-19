@@ -126,13 +126,14 @@ void en50221_app_dvb_register_clear_replace_callback(en50221_app_dvb dvb,
 int en50221_app_dvb_ask_release(en50221_app_dvb dvb, uint16_t session_number)
 {
     struct en50221_app_dvb_private *private = (struct en50221_app_dvb_private *) dvb;
-    uint8_t data[3];
+    uint8_t data[4];
 
     data[0] = (TAG_ASK_RELEASE >> 16) & 0xFF;
     data[1] = (TAG_ASK_RELEASE >> 8) & 0xFF;
     data[2] = TAG_ASK_RELEASE & 0xFF;
+    data[3] = 0;
 
-    return private->funcs->send_data(private->funcs->arg, session_number, data, 3);
+    return private->funcs->send_data(private->funcs->arg, session_number, data, 4);
 }
 
 int en50221_app_dvb_message(en50221_app_dvb dvb,

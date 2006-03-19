@@ -129,9 +129,10 @@ int en50221_app_rm_enq(en50221_app_rm rm, uint16_t session_number)
     buf[0] = (TAG_PROFILE_ENQUIRY >> 16) & 0xFF;
     buf[1] = (TAG_PROFILE_ENQUIRY >> 8) & 0xFF;
     buf[2] = TAG_PROFILE_ENQUIRY & 0xFF;
+    buf[3] = 0;
 
     // create the data and send it
-    return private->funcs->send_data(private->funcs->arg, session_number, buf, 3);
+    return private->funcs->send_data(private->funcs->arg, session_number, buf, 4);
 }
 
 int en50221_app_rm_reply(en50221_app_rm rm, uint16_t session_number,
@@ -172,9 +173,10 @@ int en50221_app_rm_changed(en50221_app_rm rm, uint16_t session_number)
     buf[0] = (TAG_PROFILE_CHANGE >> 16) & 0xFF;
     buf[1] = (TAG_PROFILE_CHANGE >> 8) & 0xFF;
     buf[2] = TAG_PROFILE_CHANGE & 0xFF;
+    buf[3] = 0;
 
     // create the data and send it
-    return private->funcs->send_data(private->funcs->arg, session_number, buf, 3);
+    return private->funcs->send_data(private->funcs->arg, session_number, buf, 4);
 }
 
 int en50221_app_rm_message(en50221_app_rm rm,

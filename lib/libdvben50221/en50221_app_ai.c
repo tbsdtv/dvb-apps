@@ -85,25 +85,27 @@ void en50221_app_ai_register_callback(en50221_app_ai ai, en50221_app_ai_callback
 int en50221_app_ai_enquiry(en50221_app_ai ai, uint16_t session_number)
 {
     struct en50221_app_ai_private *private = (struct en50221_app_ai_private *) ai;
-    uint8_t data[3];
+    uint8_t data[4];
 
     data[0] = (TAG_APP_INFO_ENQUIRY >> 16) & 0xFF;
     data[1] = (TAG_APP_INFO_ENQUIRY >> 8) & 0xFF;
     data[2] = TAG_APP_INFO_ENQUIRY & 0xFF;
+    data[3] = 0;
 
-    return private->funcs->send_data(private->funcs->arg, session_number, data, 3);
+    return private->funcs->send_data(private->funcs->arg, session_number, data, 4);
 }
 
 int en50221_app_ai_entermenu(en50221_app_ai ai, uint16_t session_number)
 {
     struct en50221_app_ai_private *private = (struct en50221_app_ai_private *) ai;
-    uint8_t data[3];
+    uint8_t data[4];
 
     data[0] = (TAG_ENTER_MENU >> 16) & 0xFF;
     data[1] = (TAG_ENTER_MENU >> 8) & 0xFF;
     data[2] = TAG_ENTER_MENU & 0xFF;
+    data[3] = 0;
 
-    return private->funcs->send_data(private->funcs->arg, session_number, data, 3);
+    return private->funcs->send_data(private->funcs->arg, session_number, data, 4);
 }
 
 int en50221_app_ai_message(en50221_app_ai ai,

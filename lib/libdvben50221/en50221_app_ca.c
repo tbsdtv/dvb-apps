@@ -131,12 +131,13 @@ int en50221_app_ca_info_enq(en50221_app_ca ca,
                             uint16_t session_number)
 {
     struct en50221_app_ca_private *private = (struct en50221_app_ca_private *) ca;
-    uint8_t data[3];
+    uint8_t data[4];
 
     data[0] = (TAG_CA_INFO_ENQUIRY >> 16) & 0xFF;
     data[1] = (TAG_CA_INFO_ENQUIRY >> 8) & 0xFF;
     data[2] = TAG_CA_INFO_ENQUIRY & 0xFF;
-    return private->funcs->send_data(private->funcs->arg, session_number, data, 3);
+    data[3] = 0;
+    return private->funcs->send_data(private->funcs->arg, session_number, data, 4);
 }
 
 int en50221_app_ca_pmt(en50221_app_ca ca,
