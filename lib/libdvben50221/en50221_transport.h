@@ -168,11 +168,12 @@ extern int en50221_tl_send_datav(en50221_transport_layer tl,
                                 struct iovec *vector, int iov_count);
 
 /**
- * Allocates a new transport connection.
+ * Create a new transport connection to the cam.
  *
  * **IMPORTANT** When this function returns, it means the request to create a connection
  * has been submitted. You will need to poll using en50221_tl_get_connection_state() to find out
- * if/when the connection is established.
+ * if/when the connection is established. A callback with T_CALLBACK_REASON_CONNECTIONOPEN reason
+ * will also be sent when it is acked by the CAM.
  *
  * @param tl The en50221_transport_layer instance.
  * @param slot_id ID of the slot.
