@@ -528,7 +528,11 @@ int en50221_tl_new_tc(en50221_transport_layer tl, uint8_t slot_id, uint8_t conne
     hdr[1] = 1;
     hdr[2] = conid;
     if (dvbca_link_write(ca_hndl, connection_id, hdr, 3) < 0) {
-        private->slots[slot_id].connections[conid].state = T_STATE_IDLE;
+        pthread_mutex_lock(&private->lock);
+        if (private->slots[slot_id].connections[conid].state == T_STATE_IN_CREATION) {
+            private->slots[slot_id].connections[conid].state = T_STATE_IDLE;
+        }
+        pthread_mutex_unlock(&private->lock);
         private->error_slot = slot_id;
         private->error = EN50221ERR_CAWRITE;
         return -1;
@@ -586,7 +590,7 @@ int en50221_tl_del_tc(en50221_transport_layer tl, uint8_t slot_id, uint8_t conne
     if (dvbca_link_write(ca_hndl, connection_id, hdr, 3) < 0) {
         private->error_slot = slot_id;
         private->error = EN50221ERR_CAWRITE;
-        return -1;
+        // fallthrough
     }
 
     // tell upper layers
@@ -781,8 +785,8 @@ static int en50221_tl_proc_data_tc(struct en50221_transport_layer_private *priva
             case T_DELETE_T_C:
                 pthread_mutex_lock(&private->lock);
                 // immediately delete this connection and send D_T_C_REPLY
-                if (private->slots[slot_id].connections[units[i].connection_id].state == T_STATE_ACTIVE ||
-                    private->slots[slot_id].connections[units[i].connection_id].state == T_STATE_IN_DELETION)
+                if (private->slots[slot_id].connections[units[i].connection_id].state &
+                    (T_STATE_ACTIVE|T_STATE_IN_DELETION))
                 {
                     // clear down the slot
                     private->slots[slot_id].connections[units[i].connection_id].state = T_STATE_IDLE;
@@ -828,11 +832,11 @@ static int en50221_tl_proc_data_tc(struct en50221_transport_layer_private *priva
                     private->slots[slot_id].connections[units[i].connection_id].tx_time = 0;
                     pthread_mutex_unlock(&private->lock);
                 } else {
+                    pthread_mutex_unlock(&private->lock);
                     print(LOG_LEVEL, ERROR, 1, "Received T_D_T_C_REPLY received for connection not in "
                             "T_STATE_IN_DELETION from module on slot %02x\n", slot_id);
                     private->error_slot = slot_id;
                     private->error = EN50221ERR_BADCAMDATA;
-                    pthread_mutex_unlock(&private->lock);
                     return -1;
                 }
                 break;
@@ -858,8 +862,6 @@ static int en50221_tl_proc_data_tc(struct en50221_transport_layer_private *priva
                     }
                 } else {
                     private->slots[slot_id].connections[units[i].connection_id].tx_time = 0;
-                    en50221_tl_callback cb = private->callback;
-                    void *cb_arg = private->callback_arg;
                     pthread_mutex_unlock(&private->lock);
 
                     // send the new TC
@@ -868,10 +870,26 @@ static int en50221_tl_proc_data_tc(struct en50221_transport_layer_private *priva
                     hdr[2] = units[i].connection_id;
                     hdr[3] = conid;
                     if (dvbca_link_write(ca_hndl, units[i].connection_id, hdr, 4) < 0) {
+                        pthread_mutex_lock(&private->lock);
+                        if (private->slots[slot_id].connections[conid].state == T_STATE_IN_CREATION) {
+                            private->slots[slot_id].connections[conid].state = T_STATE_IDLE;
+                        }
+                        pthread_mutex_unlock(&private->lock);
                         private->error_slot = slot_id;
                         private->error = EN50221ERR_CAWRITE;
                         return -1;
                     }
+
+                    // mark it active
+                    en50221_tl_callback cb = NULL;
+                    void *cb_arg = NULL;
+                    pthread_mutex_lock(&private->lock);
+                    if (private->slots[slot_id].connections[conid].state == T_STATE_IN_CREATION) {
+                        private->slots[slot_id].connections[conid].state = T_STATE_ACTIVE;
+                        cb = private->callback;
+                        cb_arg = private->callback_arg;
+                    }
+                    pthread_mutex_unlock(&private->lock);
 
                     // tell upper layers
                     if (cb)

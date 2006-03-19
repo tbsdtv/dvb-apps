@@ -38,9 +38,9 @@
 
 // these are the states a TC can be in
 #define T_STATE_IDLE            0x00    // this transport connection is not in use
-#define T_STATE_ACTIVE          0xF0    // this transport connection is in use
-#define T_STATE_IN_CREATION     0xF1    // this transport waits for a T_C_T_C_REPLY to become active
-#define T_STATE_IN_DELETION     0xF2    // this transport waits for T_D_T_C_REPLY to become idle again
+#define T_STATE_ACTIVE          0x01    // this transport connection is in use
+#define T_STATE_IN_CREATION     0x02    // this transport waits for a T_C_T_C_REPLY to become active
+#define T_STATE_IN_DELETION     0x04    // this transport waits for T_D_T_C_REPLY to become idle again
 
 /**
  * Opaque type representing a transport layer.
