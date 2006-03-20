@@ -96,14 +96,12 @@ typedef int (*en50221_app_lowspeed_command_callback)(void *arg, uint8_t slot_id,
  * @param slot_id Slot id concerned.
  * @param session_number Session number concerned.
  * @param phase_id Comms phase id.
- * @param last_more 0=> This is the last piece, 1=>More pieces follow.
  * @param data The data.
  * @param length Number of bytes.
  * @return 0 on success, -1 on failure.
  */
 typedef int (*en50221_app_lowspeed_send_callback)(void *arg, uint8_t slot_id, uint16_t session_number,
-                                                   uint8_t phase_id, int last_more,
-                                                   uint8_t *data, uint32_t length);
+                                                   uint8_t phase_id, uint8_t *data, uint32_t length);
 
 /**
  * Opaque type representing a lowspeed resource.
@@ -124,6 +122,14 @@ extern en50221_app_lowspeed en50221_app_lowspeed_create(struct en50221_app_send_
  * @param lowspeed Instance to destroy.
  */
 extern void en50221_app_lowspeed_destroy(en50221_app_lowspeed lowspeed);
+
+/**
+ * Informs the lowspeed object that a session to it has been closed - cleans up internal state.
+ *
+ * @param lowspeed lowspeed resource instance.
+ * @param session_number The session concerned.
+ */
+extern void en50221_app_lowspeed_inform_session_closed(en50221_app_lowspeed lowspeed, uint16_t session_number);
 
 /**
  * Register the callback for when we receive a comms command.

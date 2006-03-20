@@ -36,6 +36,14 @@
 #define TAG_COMMS_RECV_LAST     0x9f8c05
 #define TAG_COMMS_RECV_MORE     0x9f8c06
 
+struct en50221_app_lowspeed_session {
+        uint16_t session_number;
+        uint8_t *block_chain;
+        uint32_t block_length;
+
+        struct en50221_app_lowspeed_session *next;
+};
+
 struct en50221_app_lowspeed_private {
         struct en50221_app_send_functions *funcs;
 
@@ -44,6 +52,8 @@ struct en50221_app_lowspeed_private {
 
         en50221_app_lowspeed_send_callback send_callback;
         void *send_callback_arg;
+
+        struct en50221_app_lowspeed_session *sessions;
 
         pthread_mutex_t lock;
 };
@@ -72,6 +82,7 @@ en50221_app_lowspeed en50221_app_lowspeed_create(struct en50221_app_send_functio
     private->funcs = funcs;
     private->command_callback = NULL;
     private->send_callback = NULL;
+    private->sessions = NULL;
 
     pthread_mutex_init(&private->lock, NULL);
 
@@ -83,8 +94,43 @@ void en50221_app_lowspeed_destroy(en50221_app_lowspeed lowspeed)
 {
     struct en50221_app_lowspeed_private *private = (struct en50221_app_lowspeed_private *) lowspeed;
 
+    struct en50221_app_lowspeed_session *cur_s = private->sessions;
+    while(cur_s) {
+        struct en50221_app_lowspeed_session *next = cur_s->next;
+        if (cur_s->block_chain)
+            free(cur_s->block_chain);
+        free(cur_s);
+        cur_s = next;
+    }
+
     pthread_mutex_destroy(&private->lock);
     free(private);
+}
+
+void en50221_app_lowspeed_inform_session_closed(en50221_app_lowspeed lowspeed, uint16_t session_number)
+{
+    struct en50221_app_lowspeed_private *private = (struct en50221_app_lowspeed_private *) lowspeed;
+
+    pthread_mutex_lock(&private->lock);
+    struct en50221_app_lowspeed_session *cur_s = private->sessions;
+    struct en50221_app_lowspeed_session *prev_s = NULL;
+    while(cur_s) {
+        if (cur_s->session_number == session_number) {
+            if (cur_s->block_chain)
+                free(cur_s->block_chain);
+            if (prev_s) {
+                prev_s->next = cur_s->next;
+            } else {
+                private->sessions = cur_s->next;
+            }
+            free(cur_s);
+            return;
+        }
+
+        prev_s = cur_s;
+        cur_s=cur_s->next;
+    }
+    pthread_mutex_unlock(&private->lock);
 }
 
 void en50221_app_lowspeed_register_command_callback(en50221_app_lowspeed lowspeed,
@@ -382,23 +428,94 @@ static int en50221_app_lowspeed_parse_send(struct en50221_app_lowspeed_private *
     }
 
     // check it
-    if (asn_data_length < 1) {
-        print(LOG_LEVEL, ERROR, 1, "Received short data\n");
-        return -1;
-    }
     if (asn_data_length > (data_length-length_field_len)) {
         print(LOG_LEVEL, ERROR, 1, "Received short data\n");
         return -1;
     }
-    uint8_t phase_id = data[1];
+
+    // skip over the length field
+    data += length_field_len;
+
+    // find previous session
+    pthread_mutex_lock(&private->lock);
+    struct en50221_app_lowspeed_session *cur_s = private->sessions;
+    while(cur_s) {
+        if (cur_s->session_number == session_number)
+            break;
+        cur_s=cur_s->next;
+    }
+
+    // more data is still to come
+    if (last_more) {
+        // if there was no previous session, create one
+        if (cur_s == NULL) {
+            cur_s = malloc(sizeof(struct en50221_app_lowspeed_session));
+            if (cur_s == NULL) {
+                print(LOG_LEVEL, ERROR, 1, "Ran out of memory\n");
+                pthread_mutex_unlock(&private->lock);
+                return -1;
+            }
+            cur_s->session_number = session_number;
+            cur_s->block_chain = NULL;
+            cur_s->block_length = 0;
+            cur_s->next = private->sessions;
+            private->sessions = cur_s;
+        }
+
+        // append the data
+        uint8_t *new_data = realloc(cur_s->block_chain, cur_s->block_length + asn_data_length);
+        if (new_data == NULL) {
+            print(LOG_LEVEL, ERROR, 1, "Ran out of memory\n");
+            pthread_mutex_unlock(&private->lock);
+            return -1;
+        }
+        memcpy(new_data + cur_s->block_length, data, asn_data_length);
+        cur_s->block_chain = new_data;
+        cur_s->block_length += asn_data_length;
+
+        // done
+        pthread_mutex_unlock(&private->lock);
+        return 0;
+    }
+
+    // we hit the last of a possible chain of fragments
+    int do_free = 0;
+    if (cur_s != NULL) {
+        // we have a preceding fragment - need to append
+        uint8_t *new_data = realloc(cur_s->block_chain, cur_s->block_length + asn_data_length);
+        if (new_data == NULL) {
+            print(LOG_LEVEL, ERROR, 1, "Ran out of memory\n");
+            pthread_mutex_unlock(&private->lock);
+            return -1;
+        }
+        memcpy(new_data + cur_s->block_length, data, asn_data_length);
+        asn_data_length = cur_s->block_length + asn_data_length;
+        data = new_data;
+        cur_s->block_chain = NULL;
+        cur_s->block_length = 0;
+        do_free = 1;
+    }
+
+    // check the reassembled data length
+    if (asn_data_length < 1) {
+        pthread_mutex_unlock(&private->lock);
+        print(LOG_LEVEL, ERROR, 1, "Received short data\n");
+        if (do_free) free(data);
+        return -1;
+    }
+
+    // now, parse the data
+    uint8_t phase_id = data[0];
 
     // tell the app
-    pthread_mutex_lock(&private->lock);
     en50221_app_lowspeed_send_callback cb = private->send_callback;
     void *cb_arg = private->send_callback_arg;
     pthread_mutex_unlock(&private->lock);
     if (cb) {
-        return cb(cb_arg, slot_id, session_number, phase_id, last_more, data+2, asn_data_length-1);
+        return cb(cb_arg, slot_id, session_number, phase_id, data+1, asn_data_length-1);
     }
+
+    // done
+    if (do_free) free(data);
     return 0;
 }
