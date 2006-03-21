@@ -427,8 +427,8 @@ static void en50221_sl_handle_open_session_request(struct en50221_session_layer_
     int session_number = -1;
     if (status == S_STATUS_OPEN) {
         // lookup next free session_id:
-        int session_number = en50221_sl_alloc_new_session(private, resource_id, slot_id, connection_id,
-                                                          resource_callback, resource_arg);
+        session_number = en50221_sl_alloc_new_session(private, resource_id, slot_id, connection_id,
+                                                      resource_callback, resource_arg);
         if (session_number == -1) {
             status = S_STATUS_CLOSE_NO_RES;
         } else {
@@ -554,7 +554,7 @@ static void en50221_sl_handle_create_session_response(struct en50221_session_lay
     uint8_t *data, uint32_t data_length, uint8_t slot_id, uint8_t connection_id)
 {
     // check
-    if (data_length < 9) {
+    if (data_length < 8) {
         print(LOG_LEVEL, ERROR, 1, "Received data with invalid length from module on slot %02x\n", slot_id);
         return;
     }
@@ -623,13 +623,13 @@ static void en50221_sl_handle_close_session_response(struct en50221_session_laye
         print(LOG_LEVEL, ERROR, 1, "Received data with invalid length from module on slot %02x\n", slot_id);
         return;
     }
-    if (data[0] != 3) {
+    if (data[0] != 4) {
         print(LOG_LEVEL, ERROR, 1, "Received data with invalid length from module on slot %02x\n", slot_id);
         return;
     }
 
     // extract session number
-    uint16_t session_number = (data[1] << 8) | data[2];
+    uint16_t session_number = (data[2] << 8) | data[3];
 
     // check session number is ok
     pthread_mutex_lock(&private->lock);
@@ -652,7 +652,7 @@ static void en50221_sl_handle_close_session_response(struct en50221_session_laye
     }
 
     // extract status
-    if (data[1] != S_STATUS_OPEN) {
+    if (data[1] != 0x00) {
         print(LOG_LEVEL, ERROR, 1, "Session close failed 0x%02x\n", data[1]);
         // just fallthrough anyway
     }
