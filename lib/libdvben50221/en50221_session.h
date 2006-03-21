@@ -25,6 +25,11 @@
 #ifndef __EN50221_SESSION_H__
 #define __EN50221_SESSION_H__
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <stdlib.h>
 #include <stdint.h>
 #include <en50221_transport.h>
@@ -197,5 +202,9 @@ extern int en50221_sl_send_datav(en50221_session_layer sl, uint8_t session_numbe
  */
 extern int en50221_sl_broadcast_data(en50221_session_layer sl, int slot_id, uint32_t resource_id,
                                      uint8_t *data, uint16_t data_length);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

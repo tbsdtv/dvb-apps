@@ -24,6 +24,11 @@
 #ifndef __EN50221_APP_UTILS_H__
 #define __EN50221_APP_UTILS_H__
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <stdlib.h>
 #include <stdint.h>
 #include <sys/uio.h>
@@ -92,5 +97,9 @@ static inline uint32_t en50221_app_encode_public_resource_id(struct en50221_app_
 {
     return MKRID(idf->resource_class, idf->resource_type, idf->resource_version);
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

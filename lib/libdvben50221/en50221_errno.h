@@ -24,6 +24,11 @@
 #ifndef EN50221_ERRNO
 #define EN50221_ERRNO 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #define EN50221ERR_CAREAD -1 /* error during read from CA device. */
 #define EN50221ERR_CAWRITE -2 /* error during write to CA device. */
 #define EN50221ERR_TIMEOUT -3 /* timeout occured waiting for a response from a device. */
@@ -38,6 +43,10 @@
 #define EN50221ERR_IOVLIMIT -12 /* Too many struct iovecs were used. */
 #define EN50221ERR_BADSESSIONNUMBER -13 /* Bad session number suppplied by user. */
 #define EN50221ERR_OUTOFSESSIONS -14 /* no more sessions available. */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

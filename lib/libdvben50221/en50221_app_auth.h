@@ -24,6 +24,11 @@
 #ifndef __EN50221_APPLICATION_auth_H__
 #define __EN50221_APPLICATION_auth_H__
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <stdlib.h>
 #include <stdint.h>
 #include <en50221_app_utils.h>
@@ -106,5 +111,9 @@ extern int en50221_app_auth_message(en50221_app_auth auth,
                                     uint16_t session_number,
                                     uint32_t resource_id,
                                     uint8_t *data, uint32_t data_length);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

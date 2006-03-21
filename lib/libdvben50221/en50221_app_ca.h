@@ -24,6 +24,11 @@
 #ifndef __EN50221_APPLICATION_ca_H__
 #define __EN50221_APPLICATION_ca_H__
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <stdlib.h>
 #include <stdint.h>
 #include <en50221_app_utils.h>
@@ -238,5 +243,9 @@ static inline struct en50221_app_pmt_stream *
 
     return (struct en50221_app_pmt_stream *) next;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

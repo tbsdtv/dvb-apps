@@ -25,6 +25,10 @@
 #ifndef __EN50221_TRANSPORT_H__
 #define __EN50221_TRANSPORT_H__
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
 #include <stdlib.h>
 #include <stdint.h>
@@ -218,5 +222,9 @@ extern int en50221_tl_del_tc(en50221_transport_layer tl,
  */
 extern int en50221_tl_get_connection_state(en50221_transport_layer tl,
                                            uint8_t slot_id, uint8_t connection_id);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
