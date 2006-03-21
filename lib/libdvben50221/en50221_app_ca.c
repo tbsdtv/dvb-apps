@@ -547,13 +547,21 @@ static int en50221_app_ca_parse_info(struct en50221_app_ca_private *private,
     // parse
     uint32_t ca_id_count = asn_data_length / 2;
 
+    // byteswap the IDs
+    uint16_t *ids = (uint16_t*) data;
+    uint32_t i;
+    for(i=0; i<ca_id_count; i++) {
+        bswap16(data);
+        data+=2;
+    }
+
     // tell the app
     pthread_mutex_lock(&private->lock);
     en50221_app_ca_info_callback cb = private->ca_info_callback;
     void *cb_arg = private->ca_info_callback_arg;
     pthread_mutex_unlock(&private->lock);
     if (cb) {
-        return cb(cb_arg, slot_id, session_number, ca_id_count, (uint16_t*) data);
+        return cb(cb_arg, slot_id, session_number, ca_id_count, ids);
     }
     return 0;
 }
