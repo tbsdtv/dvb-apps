@@ -101,9 +101,11 @@ int en50221_app_datetime_send(en50221_app_datetime datetime,
         unixtime_to_dvbdate(utc_time, data+4);
         data[9] = time_offset >> 8;
         data[10] = time_offset;
+        data_length = 11;
     } else {
         data[3] = 5;
         unixtime_to_dvbdate(utc_time, data+4);
+        data_length = 9;
     }
     return private->funcs->send_data(private->funcs->arg, session_number, data, data_length);
 }

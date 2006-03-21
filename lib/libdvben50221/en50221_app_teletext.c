@@ -82,11 +82,11 @@ void en50221_app_teletext_register_callback(en50221_app_teletext teletext,
     pthread_mutex_unlock(&private->lock);
 }
 
-int en50221_app_teletext_resource_callback(en50221_app_teletext teletext,
-                                           uint8_t slot_id,
-                                           uint16_t session_number,
-                                           uint32_t resource_id,
-                                           uint8_t *data, uint32_t data_length)
+int en50221_app_teletext_message(en50221_app_teletext teletext,
+                                 uint8_t slot_id,
+                                 uint16_t session_number,
+                                 uint32_t resource_id,
+                                 uint8_t *data, uint32_t data_length)
 {
     struct en50221_app_teletext_private *private = (struct en50221_app_teletext_private *) teletext;
     (void) resource_id;

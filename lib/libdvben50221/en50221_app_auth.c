@@ -97,7 +97,7 @@ int en50221_app_auth_send(en50221_app_auth auth,
 
     // encode the length field
     int length_field_len;
-    if ((length_field_len = asn_1_encode(auth_data_length+1, buf+3, 3)) < 0) {
+    if ((length_field_len = asn_1_encode(auth_data_length+2, buf+3, 3)) < 0) {
         return -1;
     }
 
