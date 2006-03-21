@@ -107,7 +107,7 @@ void en50221_app_lowspeed_destroy(en50221_app_lowspeed lowspeed)
     free(private);
 }
 
-void en50221_app_lowspeed_inform_session_closed(en50221_app_lowspeed lowspeed, uint16_t session_number)
+void en50221_app_lowspeed_flush_session(en50221_app_lowspeed lowspeed, uint16_t session_number)
 {
     struct en50221_app_lowspeed_private *private = (struct en50221_app_lowspeed_private *) lowspeed;
 
@@ -511,11 +511,12 @@ static int en50221_app_lowspeed_parse_send(struct en50221_app_lowspeed_private *
     en50221_app_lowspeed_send_callback cb = private->send_callback;
     void *cb_arg = private->send_callback_arg;
     pthread_mutex_unlock(&private->lock);
+    int cbstatus = 0;
     if (cb) {
-        return cb(cb_arg, slot_id, session_number, phase_id, data+1, asn_data_length-1);
+        cbstatus = cb(cb_arg, slot_id, session_number, phase_id, data+1, asn_data_length-1);
     }
 
     // done
     if (do_free) free(data);
-    return 0;
+    return cbstatus;
 }
