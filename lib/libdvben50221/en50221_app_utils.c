@@ -35,12 +35,3 @@ struct en50221_app_public_resource_id *
     idf->resource_version = resource_id & 0x3f;
     return idf;
 }
-
-uint8_t* en50221_app_encode_public_resource_id(struct en50221_app_public_resource_id *idf, uint8_t *data)
-{
-    data[0] = idf->resource_class >> 8;
-    data[1] = idf->resource_class;
-    data[2] = idf->resource_type >> 2;
-    data[3] = ((idf->resource_type & 0x03) << 6) | (idf->resource_version & 0x3f);
-    return data;
-}

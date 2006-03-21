@@ -63,7 +63,17 @@ struct en50221_app_send_functions {
 };
 
 /**
- * Decode a binary public resource_id into an en50221_app_public_resource_id structure.
+ * Make a host-endian uint32_t formatted resource id.
+ *
+ * @param CLASS Class of resource.
+ * @param TYPE Type of resource.
+ * @param VERSION Version of resource.
+ * @return Formatted resource id.
+ */
+#define MKRID(CLASS, TYPE, VERSION) ((((CLASS)&0xffff)<<16) | (((TYPE)&0x3ff)<<6) | ((VERSION)&0x3f))
+
+/**
+ * Decode a host-endian public resource_id into an en50221_app_public_resource_id structure.
  *
  * @param idf Structure to write decoded resource_id into.
  * @param resource_id ID to decode.
@@ -73,24 +83,14 @@ struct en50221_app_public_resource_id *
         en50221_app_decode_public_resource_id(struct en50221_app_public_resource_id *idf, uint32_t resource_id);
 
 /**
- * will write the resource_identifier as 4-byte block
- * into data. data has to be a allocated memory of 4 bytes length
- * return-value is a pointer to data
+ * Encode an en50221_app_public_resource_id structure into a host-endian uint32_t.
  *
  * @param idf Structure to encode.
- * @param data Destination for binary data (4 bytes long).
- * @return Pointer to data.
+ * @return The encoded value
  */
-uint8_t* en50221_app_encode_public_resource_id(struct en50221_app_public_resource_id *idf, uint8_t *data);
-
-/**
- * Make a uint32_t formatted resource id.
- *
- * @param CLASS Class of resource.
- * @param TYPE Type of resource.
- * @param VERSION Version of resource.
- * @return Formatted resource id.
- */
-#define MKRID(CLASS, TYPE, VERSION) ((((CLASS)&0xffff)<<16) | (((TYPE)&0x3ff)<<6) | ((VERSION)&0x3f))
+static inline uint32_t en50221_app_encode_public_resource_id(struct en50221_app_public_resource_id *idf)
+{
+    return MKRID(idf->resource_class, idf->resource_type, idf->resource_version);
+}
 
 #endif
