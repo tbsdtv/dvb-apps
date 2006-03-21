@@ -24,6 +24,7 @@
 #include <string.h>
 #include <dvbmisc.h>
 #include <pthread.h>
+#include <ucsi/endianops.h>
 #include "en50221_app_rm.h"
 #include "asn_1.h"
 
@@ -153,11 +154,24 @@ int en50221_app_rm_reply(en50221_app_rm rm, uint16_t session_number,
         return -1;
     }
 
+    // copy the data and byteswap it
+    uint32_t *copy_resource_ids = alloca(4*resource_id_count);
+    if (copy_resource_ids == NULL) {
+        return -1;
+    }
+    uint8_t *data = (uint8_t*) copy_resource_ids;
+    memcpy(data, resource_ids, resource_id_count*4);
+    uint32_t i;
+    for(i=0; i<resource_id_count; i++) {
+        bswap32(data);
+        data+=4;
+    }
+
     // build the iovecs
     struct iovec iov[2];
     iov[0].iov_base = buf;
     iov[0].iov_len = 3+length_field_len;
-    iov[1].iov_base = (uint8_t*) resource_ids;
+    iov[1].iov_base = (uint8_t*) copy_resource_ids;
     iov[1].iov_len = resource_id_count * 4;
 
     // create the data and send it
@@ -246,6 +260,15 @@ static int en50221_app_rm_parse_profile_reply(struct en50221_app_rm_private *pri
         return -1;
     }
     uint32_t resources_count = asn_data_length / 4;
+    uint32_t *resource_ids = (uint32_t*) (data+length_field_len);
+    data += length_field_len;
+
+    // byteswap it
+    uint32_t i;
+    for(i=0; i< resources_count; i++) {
+        bswap32(data);
+        data+=4;
+    }
 
     // inform observer
     pthread_mutex_lock(&private->lock);
@@ -253,7 +276,7 @@ static int en50221_app_rm_parse_profile_reply(struct en50221_app_rm_private *pri
     void *cb_arg = private->replycallback_arg;
     pthread_mutex_unlock(&private->lock);
     if (cb) {
-        return cb(cb_arg, slot_id, session_number, resources_count, (uint32_t*) (data+length_field_len));
+        return cb(cb_arg, slot_id, session_number, resources_count, resource_ids);
     }
     return 0;
 }
