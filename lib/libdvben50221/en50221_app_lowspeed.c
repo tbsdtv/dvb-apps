@@ -65,7 +65,7 @@ static int en50221_app_lowspeed_parse_command(struct en50221_app_lowspeed_privat
                                                uint8_t slot_id, uint16_t session_number,
                                                uint8_t *data, uint32_t data_length);
 static int en50221_app_lowspeed_parse_send(struct en50221_app_lowspeed_private *private,
-                                            uint8_t slot_id, uint16_t session_number, int last_more,
+                                            uint8_t slot_id, uint16_t session_number, int more_last,
                                             uint8_t *data, uint32_t data_length);
 
 
@@ -416,7 +416,7 @@ static int en50221_app_lowspeed_parse_command(struct en50221_app_lowspeed_privat
 }
 
 static int en50221_app_lowspeed_parse_send(struct en50221_app_lowspeed_private *private,
-                                            uint8_t slot_id, uint16_t session_number, int last_more,
+                                            uint8_t slot_id, uint16_t session_number, int more_last,
                                             uint8_t *data, uint32_t data_length)
 {
     // first of all, decode the length field
@@ -446,7 +446,7 @@ static int en50221_app_lowspeed_parse_send(struct en50221_app_lowspeed_private *
     }
 
     // more data is still to come
-    if (last_more) {
+    if (!more_last) {
         // if there was no previous session, create one
         if (cur_s == NULL) {
             cur_s = malloc(sizeof(struct en50221_app_lowspeed_session));
