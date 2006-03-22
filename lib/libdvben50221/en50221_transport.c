@@ -458,7 +458,7 @@ int en50221_tl_send_data(en50221_transport_layer tl, uint8_t slot_id, uint8_t co
     iov_out[1].iov_len = data_size;
 
     // send it!
-    if (dvbca_link_writev(ca_hndl, connection_id, iov_out, 2)) {
+    if (dvbca_link_writev(ca_hndl, connection_id, iov_out, 2) < 0) {
         private->error_slot = slot_id;
         private->error = EN50221ERR_CAWRITE;
         pthread_mutex_unlock(&private->slots[slot_id].slot_lock);
@@ -530,7 +530,7 @@ int en50221_tl_send_datav(en50221_transport_layer tl, uint8_t slot_id, uint8_t c
     memcpy(&iov_out[1], vector, iov_count * sizeof(struct iovec));
 
     // send it!
-    if (dvbca_link_writev(ca_hndl, connection_id, iov_out, iov_count+1)) {
+    if (dvbca_link_writev(ca_hndl, connection_id, iov_out, iov_count+1) < 0) {
         private->error_slot = slot_id;
         private->error = EN50221ERR_CAWRITE;
         pthread_mutex_unlock(&private->slots[slot_id].slot_lock);
