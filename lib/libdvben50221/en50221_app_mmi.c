@@ -196,7 +196,7 @@ void en50221_app_mmi_destroy(en50221_app_mmi mmi)
         if (cur_s->subtitlesegment_block_chain)
             free(cur_s->subtitlesegment_block_chain);
         if (cur_s->subtitledownload_block_chain)
-            free(cur_s->subtitlesegment_block_chain);
+            free(cur_s->subtitledownload_block_chain);
         free(cur_s);
         cur_s = next;
     }
@@ -205,7 +205,7 @@ void en50221_app_mmi_destroy(en50221_app_mmi mmi)
     free(private);
 }
 
-void en50221_app_mmi_inform_session_closed(en50221_app_mmi mmi, uint16_t session_number)
+void en50221_app_mmi_clear_session(en50221_app_mmi mmi, uint16_t session_number)
 {
     struct en50221_app_mmi_private *private = (struct en50221_app_mmi_private *) mmi;
 
@@ -221,7 +221,7 @@ void en50221_app_mmi_inform_session_closed(en50221_app_mmi mmi, uint16_t session
             if (cur_s->subtitlesegment_block_chain)
                 free(cur_s->subtitlesegment_block_chain);
             if (cur_s->subtitledownload_block_chain)
-                free(cur_s->subtitlesegment_block_chain);
+                free(cur_s->subtitledownload_block_chain);
             if (prev_s) {
                 prev_s->next = cur_s->next;
             } else {
@@ -889,7 +889,6 @@ static int en50221_app_mmi_parse_subtitle(struct en50221_app_mmi_private *privat
     switch(tag_id) {
         case TAG_SUBTITLE_SEGMENT_LAST:
         {
-            pthread_mutex_lock(&private->lock);
             en50221_app_mmi_subtitle_segment_callback cb = private->subtitlesegmentcallback;
             void *cb_arg = private->subtitlesegmentcallback_arg;
             pthread_mutex_unlock(&private->lock);
@@ -901,7 +900,6 @@ static int en50221_app_mmi_parse_subtitle(struct en50221_app_mmi_private *privat
 
         case TAG_SUBTITLE_DOWNLOAD_LAST:
         {
-            pthread_mutex_lock(&private->lock);
             en50221_app_mmi_subtitle_download_callback cb = private->subtitledownloadcallback;
             void *cb_arg = private->subtitledownloadcallback_arg;
             pthread_mutex_unlock(&private->lock);

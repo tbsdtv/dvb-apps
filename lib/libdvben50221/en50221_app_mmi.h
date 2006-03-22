@@ -319,7 +319,7 @@ extern void en50221_app_mmi_destroy(en50221_app_mmi mmi);
  * @param mmi mmi resource instance.
  * @param session_number The session concerned.
  */
-extern void en50221_app_mmi_inform_session_closed(en50221_app_mmi mmi, uint16_t session_number);
+extern void en50221_app_mmi_clear_session(en50221_app_mmi mmi, uint16_t session_number);
 
 /**
  * Register the callback for when we receive an mmi_close request.
