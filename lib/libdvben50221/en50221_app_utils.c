@@ -31,7 +31,7 @@ struct en50221_app_public_resource_id *
         return NULL;
 
     idf->resource_class = (resource_id >> 16) & 0xffff; // use the resource_id as the MSBs of class
-    idf->resource_type = (resource_id >> 10) & 0x3ff;
+    idf->resource_type = (resource_id >> 6) & 0x3ff;
     idf->resource_version = resource_id & 0x3f;
     return idf;
 }
