@@ -16,28 +16,39 @@ int main(int argc, char * argv[])
     int i;
     pthread_t stackthread;
 
-    // try and find a ca slot
-    int cafd= -1;
-    for(i=0; i<20; i++) {
-        if ((cafd = dvbca_open(i, 0)) > 0) {
-            break;
-        }
-    }
-    if (cafd == -1) {
-        fprintf(stderr, "Could not find CA device\n");
-        exit(1);
-    }
-    dvbca_reset(cafd);
-    printf("Found a CAM on adapter%i... waiting...\n", i);
-    while(dvbca_get_cam_state(cafd) != DVBCA_CAMSTATE_READY) {
-        usleep(1000);
-    }
-
     // create transport layer
-    en50221_transport_layer tl = en50221_tl_create(1, 32);
+    en50221_transport_layer tl = en50221_tl_create(5, 32);
     if (tl == NULL) {
         fprintf(stderr, "Failed to create transport layer\n");
         exit(1);
+    }
+
+    // find CAMs
+    int slot_count = 0;
+    int cafd= -1;
+    for(i=0; i<20; i++) {
+        if ((cafd = dvbca_open(i, 0)) > 0) {
+            if (dvbca_get_cam_state(cafd) == DVBCA_CAMSTATE_MISSING) {
+                close(cafd);
+                continue;
+            }
+
+            // reset it and wait
+            dvbca_reset(cafd);
+            printf("Found a CAM on adapter%i... waiting...\n", i);
+            while(dvbca_get_cam_state(cafd) != DVBCA_CAMSTATE_READY) {
+                usleep(1000);
+            }
+
+            // register it with the CA stack
+            int slot_id = 0;
+            if ((slot_id = en50221_tl_register_slot(tl, cafd, 1000, 100)) < 0) {
+                fprintf(stderr, "Slot registration failed\n");
+                exit(1);
+            }
+            printf("slotid: %i\n", slot_id);
+            slot_count++;
+        }
     }
 
     // start another thread to running the stack
@@ -46,23 +57,19 @@ int main(int argc, char * argv[])
     // register callback
     en50221_tl_register_callback(tl, test_callback, tl);
 
-    // register a slot with it
-    int slot_id = 0;
-    if ((slot_id = en50221_tl_register_slot(tl, cafd, 5000, 100)) < 0) {
-        fprintf(stderr, "Slot registration failed\n");
-        exit(1);
-    }
-    printf("slotid: %i\n", slot_id);
-
     // create a new connection
-    int tc = en50221_tl_new_tc(tl, slot_id, 0);
-    printf("tcid: %i\n", tc);
+    for(i=0; i<slot_count; i++) {
+        int tc = en50221_tl_new_tc(tl, i, 0);
+        printf("tcid: %i\n", tc);
+    }
 
     // sleep a bit
     sleep(10);
 
-    // destroy slot
-    en50221_tl_destroy_slot(tl, slot_id);
+    // destroy slots
+    for(i=0; i<slot_count; i++) {
+        en50221_tl_destroy_slot(tl, i);
+    }
     shutdown_stackthread = 1;
     pthread_join(stackthread, NULL);
 
@@ -77,7 +84,7 @@ void test_callback(void *arg, int reason,
                    uint8_t slot_id, uint8_t connection_id)
 {
     printf("-----------------------------------\n");
-    printf("CALLBACK %i %i %i\n", slot_id, connection_id, reason);
+    printf("CALLBACK SLOTID:%i %i %i\n", slot_id, connection_id, reason);
 
     int i;
     for(i=0; i< data_length; i++) {

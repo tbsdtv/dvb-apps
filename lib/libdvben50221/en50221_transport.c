@@ -1030,7 +1030,11 @@ static int en50221_tl_proc_data_tc(struct en50221_transport_layer_private *priva
                         private->error = EN50221ERR_CAWRITE;
                         return -1;
                     }
+                } else {
+                    private->slots[slot_id].connections[units[i].connection_id].tx_time.tv_sec = 0;
+                    private->slots[slot_id].connections[units[i].connection_id].do_poll = 1;
                 }
+
                 break;
 
             default:
