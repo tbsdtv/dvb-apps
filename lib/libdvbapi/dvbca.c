@@ -88,57 +88,67 @@ int dvbca_get_cam_state(int fd)
 int dvbca_link_write(int fd, uint8_t connection_id,
 		     uint8_t *data, uint16_t data_length)
 {
-	struct iovec iov[2];
-	uint8_t hdr[2];
+	uint8_t *buf = malloc(data_length + 2);
+	if (buf == NULL)
+		return -1;
 
-	hdr[0] = 0;
-	hdr[1] = connection_id;
-	iov[0].iov_base = hdr;
-	iov[0].iov_len = 2;
+	buf[0] = 0;
+	buf[1] = connection_id;
+	memcpy(buf+2, data, data_length);
 
-	iov[1].iov_base = data;
-	iov[1].iov_len = data_length;
-
-	return writev(fd, iov, 2);
+	int result = write(fd, buf, data_length+2);
+	free(buf);
+	return result;
 }
 
 int dvbca_link_writev(int fd, uint8_t connection_id,
 		      struct iovec *vector, int count)
 {
-	struct iovec iov[10];
-	uint8_t hdr[2];
+	uint32_t data_length = 0;
+	int i;
 
-	if (count > 9)
+	// allocate buffer space
+	for(i=0; i< count; i++) {
+		data_length += vector[i].iov_len;
+	}
+	uint8_t *buf = malloc(data_length + 2);
+	if (buf == NULL)
 		return -1;
 
-	hdr[0] = 0;
-	hdr[1] = connection_id;
-	iov[0].iov_base = hdr;
-	iov[0].iov_len = 2;
+	// merge IOVs
+	uint32_t pos = 2;
+	for(i=0; i< count; i++) {
+		memcpy(buf+pos, vector[i].iov_base, vector[i].iov_len);
+		pos += vector[i].iov_len;
+	}
 
-	memcpy(&iov[1], vector, count * sizeof(struct iovec));
+	// the header
+	buf[0] = 0;
+	buf[1] = connection_id;
 
-	return writev(fd, iov, count+1);
+	// write it
+	int result = write(fd, buf, data_length+2);
+	free(buf);
+	return result;
 }
 
 int dvbca_link_read(int fd, uint8_t *connection_id,
 		     uint8_t *data, uint16_t data_length)
 {
-	struct iovec iov[2];
-	uint8_t hdr[2];
 	int size;
 
-	iov[0].iov_base = hdr;
-	iov[0].iov_len = 2;
-	iov[1].iov_base = data;
-	iov[1].iov_len = data_length;
-
-	if ((size = readv(fd, iov, 2)) < 2)
+	uint8_t *buf = malloc(data_length + 2);
+	if (buf == NULL)
 		return -1;
 
-	if (hdr[0] != 0)
+	if ((size = read(fd, buf, data_length+2)) < 2)
 		return -1;
-	*connection_id = hdr[1];
+
+	if (buf[0] != 0)
+		return -1;
+	*connection_id = buf[1];
+	memcpy(data, buf+2, size-2);
+	free(buf);
 
 	return size - 2;
 }
