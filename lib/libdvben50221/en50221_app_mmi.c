@@ -150,6 +150,11 @@ static int en50221_app_mmi_defragment(struct en50221_app_mmi_private *private,
                                       uint32_t indata_length,
                                       uint8_t **outdata,
                                       uint32_t *outdata_length);
+static int en50221_app_mmi_defragment_text(uint8_t *data,
+                                           uint32_t data_length,
+                                           uint8_t **outdata,
+                                           uint32_t *outdata_length,
+                                           uint32_t *outconsumed);
 
 
 
@@ -810,7 +815,13 @@ static int en50221_app_mmi_parse_list_menu(struct en50221_app_mmi_private *priva
                                            uint8_t slot_id, uint16_t session_number, uint32_t tag_id,
                                            int more_last, uint8_t *data, uint32_t data_length)
 {
-        // first of all, decode the length field
+    int result = 0;
+    uint8_t *text_flags = NULL;
+    struct en50221_app_mmi_text *text_data = NULL;
+    uint32_t i;
+    uint8_t text_count = 0;
+
+    // first of all, decode the length field
     uint16_t asn_data_length;
     int length_field_len;
     if ((length_field_len = asn_1_decode(&asn_data_length, data, data_length)) < 0) {
@@ -838,17 +849,130 @@ static int en50221_app_mmi_parse_list_menu(struct en50221_app_mmi_private *priva
         pthread_mutex_unlock(&private->lock);
         return dfstatus;
     }
+    data = outdata;
+    data_length = outdata_length;
 
-    // FIXME: lots more parsing needed!
-    int cbstatus = 0;
-
-    // free the data returned by the defragment call if asked to
-    if (dfstatus == 2) {
-        free(outdata);
+    // check the reassembled data length
+    if (data_length < 1) {
+        print(LOG_LEVEL, ERROR, 1, "Received short data\n");
+        pthread_mutex_unlock(&private->lock);
+        result = -1;
+        goto exit_cleanup;
     }
 
-    // done
-    return cbstatus;
+    // now, parse the data
+    uint8_t choice_nb = data[0];
+    text_count = choice_nb + 3;
+    if (choice_nb == 0xff) text_count = 3;
+    data++;
+    data_length--;
+
+    // variables for extracted text state
+    text_flags = alloca(text_count);
+    if (text_flags == NULL) {
+        pthread_mutex_unlock(&private->lock);
+        result = -1;
+        goto exit_cleanup;
+    }
+    memset(text_flags, 0, text_count);
+    text_data = (struct en50221_app_mmi_text*) alloca(sizeof(struct en50221_app_mmi_text) * text_count);
+    if (text_data == NULL) {
+        pthread_mutex_unlock(&private->lock);
+        result = -1;
+        goto exit_cleanup;
+    }
+    memset(text_data, 0, sizeof(struct en50221_app_mmi_text) * text_count);
+
+    // extract the text!
+    for(i=0; i<text_count; i++) {
+        uint32_t consumed = 0;
+        int cur_status = en50221_app_mmi_defragment_text(data, data_length,
+                                                         &text_data[i].text, &text_data[i].text_length,
+                                                         &consumed);
+        if (cur_status < 0) {
+            pthread_mutex_unlock(&private->lock);
+            result = -1;
+            goto exit_cleanup;
+        }
+
+        text_flags[i] = cur_status;
+        data += consumed;
+        data_length -= consumed;
+    }
+
+    // work out what to pass to the user
+    struct en50221_app_mmi_text *text_data_for_user =
+            (struct en50221_app_mmi_text*) alloca(sizeof(struct en50221_app_mmi_text) * text_count);
+    if (text_data_for_user == NULL) {
+        result = -1;
+        goto exit_cleanup;
+    }
+    memcpy(text_data_for_user, text_data, sizeof(struct en50221_app_mmi_text) * text_count);
+    struct en50221_app_mmi_text *text_ptr = NULL;
+    if (text_count > 3) {
+        text_ptr = &text_data_for_user[3];
+    }
+    uint8_t *items_raw = NULL;
+    uint32_t items_raw_length = 0;
+    if (choice_nb == 0xff) {
+        items_raw = data;
+        items_raw_length = data_length;
+    }
+
+    // do callback
+    result = 0;
+    switch(tag_id) {
+        case TAG_MENU_LAST:
+        {
+            en50221_app_mmi_menu_callback cb = private->menucallback;
+            void *cb_arg = private->menucallback_arg;
+            pthread_mutex_unlock(&private->lock);
+            if (cb) {
+                result = cb(cb_arg, slot_id, session_number,
+                            &text_data_for_user[0],
+                            &text_data_for_user[1],
+                            &text_data_for_user[2],
+                            text_count-3,
+                            text_ptr,
+                            items_raw_length,
+                            items_raw);
+            }
+            break;
+        }
+
+        case TAG_LIST_LAST:
+        {
+            en50221_app_mmi_list_callback cb = private->listcallback;
+            void *cb_arg = private->listcallback_arg;
+            pthread_mutex_unlock(&private->lock);
+            if (cb) {
+                result = cb(cb_arg, slot_id, session_number,
+                            &text_data_for_user[0],
+                            &text_data_for_user[1],
+                            &text_data_for_user[2],
+                            text_count-3,
+                            text_ptr,
+                            items_raw_length,
+                            items_raw);
+            }
+            break;
+        }
+
+        default:
+            pthread_mutex_unlock(&private->lock);
+            break;
+    }
+
+exit_cleanup:
+    if ((dfstatus == 2) && outdata) free(outdata);
+    if (text_flags && text_data) {
+        for(i=0; i< text_count; i++) {
+            if ((text_flags[i] == 2) && text_data[i].text) {
+                free(text_data[i].text);
+            }
+        }
+    }
+    return result;
 }
 
 static int en50221_app_mmi_parse_subtitle(struct en50221_app_mmi_private *private,
@@ -1131,3 +1255,83 @@ static int en50221_app_mmi_defragment(struct en50221_app_mmi_private *private,
     return 1;
 }
 
+static int en50221_app_mmi_defragment_text(uint8_t *data,
+                                           uint32_t data_length,
+                                           uint8_t **outdata,
+                                           uint32_t *outdata_length,
+                                           uint32_t *outconsumed)
+{
+    uint8_t *text = NULL;
+    uint32_t text_length = 0;
+    uint32_t consumed = 0;
+
+    while(1) {
+        // get the tag
+        if (data_length < 3) {
+            print(LOG_LEVEL, ERROR, 1, "Short data\n");
+            if (text) free(text);
+            return -1;
+        }
+        uint32_t tag = (data[0] << 16) | (data[1] << 8) | data[2];
+        data += 3;
+        data_length -=3;
+        consumed += 3;
+
+        // get the length of the data and adjust
+        uint16_t asn_data_length;
+        int length_field_len;
+        if ((length_field_len = asn_1_decode(&asn_data_length, data, data_length)) < 0) {
+            print(LOG_LEVEL, ERROR, 1, "ASN.1 decode error\n");
+            if (text) free(text);
+            return -1;
+        }
+        data += length_field_len;
+        data_length -= length_field_len;
+        consumed += length_field_len;
+
+        // deal with the tags
+        if (tag == TAG_TEXT_LAST) {
+            if (text == NULL) {
+                *outdata = data;
+                *outdata_length = asn_data_length;
+                *outconsumed = consumed + asn_data_length;
+                return 1;
+            } else {
+                // append the data
+                uint8_t *new_text = realloc(text, text_length + asn_data_length);
+                if (new_text == NULL) {
+                    print(LOG_LEVEL, ERROR, 1, "Ran out of memory\n");
+                    if (text) free(text);
+                    return -1;
+                }
+                memcpy(new_text + text_length, data, asn_data_length);
+                *outdata = new_text;
+                *outdata_length = text_length + asn_data_length;
+                *outconsumed = consumed + asn_data_length;
+                return 2;
+            }
+
+        } else if (tag == TAG_TEXT_MORE) {
+            // append the data
+            uint8_t *new_text = realloc(text, text_length + asn_data_length);
+            if (new_text == NULL) {
+                print(LOG_LEVEL, ERROR, 1, "Ran out of memory\n");
+                if (text) free(text);
+                return -1;
+            }
+            memcpy(new_text + text_length, data, asn_data_length);
+            text = new_text;
+            text_length += asn_data_length;
+
+            // consume the data
+            data += asn_data_length;
+            data_length -= asn_data_length;
+            consumed += asn_data_length;
+        } else {
+            // unknown tag
+            print(LOG_LEVEL, ERROR, 1, "Unknown MMI text tag\n");
+            if (text) free(text);
+            return -1;
+        }
+    }
+}

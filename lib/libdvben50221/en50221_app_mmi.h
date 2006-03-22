@@ -265,14 +265,17 @@ typedef int (*en50221_app_mmi_enq_callback)(void *arg, uint8_t slot_id, uint16_t
  * @param sub_title Sub-Title text.
  * @param bottom Bottom text.
  * @param item_count Number of text elements in items.
- * @param items Pointer to array of en50221_app_mmi_text structures which are the menu choices,
+ * @param items Pointer to array of en50221_app_mmi_text structures which are standard menu choices,
+ * @param item_raw_length Length of item raw data.
+ * @param items_raw If nonstandard items were supplied, pointer to their data.
  * @return 0 on success, -1 on failure.
  */
 typedef int (*en50221_app_mmi_menu_callback)(void *arg, uint8_t slot_id, uint16_t session_number,
                                              struct en50221_app_mmi_text *title,
                                              struct en50221_app_mmi_text *sub_title,
                                               struct en50221_app_mmi_text *bottom,
-                                             uint32_t item_count, struct en50221_app_mmi_text *items);
+                                             uint32_t item_count, struct en50221_app_mmi_text *items,
+                                             uint32_t item_raw_length, uint8_t *items_raw);
 
 /**
  * Type definition for list callback.
@@ -284,14 +287,17 @@ typedef int (*en50221_app_mmi_menu_callback)(void *arg, uint8_t slot_id, uint16_
  * @param sub_title Sub-Title text.
  * @param bottom Bottom text.
  * @param item_count Number of text elements in items.
- * @param items Pointer to array of en50221_app_mmi_text structures which are the menu choices,
+ * @param items Pointer to array of en50221_app_mmi_text structures which are standard menu choices,
+ * @param item_raw_length Length of item raw data.
+ * @param items_raw If nonstandard items were supplied, pointer to their data.
  * @return 0 on success, -1 on failure.
  */
 typedef int (*en50221_app_mmi_list_callback)(void *arg, uint8_t slot_id, uint16_t session_number,
                                              struct en50221_app_mmi_text *title,
                                              struct en50221_app_mmi_text *sub_title,
                                              struct en50221_app_mmi_text *bottom,
-                                             uint32_t item_count, struct en50221_app_mmi_text *items);
+                                             uint32_t item_count, struct en50221_app_mmi_text *items,
+                                             uint32_t item_raw_length, uint8_t *items_raw);
 
 /**
  * Opaque type representing a mmi resource.
