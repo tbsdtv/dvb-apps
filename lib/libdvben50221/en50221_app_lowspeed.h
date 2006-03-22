@@ -129,13 +129,12 @@ extern en50221_app_lowspeed en50221_app_lowspeed_create(struct en50221_app_send_
 extern void en50221_app_lowspeed_destroy(en50221_app_lowspeed lowspeed);
 
 /**
- * Flush data for a particular session to the lowspeed resource. Should be used
- * when a connection to it is closed.
+ * Informs the lowspeed object that a session to it has been closed - cleans up internal state.
  *
  * @param lowspeed lowspeed resource instance.
  * @param session_number The session concerned.
  */
-extern void en50221_app_lowspeed_flush_session(en50221_app_lowspeed lowspeed, uint16_t session_number);
+extern void en50221_app_lowspeed_clear_session(en50221_app_lowspeed lowspeed, uint16_t session_number);
 
 /**
  * Register the callback for when we receive a comms command.

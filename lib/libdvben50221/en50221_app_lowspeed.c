@@ -107,7 +107,7 @@ void en50221_app_lowspeed_destroy(en50221_app_lowspeed lowspeed)
     free(private);
 }
 
-void en50221_app_lowspeed_flush_session(en50221_app_lowspeed lowspeed, uint16_t session_number)
+void en50221_app_lowspeed_clear_session(en50221_app_lowspeed lowspeed, uint16_t session_number)
 {
     struct en50221_app_lowspeed_private *private = (struct en50221_app_lowspeed_private *) lowspeed;
 
