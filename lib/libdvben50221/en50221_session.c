@@ -472,16 +472,18 @@ static void en50221_sl_handle_open_session_request(struct en50221_session_layer_
 
     // inform upper layers what happened
     pthread_mutex_lock(&private->lock);
-    if (private->sessions[session_number].state == S_STATE_ACTIVE) {
-        en50221_sl_session_callback cb = private->session;
-        void *cb_arg = private->session_arg;
-        if (status == S_STATUS_OPEN) {
-            if (cb)
-                cb(cb_arg, S_SCALLBACK_REASON_CAMCONNECTED, slot_id, session_number, resource_id);
-        } else {
-            private->sessions[session_number].state = S_STATE_IDLE;
-            if (cb)
-                cb(cb_arg, S_SCALLBACK_REASON_CAMCONNECTFAIL, slot_id, session_number, resource_id);
+    if (session_number != -1) {
+        if (private->sessions[session_number].state == S_STATE_ACTIVE) {
+            en50221_sl_session_callback cb = private->session;
+            void *cb_arg = private->session_arg;
+            if (status == S_STATUS_OPEN) {
+                if (cb)
+                    cb(cb_arg, S_SCALLBACK_REASON_CAMCONNECTED, slot_id, session_number, resource_id);
+            } else {
+                private->sessions[session_number].state = S_STATE_IDLE;
+                if (cb)
+                    cb(cb_arg, S_SCALLBACK_REASON_CAMCONNECTFAIL, slot_id, session_number, resource_id);
+            }
         }
     }
     pthread_mutex_unlock(&private->lock);
