@@ -349,12 +349,13 @@ static struct ca_pmt_stream *en50221_ca_extract_streams(struct mpeg_pmt_section 
 {
     struct ca_pmt_stream *streams = NULL;
     struct ca_pmt_stream *streams_tail = NULL;
-    struct ca_pmt_descriptor *descriptors_tail = NULL;
     struct mpeg_pmt_stream *cur_stream;
     struct descriptor *cur_descriptor;
     struct ca_pmt_stream *cur_s;
 
     mpeg_pmt_section_streams_for_each(pmt, cur_stream) {
+        struct ca_pmt_descriptor *descriptors_tail = NULL;
+
         // create a new structure
         struct ca_pmt_stream *new_s = malloc(sizeof(struct ca_pmt_stream));
         if (new_s == NULL) {
