@@ -1,3 +1,26 @@
+/*
+    en50221 encoder An implementation for libdvb
+    an implementation for the en50221 transport layer
+
+    Copyright (C) 2004, 2005 Manu Abraham (manu@kromtek.com)
+    Copyright (C) 2005 Julian Scheel (julian at jusst dot de)
+    Copyright (C) 2006 Andrew de Quincey (adq_dvb@lidskialf.net)
+
+    This library is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as
+    published by the Free Software Foundation; either version 2.1 of
+    the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+*/
+
 #include <stdio.h>
 #include <unistd.h>
 #include <dvben50221/en50221_transport.h>
@@ -59,12 +82,13 @@ int main(int argc, char * argv[])
 
     // create a new connection
     for(i=0; i<slot_count; i++) {
-        int tc = en50221_tl_new_tc(tl, i, 0);
+        int tc = en50221_tl_new_tc(tl, i, 1);
         printf("tcid: %i\n", tc);
     }
 
-    // sleep a bit
-    sleep(10);
+    // wait
+    printf("Press a key to exit\n");
+    getchar();
 
     // destroy slots
     for(i=0; i<slot_count; i++) {
