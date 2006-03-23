@@ -33,7 +33,7 @@ extern "C"
 #include <stdint.h>
 #include <en50221_app_utils.h>
 
-#define EN50221_APP_TELETEXT_RESOURCEID(DEVICE_NUMBER) MKRID(128, 1, 1),
+#define EN50221_APP_TELETEXT_RESOURCEID MKRID(128, 1, 1)
 
 
 /**
