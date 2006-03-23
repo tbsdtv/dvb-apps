@@ -172,8 +172,8 @@ static int en50221_app_ai_parse_app_info(struct en50221_app_ai_private *private,
 
     // check the menu_string_length
     if (menu_string_length > (asn_data_length-6)) {
-        print(LOG_LEVEL, ERROR, 1, "Received short data\n");
-        return -1;
+        print(LOG_LEVEL, ERROR, 1, "Received bad menu string length - adjusting\n");
+        menu_string_length = asn_data_length-6;
     }
 
     // tell the app
