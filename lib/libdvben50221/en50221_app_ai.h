@@ -35,6 +35,9 @@ extern "C"
 
 #define EN50221_APP_AI_RESOURCEID MKRID(2,1,1)
 
+#define APPLICATION_TYPE_CA 0x01
+#define APPLICATION_TYPE_EPG 0x02
+
 /**
  * Type definition for application callback function - called when we receive
  * an application info object.
