@@ -33,7 +33,7 @@ extern "C"
 #include <stdint.h>
 #include <en50221_app_utils.h>
 
-#define EN50221_APP_RM_RESOURCEID(DEVICE_TYPE, DEVICE_NUMBER) MKRID(1,1,1)
+#define EN50221_APP_RM_RESOURCEID MKRID(1,1,1)
 
 /**
  * Type definition for profile_enq callback function - called when we receive
@@ -52,11 +52,12 @@ typedef int (*en50221_app_rm_enq_callback)(void *arg, uint8_t slot_id, uint16_t 
  *
  * @param arg Private argument.
  * @param slot_id Slot id concerned.
+ * @param session_number Session number concerned.
  * @param resource_id_count Number of resource_ids.
  * @param resource_ids The resource ids themselves.
  * @return 0 on success, -1 on failure.
  */
-typedef int (*en50221_app_rm_reply_callback)(void *arg, uint8_t slot_id, uint32_t resource_id,
+typedef int (*en50221_app_rm_reply_callback)(void *arg, uint8_t slot_id, uint16_t session_number,
                                                       uint32_t resource_id_count,
                                                       uint32_t *resource_ids);
 /**
