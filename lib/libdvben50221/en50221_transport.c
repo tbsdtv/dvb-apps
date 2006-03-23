@@ -563,11 +563,7 @@ int en50221_tl_new_tc(en50221_transport_layer tl, uint8_t slot_id, uint8_t conne
         pthread_mutex_unlock(&private->slots[slot_id].slot_lock);
         return -1;
     }
-    if (connection_id && (private->slots[slot_id].connections[connection_id].state != T_STATE_ACTIVE)) {
-        private->error = EN50221ERR_BADCONNECTIONID;
-        pthread_mutex_unlock(&private->slots[slot_id].slot_lock);
-        return -1;
-    }
+    // NOTE: We don't really care the state of the connection we transmit the request on
 
     // allocate a new connection if possible
     int conid = en50221_tl_alloc_new_tc(private, slot_id);
@@ -707,6 +703,15 @@ static int en50221_tl_proc_data_tc(struct en50221_transport_layer_private *priva
 {
     struct en50221_tpdu units[2];
     int num_units = 1;
+
+    /*
+    printf("-------------------\n");
+    uint32_t ii=0;
+    for(ii=0; ii< data_length; ii++) {
+        printf("%02x: %02x\n", ii, data[ii]);
+    }
+    printf("+++++++++++++++++++\n");
+    */
 
     // first step is parsing the data into a tpdu block
     // the data is not copied, because it's only a
@@ -955,7 +960,7 @@ static int en50221_tl_proc_data_tc(struct en50221_transport_layer_private *priva
                     void *cb_arg = private->callback_arg;
                     pthread_mutex_unlock(&private->setcallback_lock);
 
-                    if (cb) {
+                    if (cb && units[i].data_length) {
                         pthread_mutex_unlock(&private->slots[slot_id].slot_lock);
                         cb(cb_arg, T_CALLBACK_REASON_DATA, units[i].data, units[i].data_length,
                            slot_id, units[i].connection_id);
@@ -987,7 +992,7 @@ static int en50221_tl_proc_data_tc(struct en50221_transport_layer_private *priva
                     en50221_tl_callback cb = private->callback;
                     void *cb_arg = private->callback_arg;
                     pthread_mutex_unlock(&private->setcallback_lock);
-                    if (cb) {
+                    if (cb && units[i].data_length) {
                         pthread_mutex_unlock(&private->slots[slot_id].slot_lock);
                         cb(cb_arg, T_CALLBACK_REASON_DATA, new_data_buffer, new_data_length,
                            slot_id, units[i].connection_id);
