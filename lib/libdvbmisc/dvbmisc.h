@@ -50,16 +50,23 @@ static inline void vprint(char *fmt, ...)
 	va_list args;
 
 	va_start(args, fmt);
-	fprintf(stderr, fmt, args);
+	vfprintf(stderr, fmt, args);
 	va_end(args);
 }
 
-static inline uint32_t time_ms()
+static inline int time_after(struct timeval oldtime, uint32_t delta_ms)
 {
-	struct timeval tv;
-	gettimeofday(&tv, 0);
+	// calculate the oldtime + add on the delta
+	uint64_t oldtime_ms = (oldtime.tv_sec * 1000) + (oldtime.tv_usec / 1000);
+	oldtime_ms += delta_ms;
 
-	return (tv.tv_sec * 1000) + (tv.tv_usec /1000);
+	// calculate the nowtime
+	struct timeval nowtime;
+	gettimeofday(&nowtime, 0);
+	uint64_t nowtime_ms = (nowtime.tv_sec * 1000) + (nowtime.tv_usec / 1000);
+
+	// check
+	return nowtime_ms > oldtime_ms;
 }
 
 #endif
