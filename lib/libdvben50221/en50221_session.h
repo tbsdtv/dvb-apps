@@ -162,7 +162,7 @@ extern int en50221_sl_create_session(en50221_session_layer sl, int slot_id, uint
  * @param session_number The session to destroy.
  * @return 0 on success, or -1 on error.
  */
-extern int en50221_sl_destroy_session(en50221_session_layer sl, int session_number);
+extern int en50221_sl_destroy_session(en50221_session_layer sl, uint16_t session_number);
 
 /**
  * this function is used to take a data-block, pack into
@@ -174,7 +174,7 @@ extern int en50221_sl_destroy_session(en50221_session_layer sl, int session_numb
  * @param data_length Length of data in bytes.
  * @return 0 on success, or -1 on error.
  */
-extern int en50221_sl_send_data(en50221_session_layer sl, uint8_t session_number, uint8_t *data, uint16_t data_length);
+extern int en50221_sl_send_data(en50221_session_layer sl, uint16_t session_number, uint8_t *data, uint16_t data_length);
 
 /**
  * this function is used to take a data-block, pack into
@@ -186,7 +186,7 @@ extern int en50221_sl_send_data(en50221_session_layer sl, uint8_t session_number
  * @param iov_count Number of elements in io vector.
  * @return 0 on success, or -1 on error.
  */
-extern int en50221_sl_send_datav(en50221_session_layer sl, uint8_t session_number,
+extern int en50221_sl_send_datav(en50221_session_layer sl, uint16_t session_number,
                                  struct iovec *vector, int iov_count);
 
 /**

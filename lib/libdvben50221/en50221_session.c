@@ -74,7 +74,7 @@ struct en50221_session {
 
 struct en50221_session_layer_private
 {
-    uint8_t max_sessions;
+    uint32_t max_sessions;
     en50221_transport_layer tl;
 
     en50221_sl_lookup_callback lookup;
@@ -233,7 +233,7 @@ int en50221_sl_create_session(en50221_session_layer sl, int slot_id, uint8_t con
     return session_number;
 }
 
-int en50221_sl_destroy_session(en50221_session_layer sl, int session_number)
+int en50221_sl_destroy_session(en50221_session_layer sl, uint16_t session_number)
 {
     struct en50221_session_layer_private *private = (struct en50221_session_layer_private *) sl;
 
@@ -277,7 +277,7 @@ int en50221_sl_destroy_session(en50221_session_layer sl, int session_number)
     return 0;
 }
 
-int en50221_sl_send_data(en50221_session_layer sl, uint8_t session_number, uint8_t *data, uint16_t data_length)
+int en50221_sl_send_data(en50221_session_layer sl, uint16_t session_number, uint8_t *data, uint16_t data_length)
 {
     struct en50221_session_layer_private *private = (struct en50221_session_layer_private *) sl;
 
@@ -317,7 +317,7 @@ int en50221_sl_send_data(en50221_session_layer sl, uint8_t session_number, uint8
     return 0;
 }
 
-int en50221_sl_send_datav(en50221_session_layer sl, uint8_t session_number,
+int en50221_sl_send_datav(en50221_session_layer sl, uint16_t session_number,
                           struct iovec *vector, int iov_count)
 {
     struct en50221_session_layer_private *private = (struct en50221_session_layer_private *) sl;
@@ -367,7 +367,7 @@ int en50221_sl_broadcast_data(en50221_session_layer sl, int slot_id, uint32_t re
                               uint8_t *data, uint16_t data_length)
 {
     struct en50221_session_layer_private *private = (struct en50221_session_layer_private *) sl;
-    int i;
+    uint32_t i;
 
     for(i = 0; i < private->max_sessions; i++)
     {
@@ -500,7 +500,6 @@ static void en50221_sl_handle_open_session_request(struct en50221_session_layer_
 
     // inform upper layers what happened
     if (session_number != -1) {
-        pthread_mutex_lock(&private->sessions[session_number].session_lock);
         if (private->sessions[session_number].state == S_STATE_ACTIVE) {
             pthread_mutex_lock(&private->setcallback_lock);
             en50221_sl_session_callback cb = private->session;
@@ -516,7 +515,6 @@ static void en50221_sl_handle_open_session_request(struct en50221_session_layer_
                     cb(cb_arg, S_SCALLBACK_REASON_CAMCONNECTFAIL, slot_id, session_number, resource_id);
             }
         }
-        pthread_mutex_unlock(&private->sessions[session_number].session_lock);
     }
 }
 
@@ -797,7 +795,7 @@ static void en50221_sl_transport_callback(void *arg, int reason, uint8_t *data, 
                                           uint8_t slot_id, uint8_t connection_id)
 {
     struct en50221_session_layer_private *private = (struct en50221_session_layer_private *) arg;
-    int i;
+    uint32_t i;
 
     // deal with the reason for this callback
     switch(reason) {
@@ -933,8 +931,8 @@ static int en50221_sl_alloc_new_session(struct en50221_session_layer_private *pr
                                         en50221_sl_resource_callback callback, void* arg)
 {
     int session_number = -1;
-    int i;
-    for(i = 0; i < private->max_sessions; i++) {
+    uint32_t i;
+    for(i = 1; i < private->max_sessions; i++) {
         if (private->sessions[i].state == S_STATE_IDLE) {
             session_number = i;
             break;
