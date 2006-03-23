@@ -59,12 +59,12 @@ struct en50221_app_send_functions {
     /**
      * Send data.
      */
-    int (*send_data)(void *arg, uint8_t session_number, uint8_t *data, uint16_t data_length);
+    int (*send_data)(void *arg, uint16_t session_number, uint8_t *data, uint16_t data_length);
 
     /**
      * Send vector data.
      */
-    int (*send_datav)(void *arg, uint8_t session_number, struct iovec *vector, int iov_count);
+    int (*send_datav)(void *arg, uint16_t session_number, struct iovec *vector, int iov_count);
 };
 
 /**
