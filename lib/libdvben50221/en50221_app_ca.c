@@ -105,8 +105,8 @@ void en50221_app_ca_destroy(en50221_app_ca ca)
     free(private);
 }
 
-void en50221_app_ca_register_ca_info_callback(en50221_app_ca ca,
-                                              en50221_app_ca_info_callback callback, void *arg)
+void en50221_app_ca_register_info_callback(en50221_app_ca ca,
+                                           en50221_app_ca_info_callback callback, void *arg)
 {
     struct en50221_app_ca_private *private = (struct en50221_app_ca_private *) ca;
 
@@ -116,8 +116,8 @@ void en50221_app_ca_register_ca_info_callback(en50221_app_ca ca,
     pthread_mutex_unlock(&private->lock);
 }
 
-void en50221_app_ca_register_ca_pmt_reply_callback(en50221_app_ca ca,
-                                                   en50221_app_ca_pmt_reply_callback callback, void *arg)
+void en50221_app_ca_register_pmt_reply_callback(en50221_app_ca ca,
+                                                en50221_app_ca_pmt_reply_callback callback, void *arg)
 {
     struct en50221_app_ca_private *private = (struct en50221_app_ca_private *) ca;
 
