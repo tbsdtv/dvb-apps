@@ -29,30 +29,30 @@
 #include "asn_1.h"
 
 // tags supported by this resource
-#define TAG_CLOSE_MMI           0x9f8800
-#define TAG_DISPLAY_CONTROL     0x9f8801
-#define TAG_DISPLAY_REPLY       0x9f8802
-#define TAG_TEXT_LAST           0x9f8803
-#define TAG_TEXT_MORE           0x9f8804
-#define TAG_KEYPAD_CONTROL      0x9f8805
-#define TAG_KEYPRESS            0x9f8806
-#define TAG_ENQUIRY         0x9f8807
-#define TAG_ANSWER          0x9f8808
-#define TAG_MENU_LAST           0x9f8809
-#define TAG_MENU_MORE           0x9f880a
-#define TAG_MENU_ANSWER         0x9f880b
-#define TAG_LIST_LAST           0x9f880c
-#define TAG_LIST_MORE           0x9f880d
+#define TAG_CLOSE_MMI               0x9f8800
+#define TAG_DISPLAY_CONTROL         0x9f8801
+#define TAG_DISPLAY_REPLY           0x9f8802
+#define TAG_TEXT_LAST               0x9f8803
+#define TAG_TEXT_MORE               0x9f8804
+#define TAG_KEYPAD_CONTROL          0x9f8805
+#define TAG_KEYPRESS                0x9f8806
+#define TAG_ENQUIRY                 0x9f8807
+#define TAG_ANSWER                  0x9f8808
+#define TAG_MENU_LAST               0x9f8809
+#define TAG_MENU_MORE               0x9f880a
+#define TAG_MENU_ANSWER             0x9f880b
+#define TAG_LIST_LAST               0x9f880c
+#define TAG_LIST_MORE               0x9f880d
 #define TAG_SUBTITLE_SEGMENT_LAST   0x9f880e
 #define TAG_SUBTITLE_SEGMENT_MORE   0x9f880f
-#define TAG_DISPLAY_MESSAGE     0x9f8810
-#define TAG_SCENE_END_MARK      0x9f8811
-#define TAG_SCENE_DONE          0x9f8812
-#define TAG_SCENE_CONTROL       0x9f8813
+#define TAG_DISPLAY_MESSAGE         0x9f8810
+#define TAG_SCENE_END_MARK          0x9f8811
+#define TAG_SCENE_DONE              0x9f8812
+#define TAG_SCENE_CONTROL           0x9f8813
 #define TAG_SUBTITLE_DOWNLOAD_LAST  0x9f8814
 #define TAG_SUBTITLE_DOWNLOAD_MORE  0x9f8815
-#define TAG_FLUSH_DOWNLOAD      0x9f8816
-#define TAG_DOWNLOAD_REPLY      0x9f8817
+#define TAG_FLUSH_DOWNLOAD          0x9f8816
+#define TAG_DOWNLOAD_REPLY          0x9f8817
 
 struct en50221_app_mmi_session {
         uint16_t session_number;
@@ -721,8 +721,8 @@ static int en50221_app_mmi_parse_display_control(struct en50221_app_mmi_private 
 
     // tell the app
     pthread_mutex_lock(&private->lock);
-    en50221_app_mmi_display_control_callback cb = private->closecallback;
-    void *cb_arg = private->closecallback_arg;
+    en50221_app_mmi_display_control_callback cb = private->displaycontrolcallback;
+    void *cb_arg = private->displaycontrolcallback_arg;
     pthread_mutex_unlock(&private->lock);
     if (cb) {
         return cb(cb_arg, slot_id, session_number, cmd_id, mmi_mode);
