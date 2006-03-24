@@ -414,6 +414,15 @@ int en50221_tl_send_data(en50221_transport_layer tl, uint8_t slot_id, uint8_t co
 {
     struct en50221_transport_layer_private *private = (struct en50221_transport_layer_private *) tl;
 
+    /*
+    printf("[[[[[[[[[[[[[[[[[[[[\n");
+    uint32_t ii=0;
+    for(ii=0;ii<data_size;ii++) {
+        printf("%02x: %02x\n", ii, data[ii]);
+    }
+    printf("]]]]]]]]]]]]]]]]]]]]\n");
+    */
+
     if (slot_id >= private->max_slots) {
         private->error = EN50221ERR_BADSLOTID;
         return -1;
@@ -474,6 +483,20 @@ int en50221_tl_send_datav(en50221_transport_layer tl, uint8_t slot_id, uint8_t c
 {
     struct en50221_transport_layer_private *private = (struct en50221_transport_layer_private *) tl;
 
+    /*
+    printf("[[[[[[[[[[[[[[[[[[[[\n");
+    uint32_t ii=0;
+    uint32_t pos=0;
+    for(ii=0;ii<iov_count;ii++) {
+        uint32_t jj;
+        for(jj=0; jj< vector[ii].iov_len; jj++) {
+            printf("%02x: %02x\n", jj+pos, *((uint8_t*) (vector[ii].iov_base) +jj));
+        }
+        pos += vector[ii].iov_len;
+    }
+    printf("]]]]]]]]]]]]]]]]]]]]\n");
+    */
+
     if (slot_id >= private->max_slots) {
         private->error = EN50221ERR_BADSLOTID;
         return -1;
@@ -505,7 +528,7 @@ int en50221_tl_send_datav(en50221_transport_layer tl, uint8_t slot_id, uint8_t c
         pthread_mutex_unlock(&private->slots[slot_id].slot_lock);
         return -1;
     }
-    uint32_t length;
+    uint32_t length = 0;
     int i;
     for(i=0; i< iov_count; i++) {
         length += vector[i].iov_len;
@@ -781,7 +804,8 @@ static int en50221_tl_proc_data_tc(struct en50221_transport_layer_private *priva
     for(i = 0; i < num_units; i++)
     {
         if (units[i].connection_id >= private->max_connections_per_slot) {
-            print(LOG_LEVEL, ERROR, 1, "Received bad connection id from module on slot %02x\n", slot_id);
+            print(LOG_LEVEL, ERROR, 1, "Received bad connection id %02x from module on slot %02x\n",
+                  units[i].connection_id, slot_id);
             private->error_slot = slot_id;
             private->error = EN50221ERR_BADCONNECTIONID;
             return -1;
