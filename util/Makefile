@@ -1,9 +1,9 @@
 # Makefile for linuxtv.org dvb-apps/util
+#	$(MAKE) -C ca_zap $(MAKECMDGOALS)
 
 all %::
 	$(MAKE) -C lib $(MAKECMDGOALS)
 	$(MAKE) -C szap $(MAKECMDGOALS)
-	$(MAKE) -C ca_zap $(MAKECMDGOALS)
 	$(MAKE) -C scan $(MAKECMDGOALS)
 	$(MAKE) -C dvbnet $(MAKECMDGOALS)
 	$(MAKE) -C dvbdate $(MAKECMDGOALS)
