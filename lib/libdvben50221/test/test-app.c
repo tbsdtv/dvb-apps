@@ -39,6 +39,9 @@
 #include <dvbapi/dvbca.h>
 #include <pthread.h>
 
+#define MAX_SESSIONS 256
+#define MAX_TC 32
+
 void *stackthread_func(void* arg);
 int test_lookup_callback(void *arg, uint8_t slot_id, uint32_t resource_id, en50221_sl_resource_callback *callback_out, void **arg_out);
 int test_session_callback(void *arg, int reason, uint8_t slot_id, uint16_t session_number, uint32_t resource_id);
@@ -58,33 +61,37 @@ int test_ca_info_callback(void *arg, uint8_t slot_id, uint16_t session_number, u
 int test_ca_pmt_reply_callback(void *arg, uint8_t slot_id, uint16_t session_number,
                                struct en50221_app_pmt_reply *reply, uint32_t reply_size);
 
-
 int shutdown_stackthread = 0;
 
 
+
+// instances of resources we actually implement here
+en50221_app_rm rm_resource;
+en50221_app_datetime datetime_resource;
+en50221_app_ai ai_resource;
+en50221_app_ca ca_resource;
+
+// lookup table used in resource manager implementation
 struct resource {
     struct en50221_app_public_resource_id resid;
     en50221_sl_resource_callback callback;
     void *arg;
 };
 struct resource resources[20];
-uint32_t resourceids[20];
 int resources_count = 0;
 
-en50221_app_rm rm_resource;
-en50221_app_datetime datetime_resource;
-en50221_app_ai ai_resource;
-en50221_app_ca ca_resource;
-
-/*
-en50221_app_auth auth_resource;
-en50221_app_dvb dvb_resource;
-en50221_app_epg epg_resource;
-en50221_app_lowspeed lowspeed_resource;
-en50221_app_mmi mmi_resource;
-en50221_app_smartcard smartcard_resource;
-en50221_app_teletext teletext_resource;
-*/
+// this contains all known resource ids so we can see if the cam asks for something exotic
+uint32_t resource_ids[] = { EN50221_APP_TELETEXT_RESOURCEID,
+                            EN50221_APP_SMARTCARD_RESOURCEID(1),
+                            EN50221_APP_RM_RESOURCEID,
+                            EN50221_APP_MMI_RESOURCEID,
+                            EN50221_APP_LOWSPEED_RESOURCEID(1,1),
+                            EN50221_APP_EPG_RESOURCEID(1),
+                            EN50221_APP_DVB_RESOURCEID,
+                            EN50221_APP_CA_RESOURCEID,
+                            EN50221_APP_AUTH_RESOURCEID,
+                            EN50221_APP_AI_RESOURCEID, };
+int resource_ids_count = sizeof(resource_ids)/4;
 
 
 int main(int argc, char * argv[])
@@ -145,7 +152,6 @@ int main(int argc, char * argv[])
     en50221_app_decode_public_resource_id(&resources[resources_count].resid, EN50221_APP_RM_RESOURCEID);
     resources[resources_count].callback = en50221_app_rm_message;
     resources[resources_count].arg = rm_resource;
-    resourceids[resources_count] = EN50221_APP_RM_RESOURCEID;
     en50221_app_rm_register_enq_callback(rm_resource, test_rm_enq_callback, NULL);
     en50221_app_rm_register_reply_callback(rm_resource, test_rm_reply_callback, NULL);
     en50221_app_rm_register_changed_callback(rm_resource, test_rm_changed_callback, NULL);
@@ -156,7 +162,6 @@ int main(int argc, char * argv[])
     en50221_app_decode_public_resource_id(&resources[resources_count].resid, EN50221_APP_DATETIME_RESOURCEID);
     resources[resources_count].callback = en50221_app_datetime_message;
     resources[resources_count].arg = datetime_resource;
-    resourceids[resources_count] = EN50221_APP_DATETIME_RESOURCEID;
     en50221_app_datetime_register_enquiry_callback(datetime_resource, test_datetime_enquiry_callback, NULL);
     resources_count++;
 
@@ -165,7 +170,6 @@ int main(int argc, char * argv[])
     en50221_app_decode_public_resource_id(&resources[resources_count].resid, EN50221_APP_AI_RESOURCEID);
     resources[resources_count].callback = en50221_app_ai_message;
     resources[resources_count].arg = ai_resource;
-    resourceids[resources_count] = EN50221_APP_AI_RESOURCEID;
     en50221_app_ai_register_callback(ai_resource, test_ai_callback, NULL);
     resources_count++;
 
@@ -174,31 +178,9 @@ int main(int argc, char * argv[])
     en50221_app_decode_public_resource_id(&resources[resources_count].resid, EN50221_APP_CA_RESOURCEID);
     resources[resources_count].callback = en50221_app_ca_message;
     resources[resources_count].arg = ca_resource;
-    resourceids[resources_count] = EN50221_APP_CA_RESOURCEID;
     en50221_app_ca_register_info_callback(ca_resource, test_ca_info_callback, NULL);
     en50221_app_ca_register_pmt_reply_callback(ca_resource, test_ca_pmt_reply_callback, NULL);
     resources_count++;
-
-    /*
-    resourceids[resources_count+1] = EN50221_APP_AUTH_RESOURCEID;
-    resourceids[resources_count+3] = EN50221_APP_DVB_RESOURCEID;
-    resourceids[resources_count+4] = EN50221_APP_EPG_RESOURCEID(0);
-    resourceids[resources_count+5] = EN50221_APP_MMI_RESOURCEID;
-    resourceids[resources_count+6] = EN50221_APP_SMARTCARD_RESOURCEID(0);
-    resourceids[resources_count+7] = EN50221_APP_TELETEXT_RESOURCEID;
-    */
-
-
-
-    // create the resources
-//    auth_resource = en50221_app_auth_create(&sendfuncs);
-//    ca_resource = en50221_app_ca_create(&sendfuncs);
-//    dvb_resource = en50221_app_dvb_create(&sendfuncs);
-//    epg_resource = en50221_app_epg_create(&sendfuncs);
-//    lowspeed_resource = en50221_app_lowspeed_create(&sendfuncs);
-//    mmi_resource = en50221_app_mmi_create(&sendfuncs);
-//    smartcard_resource = en50221_app_smartcard_create(&sendfuncs);
-//    teletext_resource = en50221_app_teletext_create(&sendfuncs);
 
     // start another thread running the stack
     pthread_create(&stackthread, NULL, stackthread_func, tl);
@@ -245,6 +227,9 @@ int test_lookup_callback(void *arg, uint8_t slot_id, uint32_t resource_id, en502
         printf("Private resource lookup callback %i %08x\n", slot_id, resource_id);
         return -1;
     }
+
+    // FIXME: need better comparison
+    // FIXME: return resourceid we actually connected to
 
     // try and find an instance of the resource
     int i;
@@ -311,7 +296,7 @@ int test_rm_enq_callback(void *arg, uint8_t slot_id, uint16_t session_number)
 {
     printf("RM: enq\n");
 
-    if (en50221_app_rm_reply(rm_resource, session_number, resources_count, resourceids)) {
+    if (en50221_app_rm_reply(rm_resource, session_number, resource_ids_count, resource_ids)) {
         printf("Failed to send reply to ENQ\n");
     }
 
@@ -325,7 +310,6 @@ int test_rm_reply_callback(void *arg, uint8_t slot_id, uint16_t session_number, 
     for(i=0; i< resource_id_count; i++) {
         printf("  %08x\n", resource_ids[i]);
     }
-
 
     if (en50221_app_rm_changed(rm_resource, session_number)) {
         printf("Failed to send REPLY\n");
@@ -355,8 +339,6 @@ int test_datetime_enquiry_callback(void *arg, uint8_t slot_id, uint16_t session_
     if (en50221_app_datetime_send(datetime_resource, session_number, time(NULL), -1)) {
         printf("failed to send datetime\n");
     }
-
-    // FIXME: need to do response interval stuff
 
     return 0;
 }
