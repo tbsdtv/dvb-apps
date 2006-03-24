@@ -454,14 +454,11 @@ static void en50221_sl_handle_open_session_request(struct en50221_session_layer_
         if (session_number == -1) {
             status = S_STATUS_CLOSE_NO_RES;
         } else {
-            pthread_mutex_lock(&private->sessions[session_number].session_lock);
-
             // inform upper layers/ check availability
             pthread_mutex_lock(&private->setcallback_lock);
             en50221_sl_session_callback cb = private->session;
             void *cb_arg = private->session_arg;
             pthread_mutex_unlock(&private->setcallback_lock);
-
             if (cb) {
                 if (cb(cb_arg, S_SCALLBACK_REASON_CAMCONNECTING, slot_id, session_number, resource_id)) {
                     status = S_STATUS_CLOSE_RES_BUSY;
@@ -469,15 +466,6 @@ static void en50221_sl_handle_open_session_request(struct en50221_session_layer_
             } else {
                 status = S_STATUS_CLOSE_RES_UNAVAILABLE;
             }
-
-            // setup session state apppropriately from upper layer response
-            if (status != S_STATUS_OPEN) {
-                private->sessions[session_number].state = S_STATE_IDLE;
-            } else {
-                private->sessions[session_number].state = S_STATE_ACTIVE;
-            }
-
-            pthread_mutex_unlock(&private->sessions[session_number].session_lock);
         }
     }
 
@@ -500,6 +488,16 @@ static void en50221_sl_handle_open_session_request(struct en50221_session_layer_
 
     // inform upper layers what happened
     if (session_number != -1) {
+        // setup session state apppropriately from upper layer response
+        pthread_mutex_lock(&private->sessions[session_number].session_lock);
+        if (status != S_STATUS_OPEN) {
+            private->sessions[session_number].state = S_STATE_IDLE;
+        } else {
+            private->sessions[session_number].state = S_STATE_ACTIVE;
+        }
+        pthread_mutex_unlock(&private->sessions[session_number].session_lock);
+
+        // tell upper layers
         if (private->sessions[session_number].state == S_STATE_ACTIVE) {
             pthread_mutex_lock(&private->setcallback_lock);
             en50221_sl_session_callback cb = private->session;
@@ -631,6 +629,8 @@ static void en50221_sl_handle_create_session_response(struct en50221_session_lay
     // extract status
     if (data[1] != S_STATUS_OPEN) {
         print(LOG_LEVEL, ERROR, 1, "Session creation failed 0x%02x\n", data[1]);
+        private->sessions[session_number].state = S_STATE_IDLE;
+        pthread_mutex_unlock(&private->sessions[session_number].session_lock);
 
         // inform upper layers
         pthread_mutex_lock(&private->setcallback_lock);
@@ -640,11 +640,12 @@ static void en50221_sl_handle_create_session_response(struct en50221_session_lay
         if (cb)
             cb(cb_arg, S_SCALLBACK_REASON_CONNECTFAIL, slot_id, session_number,
                private->sessions[session_number].resource_id);
-
-        private->sessions[session_number].state = S_STATE_IDLE;
-        pthread_mutex_unlock(&private->sessions[session_number].session_lock);
         return;
     }
+
+    // set it active
+    private->sessions[session_number].state = S_STATE_ACTIVE;
+    pthread_mutex_unlock(&private->sessions[session_number].session_lock);
 
     // inform upper layers
     pthread_mutex_lock(&private->setcallback_lock);
@@ -654,10 +655,6 @@ static void en50221_sl_handle_create_session_response(struct en50221_session_lay
     if (cb)
         cb(cb_arg, S_SCALLBACK_REASON_CONNECTED, slot_id, session_number,
            private->sessions[session_number].resource_id);
-
-    // done
-    private->sessions[session_number].state = S_STATE_ACTIVE;
-    pthread_mutex_unlock(&private->sessions[session_number].session_lock);
 }
 
 static void en50221_sl_handle_close_session_response(struct en50221_session_layer_private *private,
@@ -846,14 +843,14 @@ static void en50221_sl_transport_callback(void *arg, int reason, uint8_t *data, 
                 continue;
             }
 
+            private->sessions[i].state = S_STATE_IDLE;
+
             uint8_t slot_id = private->sessions[i].slot_id;
             uint32_t resource_id = private->sessions[i].resource_id;
+            pthread_mutex_unlock(&private->sessions[i].session_lock);
 
             if (cb)
                 cb(cb_arg, S_SCALLBACK_REASON_CLOSE, slot_id, i, resource_id);
-
-            private->sessions[i].state = S_STATE_IDLE;
-            pthread_mutex_unlock(&private->sessions[i].session_lock);
         }
         return;
     }
@@ -876,13 +873,14 @@ static void en50221_sl_transport_callback(void *arg, int reason, uint8_t *data, 
                 pthread_mutex_unlock(&private->sessions[i].session_lock);
                 continue;
             }
+            private->sessions[i].state = S_STATE_IDLE;
+
             uint32_t resource_id = private->sessions[i].resource_id;
+            pthread_mutex_unlock(&private->sessions[i].session_lock);
 
             if (cb)
                 cb(cb_arg, S_SCALLBACK_REASON_CLOSE, slot_id, i, resource_id);
 
-            private->sessions[i].state = S_STATE_IDLE;
-            pthread_mutex_unlock(&private->sessions[i].session_lock);
         }
         return;
     }
