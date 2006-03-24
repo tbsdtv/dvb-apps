@@ -3,6 +3,7 @@
 	an implementation for the High Level Common Interface
 
 	Copyright (C) 2004, 2005 Manu Abraham (manu@kromtek.com)
+    Copyright (C) 2006 Andrew de Quincey (adq_dvb@lidskialf.net)
 
 	This library is free software; you can redistribute it and/or modify
 	it under the terms of the GNU Lesser General Public License as
@@ -22,11 +23,19 @@
 #ifndef __ASN_1_H__
 #define __ASN_1_H__
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
 #include <stdlib.h>
 #include <stdint.h>
 
-uint32_t asn_1_decode(uint8_t *asn_1_array);
-uint8_t *asn_1_encode(uint16_t length, uint32_t *asn_1_words);
+int asn_1_decode(uint16_t *length, uint8_t *asn_1_array, uint32_t asn_1_array_len);
+int asn_1_encode(uint16_t length, uint8_t *asn_1_array, uint32_t asn_1_array_len);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
