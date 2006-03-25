@@ -389,7 +389,7 @@ int en50221_tl_poll(en50221_transport_layer tl)
                 continue;
             }
 
-            // only send queued data + poll in ACTIVE state
+            // send queued data
             if (private->slots[slot_id].connections[j].state & (T_STATE_ACTIVE|T_STATE_ACTIVE_DELETEQUEUED)) {
                 // send data if there is some to go and we're not waiting for a response already
                 if (private->slots[slot_id].connections[j].send_queue &&
@@ -426,8 +426,10 @@ int en50221_tl_poll(en50221_transport_layer tl)
 
                     free(msg);
                 }
+            }
 
-                // poll it if we're not expecting a reponse and the poll time has elapsed
+            // poll it if we're not expecting a reponse and the poll time has elapsed
+            if (private->slots[slot_id].connections[j].state & T_STATE_ACTIVE) {
                 if ((private->slots[slot_id].connections[j].tx_time.tv_sec == 0) &&
                     (time_after(private->slots[slot_id].connections[j].last_poll_time, private->slots[slot_id].poll_delay))) {
 
