@@ -1,10 +1,13 @@
 CC=gcc
 
-CPPFLAGS += 	-g -Wall -DLOG_LEVEL=20 \-W -MD \
-	 	-I. \
-	    	-I../libucsi \
-	    	-I../libdvbmisc \
-		-I../libdvbapi
+#DEBUG= -DDEBUG_RXDATA=1 -DDEBUG_TXDATA=1 -DLOG_LEVEL=5
+DEBUG=-DLOG_LEVEL=1
+
+CPPFLAGS += -g -Wall -W -MD $(DEBUG) \
+		 	-I. \
+			-I../libucsi \
+			-I../libdvbmisc \
+			-I../libdvbapi
 
 OBJS = 	asn_1.o \
 		en50221_transport.o \
