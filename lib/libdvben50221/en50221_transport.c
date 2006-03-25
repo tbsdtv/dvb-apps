@@ -390,7 +390,7 @@ int en50221_tl_poll(en50221_transport_layer tl)
             }
 
             // only send queued data + poll in ACTIVE state
-            if (private->slots[slot_id].connections[j].state == T_STATE_ACTIVE) {
+            if (private->slots[slot_id].connections[j].state & (T_STATE_ACTIVE|T_STATE_ACTIVE_DELETEQUEUED)) {
                 // send data if there is some to go and we're not waiting for a response already
                 if (private->slots[slot_id].connections[j].send_queue &&
                     (private->slots[slot_id].connections[j].tx_time.tv_sec == 0)) {
@@ -413,6 +413,17 @@ int en50221_tl_poll(en50221_transport_layer tl)
                         return -1;
                     }
                     gettimeofday(&private->slots[slot_id].connections[j].tx_time, 0);
+
+                    // fixup connection state for T_DELETE_T_C
+                    if (msg->length && (msg->data[0] == T_DELETE_T_C)) {
+                        private->slots[slot_id].connections[j].state = T_STATE_IN_DELETION;
+                        if (private->slots[slot_id].connections[j].chain_buffer) {
+                            free(private->slots[slot_id].connections[j].chain_buffer);
+                        }
+                        private->slots[slot_id].connections[j].chain_buffer = NULL;
+                        private->slots[slot_id].connections[j].buffer_length = 0;
+                    }
+
                     free(msg);
                 }
 
@@ -721,6 +732,7 @@ int en50221_tl_del_tc(en50221_transport_layer tl, uint8_t slot_id, uint8_t conne
 
     // queue it for transmission
     queue_message(private, slot_id, connection_id, msg);
+    private->slots[slot_id].connections[connection_id].state = T_STATE_ACTIVE_DELETEQUEUED;
 
     pthread_mutex_unlock(&private->slots[slot_id].slot_lock);
     return 0;
