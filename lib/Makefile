@@ -1,7 +1,7 @@
 
-.PHONY: libdvbapi libdvbcfg libdvben50221 libdvbsi libucsi
+.PHONY: libdvbapi libdvbcfg libucsi libdvben50221 libdvbsi
 
-all: libdvbapi libdvbcfg libdvben50221 libdvbsi libucsi
+all: libdvbapi libdvbcfg libucsi libdvben50221 libdvbsi
 
 libdvbcfg:
 	$(MAKE) -C libdvbcfg $(MAKECMDGOALS)
