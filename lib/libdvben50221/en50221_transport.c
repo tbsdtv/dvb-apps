@@ -447,7 +447,7 @@ int en50221_tl_poll(en50221_transport_layer tl)
 
                 if (private->slots[slot_id].connections[j].state & (T_STATE_IN_CREATION|T_STATE_IN_DELETION)) {
                     private->slots[slot_id].connections[j].state = T_STATE_IDLE;
-                } else if (private->slots[slot_id].connections[j].state == T_STATE_ACTIVE) {
+                } else if (private->slots[slot_id].connections[j].state & (T_STATE_ACTIVE|T_STATE_ACTIVE_DELETEQUEUED)) {
                     private->error_slot = slot_id;
                     private->error = EN50221ERR_TIMEOUT;
                     pthread_mutex_unlock(&private->slots[slot_id].slot_lock);
