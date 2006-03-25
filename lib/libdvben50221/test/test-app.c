@@ -267,7 +267,7 @@ int main(int argc, char * argv[])
 
     // create a new connection on each slot
     for(i=0; i<slot_count; i++) {
-        int tc = en50221_tl_new_tc(tl, i, 1);
+        int tc = en50221_tl_new_tc(tl, i);
         printf("tcid: %i\n", tc);
     }
 
