@@ -191,11 +191,9 @@ extern int en50221_tl_send_datav(en50221_transport_layer tl,
  *
  * @param tl The en50221_transport_layer instance.
  * @param slot_id ID of the slot.
- * @param connection_id Connection id to send the request _on_.
  * @return The allocated connection id on success, or -1 on error.
  */
-extern int en50221_tl_new_tc(en50221_transport_layer tl,
-		      	     uint8_t slot_id, uint8_t connection_id);
+extern int en50221_tl_new_tc(en50221_transport_layer tl, uint8_t slot_id);
 
 /**
  * Deallocates a transport connection.
