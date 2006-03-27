@@ -410,6 +410,7 @@ int en50221_tl_poll(en50221_transport_layer tl)
                         pthread_mutex_unlock(&private->slots[slot_id].slot_lock);
                         private->error_slot = slot_id;
                         private->error = EN50221ERR_CAWRITE;
+                        print(LOG_LEVEL, ERROR, 1, "CAWrite failed");
                         return -1;
                     }
                     gettimeofday(&private->slots[slot_id].connections[j].tx_time, 0);
