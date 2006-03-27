@@ -24,6 +24,7 @@
 #include <string.h>
 #include <dvbmisc.h>
 #include <pthread.h>
+#include <ucsi/mpeg/descriptor.h>
 #include "en50221_app_ca.h"
 #include "asn_1.h"
 
@@ -62,8 +63,8 @@ struct ca_pmt_stream {
     struct ca_pmt_stream *next;
 };
 
-static struct ca_pmt_descriptor *en50221_ca_extract_pmt_descriptors(struct mpeg_pmt_section *pmt);
-static struct ca_pmt_stream *en50221_ca_extract_streams(struct mpeg_pmt_section *pmt);
+static int en50221_ca_extract_pmt_descriptors(struct mpeg_pmt_section *pmt, struct ca_pmt_descriptor **outdescriptors);
+static int en50221_ca_extract_streams(struct mpeg_pmt_section *pmt, struct ca_pmt_stream **outstreams);
 static void en50221_ca_try_move_pmt_descriptors(struct ca_pmt_descriptor **pmt_descriptors,
                                                 struct ca_pmt_stream **pmt_streams);
 static uint32_t en50221_ca_calculate_length(struct ca_pmt_descriptor *pmt_descriptors,
@@ -210,9 +211,9 @@ int en50221_ca_format_pmt(struct mpeg_pmt_section *pmt, uint8_t *data, uint32_t 
     int result = -1;
 
     // extract the descriptors and streams
-    if ((pmt_descriptors = en50221_ca_extract_pmt_descriptors(pmt)) == NULL)
+    if (en50221_ca_extract_pmt_descriptors(pmt, &pmt_descriptors))
         goto cleanup;
-    if ((pmt_streams = en50221_ca_extract_streams(pmt)) == NULL)
+    if (en50221_ca_extract_streams(pmt, &pmt_streams))
         goto cleanup;
 
     // try and merge them if we have no PMT descriptors
@@ -306,7 +307,7 @@ cleanup:
 
 
 
-static struct ca_pmt_descriptor *en50221_ca_extract_pmt_descriptors(struct mpeg_pmt_section *pmt)
+static int en50221_ca_extract_pmt_descriptors(struct mpeg_pmt_section *pmt, struct ca_pmt_descriptor **outdescriptors)
 {
     struct ca_pmt_descriptor *descriptors = NULL;
     struct ca_pmt_descriptor *descriptors_tail = NULL;
@@ -314,7 +315,7 @@ static struct ca_pmt_descriptor *en50221_ca_extract_pmt_descriptors(struct mpeg_
 
     struct descriptor *cur_descriptor;
     mpeg_pmt_section_descriptors_for_each(pmt, cur_descriptor) {
-        if (cur_descriptor->tag == dtag_dvb_ca_identifier) {
+        if (cur_descriptor->tag == dtag_mpeg_ca) {
             // create a new structure for this one
             struct ca_pmt_descriptor *new_d = malloc(sizeof(struct ca_pmt_descriptor));
             if (new_d == NULL) {
@@ -333,7 +334,8 @@ static struct ca_pmt_descriptor *en50221_ca_extract_pmt_descriptors(struct mpeg_
             descriptors_tail = new_d;
         }
     }
-    return descriptors;
+    *outdescriptors = descriptors;
+    return 0;
 
 error_exit:
     cur_d = descriptors;
@@ -342,10 +344,10 @@ error_exit:
         free(cur_d);
         cur_d = next;
     }
-    return NULL;
+    return -1;
 }
 
-static struct ca_pmt_stream *en50221_ca_extract_streams(struct mpeg_pmt_section *pmt)
+static int en50221_ca_extract_streams(struct mpeg_pmt_section *pmt, struct ca_pmt_stream **outstreams)
 {
     struct ca_pmt_stream *streams = NULL;
     struct ca_pmt_stream *streams_tail = NULL;
@@ -377,7 +379,7 @@ static struct ca_pmt_stream *en50221_ca_extract_streams(struct mpeg_pmt_section 
 
         // now process the descriptors
         mpeg_pmt_stream_descriptors_for_each(cur_stream, cur_descriptor) {
-            if (cur_descriptor->tag == dtag_dvb_ca_identifier) {
+            if (cur_descriptor->tag == dtag_mpeg_ca) {
                // create a new structure
                 struct ca_pmt_descriptor *new_d = malloc(sizeof(struct ca_pmt_descriptor));
                 if (new_d == NULL) {
@@ -398,7 +400,8 @@ static struct ca_pmt_stream *en50221_ca_extract_streams(struct mpeg_pmt_section 
             }
         }
     }
-    return streams;
+    *outstreams = streams;
+    return 0;
 
 exit_cleanup:
     // free the streams
@@ -417,7 +420,7 @@ exit_cleanup:
         free(cur_s);
         cur_s = next_s;
     }
-    return NULL;
+    return -1;
 }
 
 static void en50221_ca_try_move_pmt_descriptors(struct ca_pmt_descriptor **pmt_descriptors,
