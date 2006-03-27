@@ -390,7 +390,7 @@ int en50221_tl_poll(en50221_transport_layer tl)
             }
 
             // send queued data
-            if (private->slots[slot_id].connections[j].state & (T_STATE_ACTIVE|T_STATE_ACTIVE_DELETEQUEUED)) {
+            if (private->slots[slot_id].connections[j].state & (T_STATE_IN_CREATION|T_STATE_ACTIVE|T_STATE_ACTIVE_DELETEQUEUED)) {
                 // send data if there is some to go and we're not waiting for a response already
                 if (private->slots[slot_id].connections[j].send_queue &&
                     (private->slots[slot_id].connections[j].tx_time.tv_sec == 0)) {
@@ -811,7 +811,7 @@ static int en50221_tl_process_data(struct en50221_transport_layer_private *priva
         uint16_t asn_data_length;
         int length_field_len;
         if ((length_field_len = asn_1_decode(&asn_data_length, data + 1, data_length - 1)) < 0) {
-            print(LOG_LEVEL, ERROR, 1, "Received data with invalid length from module on slot %02x\n", slot_id);
+            print(LOG_LEVEL, ERROR, 1, "Received data with invalid asn from module on slot %02x\n", slot_id);
             private->error_slot = slot_id;
             private->error = EN50221ERR_BADCAMDATA;
             return -1;
@@ -879,6 +879,10 @@ static int en50221_tl_process_data(struct en50221_transport_layer_private *priva
                 private->error = EN50221ERR_BADCAMDATA;
                 return -1;
         }
+
+        // skip over the consumed data
+        data += asn_data_length;
+        data_length -= asn_data_length;
     }
 
     return 0;
@@ -1201,6 +1205,7 @@ static int en50221_tl_alloc_new_tc(struct en50221_transport_layer_private *priva
 static void queue_message(struct en50221_transport_layer_private *private, uint8_t slot_id,
                           uint8_t connection_id, struct en50221_message *msg)
 {
+    msg->next = NULL;
     if (private->slots[slot_id].connections[connection_id].send_queue_tail) {
         private->slots[slot_id].connections[connection_id].send_queue_tail->next = msg;
     } else {
