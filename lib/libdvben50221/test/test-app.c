@@ -570,6 +570,8 @@ int test_mmi_enq_callback(void *arg, uint8_t slot_id, uint16_t session_number,
                             uint8_t *text, uint32_t text_size)
 {
     printf("%02x:%s\n", slot_id, __func__);
+    printf("  blind: %i\n", blind_answer);
+    printf("  expected_answer_length: %i\n", expected_answer_length);
 
     mmi_session_number = session_number;
     in_enq = 1;
