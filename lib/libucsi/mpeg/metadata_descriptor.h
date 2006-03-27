@@ -135,9 +135,9 @@ struct mpeg_metadata_descriptor_decoder_config_reserved {
 static inline struct mpeg_metadata_descriptor*
 	mpeg_metadata_descriptor_codec(struct descriptor* d)
 {
-	int pos = 2;
+	uint32_t pos = 2;
 	uint8_t *buf = (uint8_t*) d;
-	int len = d->len + 2;
+	uint32_t len = d->len + 2;
 	struct mpeg_metadata_descriptor_flags *flags;
 	int id;
 
@@ -291,13 +291,11 @@ static inline struct mpeg_metadata_descriptor_flags*
 /**
  * Accessor for service_identifier field of an mpeg_metadata_descriptor.
  *
- * @param d The mpeg_metadata_descriptor structure.
  * @param flags Pointer to the mpeg_metadata_descriptor_flags.
  * @return Pointer to the field, or NULL on error.
  */
 static inline struct mpeg_metadata_descriptor_service_identifier*
- 	mpeg_metadata_descriptor_sevice_identifier(struct mpeg_metadata_descriptor *d,
-						   struct mpeg_metadata_descriptor_flags *flags)
+ 	mpeg_metadata_descriptor_sevice_identifier(struct mpeg_metadata_descriptor_flags *flags)
 {
 	uint8_t *buf = (uint8_t*) flags + sizeof(struct mpeg_metadata_descriptor_flags);
 
@@ -322,13 +320,11 @@ static inline uint8_t*
 /**
  * Accessor for decoder_config field of an mpeg_metadata_descriptor.
  *
- * @param d The mpeg_metadata_descriptor structure.
  * @param flags Pointer to the mpeg_metadata_descriptor_flags.
  * @return Pointer to the field, or NULL on error.
  */
 static inline struct mpeg_metadata_descriptor_decoder_config*
-	mpeg_metadata_descriptor_decoder_config(struct mpeg_metadata_descriptor *d,
-						struct mpeg_metadata_descriptor_flags *flags)
+	mpeg_metadata_descriptor_decoder_config(struct mpeg_metadata_descriptor_flags *flags)
 {
 	uint8_t *buf = (uint8_t*) flags + sizeof(struct mpeg_metadata_descriptor_flags);
 
@@ -356,13 +352,11 @@ static inline uint8_t*
 /**
  * Accessor for decoder_config_id_record field of an mpeg_metadata_descriptor.
  *
- * @param d The mpeg_metadata_descriptor structure.
  * @param flags Pointer to the mpeg_metadata_descriptor_flags.
  * @return Pointer to the field, or NULL on error.
  */
 static inline struct mpeg_metadata_descriptor_decoder_config_id_record*
-	mpeg_metadata_descriptor_decoder_config_id_record(struct mpeg_metadata_descriptor *d,
-						  	  struct mpeg_metadata_descriptor_flags *flags)
+	mpeg_metadata_descriptor_decoder_config_id_record(struct mpeg_metadata_descriptor_flags *flags)
 {
 	uint8_t *buf = (uint8_t*) flags + sizeof(struct mpeg_metadata_descriptor_flags);
 
@@ -390,13 +384,11 @@ static inline uint8_t*
 /**
  * Accessor for decoder_config_service_id field of an mpeg_metadata_descriptor.
  *
- * @param d The mpeg_metadata_descriptor structure.
  * @param flags Pointer to the mpeg_metadata_descriptor_flags.
  * @return Pointer to the field, or NULL on error.
  */
 static inline struct mpeg_metadata_descriptor_decoder_config_service_id*
-	mpeg_metadata_descriptor_decoder_config_service_id(struct mpeg_metadata_descriptor *d,
-							   struct mpeg_metadata_descriptor_flags *flags)
+	mpeg_metadata_descriptor_decoder_config_service_id(struct mpeg_metadata_descriptor_flags *flags)
 {
 	uint8_t *buf = (uint8_t*) flags + sizeof(struct mpeg_metadata_descriptor_flags);
 
@@ -412,13 +404,11 @@ static inline struct mpeg_metadata_descriptor_decoder_config_service_id*
 /**
  * Accessor for decoder_config_reserved field of an mpeg_metadata_descriptor.
  *
- * @param d The mpeg_metadata_descriptor structure.
  * @param flags Pointer to the mpeg_metadata_descriptor_flags.
  * @return Pointer to the field, or NULL on error.
  */
 static inline struct mpeg_metadata_descriptor_decoder_config_reserved*
-	mpeg_metadata_descriptor_decoder_config_reserved(struct mpeg_metadata_descriptor *d,
-							 struct mpeg_metadata_descriptor_flags *flags)
+	mpeg_metadata_descriptor_decoder_config_reserved(struct mpeg_metadata_descriptor_flags *flags)
 {
 	uint8_t *buf = (uint8_t*) flags + sizeof(struct mpeg_metadata_descriptor_flags);
 

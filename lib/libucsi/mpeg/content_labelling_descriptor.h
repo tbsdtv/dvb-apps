@@ -115,9 +115,9 @@ struct mpeg_content_labelling_descriptor_time_base_association {
 static inline struct mpeg_content_labelling_descriptor*
 	mpeg_content_labelling_descriptor_codec(struct descriptor* d)
 {
-	int pos = 2;
+	uint32_t pos = 2;
 	uint8_t *buf = (uint8_t*) d;
-	int len = d->len + 2;
+	uint32_t len = d->len + 2;
 	struct mpeg_content_labelling_descriptor_flags *flags;
 	int id;
 
@@ -214,13 +214,11 @@ static inline struct mpeg_content_labelling_descriptor_flags*
 /**
  * Accessor for reference_id field of an mpeg_content_labelling_descriptor.
  *
- * @param d The mpeg_content_labelling_descriptor structure.
  * @param flags Pointer to the mpeg_content_labelling_descriptor_flags.
  * @return Pointer to the field, or NULL on error.
  */
 static inline struct mpeg_content_labelling_descriptor_reference_id*
-	mpeg_content_labelling_descriptor_reference_id(struct mpeg_content_labelling_descriptor *d,
-						       struct mpeg_content_labelling_descriptor_flags *flags)
+	mpeg_content_labelling_descriptor_reference_id(struct mpeg_content_labelling_descriptor_flags *flags)
 {
 	uint8_t *buf = (uint8_t*) flags + sizeof(struct mpeg_content_labelling_descriptor_flags);
 
@@ -245,13 +243,11 @@ static inline uint8_t*
 /**
  * Accessor for time_base field of an mpeg_content_labelling_descriptor.
  *
- * @param d The mpeg_content_labelling_descriptor structure.
  * @param flags Pointer to the mpeg_content_labelling_descriptor_flags.
  * @return Pointer to the field, or NULL on error.
  */
 static inline struct mpeg_content_labelling_descriptor_time_base*
-	mpeg_content_labelling_descriptor_time_base(struct mpeg_content_labelling_descriptor *d,
-					  	    struct mpeg_content_labelling_descriptor_flags *flags)
+	mpeg_content_labelling_descriptor_time_base(struct mpeg_content_labelling_descriptor_flags *flags)
 {
 	uint8_t *buf = (uint8_t*) flags + sizeof(struct mpeg_content_labelling_descriptor_flags);
 
@@ -267,13 +263,11 @@ static inline struct mpeg_content_labelling_descriptor_time_base*
 /**
  * Accessor for content_id field of an mpeg_content_labelling_descriptor.
  *
- * @param d The mpeg_content_labelling_descriptor structure.
  * @param flags Pointer to the mpeg_content_labelling_descriptor_flags.
  * @return Pointer to the field, or NULL on error.
  */
 static inline struct mpeg_content_labelling_descriptor_content_id*
-	mpeg_content_labelling_descriptor_content_id(struct mpeg_content_labelling_descriptor *d,
-						    struct mpeg_content_labelling_descriptor_flags *flags)
+	mpeg_content_labelling_descriptor_content_id(struct mpeg_content_labelling_descriptor_flags *flags)
 {
 	uint8_t *buf = (uint8_t*) flags + sizeof(struct mpeg_content_labelling_descriptor_flags);
 
@@ -291,13 +285,11 @@ static inline struct mpeg_content_labelling_descriptor_content_id*
 /**
  * Accessor for time_base_association field of an mpeg_content_labelling_descriptor.
  *
- * @param d The mpeg_content_labelling_descriptor structure.
  * @param flags Pointer to the mpeg_content_labelling_descriptor_flags.
  * @return Pointer to the field, or NULL on error.
  */
 static inline struct mpeg_content_labelling_descriptor_time_base_association*
-	mpeg_content_labelling_descriptor_time_base_assoc(struct mpeg_content_labelling_descriptor *d,
-						     	  struct mpeg_content_labelling_descriptor_flags *flags)
+	mpeg_content_labelling_descriptor_time_base_assoc(struct mpeg_content_labelling_descriptor_flags *flags)
 {
 	uint8_t *buf = (uint8_t*) flags + sizeof(struct mpeg_content_labelling_descriptor_flags);
 

@@ -116,9 +116,9 @@ struct mpeg_metadata_pointer_descriptor_carriage {
 static inline struct mpeg_metadata_pointer_descriptor*
 	mpeg_metadata_pointer_descriptor_codec(struct descriptor* d)
 {
-	int pos = 2;
+	uint32_t pos = 2;
 	uint8_t *buf = (uint8_t*) d;
-	int len = d->len + 2;
+	uint32_t len = d->len + 2;
 	struct mpeg_metadata_pointer_descriptor_flags *flags;
 	int id;
 
@@ -256,13 +256,11 @@ static inline struct mpeg_metadata_pointer_descriptor_flags*
 /**
  * Accessor for locator field of an mpeg_metadata_pointer_descriptor.
  *
- * @param d The mpeg_metadata_pointer_descriptor structure.
  * @param flags Pointer to the mpeg_metadata_pointer_descriptor_flags.
  * @return Pointer to the field, or NULL on error.
  */
 static inline struct mpeg_metadata_pointer_descriptor_locator*
-	mpeg_metadata_pointer_descriptor_locator(struct mpeg_metadata_pointer_descriptor *d,
-					  	 struct mpeg_metadata_pointer_descriptor_flags *flags)
+	mpeg_metadata_pointer_descriptor_locator(struct mpeg_metadata_pointer_descriptor_flags *flags)
 {
 	uint8_t *buf = (uint8_t*) flags + sizeof(struct mpeg_metadata_pointer_descriptor_flags);
 
@@ -288,13 +286,11 @@ static inline uint8_t*
 /**
  * Accessor for program_number field of an mpeg_metadata_pointer_descriptor.
  *
- * @param d The mpeg_metadata_pointer_descriptor structure.
  * @param flags Pointer to the mpeg_metadata_pointer_descriptor_flags.
  * @return Pointer to the field, or NULL on error.
  */
 static inline struct mpeg_metadata_pointer_descriptor_program_number*
-	mpeg_metadata_pointer_descriptor_program_number(struct mpeg_metadata_pointer_descriptor *d,
-						        struct mpeg_metadata_pointer_descriptor_flags *flags)
+	mpeg_metadata_pointer_descriptor_program_number(struct mpeg_metadata_pointer_descriptor_flags *flags)
 {
 	uint8_t *buf = (uint8_t*) flags + sizeof(struct mpeg_metadata_pointer_descriptor_flags);
 
@@ -310,13 +306,11 @@ static inline struct mpeg_metadata_pointer_descriptor_program_number*
 /**
  * Accessor for carriage field of an mpeg_metadata_pointer_descriptor.
  *
- * @param d The mpeg_metadata_pointer_descriptor structure.
  * @param flags Pointer to the mpeg_metadata_pointer_descriptor_flags.
  * @return Pointer to the field, or NULL on error.
  */
 static inline struct mpeg_metadata_pointer_descriptor_carriage*
-	mpeg_metadata_pointer_descriptor_carriage(struct mpeg_metadata_pointer_descriptor *d,
-						  struct mpeg_metadata_pointer_descriptor_flags *flags)
+	mpeg_metadata_pointer_descriptor_carriage(struct mpeg_metadata_pointer_descriptor_flags *flags)
 {
 	uint8_t *buf = (uint8_t*) flags + sizeof(struct mpeg_metadata_pointer_descriptor_flags);
 
