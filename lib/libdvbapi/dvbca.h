@@ -78,7 +78,7 @@ extern int dvbca_get_interface_type(int fd);
 extern int dvbca_get_cam_state(int fd);
 
 /**
- * Write a message to a CAM.
+ * Write a message to a CAM using a link-layer interface.
  *
  * @param fd File handle opened with dvbca_open.
  * @param connection_id Connection ID of the message.
@@ -90,19 +90,7 @@ extern int dvbca_link_write(int fd, uint8_t connection_id,
 			    uint8_t *data, uint16_t data_length);
 
 /**
- * Write a message to a CAM using an iovec.
- *
- * @param fd File handle opened with dvbca_open.
- * @param connection_id Connection ID of the message.
- * @param vector struct iovec describing what to write.
- * @param count Number of elements in the iovec.
- * @return 0 on success, or -1 on failure.
- */
-extern int dvbca_link_writev(int fd, uint8_t connection_id,
-			     struct iovec *vector, int count);
-
-/**
- * Read a message from a CA device.
+ * Read a message from a CA device using a link-layer interface.
  *
  * @param fd File handle opened with dvbca_open.
  * @param connection_id Destination for the connection ID the message came from.
@@ -111,6 +99,29 @@ extern int dvbca_link_writev(int fd, uint8_t connection_id,
  * @return Number of bytes read on success, or -1 on failure.
  */
 extern int dvbca_link_read(int fd, uint8_t *connection_id,
+			   uint8_t *data, uint16_t data_length);
+
+/**
+ * Write a message to a CAM using an HLCI interface.
+ *
+ * @param fd File handle opened with dvbca_open.
+ * @param data Data to write.
+ * @param data_length Number of bytes to write.
+ * @return 0 on success, or -1 on failure.
+ */
+extern int dvbca_hlci_write(int fd,
+			    uint8_t *data, uint16_t data_length);
+
+/**
+ * Read a message from a CA device using an HLCI interface.
+ *
+ * @param fd File handle opened with dvbca_open.
+ * @param app_tag Application layer tag giving the message type to read.
+ * @param data Data that was read.
+ * @param data_length Max number of bytes to read.
+ * @return Number of bytes read on success, or -1 on failure.
+ */
+extern int dvbca_hlci_read(int fd, uint32_t app_tag,
 			   uint8_t *data, uint16_t data_length);
 
 #ifdef __cplusplus

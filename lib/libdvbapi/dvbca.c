@@ -101,37 +101,6 @@ int dvbca_link_write(int fd, uint8_t connection_id,
 	return result;
 }
 
-int dvbca_link_writev(int fd, uint8_t connection_id,
-		      struct iovec *vector, int count)
-{
-	uint32_t data_length = 0;
-	int i;
-
-	// allocate buffer space
-	for(i=0; i< count; i++) {
-		data_length += vector[i].iov_len;
-	}
-	uint8_t *buf = malloc(data_length + 2);
-	if (buf == NULL)
-		return -1;
-
-	// merge IOVs
-	uint32_t pos = 2;
-	for(i=0; i< count; i++) {
-		memcpy(buf+pos, vector[i].iov_base, vector[i].iov_len);
-		pos += vector[i].iov_len;
-	}
-
-	// the header
-	buf[0] = 0;
-	buf[1] = connection_id;
-
-	// write it
-	int result = write(fd, buf, data_length+2);
-	free(buf);
-	return result;
-}
-
 int dvbca_link_read(int fd, uint8_t *connection_id,
 		     uint8_t *data, uint16_t data_length)
 {
@@ -151,4 +120,42 @@ int dvbca_link_read(int fd, uint8_t *connection_id,
 	free(buf);
 
 	return size - 2;
+}
+
+int dvbca_hlci_write(int fd,
+   	 	     uint8_t *data, uint16_t data_length)
+{
+	struct ca_msg msg;
+
+	if (data_length > 256) {
+		return -1;
+	}
+	memset(&msg, 0, sizeof(msg));
+	msg.length = data_length;
+
+	memcpy(msg.msg, data, data_length);
+
+	return ioctl(fd, CA_SEND_MSG, &msg);
+}
+
+int dvbca_hlci_read(int fd, uint32_t app_tag,
+  		    uint8_t *data, uint16_t data_length)
+{
+	struct ca_msg msg;
+
+	if (data_length > 256) {
+		data_length = 256;
+	}
+	memset(&msg, 0, sizeof(msg));
+	msg.length = data_length;
+	msg.msg[0] = app_tag >> 16;
+	msg.msg[1] = app_tag >> 8;
+	msg.msg[2] = app_tag;
+
+	int status = ioctl(fd, CA_GET_MSG, &msg);
+	if (status < 0) return status;
+
+	if (msg.length > data_length) msg.length = data_length;
+	memcpy(data, msg.msg, msg.length);
+	return msg.length;
 }
