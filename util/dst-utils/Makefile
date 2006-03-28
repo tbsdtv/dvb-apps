@@ -1,8 +1,8 @@
 CC = gcc
 CFLAGS ?= -g -O2 -W -Wall
 CFLAGS += $(ARCH)
-CPPFLAGS += -MD -I../../lib/libdvbsi -I../../lib/libdvben50221 -I../../include
-LDFLAGS = -g -O2 -L ../../lib/libdvbsi -ldvbsi -L ../../lib/libdvben50221 -ldvben50221
+CPPFLAGS += -MD -I../../lib/libdvben50221 -I../../include
+LDFLAGS = -g -O2 -L ../../lib/libdvben50221 -ldvben50221
 RM = rm -f
 
 OBJS = dst_test.o

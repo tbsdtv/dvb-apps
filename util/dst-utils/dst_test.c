@@ -28,12 +28,11 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <errno.h>
+#include <stdint.h>
 
 #include <linux/dvb/dmx.h>
 #include <linux/dvb/ca.h>
-
-#include "si.h"
-#include "en50221_hlci.h"
+#include <dvben50221/en50221_app_tags.h>
 
 #define CA_NODE "/dev/dvb/adapter0/ca0"
 
@@ -146,14 +145,14 @@ static int dst_get_app_info(int cafd, struct ca_msg *msg)
 	uint32_t tag = 0;
 
 	/*	Enquire		*/
-	tag = CA_APP_INFO_ENQUIRY;
+	tag = TAG_CA_INFO_ENQUIRY;
 	if ((dst_comms(cafd, tag, CA_SEND_MSG, msg)) < 0) {
 		printf("%s: Dst communication failed\n", __FUNCTION__);
 		return -1;
 	}
 
 	/*	Receive		*/
-	tag = CA_APP_INFO;
+	tag = TAG_CA_INFO;
 	if ((dst_comms(cafd, tag, CA_GET_MSG, msg)) < 0) {
 		printf("%s: Dst communication failed\n", __FUNCTION__);
 		return -1;
