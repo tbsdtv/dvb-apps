@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS ?= -Wall -g -O2
 CFLAGS += $(ARCH)
-CPPFLAGS += -MD -I../../include -I../lib $(DEFS)
+CPPFLAGS += -MD -I../../include $(DEFS)
 LFLAGS = -Wall -g -O2
 RM = rm -f
 DEFS = '-DDATADIR="$(datadir)"'
@@ -9,7 +9,7 @@ bindir = /usr/local/bin
 datadir = /usr/local/share
 
 TARGETS = azap szap tzap czap femon
-OBJS = azap.o szap.o tzap.o czap.o femon.o
+OBJS = azap.o szap.o tzap.o czap.o femon.o lnb.o
 
 all: $(OBJS) $(TARGETS)
 	@echo
@@ -25,8 +25,8 @@ all: $(OBJS) $(TARGETS)
 	@echo "--------------------------------------------------------------------------------"
 	@echo
 
-szap: szap.o ../lib/lnb.o
-	$(CC) $(LFLAGS) -o szap szap.o ../lib/lnb.o
+szap: szap.o lnb.o
+	$(CC) $(LFLAGS) -o szap szap.o lnb.o
 
 .c.o:
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ -c $<

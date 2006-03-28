@@ -2,13 +2,13 @@
 CC = gcc
 CFLAGS ?= -g -Wall -O2
 CFLAGS +=$(ARCH)
-CPPFLAGS += -MD -I../../include -I../lib $(DEFS)
+CPPFLAGS += -MD -I../../include $(DEFS)
 LFLAGS = -g -Wall
 DEFS = '-DDATADIR="$(datadir)"'
 bindir = /usr/local/bin
 datadir = /usr/local/share
 
-OBJS = diseqc.o dump-zap.o dump-vdr.o scan.o section.o atsc_psip_section.o ../lib/lnb.o
+OBJS = diseqc.o dump-zap.o dump-vdr.o scan.o section.o atsc_psip_section.o lnb.o
 SRCS = $(OBJS:.o=.c)
 
 DYNSRC = atsc_psip_section.c atsc_psip_section.h
