@@ -23,8 +23,7 @@ release dist:
 	@echo
 
 %::
-	$(MAKE) -C lib/libdvbsi $(MAKECMDGOALS)
-	$(MAKE) -C lib/libdvben50221 $(MAKECMDGOALS)
+	$(MAKE) -C lib $(MAKECMDGOALS)
 	$(MAKE) -C util $(MAKECMDGOALS)
 	$(MAKE) -C test $(MAKECMDGOALS)
 	$(MAKE) -C apps $(MAKECMDGOALS)
