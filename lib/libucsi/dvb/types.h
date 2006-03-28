@@ -94,6 +94,15 @@ extern int dvbhhmm_to_seconds(dvbhhmm_t dvbhhmm);
  */
 extern void seconds_to_dvbhhmm(int seconds, dvbhhmm_t dvbhhmm);
 
+/**
+ * Determine the (iconv compatable) character set of a dvb string.
+ *
+ * @param dvb_text DVB text concerned.
+ * @param dvb_text_length Length of text.
+ * @param consumed Out parameter of number of bytes used to encode the character set.
+ * @return Name of the character set.
+ */
+extern const char *dvb_charset(char *dvb_text, int dvb_text_length, int *consumed);
 
 #ifdef __cplusplus
 }
