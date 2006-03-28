@@ -25,12 +25,8 @@
 #include <dvbmisc.h>
 #include <pthread.h>
 #include "en50221_app_ai.h"
+#include "en50221_app_tags.h"
 #include "asn_1.h"
-
-// tags supported by this resource
-#define TAG_APP_INFO_ENQUIRY    0x9f8020
-#define TAG_APP_INFO            0x9f8021
-#define TAG_ENTER_MENU          0x9f8022
 
 struct en50221_app_ai_private {
         struct en50221_app_send_functions *funcs;

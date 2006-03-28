@@ -25,13 +25,8 @@
 #include <dvbmisc.h>
 #include <pthread.h>
 #include "en50221_app_smartcard.h"
+#include "en50221_app_tags.h"
 #include "asn_1.h"
-
-// tags supported by this resource
-#define TAG_SMARTCARD_COMMAND       0x9f8e00
-#define TAG_SMARTCARD_REPLY         0x9f8e01
-#define TAG_SMARTCARD_SEND          0x9f8e02
-#define TAG_SMARTCARD_RCV           0x9f8e03
 
 struct en50221_app_smartcard_private {
         struct en50221_app_send_functions *funcs;

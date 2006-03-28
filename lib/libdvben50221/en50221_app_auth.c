@@ -25,11 +25,8 @@
 #include <dvbmisc.h>
 #include <pthread.h>
 #include "en50221_app_auth.h"
+#include "en50221_app_tags.h"
 #include "asn_1.h"
-
-// tags supported by this resource
-#define TAG_AUTH_REQ       0x9f8200
-#define TAG_AUTH_RESP      0x9f8201
 
 struct en50221_app_auth_private {
         struct en50221_app_send_functions *funcs;

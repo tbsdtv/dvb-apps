@@ -25,10 +25,8 @@
 #include <dvbmisc.h>
 #include <pthread.h>
 #include "en50221_app_teletext.h"
+#include "en50221_app_tags.h"
 #include "asn_1.h"
-
-// tags supported by this resource
-#define TAG_TELETEXT_EBU      0x9f9000
 
 struct en50221_app_teletext_private {
         struct en50221_app_send_functions *funcs;

@@ -25,13 +25,8 @@
 #include <dvbmisc.h>
 #include <pthread.h>
 #include "en50221_app_dvb.h"
+#include "en50221_app_tags.h"
 #include "asn_1.h"
-
-// tags supported by this resource
-#define TAG_TUNE            0x9f8400
-#define TAG_REPLACE         0x9f8401
-#define TAG_CLEAR_REPLACE       0x9f8402
-#define TAG_ASK_RELEASE         0x9f8403
 
 struct en50221_app_dvb_private {
         struct en50221_app_send_functions *funcs;

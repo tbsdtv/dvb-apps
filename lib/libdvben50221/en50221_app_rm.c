@@ -26,13 +26,8 @@
 #include <pthread.h>
 #include <ucsi/endianops.h>
 #include "en50221_app_rm.h"
+#include "en50221_app_tags.h"
 #include "asn_1.h"
-
-// tags supported by this resource
-#define TAG_PROFILE_ENQUIRY             0x9f8010
-#define TAG_PROFILE                     0x9f8011
-#define TAG_PROFILE_CHANGE              0x9f8012
-
 
 struct en50221_app_rm_private {
         struct en50221_app_send_functions *funcs;

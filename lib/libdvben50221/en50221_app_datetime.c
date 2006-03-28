@@ -26,11 +26,8 @@
 #include <pthread.h>
 #include <ucsi/dvb/types.h>
 #include "en50221_app_datetime.h"
+#include "en50221_app_tags.h"
 #include "asn_1.h"
-
-// tags supported by this resource
-#define TAG_DATE_TIME_ENQUIRY       0x9f8440
-#define TAG_DATE_TIME           0x9f8441
 
 struct en50221_app_datetime_private {
         struct en50221_app_send_functions *funcs;

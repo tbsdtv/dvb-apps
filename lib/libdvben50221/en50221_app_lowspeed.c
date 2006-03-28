@@ -25,16 +25,8 @@
 #include <dvbmisc.h>
 #include <pthread.h>
 #include "en50221_app_lowspeed.h"
+#include "en50221_app_tags.h"
 #include "asn_1.h"
-
-// tags supported by this resource
-#define TAG_COMMS_COMMAND       0x9f8c00
-#define TAG_CONNECTION_DESCRIPTOR   0x9f8c01
-#define TAG_COMMS_REPLY         0x9f8c02
-#define TAG_COMMS_SEND_LAST     0x9f8c03
-#define TAG_COMMS_SEND_MORE     0x9f8c04
-#define TAG_COMMS_RECV_LAST     0x9f8c05
-#define TAG_COMMS_RECV_MORE     0x9f8c06
 
 struct en50221_app_lowspeed_session {
         uint16_t session_number;
