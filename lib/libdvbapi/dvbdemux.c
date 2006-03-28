@@ -72,16 +72,18 @@ int dvbdemux_open_dvr(int adapter, int dvrdevice, int readonly, int nonblocking)
 }
 
 int dvbdemux_set_section_filter(int fd, int pid,
-				uint8_t filter[16], uint8_t mask[16], uint8_t testtype[16],
+				uint8_t filter[18], uint8_t mask[18],
 				int start, int checkcrc)
 {
 	struct dmx_sct_filter_params sctfilter;
 
 	memset(&sctfilter, 0, sizeof(sctfilter));
 	sctfilter.pid = pid;
-	memcpy(sctfilter.filter.filter, filter, 16);
-	memcpy(sctfilter.filter.mask, mask, 16);
-	memcpy(sctfilter.filter.mode, testtype, 16);
+	memcpy(sctfilter.filter.filter, filter, 1);
+	memcpy(sctfilter.filter.filter+1, filter+3, 15);
+	memcpy(sctfilter.filter.mask, mask, 1);
+	memcpy(sctfilter.filter.mask+1, mask+3, 15);
+	memset(sctfilter.filter.mode, 0, 16);
 	if (start)
 		sctfilter.flags |= DMX_IMMEDIATE_START;
 	if (checkcrc)
