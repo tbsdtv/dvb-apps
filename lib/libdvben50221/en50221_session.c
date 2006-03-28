@@ -26,7 +26,6 @@
 #include <string.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
-#include <linux/delay.h>
 #include <time.h>
 #include <dvbmisc.h>
 #include <sys/uio.h>

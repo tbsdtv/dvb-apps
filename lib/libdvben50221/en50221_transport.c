@@ -27,7 +27,6 @@
 #include <pthread.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
-#include <linux/delay.h>
 #include <sys/poll.h>
 #include <time.h>
 #include <dvbmisc.h>
