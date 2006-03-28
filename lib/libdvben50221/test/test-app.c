@@ -39,11 +39,17 @@
 #include <dvben50221/en50221_app_teletext.h>
 #include <dvbapi/dvbca.h>
 #include <pthread.h>
+#include <dvbcfg/dvbcfg_zapchannel.h>
+#include <dvbapi/dvbdemux.h>
+#include <ucsi/section.h>
+#include <ucsi/mpeg/section.h>
+
 
 #define MAX_SESSIONS 256
 #define MAX_TC 32
 
 void *stackthread_func(void* arg);
+void *pmtthread_func(void* arg);
 int test_lookup_callback(void *arg, uint8_t slot_id, uint32_t resource_id, en50221_sl_resource_callback *callback_out, void **arg_out);
 int test_session_callback(void *arg, int reason, uint8_t slot_id, uint16_t session_number, uint32_t resource_id);
 
@@ -104,18 +110,23 @@ int test_app_mmi_list_callback(void *arg, uint8_t slot_id, uint16_t session_numb
                                 uint32_t item_count, struct en50221_app_mmi_text *items,
                                 uint32_t item_raw_length, uint8_t *items_raw);
 
+struct section_ext *read_section_ext(char *buf, int buflen, int adapter, int demux, int pid, int table_id);
 
 
 
 
 
 
+
+int adapterid;
 
 int shutdown_stackthread = 0;
-
+int shutdown_pmtthread = 0;
 int in_menu = 0;
 int in_enq = 0;
-
+int ca_connected = 0;
+int pmt_pid = -1;
+int ca_session_number = 0;
 
 
 // instances of resources we actually implement here
@@ -154,9 +165,21 @@ uint16_t mmi_session_number;
 
 int main(int argc, char * argv[])
 {
-    int i;
     pthread_t stackthread;
+    pthread_t pmtthread;
     struct en50221_app_send_functions sendfuncs;
+
+    if ((argc < 2) || (argc > 3)) {
+        fprintf(stderr, "Syntax: test-app <adapterid> [<pmtpid>]\n");
+        exit(1);
+    }
+    adapterid = atoi(argv[1]);
+    if (argc == 3) {
+        if (sscanf(argv[2], "%i", &pmt_pid) != 1) {
+            fprintf(stderr, "Unable to parse PMT PID\n");
+            exit(1);
+        }
+    }
 
     // create transport layer
     en50221_transport_layer tl = en50221_tl_create(5, 32);
@@ -166,32 +189,26 @@ int main(int argc, char * argv[])
     }
 
     // find CAMs
-    int slot_count = 0;
-    int cafd= -1;
-    for(i=0; i<20; i++) {
-        if ((cafd = dvbca_open(i, 0)) > 0) {
-            if (dvbca_get_cam_state(cafd) == DVBCA_CAMSTATE_MISSING) {
-                close(cafd);
-                continue;
-            }
-
-            // reset it and wait
-            dvbca_reset(cafd);
-            printf("Found a CAM on adapter%i... waiting...\n", i);
-            while(dvbca_get_cam_state(cafd) != DVBCA_CAMSTATE_READY) {
-                usleep(1000);
-            }
-
-            // register it with the CA stack
-            int slot_id = 0;
-            if ((slot_id = en50221_tl_register_slot(tl, cafd, 1000, 100)) < 0) {
-                fprintf(stderr, "Slot registration failed\n");
-                exit(1);
-            }
-            printf("slotid: %i\n", slot_id);
-            slot_count++;
-        }
+    int cafd;
+    if (((cafd = dvbca_open(adapterid, 0)) < 0) || (dvbca_get_cam_state(cafd) == DVBCA_CAMSTATE_MISSING)) {
+        fprintf(stderr, "Unable to open CAM on adapter %i\n", adapterid);
+        exit(1);
     }
+
+    // reset it and wait
+    dvbca_reset(cafd);
+    printf("Found a CAM on adapter%i... waiting...\n", adapterid);
+    while(dvbca_get_cam_state(cafd) != DVBCA_CAMSTATE_READY) {
+        usleep(1000);
+    }
+
+    // register it with the CA stack
+    int slot_id = 0;
+    if ((slot_id = en50221_tl_register_slot(tl, cafd, 1000, 100)) < 0) {
+        fprintf(stderr, "Slot registration failed\n");
+        exit(1);
+    }
+    printf("slotid: %i\n", slot_id);
 
     // create session layer
     en50221_session_layer sl = en50221_sl_create(tl, 256);
@@ -261,21 +278,22 @@ int main(int argc, char * argv[])
     // start another thread running the stack
     pthread_create(&stackthread, NULL, stackthread_func, tl);
 
+    // start another thread parsing PMT
+    if (pmt_pid != -1) {
+        pthread_create(&pmtthread, NULL, pmtthread_func, tl);
+    }
+
     // register callbacks
     en50221_sl_register_lookup_callback(sl, test_lookup_callback, sl);
     en50221_sl_register_session_callback(sl, test_session_callback, sl);
 
     // create a new connection on each slot
-    for(i=0; i<slot_count; i++) {
-        int tc = en50221_tl_new_tc(tl, i);
-        printf("tcid: %i\n", tc);
-    }
+    int tc = en50221_tl_new_tc(tl, slot_id);
+    printf("tcid: %i\n", tc);
 
     printf("Press a key to enter menu\n");
     getchar();
-    for(i=0; i<slot_count; i++) {
-        en50221_app_ai_entermenu(ai_resource, ai_session_numbers[i]);
-    }
+    en50221_app_ai_entermenu(ai_resource, ai_session_numbers[slot_id]);
 
     // wait
     char tmp[256];
@@ -304,11 +322,13 @@ int main(int argc, char * argv[])
     getchar();
 
     // destroy slots
-    for(i=0; i<slot_count; i++) {
-        en50221_tl_destroy_slot(tl, i);
-    }
+    en50221_tl_destroy_slot(tl, slot_id);
     shutdown_stackthread = 1;
+    shutdown_pmtthread = 1;
     pthread_join(stackthread, NULL);
+    if (pmt_pid != -1) {
+        pthread_join(pmtthread, NULL);
+    }
 
     // destroy session layer
     en50221_sl_destroy(sl);
@@ -365,7 +385,8 @@ int test_session_callback(void *arg, int reason, uint8_t slot_id, uint16_t sessi
             } else if (resource_id == EN50221_APP_AI_RESOURCEID) {
                 en50221_app_ai_enquiry(ai_resource, session_number);
             } else if (resource_id == EN50221_APP_CA_RESOURCEID) {
-                                en50221_app_ca_info_enq(ca_resource, session_number);
+                en50221_app_ca_info_enq(ca_resource, session_number);
+                ca_session_number = session_number;
             }
 
             break;
@@ -476,6 +497,7 @@ int test_ca_info_callback(void *arg, uint8_t slot_id, uint16_t session_number, u
         printf("  Supported CA ID: %04x\n", ca_ids[i]);
     }
 
+    ca_connected = 1;
     return 0;
 }
 
@@ -653,4 +675,105 @@ void *stackthread_func(void* arg) {
 
     shutdown_stackthread = 0;
     return 0;
+}
+
+void *pmtthread_func(void* arg) {
+    en50221_transport_layer tl = arg;
+    char buf[4096];
+    char capmt[4096];
+    int pmtversion = -1;
+
+    while(!shutdown_pmtthread) {
+
+        if (!ca_connected) {
+            sleep(1);
+            continue;
+        }
+
+        // read the PMT
+        struct section_ext *section_ext = read_section_ext(buf, sizeof(buf), adapterid, 0, pmt_pid, stag_mpeg_program_map);
+        if (section_ext == NULL) {
+            fprintf(stderr, "Failed to read PMT\n");
+            exit(1);
+        }
+        struct mpeg_pmt_section *pmt = mpeg_pmt_section_codec(section_ext);
+        if (pmt == NULL) {
+            fprintf(stderr, "Bad PMT received\n");
+            exit(1);
+        }
+        if (pmt->head.version_number == pmtversion) {
+            continue;
+        }
+
+        // translate it into a CA PMT
+        int listmgmt = CA_LIST_MANAGEMENT_ONLY;
+        if (pmtversion != -1) {
+            listmgmt = CA_LIST_MANAGEMENT_UPDATE;
+        }
+        int size;
+        if ((size = en50221_ca_format_pmt(pmt,
+                                         capmt,
+                                         sizeof(capmt),
+                                         listmgmt,
+                                         CA_PMT_CMD_ID_OK_DESCRAMBLING)) < 0) {
+            fprintf(stderr, "Failed to format CA PMT object\n");
+            exit(1);
+        }
+
+        // set it
+        if (en50221_app_ca_pmt(ca_resource, ca_session_number, capmt, size)) {
+            fprintf(stderr, "Failed to send CA PMT object\n");
+            exit(1);
+        }
+        pmtversion = pmt->head.version_number;
+    }
+    shutdown_pmtthread = 0;
+    return 0;
+}
+
+
+struct section_ext *read_section_ext(char *buf, int buflen, int adapter, int demux, int pid, int table_id)
+{
+    int demux_fd = -1;
+    char filter[16];
+    char mask[16];
+    char testtype[16];
+    int size;
+    struct section *section;
+    struct section_ext *result = NULL;
+
+    // open the demuxer
+    if ((demux_fd = dvbdemux_open_demux(adapter, demux, 0)) < 0) {
+        goto exit;
+    }
+
+    // create a section filter
+    memset(filter, 0, sizeof(filter));
+    memset(mask, 0, sizeof(mask));
+    memset(testtype, 0, sizeof(testtype));
+    filter[0] = table_id;
+    mask[0] = 0xFF;
+    testtype[0] = 0x00;
+    if (dvbdemux_set_section_filter(demux_fd, pid, filter, mask, testtype, 1, 1)) {
+        goto exit;
+    }
+
+    // read the section
+    if ((size = read(demux_fd, buf, buflen)) < 0) {
+        goto exit;
+    }
+
+    // parse it as a section
+    section = section_codec(buf, size);
+    if (section == NULL) {
+        goto exit;
+    }
+
+    // parse it as a section_ext
+    result = section_ext_decode(section, 0);
+
+exit:
+    if (demux_fd != -1)
+        close(demux_fd);
+    return result;
 }
