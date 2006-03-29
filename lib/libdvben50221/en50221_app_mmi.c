@@ -1164,6 +1164,8 @@ static int en50221_app_mmi_defragment(struct en50221_app_mmi_private *private,
                 block_chain = &cur_s->subtitledownload_block_chain;
                 block_length = &cur_s->subtitledownload_block_length;
                 break;
+            default:
+                return -1;
         }
 
         // append the data
@@ -1206,6 +1208,8 @@ static int en50221_app_mmi_defragment(struct en50221_app_mmi_private *private,
                 block_chain = &cur_s->subtitledownload_block_chain;
                 block_length = &cur_s->subtitledownload_block_length;
                 break;
+    	    default:
+                return -1;
         }
 
         // we have a preceding fragment - need to append
