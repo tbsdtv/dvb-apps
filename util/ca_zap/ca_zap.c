@@ -57,7 +57,6 @@ extern void hlci_shutdown();
 #define MMI_STATE_ENQ 0
 #define MMI_STATE_MENU 0
 
-
 en50221_app_ca ca_resource = NULL;
 int ca_session_number = -1;
 int ca_resource_connected = 0;
@@ -69,10 +68,14 @@ int mmi_state;
 int dvb_adapter = 0;
 int demux_device = 0;
 int ca_device = 0;
+
 int pmt_pid = -1;
 int cafd;
 int ca_type;
 struct dvbcfg_zapchannel *channel;
+
+int camthread_shutdown = 0;
+int dvbthread_shutdown = 0;
 
 void usage(void)
 {
@@ -172,7 +175,7 @@ int main(int argc, char *argv[])
 
 		case DVBCA_INTERFACE_HLCI:
 			if (hlci_init()) {
-				fprintf(stderr, "Failed to init LLCI\n");
+				fprintf(stderr, "Failed to init HLCI\n");
 				exit(1);
 			}
 			break;
@@ -201,12 +204,17 @@ int main(int argc, char *argv[])
 		sleep(1);
 	}
 
-	// FIXME: shutdown DVB stuff
+	// shutdown DVB stuff
+	dvbthread_shutdown = 1;
+	pthread_join(dvbthread, NULL);
 
 	// shutdown CAM stuff
 	if (cafd != -1) {
-		// FIXME: kill thread
+		// shutdown the cam thread
+		camthread_shutdown = 1;
+		pthread_join(camthread, NULL);
 
+		// shutdown the stack
 		switch(ca_type) {
 		case DVBCA_INTERFACE_LINK:
 			llci_shutdown();
@@ -228,7 +236,7 @@ static void *camthread_func(void* arg)
 	(void) arg;
 
 	int cam_state = 0;
-	while(1) {
+	while(!camthread_shutdown) {
 		// monitor the cam state
 		switch(dvbca_get_cam_state(cafd)) {
 		case DVBCA_CAMSTATE_MISSING:
@@ -288,7 +296,9 @@ static void *dvbthread_func(void* arg)
 	struct mpeg_pat_program *cur_program;
 	(void) arg;
 
-	// FIXME: tune the frontend?
+	// FIXME: tune the frontend
+
+	// FIXME: add timeouts
 
 	// read the PAT
 	section_ext = read_section_ext(buf, sizeof(buf), dvb_adapter, demux_device, TRANSPORT_PAT_PID, stag_mpeg_program_association);
@@ -315,7 +325,7 @@ static void *dvbthread_func(void* arg)
 	}
 
 	// PMT monitoring loop
-	while(1) {
+	while(!dvbthread_shutdown) {
         	// read the PMT
 		struct section_ext *section_ext = read_section_ext(buf, sizeof(buf), dvb_adapter, 0, pmt_pid, stag_mpeg_program_map);
 		if (section_ext == NULL) {
@@ -331,7 +341,7 @@ static void *dvbthread_func(void* arg)
 			continue;
 		}
 
-		// FIXME: change PID filters on PMT change?
+		// FIXME: change PID filters on PMT change
 
 		// set the CA PMT if the CA resource is connected
 		if (ca_resource_connected) {
