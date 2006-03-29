@@ -134,7 +134,7 @@ en50221_app_rm rm_resource;
 en50221_app_datetime datetime_resource;
 en50221_app_ai ai_resource;
 en50221_app_ca ca_resource;
-en50221_app_ca mmi_resource;
+en50221_app_mmi mmi_resource;
 
 // lookup table used in resource manager implementation
 struct resource {
