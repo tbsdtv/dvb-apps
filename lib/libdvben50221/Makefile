@@ -3,7 +3,7 @@ CC=gcc
 #DEBUG= -DDEBUG_RXDATA=1 -DDEBUG_TXDATA=1 -DLOG_LEVEL=5
 DEBUG=-DLOG_LEVEL=1
 
-CPPFLAGS += -g -Wall -W -MD $(DEBUG) \
+CPPFLAGS += -fPIC -O2 -g -Wall -W -MD $(DEBUG) \
 		 	-I. \
 			-I../libucsi \
 			-I../libdvbmisc \
