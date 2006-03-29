@@ -225,9 +225,6 @@ const char *dvb_charset(char *dvb_text, int dvb_text_length, int *consumed)
 		case 0x07:
 			charset = "ISO8859-11";
 			break;
-		case 0x08:
-			charset = "ISO8859-12";
-			break;
 		case 0x09:
 			charset = "ISO8859-13";
 			break;
