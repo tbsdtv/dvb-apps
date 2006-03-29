@@ -141,7 +141,7 @@ int bcd_to_int(int bcdval)
 
 const char *dvb_charset(char *dvb_text, int dvb_text_length, int *consumed)
 {
-	char *charset = "ISO_6937";
+	char *charset = "ISO6937";
 	int used = 0;
 
 	if (dvb_text_length == 0)
@@ -156,46 +156,46 @@ const char *dvb_charset(char *dvb_text, int dvb_text_length, int *consumed)
 		uint16_t ext = (dvb_text[1] << 8) | dvb_text[2];
 		switch(ext) {
 		case 0x01:
-			charset = "ISO_8859-1";
+			charset = "ISO8859-1";
 			break;
 		case 0x02:
-			charset = "ISO_8859-2";
+			charset = "ISO8859-2";
 			break;
 		case 0x03:
-			charset = "ISO_8859-3";
+			charset = "ISO8859-3";
 			break;
 		case 0x04:
-			charset = "ISO_8859-4";
+			charset = "ISO8859-4";
 			break;
 		case 0x05:
-			charset = "ISO_8859-5";
+			charset = "ISO8859-5";
 			break;
 		case 0x06:
-			charset = "ISO_8859-6";
+			charset = "ISO8859-6";
 			break;
 		case 0x07:
-			charset = "ISO_8859-7";
+			charset = "ISO8859-7";
 			break;
 		case 0x08:
-			charset = "ISO_8859-8";
+			charset = "ISO8859-8";
 			break;
 		case 0x09:
-			charset = "ISO_8859-9";
+			charset = "ISO8859-9";
 			break;
 		case 0x0a:
-			charset = "ISO_8859-10";
+			charset = "ISO8859-10";
 			break;
 		case 0x0b:
-			charset = "ISO_8859-11";
+			charset = "ISO8859-11";
 			break;
 		case 0x0d:
-			charset = "ISO_8859-13";
+			charset = "ISO8859-13";
 			break;
 		case 0x0e:
-			charset = "ISO_8859-14";
+			charset = "ISO8859-14";
 			break;
 		case 0x0f:
-			charset = "ISO_8859-15";
+			charset = "ISO8859-15";
 			break;
 		default:
 			used = 0;
@@ -205,37 +205,37 @@ const char *dvb_charset(char *dvb_text, int dvb_text_length, int *consumed)
 		used = 1;
 		switch(dvb_text[0]) {
 		case 0x01:
-			charset = "ISO_8859-5";
+			charset = "ISO8859-5";
 			break;
 		case 0x02:
-			charset = "ISO_8859-6";
+			charset = "ISO8859-6";
 			break;
 		case 0x03:
-			charset = "ISO_8859-7";
+			charset = "ISO8859-7";
 			break;
 		case 0x04:
-			charset = "ISO_8859-8";
+			charset = "ISO8859-8";
 			break;
 		case 0x05:
-			charset = "ISO_8859-9";
+			charset = "ISO8859-9";
 			break;
 		case 0x06:
-			charset = "ISO_8859-10";
+			charset = "ISO8859-10";
 			break;
 		case 0x07:
-			charset = "ISO_8859-11";
+			charset = "ISO8859-11";
 			break;
 		case 0x08:
-			charset = "ISO_8859-12";
+			charset = "ISO8859-12";
 			break;
 		case 0x09:
-			charset = "ISO_8859-13";
+			charset = "ISO8859-13";
 			break;
 		case 0x0a:
-			charset = "ISO_8859-14";
+			charset = "ISO8859-14";
 			break;
 		case 0x0b:
-			charset = "ISO_8859-15";
+			charset = "ISO8859-15";
 			break;
 		case 0x11:
 			charset = "UTF16";
