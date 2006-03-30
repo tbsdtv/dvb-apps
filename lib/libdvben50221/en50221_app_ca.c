@@ -200,6 +200,7 @@ int en50221_app_ca_message(en50221_app_ca ca,
 }
 
 int en50221_ca_format_pmt(struct mpeg_pmt_section *pmt, uint8_t *data, uint32_t data_length,
+                          int move_ca_descriptors,
                           uint8_t ca_pmt_list_management, uint8_t ca_pmt_cmd_id)
 {
     struct ca_pmt_descriptor *pmt_descriptors = NULL;
@@ -217,7 +218,7 @@ int en50221_ca_format_pmt(struct mpeg_pmt_section *pmt, uint8_t *data, uint32_t 
         goto cleanup;
 
     // try and merge them if we have no PMT descriptors
-    if (pmt_descriptors == NULL) {
+    if ((pmt_descriptors == NULL) && move_ca_descriptors) {
         en50221_ca_try_move_pmt_descriptors(&pmt_descriptors, &pmt_streams);
     }
 

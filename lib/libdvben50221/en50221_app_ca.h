@@ -84,7 +84,7 @@ struct en50221_app_pmt_stream {
  *
  * @param pmt Pointer to the en50221_app_pmt_reply structure.
  * @param pos Variable holding a pointer to the current en50221_app_pmt_stream.
- * @param size Total size of the
+ * @param size Total size of the PMT reply.
  */
 #define en50221_app_pmt_reply_streams_for_each(pmt, pos, size) \
     for ((pos) = en50221_app_pmt_reply_streams_first(pmt, size); \
@@ -190,6 +190,8 @@ extern int en50221_app_ca_pmt(en50221_app_ca ca,
  * @param pmt The source PMT structure.
  * @param data Pointer to data buffer to write it to.
  * @param data_length Number of bytes available in data buffer.
+ * @param move_ca_descriptors If non-zero, will attempt to move CA descriptors
+ * in order to reduce the size of the formatted CAPMT.
  * @param ca_pmt_list_management One of the CA_LIST_MANAGEMENT_*.
  * @param ca_pmt_cmd_id One of the CA_PMT_CMD_ID_*.
  * @return Number of bytes used, or -1 on error.
@@ -197,6 +199,7 @@ extern int en50221_app_ca_pmt(en50221_app_ca ca,
 extern int en50221_ca_format_pmt(struct mpeg_pmt_section *pmt,
                                  uint8_t *data,
                                  uint32_t data_length,
+                                 int move_ca_descriptors,
                                  uint8_t ca_pmt_list_management, uint8_t ca_pmt_cmd_id);
 
 /**
