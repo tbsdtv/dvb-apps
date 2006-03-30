@@ -27,6 +27,8 @@
 
 #define MAX_BUFFER	243
 
+extern int quit_app;
+
 extern en50221_app_ai ai_resource;
 extern int ai_session_number;
 

@@ -38,7 +38,8 @@
 // resource IDs we send to the CAM.
 uint32_t resource_ids[] = { EN50221_APP_RM_RESOURCEID,
   		            EN50221_APP_CA_RESOURCEID,
-			    EN50221_APP_AI_RESOURCEID, };
+			    EN50221_APP_AI_RESOURCEID,
+			    EN50221_APP_MMI_RESOURCEID, };
 int resource_ids_count = sizeof(resource_ids)/4;
 
 // resource id function table
@@ -52,10 +53,6 @@ int resources_count = 0;
 
 // instances of private resources
 en50221_app_rm rm_resource;
-en50221_app_ai ai_resource;
-
-// session numbers of connections to resources
-int ai_session_number;
 
 // misc stack related stuff
 en50221_transport_layer tl;
@@ -118,7 +115,14 @@ int llci_init()
 	resources[resources_count].arg = ca_resource;
 	resources_count++;
 
-	// register callbacks
+	// create the MMI resource
+	mmi_resource = en50221_app_mmi_create(&sendfuncs);
+	en50221_app_decode_public_resource_id(&resources[resources_count].resid, EN50221_APP_MMI_RESOURCEID);
+	resources[resources_count].callback = en50221_app_mmi_message;
+	resources[resources_count].arg = mmi_resource;
+	resources_count++;
+
+	// register session layer callbacks
 	en50221_sl_register_lookup_callback(sl, llci_lookup_callback, sl);
 	en50221_sl_register_session_callback(sl, llci_session_callback, sl);
 
@@ -136,7 +140,9 @@ int llci_cam_added(int cafd)
 	printf("Waiting for CAM...\n");
 	dvbca_reset(cafd);
 	while(dvbca_get_cam_state(cafd) != DVBCA_CAMSTATE_READY) {
-		usleep(1000);
+		if (quit_app)
+			return 0;
+		usleep(100);
 	}
 
 	// register the slot
@@ -168,7 +174,7 @@ void llci_poll()
 	// poll the stack
 	int error;
 	if ((error = en50221_tl_poll(tl)) != 0) {
-		if (error != lasterror) {
+		if ((error != lasterror) && (!quit_app)) {
 			fprintf(stderr, "Error reported by stack:%i\n", en50221_tl_get_error(tl));
 		}
 		lasterror = error;
@@ -185,6 +191,12 @@ void llci_shutdown()
 
 	// destroy transport layer
 	en50221_tl_destroy(tl);
+
+	// destroy resources
+	en50221_app_rm_destroy(rm_resource);
+	en50221_app_ai_destroy(ai_resource);
+	en50221_app_ca_destroy(ca_resource);
+	en50221_app_mmi_destroy(mmi_resource);
 }
 
 static int llci_lookup_callback(void *arg, uint8_t slot_id, uint32_t resource_id, en50221_sl_resource_callback *callback_out, void **arg_out)
@@ -227,6 +239,8 @@ static int llci_session_callback(void *arg, int reason, uint8_t slot_id, uint16_
 		} else if (resource_id == EN50221_APP_CA_RESOURCEID) {
 			en50221_app_ca_info_enq(ca_resource, session_number);
 			ca_session_number = session_number;
+		} else if (resource_id == EN50221_APP_MMI_RESOURCEID) {
+			mmi_session_number = session_number;
 		}
 
 		break;
