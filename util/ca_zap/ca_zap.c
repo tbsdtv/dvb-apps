@@ -27,6 +27,7 @@
 #include <dvbcfg/dvbcfg_zapchannel.h>
 #include <dvbapi/dvbdemux.h>
 #include <dvbapi/dvbca.h>
+#include <dvben50221/en50221_app_ai.h>
 #include <dvben50221/en50221_app_ca.h>
 #include <dvben50221/en50221_app_mmi.h>
 #include <ucsi/section.h>
@@ -40,6 +41,10 @@
 static int cazap_ca_info_callback(void *arg, uint8_t slot_id, uint16_t session_number, uint32_t ca_id_count, uint16_t *ca_ids);
 static int cazap_ca_pmt_reply_callback(void *arg, uint8_t slot_id, uint16_t session_number,
 				       struct en50221_app_pmt_reply *reply, uint32_t reply_size);
+static int cazap_ai_callback(void *arg, uint8_t slot_id, uint16_t session_number,
+			     uint8_t application_type, uint16_t application_manufacturer,
+			     uint16_t manufacturer_code, uint8_t menu_string_length,
+			     uint8_t *menu_string);
 
 static struct section_ext *read_section_ext(char *buf, int buflen, int adapter, int demux, int pid, int table_id);
 static void *dvbthread_func(void* arg);
@@ -57,6 +62,9 @@ extern void hlci_shutdown();
 #define MMI_STATE_ENQ 0
 #define MMI_STATE_MENU 0
 
+en50221_app_ai ai_resource = NULL;
+int ai_session_number = -1;
+
 en50221_app_ca ca_resource = NULL;
 int ca_session_number = -1;
 int ca_resource_connected = 0;
@@ -69,6 +77,7 @@ int dvb_adapter = 0;
 int demux_device = 0;
 int ca_device = 0;
 
+int move_to_programme = 0;
 int pmt_pid = -1;
 int cafd;
 int ca_type;
@@ -84,11 +93,11 @@ void usage(void)
 		" Copyright (C) 2004, 2005 Manu Abraham (manu@kromtek.com)\n\n"
 		" usage: ca_zap options\n"
 		" -h	help\n"
-		" -a	adapter to use\n"
+		" -a	adapter to use (default 0)\n"
 		" -c	channels.conf file\n"
 		" -n	channel name to zap\n"
-		" -d	demux to use\n"
-		" -s	CA module (Slot to use)\n"
+		" -d	demux to use (default 0)\n"
+		" -s	ca slot to use (default 0)\n"
 		" -m    Move CA descriptors from stream to programme level if possible\n";
 
 	fprintf(stderr, "%s\n", usage);
@@ -104,7 +113,6 @@ int main(int argc, char *argv[])
 	char chanfile[PATH_MAX];
 	char channel_name[20];
 	int opt;
-	int move_to_programme = 0;
 
 	chanfile[0] = 0;
 	channel_name[0] = 0;
@@ -184,6 +192,9 @@ int main(int argc, char *argv[])
 			fprintf(stderr, "Unknown CA interface type\n");
 			exit(1);
 		}
+
+		// hook up the AI callbacks
+		en50221_app_ai_register_callback(ai_resource, cazap_ai_callback, NULL);
 
 		// hook up the CA callbacks
 		en50221_app_ca_register_info_callback(ca_resource, cazap_ca_info_callback, NULL);
@@ -300,8 +311,10 @@ static void *dvbthread_func(void* arg)
 
 	// FIXME: add timeouts
 
+	printf("moohi\n");
+
 	// read the PAT
-	section_ext = read_section_ext(buf, sizeof(buf), dvb_adapter, demux_device, TRANSPORT_PAT_PID, stag_mpeg_program_association);
+	section_ext = read_section_ext(buf, sizeof(buf), dvb_adapter, demux_device, 0x00, 0x00);
 	if (section_ext == NULL) {
 		fprintf(stderr, "Failed to read PAT\n");
 		exit(1);
@@ -324,10 +337,12 @@ static void *dvbthread_func(void* arg)
 		exit(1);
 	}
 
+	printf("hi\n");
+
 	// PMT monitoring loop
 	while(!dvbthread_shutdown) {
         	// read the PMT
-		struct section_ext *section_ext = read_section_ext(buf, sizeof(buf), dvb_adapter, 0, pmt_pid, stag_mpeg_program_map);
+		struct section_ext *section_ext = read_section_ext(buf, sizeof(buf), dvb_adapter, demux_device, pmt_pid, stag_mpeg_program_map);
 		if (section_ext == NULL) {
 			fprintf(stderr, "Failed to read PMT\n");
 			exit(1);
@@ -352,8 +367,10 @@ static void *dvbthread_func(void* arg)
 				listmgmt = CA_LIST_MANAGEMENT_UPDATE;
 			}
 			int size;
-			if ((size = en50221_ca_format_pmt(pmt, capmt, sizeof(capmt), listmgmt,
-							CA_PMT_CMD_ID_OK_DESCRAMBLING)) < 0) {
+			if ((size = en50221_ca_format_pmt(pmt, capmt, sizeof(capmt),
+							  move_to_programme,
+							  listmgmt,
+							  CA_PMT_CMD_ID_OK_DESCRAMBLING)) < 0) {
 				fprintf(stderr, "Failed to format CA PMT object\n");
 				exit(1);
 			}
@@ -363,10 +380,10 @@ static void *dvbthread_func(void* arg)
 				fprintf(stderr, "Failed to send CA PMT object\n");
 				exit(1);
 			}
-		}
 
-		// remember the version
-		pmtversion = pmt->head.version_number;
+			// remember the version
+			pmtversion = pmt->head.version_number;
+		}
 	}
 	return 0;
 }
@@ -419,6 +436,22 @@ exit:
 
 
 
+static int cazap_ai_callback(void *arg, uint8_t slot_id, uint16_t session_number,
+			    uint8_t application_type, uint16_t application_manufacturer,
+			    uint16_t manufacturer_code, uint8_t menu_string_length,
+			    uint8_t *menu_string)
+{
+	(void) arg;
+	(void) slot_id;
+	(void) session_number;
+
+	printf("Application type: %02x\n", application_type);
+	printf("Application manufacturer: %04x\n", application_manufacturer);
+	printf("Manufacturer code: %04x\n", manufacturer_code);
+	printf("Menu string: %.*s\n", menu_string_length, menu_string);
+
+	return 0;
+}
 
 static int cazap_ca_info_callback(void *arg, uint8_t slot_id, uint16_t session_number, uint32_t ca_id_count, uint16_t *ca_ids)
 {

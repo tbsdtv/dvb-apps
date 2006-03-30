@@ -7,11 +7,12 @@ CPPFLAGS += -MD \
 	    -I../../lib/libucsi \
 	    -I../../lib/libdvbcfg
 
-LDFLAGS =   -g -O2 -lpthread \
+LDFLAGS =   -g -O2 \
 	    -L ../../lib/libdvben50221 -ldvben50221 \
 	    -L ../../lib/libdvbapi -ldvbapi \
 	    -L ../../lib/libucsi -lucsi \
-	    -L ../../lib/libdvbcfg -ldvbcfg
+	    -L ../../lib/libdvbcfg -ldvbcfg \
+	    -lpthread
 
 RM = rm -f
 
@@ -21,7 +22,7 @@ TARGETS =ca_zap
 all: $(OBJS) $(TARGETS)
 
 ca_zap: $(OBJS)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o ca_zap $(OBJS) $(LDFLAGS)
+	$(CC) -static $(CPPFLAGS) $(CFLAGS) -o ca_zap $(OBJS) $(LDFLAGS)
 
 clean:
 	$(RM) $(TARGETS) *.o *.d ca_zap *~ *#

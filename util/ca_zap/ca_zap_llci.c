@@ -30,6 +30,7 @@
 #include <dvben50221/en50221_app_ca.h>
 #include <dvben50221/en50221_app_mmi.h>
 #include <dvben50221/en50221_app_rm.h>
+#include <dvbapi/dvbca.h>
 #include "ca_zap.h"
 #include "ca_zap_llci.h"
 
@@ -69,10 +70,6 @@ static int llci_session_callback(void *arg, int reason, uint8_t slot_id, uint16_
 static int llci_rm_enq_callback(void *arg, uint8_t slot_id, uint16_t session_number);
 static int llci_rm_reply_callback(void *arg, uint8_t slot_id, uint16_t session_number, uint32_t resource_id_count, uint32_t *resource_ids);
 static int llci_rm_changed_callback(void *arg, uint8_t slot_id, uint16_t session_number);
-static int llci_ai_callback(void *arg, uint8_t slot_id, uint16_t session_number,
-			    uint8_t application_type, uint16_t application_manufacturer,
-			    uint16_t manufacturer_code, uint8_t menu_string_length,
-			    uint8_t *menu_string);
 
 
 
@@ -112,7 +109,6 @@ int llci_init()
 	en50221_app_decode_public_resource_id(&resources[resources_count].resid, EN50221_APP_AI_RESOURCEID);
 	resources[resources_count].callback = en50221_app_ai_message;
 	resources[resources_count].arg = ai_resource;
-	en50221_app_ai_register_callback(ai_resource, llci_ai_callback, NULL);
 	resources_count++;
 
 	// create the CA resource
@@ -131,8 +127,16 @@ int llci_init()
 
 int llci_cam_added(int cafd)
 {
+	// clear down any old structures
 	if (slot_id != -1) {
 		llci_cam_removed();
+	}
+
+	// reset the CAM
+	printf("Waiting for CAM...\n");
+	dvbca_reset(cafd);
+	while(dvbca_get_cam_state(cafd) != DVBCA_CAMSTATE_READY) {
+		usleep(1000);
 	}
 
 	// register the slot
@@ -141,7 +145,7 @@ int llci_cam_added(int cafd)
 	}
 
 	// create a new connection on the slot
-	if (en50221_tl_new_tc(tl, slot_id)) {
+	if (en50221_tl_new_tc(tl, slot_id) < 0) {
 		llci_cam_removed();
 		return -1;
 	}
@@ -262,22 +266,5 @@ static int llci_rm_changed_callback(void *arg, uint8_t slot_id, uint16_t session
 	if (en50221_app_rm_enq(rm_resource, session_number)) {
 		printf("Failed to send ENQ\n");
 	}
-	return 0;
-}
-
-static int llci_ai_callback(void *arg, uint8_t slot_id, uint16_t session_number,
-			    uint8_t application_type, uint16_t application_manufacturer,
-			    uint16_t manufacturer_code, uint8_t menu_string_length,
-			    uint8_t *menu_string)
-{
-	(void) arg;
-	(void) slot_id;
-	(void) session_number;
-
-	printf("Application type: %02x\n", application_type);
-	printf("Application manufacturer: %04x\n", application_manufacturer);
-	printf("Manufacturer code: %04x\n", manufacturer_code);
-	printf("Menu string: %.*s\n", menu_string_length, menu_string);
-
 	return 0;
 }
