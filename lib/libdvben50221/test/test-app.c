@@ -678,7 +678,6 @@ void *stackthread_func(void* arg) {
 }
 
 void *pmtthread_func(void* arg) {
-    en50221_transport_layer tl = arg;
     char buf[4096];
     char capmt[4096];
     int pmtversion = -1;
@@ -715,6 +714,7 @@ void *pmtthread_func(void* arg) {
                                          capmt,
                                          sizeof(capmt),
                                          listmgmt,
+                                         0,
                                          CA_PMT_CMD_ID_OK_DESCRAMBLING)) < 0) {
             fprintf(stderr, "Failed to format CA PMT object\n");
             exit(1);
@@ -735,9 +735,8 @@ void *pmtthread_func(void* arg) {
 struct section_ext *read_section_ext(char *buf, int buflen, int adapter, int demux, int pid, int table_id)
 {
     int demux_fd = -1;
-    char filter[16];
-    char mask[16];
-    char testtype[16];
+    char filter[18];
+    char mask[18];
     int size;
     struct section *section;
     struct section_ext *result = NULL;
@@ -750,11 +749,9 @@ struct section_ext *read_section_ext(char *buf, int buflen, int adapter, int dem
     // create a section filter
     memset(filter, 0, sizeof(filter));
     memset(mask, 0, sizeof(mask));
-    memset(testtype, 0, sizeof(testtype));
     filter[0] = table_id;
     mask[0] = 0xFF;
-    testtype[0] = 0x00;
-    if (dvbdemux_set_section_filter(demux_fd, pid, filter, mask, testtype, 1, 1)) {
+    if (dvbdemux_set_section_filter(demux_fd, pid, filter, mask, 1, 1)) {
         goto exit;
     }
 
