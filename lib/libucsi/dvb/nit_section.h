@@ -71,7 +71,7 @@ struct dvb_nit_section * dvb_nit_section_codec(struct section_ext *section);
 
 /**
  * Accessor for the network_id field of a NIT.
- * 
+ *
  * @param nit NIT pointer.
  * @return The network_id.
  */
@@ -157,8 +157,7 @@ static inline struct descriptor *
 }
 
 static inline struct dvb_nit_transport *
-	dvb_nit_section_transports_first(struct dvb_nit_section *nit,
-					 struct dvb_nit_section_part2 *part2)
+	dvb_nit_section_transports_first(struct dvb_nit_section_part2 *part2)
 {
 	if (part2->transport_stream_loop_length == 0)
 		return NULL;
