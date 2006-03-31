@@ -268,7 +268,7 @@ int main(int argc, char *argv[])
 			switch(mmi_state) {
 			case MMI_STATE_CLOSED:
 			case MMI_STATE_OPEN:
-				if (linepos == 0) {
+				if ((linepos == 0) && (ca_resource_connected)) {
 					en50221_app_ai_entermenu(ai_resource, ai_session_number);
 				}
 				break;
