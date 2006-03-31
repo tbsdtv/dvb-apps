@@ -63,7 +63,6 @@ en50221_app_rm rm_resource;
 en50221_app_datetime datetime_resource;
 uint8_t datetime_response_intervals[MAX_SESSIONS];
 time_t datetime_next_send[MAX_SESSIONS];
-time_t dvb_time;
 
 // misc stack related stuff
 en50221_transport_layer tl;

@@ -34,6 +34,7 @@
 #include <dvben50221/en50221_app_mmi.h>
 #include <ucsi/section.h>
 #include <ucsi/mpeg/section.h>
+#include <ucsi/dvb/section.h>
 #include "ca_zap.h"
 #include "ca_zap_llci.h"
 #include "ca_zap_hlci.h"
@@ -62,11 +63,15 @@ static int cazap_mmi_menu_callback(void *arg, uint8_t slot_id, uint16_t session_
 			    uint32_t item_count, struct en50221_app_mmi_text *items,
 			    uint32_t item_raw_length, uint8_t *items_raw);
 
-
-static struct section_ext *read_section_ext(char *buf, int buflen, int adapter, int demux, int pid, int table_id, int timeout);
 static void *dvbthread_func(void* arg);
 static void *camthread_func(void* arg);
 static void signal_handler(int signal);
+
+static int create_section_filter(int adapter, int demux, uint16_t pid, uint8_t table_id);
+static void process_pat(int pat_fd, int *pat_version, int *pmt_fd, int *pmt_version, struct pollfd *pollfd);
+static void process_tdt(int tdt_fd);
+static void process_pmt(int pmt_fd, int *pmt_version);
+
 
 extern int hlci_init();
 extern int hlci_cam_added(int cafd);
@@ -102,6 +107,7 @@ int pmt_pid = -1;
 int cafd;
 int ca_type;
 struct dvbcfg_zapchannel *channel;
+time_t dvb_time = 0;
 
 int camthread_shutdown = 0;
 int dvbthread_shutdown = 0;
@@ -391,108 +397,90 @@ static void *camthread_func(void* arg)
 
 static void *dvbthread_func(void* arg)
 {
-	char capmt[4096];
-	int pmtversion = -1;
-	char buf[4096];
-	struct section_ext *section_ext = NULL;
-	struct mpeg_pat_section *pat;
-	struct mpeg_pat_program *cur_program;
+	int pat_fd = -1;
+	int pat_version = -1;
+
+	int pmt_fd = -1;
+	int pmt_version = -1;
+
+	int tdt_fd = -1;
+
+	struct pollfd pollfds[3];
+
 	(void) arg;
 
 	// FIXME: tune the frontend
 
-	// FIXME: parse the TDT
-
-	// read the PAT
-	while(!dvbthread_shutdown) {
-		section_ext = read_section_ext(buf, sizeof(buf), dvb_adapter, demux_device, 0x00, 0x00, 100);
-		if (section_ext != NULL) {
-			break;
-		}
-	}
-	if (dvbthread_shutdown) {
-		return 0;
-	}
-
-	// process the PAT to find the requested program's PMT PID
-	pat = mpeg_pat_section_codec(section_ext);
-	if (pat == NULL) {
-		fprintf(stderr, "Bad PAT received\n");
+	// create PAT filter
+	if ((pat_fd = create_section_filter(dvb_adapter, demux_device, TRANSPORT_PAT_PID, stag_mpeg_program_association)) < 0) {
+		fprintf(stderr, "Failed to create PAT section filter\n");
 		exit(1);
 	}
-	mpeg_pat_section_programs_for_each(pat, cur_program) {
-		if (cur_program->program_number == channel->channel_number) {
-			pmt_pid = cur_program->pid;
-			break;
-		}
-	}
-	if (pmt_pid == -1) {
-		fprintf(stderr, "Did not find requested program in PAT\n");
+	pollfds[0].fd = pat_fd;
+	pollfds[0].events = POLLIN|POLLPRI|POLLERR;
+
+	// create TDT filter
+	if ((tdt_fd = create_section_filter(dvb_adapter, demux_device, TRANSPORT_TDT_PID, stag_dvb_time_date)) < 0) {
+		fprintf(stderr, "Failed to create TDT section filter\n");
 		exit(1);
 	}
+	pollfds[1].fd = tdt_fd;
+	pollfds[1].events = POLLIN|POLLPRI|POLLERR;
 
-	// PMT monitoring loop
+	// zero PMT filter
+	pollfds[2].fd = 0;
+	pollfds[2].events = 0;
+
+	// the DVB loop
 	while(!dvbthread_shutdown) {
-        	// read the PMT
-		struct section_ext *section_ext = read_section_ext(buf, sizeof(buf), dvb_adapter, demux_device,
-								   pmt_pid, stag_mpeg_program_map, 100);
-		if (section_ext == NULL) {
-			continue;
+		// FIXME: monitor frontend lock status
+
+		// is there SI data?
+		int count = poll(pollfds, 3, 100);
+		if (count < 0) {
+			fprintf(stderr, "Poll error");
+			break;
 		}
-		struct mpeg_pmt_section *pmt = mpeg_pmt_section_codec(section_ext);
-		if (pmt == NULL) {
-			fprintf(stderr, "Bad PMT received\n");
-			continue;
-		}
-		if (pmt->head.version_number == pmtversion) {
+		if (count == 0) {
 			continue;
 		}
 
-		// FIXME: change PID filters on PMT change
+		// PAT
+		if (pollfds[0].revents & (POLLIN|POLLPRI)) {
+			process_pat(pat_fd, &pat_version, &pmt_fd, &pmt_version, &pollfds[2]);
+		}
 
-		// set the CA PMT if the CA resource is connected
-		if (ca_resource_connected) {
+		// TDT
+		if (pollfds[1].revents & (POLLIN|POLLPRI)) {
+			process_tdt(tdt_fd);
+		}
 
-			// translate it into a CA PMT
-			int listmgmt = CA_LIST_MANAGEMENT_ONLY;
-			if (pmtversion != -1) {
-				listmgmt = CA_LIST_MANAGEMENT_UPDATE;
-			}
-			int size;
-			if ((size = en50221_ca_format_pmt(pmt, capmt, sizeof(capmt),
-							  move_to_programme,
-							  listmgmt,
-							  CA_PMT_CMD_ID_OK_DESCRAMBLING)) < 0) {
-				fprintf(stderr, "Failed to format CA PMT object\n");
-				continue;
-			}
-
-			// set it
-			if (en50221_app_ca_pmt(ca_resource, ca_session_number, capmt, size)) {
-				fprintf(stderr, "Failed to send CA PMT object\n");
-				continue;
-			}
-
-			// remember the version
-			pmtversion = pmt->head.version_number;
+		//  PMT
+		if (pollfds[2].revents & (POLLIN|POLLPRI)) {
+			process_pmt(pmt_fd, &pmt_version);
 		}
 	}
+
+	// close demuxers
+	if (pat_fd != -1)
+		close(pat_fd);
+	if (pmt_fd != -1)
+		close(pmt_fd);
+	if (tdt_fd != -1)
+		close(tdt_fd);
+
 	return 0;
 }
 
-static struct section_ext *read_section_ext(char *buf, int buflen, int adapter, int demux, int pid, int table_id, int timeout)
+static int create_section_filter(int adapter, int demux, uint16_t pid, uint8_t table_id)
 {
 	int demux_fd = -1;
 	char filter[18];
 	char mask[18];
-	int size;
-	struct section *section;
-	struct section_ext *result = NULL;
-	struct pollfd pollfd;
 
 	// open the demuxer
 	if ((demux_fd = dvbdemux_open_demux(adapter, demux, 0)) < 0) {
-		goto exit;
+		return -1;
 	}
 
 	// create a section filter
@@ -501,41 +489,154 @@ static struct section_ext *read_section_ext(char *buf, int buflen, int adapter, 
 	filter[0] = table_id;
 	mask[0] = 0xFF;
 	if (dvbdemux_set_section_filter(demux_fd, pid, filter, mask, 1, 1)) {
-		goto exit;
-	}
-
-	// poll for data
-	pollfd.fd = demux_fd;
-	pollfd.events = POLLIN|POLLPRI|POLLERR;
-	if (poll(&pollfd, 1, timeout) != 1) {
-		return NULL;
-	}
-	if (pollfd.revents & POLLERR) {
-		return NULL;
-	}
-
-	// read the section
-	if ((size = read(demux_fd, buf, buflen)) < 0) {
-		goto exit;
-	}
-
-	// parse it as a section
-	section = section_codec(buf, size);
-	if (section == NULL) {
-		goto exit;
-	}
-
-	// parse it as a section_ext
-	result = section_ext_decode(section, 0);
-
-exit:
-	if (demux_fd != -1)
 		close(demux_fd);
-	return result;
+		return -1;
+	}
+
+	// done
+	return demux_fd;
 }
 
+static void process_pat(int pat_fd, int *pat_version, int *pmt_fd, int *pmt_version, struct pollfd *pollfd)
+{
+	int size;
+	char sibuf[4096];
 
+	// read the section
+	if ((size = read(pat_fd, sibuf, sizeof(sibuf))) < 0) {
+		return;
+	}
 
+	// parse section
+	struct section *section = section_codec(sibuf, size);
+	if (section == NULL) {
+		return;
+	}
+
+	// parse section_ext
+	struct section_ext *section_ext = section_ext_decode(section, 0);
+	if (section_ext == NULL) {
+		return;
+	}
+	if (*pat_version == section_ext->version_number) {
+		return;
+	}
+
+	// parse PAT
+	struct mpeg_pat_section *pat = mpeg_pat_section_codec(section_ext);
+	if (pat == NULL) {
+		return;
+	}
+
+	// try and find the requested program
+	struct mpeg_pat_program *cur_program;
+	mpeg_pat_section_programs_for_each(pat, cur_program) {
+		if (cur_program->program_number == channel->channel_number) {
+			// close old PMT fd
+			if (*pmt_fd != -1)
+				close(*pmt_fd);
+
+			// create PMT filter
+			if ((*pmt_fd = create_section_filter(dvb_adapter, demux_device, cur_program->pid,
+			      				     stag_mpeg_program_map)) < 0) {
+				return;
+			}
+			pollfd->fd = *pmt_fd;
+			pollfd->events = POLLIN|POLLPRI|POLLERR;
+
+			// we have a new PMT pid
+			*pmt_version = -1;
+			break;
+		}
+	}
+
+	// remember the PAT version
+	*pat_version = section_ext->version_number;
+}
+
+static void process_tdt(int tdt_fd)
+{
+	int size;
+	char sibuf[4096];
+
+	// read the section
+	if ((size = read(tdt_fd, sibuf, sizeof(sibuf))) < 0) {
+		return;
+	}
+
+	// parse section
+	struct section *section = section_codec(sibuf, size);
+	if (section == NULL) {
+		return;
+	}
+
+	// parse TDT
+	struct dvb_tdt_section *tdt = dvb_tdt_section_codec(section);
+	if (tdt == NULL) {
+		return;
+	}
+
+	// done
+	dvb_time = dvbdate_to_unixtime(tdt->utc_time);
+}
+
+static void process_pmt(int pmt_fd, int *pmt_version)
+{
+	int size;
+	char sibuf[4096];
+	char capmt[4096];
+
+	// read the section
+	if ((size = read(pmt_fd, sibuf, sizeof(sibuf))) < 0) {
+		return;
+	}
+
+	// parse section
+	struct section *section = section_codec(sibuf, size);
+	if (section == NULL) {
+		return;
+	}
+
+	// parse section_ext
+	struct section_ext *section_ext = section_ext_decode(section, 0);
+	if (section_ext == NULL) {
+		return;
+	}
+	if (*pmt_version == section_ext->version_number) {
+		return;
+	}
+
+	// parse PMT
+	struct mpeg_pmt_section *pmt = mpeg_pmt_section_codec(section_ext);
+	if (pmt == NULL) {
+		return;
+	}
+
+	// FIXME: update PID filters on PMT change
+
+	// CA stuff
+	if (ca_resource_connected) {
+		// translate it into a CA PMT
+		int listmgmt = CA_LIST_MANAGEMENT_ONLY;
+		if (*pmt_version != -1) {
+			listmgmt = CA_LIST_MANAGEMENT_UPDATE;
+		}
+
+		int size;
+		if ((size = en50221_ca_format_pmt(pmt, capmt, sizeof(capmt),
+		     				  move_to_programme, listmgmt, CA_PMT_CMD_ID_OK_DESCRAMBLING)) < 0) {
+			return;
+		}
+
+		// set it
+		if (en50221_app_ca_pmt(ca_resource, ca_session_number, capmt, size)) {
+			return;
+		}
+
+		// remember the version
+		*pmt_version = pmt->head.version_number;
+	}
+}
 
 
 
