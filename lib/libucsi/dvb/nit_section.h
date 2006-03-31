@@ -112,7 +112,7 @@ static inline struct dvb_nit_section_part2 *dvb_nit_section_part2(struct dvb_nit
  * @param pos Pointer to the current dvb_nit_transport.
  */
 #define dvb_nit_section_transports_for_each(nit, part2, pos) \
-	for ((pos) = dvb_nit_section_transports_first(nit, part2); \
+	for ((pos) = dvb_nit_section_transports_first(part2); \
 	     (pos); \
 	     (pos) = dvb_nit_section_transports_next(part2, pos))
 
