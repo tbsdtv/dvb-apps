@@ -154,6 +154,7 @@ uint32_t resource_ids[] = { EN50221_APP_TELETEXT_RESOURCEID,
                             EN50221_APP_EPG_RESOURCEID(1),
                             EN50221_APP_DVB_RESOURCEID,
                             EN50221_APP_CA_RESOURCEID,
+                            EN50221_APP_DATETIME_RESOURCEID,
                             EN50221_APP_AUTH_RESOURCEID,
                             EN50221_APP_AI_RESOURCEID, };
 int resource_ids_count = sizeof(resource_ids)/4;
