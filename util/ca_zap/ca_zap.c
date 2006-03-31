@@ -409,8 +409,6 @@ static void *dvbthread_func(void* arg)
 
 	(void) arg;
 
-	// FIXME: tune the frontend
-
 	// create PAT filter
 	if ((pat_fd = create_section_filter(dvb_adapter, demux_device, TRANSPORT_PAT_PID, stag_mpeg_program_association)) < 0) {
 		fprintf(stderr, "Failed to create PAT section filter\n");
@@ -433,7 +431,7 @@ static void *dvbthread_func(void* arg)
 
 	// the DVB loop
 	while(!dvbthread_shutdown) {
-		// FIXME: monitor frontend lock status
+		// FIXME: tune frontend and monitor lock status
 
 		// is there SI data?
 		int count = poll(pollfds, 3, 100);
