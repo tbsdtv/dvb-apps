@@ -30,6 +30,7 @@
 #include <dvben50221/en50221_app_ca.h>
 #include <dvben50221/en50221_app_mmi.h>
 #include <dvben50221/en50221_app_rm.h>
+#include <dvben50221/en50221_app_datetime.h>
 #include <dvbapi/dvbca.h>
 #include "ca_zap.h"
 #include "ca_zap_llci.h"
@@ -39,7 +40,8 @@
 uint32_t resource_ids[] = { EN50221_APP_RM_RESOURCEID,
   		            EN50221_APP_CA_RESOURCEID,
 			    EN50221_APP_AI_RESOURCEID,
-			    EN50221_APP_MMI_RESOURCEID, };
+			    EN50221_APP_MMI_RESOURCEID,
+			    EN50221_APP_DATETIME_RESOURCEID,};
 int resource_ids_count = sizeof(resource_ids)/4;
 
 // resource id function table
@@ -67,7 +69,6 @@ static int llci_session_callback(void *arg, int reason, uint8_t slot_id, uint16_
 static int llci_rm_enq_callback(void *arg, uint8_t slot_id, uint16_t session_number);
 static int llci_rm_reply_callback(void *arg, uint8_t slot_id, uint16_t session_number, uint32_t resource_id_count, uint32_t *resource_ids);
 static int llci_rm_changed_callback(void *arg, uint8_t slot_id, uint16_t session_number);
-
 
 
 int llci_init()
@@ -120,6 +121,13 @@ int llci_init()
 	en50221_app_decode_public_resource_id(&resources[resources_count].resid, EN50221_APP_MMI_RESOURCEID);
 	resources[resources_count].callback = en50221_app_mmi_message;
 	resources[resources_count].arg = mmi_resource;
+	resources_count++;
+
+	// create the datetime resource
+	datetime_resource = en50221_app_datetime_create(&sendfuncs);
+	en50221_app_decode_public_resource_id(&resources[resources_count].resid, EN50221_APP_DATETIME_RESOURCEID);
+	resources[resources_count].callback = en50221_app_datetime_message;
+	resources[resources_count].arg = datetime_resource;
 	resources_count++;
 
 	// register session layer callbacks
@@ -197,6 +205,7 @@ void llci_shutdown()
 	en50221_app_ai_destroy(ai_resource);
 	en50221_app_ca_destroy(ca_resource);
 	en50221_app_mmi_destroy(mmi_resource);
+	en50221_app_datetime_destroy(datetime_resource);
 }
 
 static int llci_lookup_callback(void *arg, uint8_t slot_id, uint32_t resource_id, en50221_sl_resource_callback *callback_out, void **arg_out)

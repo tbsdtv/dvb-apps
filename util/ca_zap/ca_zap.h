@@ -38,4 +38,6 @@ extern int ca_session_number;
 extern en50221_app_mmi mmi_resource;
 extern int mmi_session_number;
 
+extern en50221_app_datetime datetime_resource;
+
 #endif

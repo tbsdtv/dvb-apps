@@ -32,6 +32,7 @@
 #include <dvben50221/en50221_app_ai.h>
 #include <dvben50221/en50221_app_ca.h>
 #include <dvben50221/en50221_app_mmi.h>
+#include <dvben50221/en50221_app_datetime.h>
 #include <ucsi/section.h>
 #include <ucsi/mpeg/section.h>
 #include "ca_zap.h"
@@ -61,6 +62,8 @@ static int cazap_mmi_menu_callback(void *arg, uint8_t slot_id, uint16_t session_
 			    struct en50221_app_mmi_text *bottom,
 			    uint32_t item_count, struct en50221_app_mmi_text *items,
 			    uint32_t item_raw_length, uint8_t *items_raw);
+
+static int cazap_datetime_enquiry_callback(void *arg, uint8_t slot_id, uint16_t session_number, uint8_t response_interval);
 
 
 static struct section_ext *read_section_ext(char *buf, int buflen, int adapter, int demux, int pid, int table_id, int timeout);
@@ -92,6 +95,8 @@ int mmi_session_number = -1;
 int mmi_state = MMI_STATE_CLOSED;
 int mmi_enq_blind;
 int mmi_enq_length;
+
+en50221_app_datetime datetime_resource = NULL;
 
 int dvb_adapter = 0;
 int demux_device = 0;
@@ -232,6 +237,11 @@ int main(int argc, char *argv[])
 			en50221_app_mmi_register_enq_callback(mmi_resource, cazap_mmi_enq_callback, NULL);
 			en50221_app_mmi_register_menu_callback(mmi_resource, cazap_mmi_menu_callback, NULL);
 			en50221_app_mmi_register_list_callback(mmi_resource, cazap_mmi_menu_callback, NULL);
+		}
+
+		// hook up the datetime callbacks
+		if (datetime_resource) {
+			en50221_app_datetime_register_enquiry_callback(datetime_resource, cazap_datetime_enquiry_callback, NULL);
 		}
 
 		// start the cam thread
@@ -400,6 +410,8 @@ static void *dvbthread_func(void* arg)
 	(void) arg;
 
 	// FIXME: tune the frontend
+
+	// FIXME: parse the TDT and send to datetime if appropriate
 
 	// read the PAT
 	while(!dvbthread_shutdown) {
@@ -677,4 +689,14 @@ static int cazap_mmi_menu_callback(void *arg, uint8_t slot_id, uint16_t session_
 
 	mmi_state = MMI_STATE_MENU;
 	return 0;
+}
+
+
+static int cazap_datetime_enquiry_callback(void *arg, uint8_t slot_id, uint16_t session_number, uint8_t response_interval)
+{
+	(void) arg;
+	(void) slot_id;
+
+	// FIXME: implement this properly with support for response_interval. Time should come from TDT as well
+	en50221_app_datetime_send(datetime_resource, session_number, time(NULL), 0);
 }
