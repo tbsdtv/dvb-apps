@@ -72,14 +72,6 @@ static void process_pat(int pat_fd, int *pat_version, int *pmt_fd, int *pmt_vers
 static void process_tdt(int tdt_fd);
 static void process_pmt(int pmt_fd, int *pmt_version);
 
-
-extern int hlci_init();
-extern int hlci_cam_added(int cafd);
-extern void hlci_cam_removed();
-extern void hlci_poll();
-extern void hlci_shutdown();
-
-
 #define MMI_STATE_CLOSED 0
 #define MMI_STATE_OPEN 1
 #define MMI_STATE_ENQ 2
@@ -103,7 +95,6 @@ int demux_device = 0;
 int ca_device = 0;
 
 int move_to_programme = 0;
-int pmt_pid = -1;
 int cafd;
 int ca_type;
 struct dvbcfg_zapchannel *channel;
@@ -170,7 +161,6 @@ int main(int argc, char *argv[])
 			break;
 
 		case 'f':
-			// deprecated
 			break;
 
 		case 'm':
