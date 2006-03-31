@@ -31,7 +31,7 @@ extern "C"
 
 #include <stdlib.h>
 #include <stdint.h>
-#include <en50221_app_utils.h>
+#include <dvben50221/en50221_app_utils.h>
 #include <ucsi/dvb/descriptor.h>
 
 #define COMMS_COMMAND_ID_CONNECT_ON_CHANNEL     0x01

@@ -31,7 +31,7 @@ extern "C"
 
 #include <stdlib.h>
 #include <stdint.h>
-#include <en50221_app_utils.h>
+#include <dvben50221/en50221_app_utils.h>
 
 #define SMARTCARD_COMMAND_ID_CONNECT            0x01
 #define SMARTCARD_COMMAND_ID_DISCONNECT         0x02
