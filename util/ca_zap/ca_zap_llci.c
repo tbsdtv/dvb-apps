@@ -50,6 +50,7 @@ int resource_ids_count = sizeof(resource_ids)/4;
 // resource id function table
 struct resource {
 	struct en50221_app_public_resource_id resid;
+	uint32_t binary_resource_id;
 	en50221_sl_resource_callback callback;
 	void *arg;
 };
@@ -72,7 +73,9 @@ int slot_id = -1;
 int lasterror = 0;
 
 // function declarations
-static int llci_lookup_callback(void *arg, uint8_t slot_id, uint32_t resource_id, en50221_sl_resource_callback *callback_out, void **arg_out);
+static int llci_lookup_callback(void *arg, uint8_t slot_id, uint32_t requested_resource_id,
+				en50221_sl_resource_callback *callback_out, void **arg_out,
+				uint32_t *connected_resource_id);
 static int llci_session_callback(void *arg, int reason, uint8_t slot_id, uint16_t session_number, uint32_t resource_id);
 static int llci_rm_enq_callback(void *arg, uint8_t slot_id, uint16_t session_number);
 static int llci_rm_reply_callback(void *arg, uint8_t slot_id, uint16_t session_number, uint32_t resource_id_count, uint32_t *resource_ids);
@@ -105,6 +108,7 @@ int llci_init()
 	// create the resource manager resource
 	rm_resource = en50221_app_rm_create(&sendfuncs);
 	en50221_app_decode_public_resource_id(&resources[resources_count].resid, EN50221_APP_RM_RESOURCEID);
+	resources[resources_count].binary_resource_id = EN50221_APP_RM_RESOURCEID;
 	resources[resources_count].callback = en50221_app_rm_message;
 	resources[resources_count].arg = rm_resource;
 	en50221_app_rm_register_enq_callback(rm_resource, llci_rm_enq_callback, NULL);
@@ -115,6 +119,7 @@ int llci_init()
 	// create the application information resource
 	ai_resource = en50221_app_ai_create(&sendfuncs);
 	en50221_app_decode_public_resource_id(&resources[resources_count].resid, EN50221_APP_AI_RESOURCEID);
+	resources[resources_count].binary_resource_id = EN50221_APP_AI_RESOURCEID;
 	resources[resources_count].callback = en50221_app_ai_message;
 	resources[resources_count].arg = ai_resource;
 	resources_count++;
@@ -122,6 +127,7 @@ int llci_init()
 	// create the CA resource
 	ca_resource = en50221_app_ca_create(&sendfuncs);
 	en50221_app_decode_public_resource_id(&resources[resources_count].resid, EN50221_APP_CA_RESOURCEID);
+	resources[resources_count].binary_resource_id = EN50221_APP_CA_RESOURCEID;
 	resources[resources_count].callback = en50221_app_ca_message;
 	resources[resources_count].arg = ca_resource;
 	resources_count++;
@@ -129,6 +135,7 @@ int llci_init()
 	// create the MMI resource
 	mmi_resource = en50221_app_mmi_create(&sendfuncs);
 	en50221_app_decode_public_resource_id(&resources[resources_count].resid, EN50221_APP_MMI_RESOURCEID);
+	resources[resources_count].binary_resource_id = EN50221_APP_MMI_RESOURCEID;
 	resources[resources_count].callback = en50221_app_mmi_message;
 	resources[resources_count].arg = mmi_resource;
 	resources_count++;
@@ -136,6 +143,7 @@ int llci_init()
 	// create the datetime resource
 	datetime_resource = en50221_app_datetime_create(&sendfuncs);
 	en50221_app_decode_public_resource_id(&resources[resources_count].resid, EN50221_APP_DATETIME_RESOURCEID);
+	resources[resources_count].binary_resource_id = EN50221_APP_DATETIME_RESOURCEID;
 	resources[resources_count].callback = en50221_app_datetime_message;
 	resources[resources_count].arg = datetime_resource;
 	en50221_app_datetime_register_enquiry_callback(datetime_resource, llci_datetime_enquiry_callback, NULL);
@@ -232,14 +240,16 @@ void llci_shutdown()
 	en50221_app_datetime_destroy(datetime_resource);
 }
 
-static int llci_lookup_callback(void *arg, uint8_t slot_id, uint32_t resource_id, en50221_sl_resource_callback *callback_out, void **arg_out)
+static int llci_lookup_callback(void *arg, uint8_t slot_id, uint32_t requested_resource_id,
+				en50221_sl_resource_callback *callback_out, void **arg_out,
+				uint32_t *connected_resource_id)
 {
 	struct en50221_app_public_resource_id resid;
 	(void) arg;
 	(void) slot_id;
 
 	// decode the resource id
-	if (!en50221_app_decode_public_resource_id(&resid, resource_id)) {
+	if (!en50221_app_decode_public_resource_id(&resid, requested_resource_id)) {
 		return -1;
 	}
 
@@ -250,6 +260,7 @@ static int llci_lookup_callback(void *arg, uint8_t slot_id, uint32_t resource_id
 		    (resid.resource_type == resources[i].resid.resource_type)) {
 			*callback_out = resources[i].callback;
 			*arg_out = resources[i].arg;
+			*connected_resource_id = resources[i].binary_resource_id;
 			return 0;
 		}
 	}

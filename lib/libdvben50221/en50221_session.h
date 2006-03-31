@@ -71,16 +71,18 @@ typedef int (*en50221_sl_resource_callback)(void *arg, uint8_t slot_id,
  *
  * @param arg Private argument.
  * @param slot_id Slot id the request came from.
- * @param resource_id Resource id to look up.
+ * @param requested_resource_id Resource id requested.
  * @param callback_out Output parameter for pointer to resource callback function.
  * @param arg_out Output parameter for arg to pass to resource callback.
+ * @param resource_id_out Set this to the resource_id connected to (e.g. may differ from resource_id due to versions).
  * @return 0 on success,
  * -1 if the resource was not found,
  * -2 if it exists, but had a lower version, or
  * -3 if it exists, but was unavailable.
  */
-typedef int (*en50221_sl_lookup_callback)(void *arg, uint8_t slot_id, uint32_t resource_id,
-                                          en50221_sl_resource_callback *callback_out, void **arg_out);
+typedef int (*en50221_sl_lookup_callback)(void *arg, uint8_t slot_id, uint32_t requested_resource_id,
+                                          en50221_sl_resource_callback *callback_out, void **arg_out,
+                                          uint32_t *resource_id_out);
 
 
 /**

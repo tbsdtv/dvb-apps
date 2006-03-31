@@ -29,7 +29,8 @@
 #include <pthread.h>
 
 void *stackthread_func(void* arg);
-int test_lookup_callback(void *arg, uint8_t slot_id, uint32_t resource_id, en50221_sl_resource_callback *callback_out, void **arg_out);
+int test_lookup_callback(void *arg, uint8_t slot_id, uint32_t requested_resource_id,
+                         en50221_sl_resource_callback *callback_out, void **arg_out, uint32_t *connected_resource_id);
 int test_session_callback(void *arg, int reason, uint8_t slot_id, uint16_t session_number, uint32_t resource_id);
 
 
@@ -115,15 +116,16 @@ int main(int argc, char * argv[])
     return 0;
 }
 
-int test_lookup_callback(void *arg, uint8_t slot_id, uint32_t resource_id, en50221_sl_resource_callback *callback_out, void **arg_out)
+int test_lookup_callback(void *arg, uint8_t slot_id, uint32_t requested_resource_id,
+                         en50221_sl_resource_callback *callback_out, void **arg_out, uint32_t *connected_resource_id)
 {
     struct en50221_app_public_resource_id resid;
 
-    if (en50221_app_decode_public_resource_id(&resid, resource_id)) {
+    if (en50221_app_decode_public_resource_id(&resid, requested_resource_id)) {
         printf("Public resource lookup callback %i %i %i %i\n", slot_id,
                resid.resource_class, resid.resource_type, resid.resource_version);
     } else {
-        printf("Private resource lookup callback %i %08x\n", slot_id, resource_id);
+        printf("Private resource lookup callback %i %08x\n", slot_id, requested_resource_id);
     }
 
     return -1;

@@ -408,7 +408,7 @@ static void en50221_sl_handle_open_session_request(struct en50221_session_layer_
     }
 
     // get the resource id
-    uint32_t resource_id = (data[1] << 24) | (data[2] << 16) | (data[3] << 8) | data[4];
+    uint32_t requested_resource_id = (data[1] << 24) | (data[2] << 16) | (data[3] << 8) | data[4];
 
     // get lookup callback details
     pthread_mutex_lock(&private->setcallback_lock);
@@ -420,8 +420,9 @@ static void en50221_sl_handle_open_session_request(struct en50221_session_layer_
     int status = S_STATUS_CLOSE_NO_RES;
     en50221_sl_resource_callback resource_callback = NULL;
     void *resource_arg = NULL;
+    uint32_t connected_resource_id;
     if (lcb) {
-        status = lcb(lcb_arg, slot_id, resource_id, &resource_callback, &resource_arg);
+        status = lcb(lcb_arg, slot_id, requested_resource_id, &resource_callback, &resource_arg, &connected_resource_id);
         switch(status) {
         case 0:
             status = S_STATUS_OPEN;
@@ -446,7 +447,7 @@ static void en50221_sl_handle_open_session_request(struct en50221_session_layer_
     if (status == S_STATUS_OPEN) {
         // lookup next free session_id:
         pthread_mutex_lock(&private->global_lock);
-        session_number = en50221_sl_alloc_new_session(private, resource_id, slot_id, connection_id,
+        session_number = en50221_sl_alloc_new_session(private, connected_resource_id, slot_id, connection_id,
                                                       resource_callback, resource_arg);
         pthread_mutex_unlock(&private->global_lock);
 
@@ -459,7 +460,7 @@ static void en50221_sl_handle_open_session_request(struct en50221_session_layer_
             void *cb_arg = private->session_arg;
             pthread_mutex_unlock(&private->setcallback_lock);
             if (cb) {
-                if (cb(cb_arg, S_SCALLBACK_REASON_CAMCONNECTING, slot_id, session_number, resource_id)) {
+                if (cb(cb_arg, S_SCALLBACK_REASON_CAMCONNECTING, slot_id, session_number, connected_resource_id)) {
                     status = S_STATUS_CLOSE_RES_BUSY;
                 }
             } else {
@@ -473,10 +474,10 @@ static void en50221_sl_handle_open_session_request(struct en50221_session_layer_
     hdr[0] = ST_OPEN_SESSION_RES;
     hdr[1] = 7;
     hdr[2] = status;
-    hdr[3] = resource_id >> 24;
-    hdr[4] = resource_id >> 16;
-    hdr[5] = resource_id >> 8;
-    hdr[6] = resource_id;
+    hdr[3] = connected_resource_id >> 24;
+    hdr[4] = connected_resource_id >> 16;
+    hdr[5] = connected_resource_id >> 8;
+    hdr[6] = connected_resource_id;
     hdr[7] = session_number >> 8;
     hdr[8] = session_number;
     if (en50221_tl_send_data(private->tl, slot_id, connection_id, hdr, 9)) {
@@ -505,11 +506,11 @@ static void en50221_sl_handle_open_session_request(struct en50221_session_layer_
 
             if (status == S_STATUS_OPEN) {
                 if (cb)
-                    cb(cb_arg, S_SCALLBACK_REASON_CAMCONNECTED, slot_id, session_number, resource_id);
+                    cb(cb_arg, S_SCALLBACK_REASON_CAMCONNECTED, slot_id, session_number, connected_resource_id);
             } else {
                 private->sessions[session_number].state = S_STATE_IDLE;
                 if (cb)
-                    cb(cb_arg, S_SCALLBACK_REASON_CAMCONNECTFAIL, slot_id, session_number, resource_id);
+                    cb(cb_arg, S_SCALLBACK_REASON_CAMCONNECTFAIL, slot_id, session_number, connected_resource_id);
             }
         }
     }

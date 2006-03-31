@@ -50,7 +50,8 @@
 
 void *stackthread_func(void* arg);
 void *pmtthread_func(void* arg);
-int test_lookup_callback(void *arg, uint8_t slot_id, uint32_t resource_id, en50221_sl_resource_callback *callback_out, void **arg_out);
+int test_lookup_callback(void *arg, uint8_t slot_id, uint32_t requested_resource_id,
+                         en50221_sl_resource_callback *callback_out, void **arg_out, uint32_t *connected_resource_id);
 int test_session_callback(void *arg, int reason, uint8_t slot_id, uint16_t session_number, uint32_t resource_id);
 
 int test_datetime_enquiry_callback(void *arg, uint8_t slot_id, uint16_t session_number, uint8_t response_interval);
@@ -139,6 +140,7 @@ en50221_app_mmi mmi_resource;
 // lookup table used in resource manager implementation
 struct resource {
     struct en50221_app_public_resource_id resid;
+    uint32_t binary_resource_id;
     en50221_sl_resource_callback callback;
     void *arg;
 };
@@ -226,6 +228,7 @@ int main(int argc, char * argv[])
     // create the resource manager resource
     rm_resource = en50221_app_rm_create(&sendfuncs);
     en50221_app_decode_public_resource_id(&resources[resources_count].resid, EN50221_APP_RM_RESOURCEID);
+    resources[resources_count].binary_resource_id = EN50221_APP_RM_RESOURCEID;
     resources[resources_count].callback = en50221_app_rm_message;
     resources[resources_count].arg = rm_resource;
     en50221_app_rm_register_enq_callback(rm_resource, test_rm_enq_callback, NULL);
@@ -236,6 +239,7 @@ int main(int argc, char * argv[])
     // create the datetime resource
     datetime_resource = en50221_app_datetime_create(&sendfuncs);
     en50221_app_decode_public_resource_id(&resources[resources_count].resid, EN50221_APP_DATETIME_RESOURCEID);
+    resources[resources_count].binary_resource_id = EN50221_APP_DATETIME_RESOURCEID;
     resources[resources_count].callback = en50221_app_datetime_message;
     resources[resources_count].arg = datetime_resource;
     en50221_app_datetime_register_enquiry_callback(datetime_resource, test_datetime_enquiry_callback, NULL);
@@ -244,6 +248,7 @@ int main(int argc, char * argv[])
     // create the application information resource
     ai_resource = en50221_app_ai_create(&sendfuncs);
     en50221_app_decode_public_resource_id(&resources[resources_count].resid, EN50221_APP_AI_RESOURCEID);
+    resources[resources_count].binary_resource_id = EN50221_APP_AI_RESOURCEID;
     resources[resources_count].callback = en50221_app_ai_message;
     resources[resources_count].arg = ai_resource;
     en50221_app_ai_register_callback(ai_resource, test_ai_callback, NULL);
@@ -252,6 +257,7 @@ int main(int argc, char * argv[])
     // create the CA resource
     ca_resource = en50221_app_ca_create(&sendfuncs);
     en50221_app_decode_public_resource_id(&resources[resources_count].resid, EN50221_APP_CA_RESOURCEID);
+    resources[resources_count].binary_resource_id = EN50221_APP_CA_RESOURCEID;
     resources[resources_count].callback = en50221_app_ca_message;
     resources[resources_count].arg = ca_resource;
     en50221_app_ca_register_info_callback(ca_resource, test_ca_info_callback, NULL);
@@ -261,6 +267,7 @@ int main(int argc, char * argv[])
     // create the MMI resource
     mmi_resource = en50221_app_mmi_create(&sendfuncs);
     en50221_app_decode_public_resource_id(&resources[resources_count].resid, EN50221_APP_MMI_RESOURCEID);
+    resources[resources_count].binary_resource_id = EN50221_APP_MMI_RESOURCEID;
     resources[resources_count].callback = en50221_app_mmi_message;
     resources[resources_count].arg = mmi_resource;
     en50221_app_mmi_register_close_callback(mmi_resource, test_mmi_close_callback, NULL);
@@ -340,16 +347,17 @@ int main(int argc, char * argv[])
     return 0;
 }
 
-int test_lookup_callback(void *arg, uint8_t slot_id, uint32_t resource_id, en50221_sl_resource_callback *callback_out, void **arg_out)
+int test_lookup_callback(void *arg, uint8_t slot_id, uint32_t requested_resource_id,
+                         en50221_sl_resource_callback *callback_out, void **arg_out, uint32_t *connected_resource_id)
 {
     struct en50221_app_public_resource_id resid;
 
     // decode the resource id
-    if (en50221_app_decode_public_resource_id(&resid, resource_id)) {
+    if (en50221_app_decode_public_resource_id(&resid, requested_resource_id)) {
         printf("%02x:Public resource lookup callback %i %i %i\n", slot_id,
                resid.resource_class, resid.resource_type, resid.resource_version);
     } else {
-        printf("%02x:Private resource lookup callback %08x\n", slot_id, resource_id);
+        printf("%02x:Private resource lookup callback %08x\n", slot_id, requested_resource_id);
         return -1;
     }
 
@@ -363,6 +371,7 @@ int test_lookup_callback(void *arg, uint8_t slot_id, uint32_t resource_id, en502
             (resid.resource_type == resources[i].resid.resource_type)) {
             *callback_out = resources[i].callback;
             *arg_out = resources[i].arg;
+            *connected_resource_id = resources[i].binary_resource_id;
             return 0;
         }
     }
