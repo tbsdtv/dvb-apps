@@ -1,5 +1,0 @@
-
-all:
-%::
-	@echo "no apps :("
-

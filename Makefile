@@ -26,4 +26,4 @@ release dist:
 	$(MAKE) -C lib $(MAKECMDGOALS)
 	$(MAKE) -C util $(MAKECMDGOALS)
 	$(MAKE) -C test $(MAKECMDGOALS)
-	$(MAKE) -C apps $(MAKECMDGOALS)
+
