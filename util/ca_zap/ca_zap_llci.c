@@ -35,6 +35,9 @@
 #include "ca_zap.h"
 #include "ca_zap_llci.h"
 
+#define MAX_CARDS 1
+#define MAX_TC 16
+#define MAX_SESSIONS 16
 
 // resource IDs we send to the CAM.
 uint32_t resource_ids[] = { EN50221_APP_RM_RESOURCEID,
@@ -53,8 +56,14 @@ struct resource {
 struct resource resources[20];
 int resources_count = 0;
 
-// instances of private resources
+// the resource manager resource
 en50221_app_rm rm_resource;
+
+// the datetime resource
+en50221_app_datetime datetime_resource;
+uint8_t datetime_response_intervals[MAX_SESSIONS];
+time_t datetime_next_send[MAX_SESSIONS];
+time_t dvb_time;
 
 // misc stack related stuff
 en50221_transport_layer tl;
@@ -70,18 +79,20 @@ static int llci_rm_enq_callback(void *arg, uint8_t slot_id, uint16_t session_num
 static int llci_rm_reply_callback(void *arg, uint8_t slot_id, uint16_t session_number, uint32_t resource_id_count, uint32_t *resource_ids);
 static int llci_rm_changed_callback(void *arg, uint8_t slot_id, uint16_t session_number);
 
+static int llci_datetime_enquiry_callback(void *arg, uint8_t slot_id, uint16_t session_number, uint8_t response_interval);
+
 
 int llci_init()
 {
 	// create transport layer
-	tl = en50221_tl_create(1, 32);
+	tl = en50221_tl_create(MAX_CARDS, MAX_TC);
 	if (tl == NULL) {
 		fprintf(stderr, "Failed to create transport layer\n");
 		return -1;
 	}
 
 	// create session layer
-	sl = en50221_sl_create(tl, 256);
+	sl = en50221_sl_create(tl, MAX_SESSIONS);
 	if (sl == NULL) {
 		fprintf(stderr, "Failed to create session layer\n");
 		return -1;
@@ -128,7 +139,11 @@ int llci_init()
 	en50221_app_decode_public_resource_id(&resources[resources_count].resid, EN50221_APP_DATETIME_RESOURCEID);
 	resources[resources_count].callback = en50221_app_datetime_message;
 	resources[resources_count].arg = datetime_resource;
+	en50221_app_datetime_register_enquiry_callback(datetime_resource, llci_datetime_enquiry_callback, NULL);
 	resources_count++;
+ 	memset(datetime_response_intervals, 0, sizeof(datetime_response_intervals));
+	memset(datetime_next_send, 0, sizeof(datetime_next_send));
+	dvb_time = 0;
 
 	// register session layer callbacks
 	en50221_sl_register_lookup_callback(sl, llci_lookup_callback, sl);
@@ -186,6 +201,16 @@ void llci_poll()
 			fprintf(stderr, "Error reported by stack:%i\n", en50221_tl_get_error(tl));
 		}
 		lasterror = error;
+	}
+
+	// send date/time responses
+	uint32_t i;
+	time_t cur_time = time(NULL);
+	for(i=0; i < MAX_SESSIONS; i++) {
+		if (datetime_response_intervals[i] && (cur_time > datetime_next_send[i])) {
+ 			en50221_app_datetime_send(datetime_resource, i, dvb_time, 0);
+			datetime_next_send[i] = cur_time + datetime_response_intervals[i];
+		}
 	}
 }
 
@@ -289,5 +314,20 @@ static int llci_rm_changed_callback(void *arg, uint8_t slot_id, uint16_t session
 	if (en50221_app_rm_enq(rm_resource, session_number)) {
 		printf("Failed to send ENQ\n");
 	}
+	return 0;
+}
+
+static int llci_datetime_enquiry_callback(void *arg, uint8_t slot_id, uint16_t session_number, uint8_t response_interval)
+{
+	(void) arg;
+	(void) slot_id;
+
+	datetime_response_intervals[session_number] = response_interval;
+	datetime_next_send[session_number] = 0;
+	if (response_interval) {
+		datetime_next_send[session_number] = time(NULL) + response_interval;
+	}
+	en50221_app_datetime_send(datetime_resource, session_number, dvb_time, 0);
+
 	return 0;
 }
