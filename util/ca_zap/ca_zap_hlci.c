@@ -57,7 +57,7 @@ int hlci_init()
 	ca_resource = en50221_app_ca_create(&sendfuncs);
 
 	// create the MMI resource
-	mmi_resource = en50221_app_mmi_create(&sendfuncs);
+//	mmi_resource = en50221_app_mmi_create(&sendfuncs);
 
 	// no CAM present just now
 	cafd = -1;
