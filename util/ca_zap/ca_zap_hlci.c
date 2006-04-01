@@ -79,7 +79,14 @@ int hlci_cam_added(int _cafd)
 		cafd = -1;
 		return -1;
 	}
-	if ((size = dvbca_hlci_read(cafd, TAG_APP_INFO, buf, sizeof(buf))) < 0) {
+
+	// TEMPORARY
+	buf[0] = (uint8_t) (TAG_APP_INFO >> 16);
+	buf[1] = (uint8_t) (TAG_APP_INFO >> 8);
+	buf[2] = (uint8_t) TAG_APP_INFO;
+   	// TEMPORARY
+
+	if ((size = dvbca_hlci_read(cafd, buf, sizeof(buf))) < 0) {
 		fprintf(stderr, "Failed to read AI INFO\n");
 		cafd = -1;
 		return -1;
@@ -96,7 +103,15 @@ int hlci_cam_added(int _cafd)
 		cafd = -1;
 		return -1;
 	}
-	if ((size = dvbca_hlci_read(cafd, TAG_CA_INFO, buf, sizeof(buf))) < 0) {
+
+
+	// TEMPORARY
+	buf[0] = (uint8_t) (TAG_CA_INFO >> 16);
+	buf[1] = (uint8_t) (TAG_CA_INFO >> 8);
+	buf[2] = (uint8_t) TAG_CA_INFO;
+   	// TEMPORARY
+
+	if ((size = dvbca_hlci_read(cafd, buf, sizeof(buf))) < 0) {
 		fprintf(stderr, "Failed to read CA INFO\n");
 		cafd = -1;
 		return -1;
