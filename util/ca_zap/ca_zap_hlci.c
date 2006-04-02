@@ -79,14 +79,7 @@ int hlci_cam_added(int _cafd)
 		cafd = -1;
 		return -1;
 	}
-
-	// TEMPORARY
-	buf[0] = (uint8_t) (TAG_APP_INFO >> 16);
-	buf[1] = (uint8_t) (TAG_APP_INFO >> 8);
-	buf[2] = (uint8_t) TAG_APP_INFO;
-   	// TEMPORARY
-
-	if ((size = dvbca_hlci_read(cafd, buf, sizeof(buf))) < 0) {
+	if ((size = dvbca_hlci_read(cafd, TAG_APP_INFO, buf, sizeof(buf))) < 0) {
 		fprintf(stderr, "Failed to read AI INFO\n");
 		cafd = -1;
 		return -1;
@@ -97,21 +90,26 @@ int hlci_cam_added(int _cafd)
 		return -1;
 	}
 
+	// we forge a fake CA_INFO here so the main ca_zap code works -
+	// this will be replaced with a proper call (below) when the driver support is there
+	buf[0] = TAG_CA_INFO >> 16;
+	buf[1] = TAG_CA_INFO >> 8;
+	buf[2] = TAG_CA_INFO;
+	buf[3] = 0;
+	if (en50221_app_ca_message(ca_resource, 0, 0, EN50221_APP_CA_RESOURCEID, buf, 4)) {
+		fprintf(stderr, "Failed to parse AI INFO\n");
+		cafd = -1;
+		return -1;
+	}
+
 	// get CA information
+	/*
 	if (en50221_app_ca_info_enq(ca_resource, 0)) {
 		fprintf(stderr, "Failed to send CA INFO enquiry\n");
 		cafd = -1;
 		return -1;
 	}
-
-
-	// TEMPORARY
-	buf[0] = (uint8_t) (TAG_CA_INFO >> 16);
-	buf[1] = (uint8_t) (TAG_CA_INFO >> 8);
-	buf[2] = (uint8_t) TAG_CA_INFO;
-   	// TEMPORARY
-
-	if ((size = dvbca_hlci_read(cafd, buf, sizeof(buf))) < 0) {
+	if ((size = dvbca_hlci_read(cafd, TAG_CA_INFO, buf, sizeof(buf))) < 0) {
 		fprintf(stderr, "Failed to read CA INFO\n");
 		cafd = -1;
 		return -1;
@@ -121,6 +119,7 @@ int hlci_cam_added(int _cafd)
 		cafd = -1;
 		return -1;
 	}
+	*/
 
 	// done
 	return 0;
@@ -133,7 +132,7 @@ void hlci_cam_removed()
 
 void hlci_poll()
 {
-	// FIXME: not sure what to do here
+	// we do nothing here for the moment
 	usleep(10);
 }
 
@@ -141,7 +140,7 @@ void hlci_shutdown()
 {
 	en50221_app_ai_destroy(ai_resource);
 	en50221_app_ca_destroy(ca_resource);
-	en50221_app_mmi_destroy(mmi_resource);
+//	en50221_app_mmi_destroy(mmi_resource);
 }
 
 static int hlci_send_data(void *arg, uint16_t session_number, uint8_t *data, uint16_t data_length)
