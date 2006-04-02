@@ -116,11 +116,13 @@ extern int dvbca_hlci_write(int fd,
  * Read a message from a CA device using an HLCI interface.
  *
  * @param fd File handle opened with dvbca_open.
+ * @param app_tag Application layer tag giving the message type to read.
  * @param data Data that was read.
  * @param data_length Max number of bytes to read.
  * @return Number of bytes read on success, or -1 on failure.
  */
-extern int dvbca_hlci_read(int fd, uint8_t *data, uint16_t data_length);
+extern int dvbca_hlci_read(int fd, uint32_t app_tag,
+			   uint8_t *data, uint16_t data_length);
 
 #ifdef __cplusplus
 }

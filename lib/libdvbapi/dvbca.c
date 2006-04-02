@@ -138,20 +138,19 @@ int dvbca_hlci_write(int fd,
 	return ioctl(fd, CA_SEND_MSG, &msg);
 }
 
-int dvbca_hlci_read(int fd, uint8_t *data, uint16_t data_length)
+int dvbca_hlci_read(int fd, uint32_t app_tag,
+  		    uint8_t *data, uint16_t data_length)
 {
 	struct ca_msg msg;
 
 	if (data_length > 256) {
 		data_length = 256;
 	}
+	memset(&msg, 0, sizeof(msg));
 	msg.length = data_length;
-
-	// TEMPORARY
-	if (data_length >= 3) {
-		memcpy(msg.msg, data, 3);
-	}
-	// TEMPORARY
+	msg.msg[0] = app_tag >> 16;
+	msg.msg[1] = app_tag >> 8;
+	msg.msg[2] = app_tag;
 
 	int status = ioctl(fd, CA_GET_MSG, &msg);
 	if (status < 0) return status;

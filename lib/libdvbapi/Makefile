@@ -4,7 +4,7 @@ OBJS =  dvbdemux.o	\
 	diseqc.o	\
 	dvbca.o
 
-INCLUDES = dvbdemux.h dvbfe.h dvbnet.h diseqc.h dvbca.h
+INCLUDES = dvbdemux.h dvbfe.h dvbnet.h diseqc.h
 
 CFLAGS ?= -fPIC -O2 -g -Wall -Wstrict-prototypes -Wshadow -Wpointer-arith
 CPPFLAGS = 	-I. \
