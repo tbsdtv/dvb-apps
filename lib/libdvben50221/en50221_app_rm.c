@@ -119,7 +119,7 @@ void en50221_app_rm_register_changed_callback(en50221_app_rm rm,
 int en50221_app_rm_enq(en50221_app_rm rm, uint16_t session_number)
 {
     struct en50221_app_rm_private *private = (struct en50221_app_rm_private *) rm;
-    uint8_t buf[10];
+    uint8_t buf[4];
 
     // set up the tag
     buf[0] = (TAG_PROFILE_ENQUIRY >> 16) & 0xFF;
@@ -176,7 +176,7 @@ int en50221_app_rm_reply(en50221_app_rm rm, uint16_t session_number,
 int en50221_app_rm_changed(en50221_app_rm rm, uint16_t session_number)
 {
     struct en50221_app_rm_private *private = (struct en50221_app_rm_private *) rm;
-    uint8_t buf[10];
+    uint8_t buf[4];
 
     // set up the tag
     buf[0] = (TAG_PROFILE_CHANGE >> 16) & 0xFF;

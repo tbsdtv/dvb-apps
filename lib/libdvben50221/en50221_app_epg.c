@@ -91,7 +91,7 @@ int en50221_app_epg_enquire(en50221_app_epg epg,
                             uint16_t event_id)
 {
     struct en50221_app_epg_private *private = (struct en50221_app_epg_private *) epg;
-    uint8_t data[20];
+    uint8_t data[15];
 
     data[0] = (TAG_EPG_ENQUIRY >> 16) & 0xFF;
     data[1] = (TAG_EPG_ENQUIRY >> 8) & 0xFF;

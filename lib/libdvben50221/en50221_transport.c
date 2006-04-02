@@ -777,7 +777,7 @@ static int en50221_tl_poll_tc(struct en50221_transport_layer_private *private, u
     gettimeofday(&private->slots[slot_id].connections[connection_id].tx_time, 0);
 
     // send command
-    uint8_t hdr[10];
+    uint8_t hdr[3];
     hdr[0] = T_DATA_LAST;
     hdr[1] = 1;
     hdr[2] = connection_id;
