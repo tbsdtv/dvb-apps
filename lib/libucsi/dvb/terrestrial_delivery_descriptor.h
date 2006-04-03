@@ -36,7 +36,7 @@ extern "C"
 struct dvb_terrestrial_delivery_descriptor {
 	struct descriptor d;
 
-	uint32_t centre_frequency;
+	uint32_t centre_frequency;		// Normal integer, units 10Hz
   EBIT5(uint8_t bandwidth		: 3; ,
 	uint8_t priority		: 1; ,
 	uint8_t time_slicing_indicator	: 1; ,

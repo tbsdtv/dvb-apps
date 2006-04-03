@@ -95,6 +95,22 @@ extern int dvbhhmm_to_seconds(dvbhhmm_t dvbhhmm);
 extern void seconds_to_dvbhhmm(int seconds, dvbhhmm_t dvbhhmm);
 
 /**
+ * Convert a packed BCD value into a normal integer.
+ *
+ * @param bcd The value to convert.
+ * @return The value.
+ */
+extern uint32_t bcd_to_integer(uint32_t bcd);
+
+/**
+ * Convert a normal integer into a packed BCD value.
+ *
+ * @param integer The value to convert.
+ * @return The value.
+ */
+extern uint32_t integer_to_bcd(uint32_t integer);
+
+/**
  * Determine the (iconv compatable) character set of a dvb string.
  *
  * @param dvb_text DVB text concerned.

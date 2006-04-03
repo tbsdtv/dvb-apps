@@ -21,9 +21,6 @@
 #include <string.h>
 #include "types.h"
 
-static int int_to_bcd(int intval);
-static int bcd_to_int(int bcdval);
-
 time_t dvbdate_to_unixtime(dvbdate_t dvbdate)
 {
 	int k = 0;
@@ -48,9 +45,9 @@ time_t dvbdate_to_unixtime(dvbdate_t dvbdate)
 	if ((tm.tm_mon == 14) || (tm.tm_mon == 15)) k = 1;
 	tm.tm_year += k;
 	tm.tm_mon = tm.tm_mon - 2 - k * 12;
-	tm.tm_sec = bcd_to_int(dvbdate[4]);
-	tm.tm_min = bcd_to_int(dvbdate[3]);
-	tm.tm_hour = bcd_to_int(dvbdate[2]);
+	tm.tm_sec = bcd_to_integer(dvbdate[4]);
+	tm.tm_min = bcd_to_integer(dvbdate[3]);
+	tm.tm_hour = bcd_to_integer(dvbdate[2]);
 
 	return mktime(&tm);
 }
@@ -74,18 +71,18 @@ void unixtime_to_dvbdate(time_t unixtime, dvbdate_t dvbdate)
 
 	dvbdate[0] = (mjd & 0xff00) >> 8;
 	dvbdate[1] = mjd & 0xff;
-	dvbdate[2] = int_to_bcd(tm.tm_hour);
-	dvbdate[3] = int_to_bcd(tm.tm_min);
-	dvbdate[4] = int_to_bcd(tm.tm_sec);
+	dvbdate[2] = integer_to_bcd(tm.tm_hour);
+	dvbdate[3] = integer_to_bcd(tm.tm_min);
+	dvbdate[4] = integer_to_bcd(tm.tm_sec);
 }
 
 int dvbduration_to_seconds(dvbduration_t dvbduration)
 {
 	int seconds = 0;
 
-	seconds += (bcd_to_int(dvbduration[0]) * 60 * 60);
-	seconds += (bcd_to_int(dvbduration[1]) * 60);
-	seconds += bcd_to_int(dvbduration[2]);
+	seconds += (bcd_to_integer(dvbduration[0]) * 60 * 60);
+	seconds += (bcd_to_integer(dvbduration[1]) * 60);
+	seconds += bcd_to_integer(dvbduration[2]);
 
 	return seconds;
 }
@@ -99,17 +96,17 @@ void seconds_to_dvbduration(int seconds, dvbduration_t dvbduration)
 	mins = seconds / 60;
 	seconds -= (mins * 60);
 
-	dvbduration[0] = int_to_bcd(hours);
-	dvbduration[1] = int_to_bcd(mins);
-	dvbduration[2] = int_to_bcd(seconds);
+	dvbduration[0] = integer_to_bcd(hours);
+	dvbduration[1] = integer_to_bcd(mins);
+	dvbduration[2] = integer_to_bcd(seconds);
 }
 
 int dvbhhmm_to_seconds(dvbhhmm_t dvbhhmm)
 {
 	int seconds = 0;
 
-	seconds += (bcd_to_int(dvbhhmm[0]) * 60 * 60);
-	seconds += (bcd_to_int(dvbhhmm[1]) * 60);
+	seconds += (bcd_to_integer(dvbhhmm[0]) * 60 * 60);
+	seconds += (bcd_to_integer(dvbhhmm[1]) * 60);
 
 	return seconds;
 }
@@ -122,21 +119,34 @@ void seconds_to_dvbhhmm(int seconds, dvbhhmm_t dvbhhmm)
 	seconds -= (hours * 60 * 60);
 	mins = seconds / 60;
 
-	dvbhhmm[0] = int_to_bcd(hours);
-	dvbhhmm[1] = int_to_bcd(mins);
+	dvbhhmm[0] = integer_to_bcd(hours);
+	dvbhhmm[1] = integer_to_bcd(mins);
 }
 
-int int_to_bcd(int intval)
+uint32_t integer_to_bcd(uint32_t intval)
 {
-	if ((intval > 99) | (intval < 0))
-		intval = 0;
+	uint32_t val = 0;
 
-	return ((intval / 10) << 4) | (intval % 10);
+	int i;
+	for(i=0; i<=28;i+=4) {
+		val |= ((intval % 10) << i);
+		intval /= 10;
+	}
+
+	return val;
 }
 
-int bcd_to_int(int bcdval)
+uint32_t bcd_to_integer(uint32_t bcdval)
 {
-	return (((bcdval & 0xf0) >> 4) * 10) + (bcdval & 0x0f);
+	uint32_t val = 0;
+
+	int i;
+	for(i=28; i>=0;i-=4) {
+		val += ((bcdval >> i) & 0x0f);
+		if (i != 0) val *= 10;
+	}
+
+	return val;
 }
 
 const char *dvb_charset(char *dvb_text, int dvb_text_length, int *consumed)
