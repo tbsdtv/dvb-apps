@@ -517,7 +517,7 @@ int dvbfe_diseqc_command(dvbfe_handle_t _fehandle, char *command)
 				i += 2;
 
 				master_cmd.msg_len =
-					sscanf(command+i, "%i %i %i %i %i %i",
+					sscanf(command+i, "%x %x %x %x %x %x",
 					       tmpcmd, tmpcmd+1, tmpcmd+2, tmpcmd+3, tmpcmd+4, tmpcmd+5);
 				if (master_cmd.msg_len == 0)
 					return -EINVAL;
