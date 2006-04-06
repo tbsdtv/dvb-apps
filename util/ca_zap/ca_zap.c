@@ -604,6 +604,8 @@ static void process_pmt(int pmt_fd, int *pmt_version)
 
 	// CA stuff
 	if (ca_resource_connected) {
+		fprintf(stderr, "Recieved new PMT - sending to CAM...\n");
+
 		// translate it into a CA PMT
 		int listmgmt = CA_LIST_MANAGEMENT_ONLY;
 		if (*pmt_version != -1) {
@@ -613,11 +615,13 @@ static void process_pmt(int pmt_fd, int *pmt_version)
 		int size;
 		if ((size = en50221_ca_format_pmt(pmt, capmt, sizeof(capmt),
 		     				  move_to_programme, listmgmt, CA_PMT_CMD_ID_OK_DESCRAMBLING)) < 0) {
+			fprintf(stderr, "Failed to format PMT\n");
 			return;
 		}
 
 		// set it
 		if (en50221_app_ca_pmt(ca_resource, ca_session_number, capmt, size)) {
+			fprintf(stderr, "Failed to send PMT\n");
 			return;
 		}
 
