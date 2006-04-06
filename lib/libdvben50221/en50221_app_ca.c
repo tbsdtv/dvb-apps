@@ -491,16 +491,16 @@ static uint32_t en50221_ca_calculate_length(struct ca_pmt_descriptor *pmt_descri
     struct ca_pmt_stream *cur_s;
 
     // calcuate the PMT descriptors length
-    *pmt_descriptors_length = 0;
+    (*pmt_descriptors_length) = 0;
     struct ca_pmt_descriptor *cur_d = pmt_descriptors;
     while(cur_d) {
-        *pmt_descriptors_length += cur_d->length;
+        (*pmt_descriptors_length) += cur_d->length;
         cur_d = cur_d->next;
     }
 
     // add on 1 byte for the ca_pmt_cmd_id if we have some descriptors.
     if (*pmt_descriptors_length)
-        *pmt_descriptors_length++;
+        (*pmt_descriptors_length)++;
 
     // update the total required length
     total_required_length += *pmt_descriptors_length;
