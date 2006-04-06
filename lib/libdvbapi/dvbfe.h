@@ -173,6 +173,7 @@ typedef enum dvbfe_info_mask {
  */
 struct dvbfe_info {
 	dvbfe_type_t type;			/* always retrieved */
+	const char *name;			/* always retrieved */
 	unsigned int signal     : 1;		/* } DVBFE_INFO_LOCKSTATUS */
 	unsigned int carrier    : 1;		/* } */
 	unsigned int viterbi    : 1;		/* } */

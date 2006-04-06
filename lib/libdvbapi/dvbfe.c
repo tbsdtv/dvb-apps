@@ -19,6 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
+#define _GNU_SOURCE
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -151,6 +152,7 @@ static int lookupval(int val, int reverse, int table[][2])
 struct dvbfe_handle_prv {
 	int fd;
 	dvbfe_type_t type;
+	char *name;
 	struct timeval nextinfotime;
 	struct dvbfe_info cachedinfo;
 	int cachedreturnval;
@@ -206,6 +208,7 @@ dvbfe_handle_t dvbfe_open(int adapter, int frontend, int readonly)
 		fehandle->type = DVBFE_TYPE_ATSC;
 		break;
 	}
+	fehandle->name = strndup(info.name, sizeof(info.name));
 
 	// done
 	return fehandle;
@@ -216,6 +219,7 @@ void dvbfe_close(dvbfe_handle_t _fehandle)
 	struct dvbfe_handle_prv *fehandle = (struct dvbfe_handle_prv*) _fehandle;
 
 	close(fehandle->fd);
+	free(fehandle->name);
 	free(fehandle);
 }
 
@@ -238,6 +242,7 @@ int dvbfe_get_info(dvbfe_handle_t _fehandle, dvbfe_info_mask_t querymask, struct
 	// retrieve the requested values
 	memset(result, 0, sizeof(result));
 	result->type = fehandle->type;
+	result->name = fehandle->name;
 	if (querymask & DVBFE_INFO_LOCKSTATUS) {
 		if (!ioctl(fehandle->fd, FE_READ_STATUS, &status)) {
 			returnval |= DVBFE_INFO_LOCKSTATUS;
