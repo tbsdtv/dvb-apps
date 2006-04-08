@@ -201,7 +201,7 @@ static inline uint8_t*
 static inline struct dvb_extended_event_item*
 	dvb_extended_event_descriptor_items_first(struct dvb_extended_event_descriptor *d)
 {
-	if (d->d.len == 5)
+	if (d->length_of_items == 0)
 		return NULL;
 
 	return (struct dvb_extended_event_item *)
@@ -214,7 +214,7 @@ static inline struct dvb_extended_event_item*
 {
 	struct dvb_extended_event_item_part2* part2 =
 		dvb_extended_event_item_part2(pos);
-	uint8_t *end = (uint8_t*) d + 2 + d->d.len;
+	uint8_t *end = (uint8_t*) d + sizeof(struct dvb_extended_event_descriptor) + d->length_of_items;
 	uint8_t *next =	(uint8_t *) part2 +
 			sizeof(struct dvb_extended_event_item_part2) +
 			part2->item_length;
