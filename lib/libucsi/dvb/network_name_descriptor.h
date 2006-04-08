@@ -37,7 +37,7 @@ struct dvb_network_name_descriptor {
 	struct descriptor d;
 
 	/* char name[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_network_name_descriptor.

@@ -37,7 +37,7 @@ struct dvb_bouquet_name_descriptor {
 	struct descriptor d;
 
 	/* uint8_t name[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_bouquet_name_descriptor.

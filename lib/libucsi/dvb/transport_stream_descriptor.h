@@ -37,7 +37,7 @@ struct dvb_transport_stream_descriptor {
 	struct descriptor d;
 
 	/* uint8_t data[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * Process dvb_transport_stream_descriptor structure.

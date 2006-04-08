@@ -37,7 +37,7 @@ struct dvb_stuffing_descriptor {
 	struct descriptor d;
 
 	/* uint8_t data[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_stuffing_descriptor.

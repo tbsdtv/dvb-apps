@@ -36,7 +36,7 @@ extern "C"
 struct descriptor {
 	uint8_t tag;
 	uint8_t len;
-} packed;
+} __ucsi_packed;
 
 /**
  * Retreive pointer to the next descriptor structure.
@@ -69,7 +69,7 @@ struct unknown_descriptor {
 	struct descriptor d;
 
 	/* uint8_t data [] */
-} packed;
+} __ucsi_packed;
 
 /**
  * Retrieve pointer to the unknown descriptor's data field.

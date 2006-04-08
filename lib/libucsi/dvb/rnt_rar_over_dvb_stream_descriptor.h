@@ -46,7 +46,7 @@ struct dvb_rnt_rar_over_dvb_stream_descriptor {
 	uint16_t service_id;
 	uint8_t component_tag;
 	/* struct dvb_rnt_rar_over_dvb_stream_descriptor_scheduled_info scheduled_info */
-} packed;
+} __ucsi_packed;
 
 /**
  * The scheduled_info field of a dvb_rnt_rar_over_dvb_stream_descriptor (only appears
@@ -56,7 +56,7 @@ struct dvb_rnt_rar_over_dvb_stream_descriptor_scheduled_info {
 	dvbdate_t download_start_time;
 	uint8_t download_period_duration;
 	uint8_t download_cycle_time;
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_rnt_rar_over_dvb_stream_descriptor.

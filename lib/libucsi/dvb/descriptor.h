@@ -189,7 +189,7 @@ enum dvb_descriptor_tag {
 	dtag_dvb_ait_prefetch			= 0x0c,
 	dtag_dvb_ait_dii_location		= 0x0d,
 	dtag_dvb_ait_ip_signalling		= 0x11,
-} packed;
+} __ucsi_packed;
 
 #ifdef __cplusplus
 }

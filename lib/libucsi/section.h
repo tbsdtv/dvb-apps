@@ -44,7 +44,7 @@ struct section {
 	uint16_t private_indicator	: 1; , /* 2.4.4.10 */
 	uint16_t reserved 		: 2; ,
 	uint16_t length			:12; );
-} packed;
+} __ucsi_packed;
 
 /**
  * Generic extended section header structure.
@@ -62,7 +62,7 @@ struct section_ext {
 	uint8_t current_next_indicator	: 1; );
 	uint8_t section_number;
 	uint8_t last_section_number;
-} packed;
+} __ucsi_packed;
 
 /**
  * Structure for keeping track of sections of a PSI table.
@@ -72,7 +72,7 @@ struct psi_table_state {
 	uint16_t next_section_number;
 	uint8_t complete:1;
 	uint8_t new_table:1;
-} packed;
+} __ucsi_packed;
 
 
 /**

@@ -37,7 +37,7 @@ struct dvb_stream_identifier_descriptor {
 	struct descriptor d;
 
 	uint8_t component_tag;
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_stream_identifier_descriptor.

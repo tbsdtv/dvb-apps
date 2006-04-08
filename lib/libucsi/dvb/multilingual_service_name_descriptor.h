@@ -38,7 +38,7 @@ struct dvb_multilingual_service_name_descriptor {
 	struct descriptor d;
 
 	/* struct dvb_multilingual_service_name names[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * An entry in the service_names field of a dvb_multilingual_service_name_descriptor.
@@ -48,7 +48,7 @@ struct dvb_multilingual_service_name {
 	uint8_t service_provider_name_length;
 	/* uint8_t service_provider_name[] */
 	/* struct dvb_multilingual_service_name_part2 part2 */
-} packed;
+} __ucsi_packed;
 
 /**
  * Second part of a dvb_multilingual_service_name following the variable length
@@ -57,7 +57,7 @@ struct dvb_multilingual_service_name {
 struct dvb_multilingual_service_name_part2 {
 	uint8_t service_name_length;
 	/* uint8_t service_name[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_multilingual_service_name_descriptor.

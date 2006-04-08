@@ -37,7 +37,7 @@ struct dvb_scrambling_descriptor {
 	struct descriptor d;
 
 	uint8_t scrambling_mode;
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_scrambling_descriptor.

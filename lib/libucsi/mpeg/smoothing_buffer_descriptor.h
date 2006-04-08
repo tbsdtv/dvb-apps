@@ -40,7 +40,7 @@ struct mpeg_smoothing_buffer_descriptor {
 	uint64_t sb_leak_rate		:22; ,
 	uint64_t reserved_2		: 2; ,
 	uint64_t sb_size		:22; );
-} packed;
+} __ucsi_packed;
 
 /**
  * Process an mpeg_smoothing_buffer_descriptor.

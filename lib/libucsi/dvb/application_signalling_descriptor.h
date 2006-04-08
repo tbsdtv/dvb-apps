@@ -37,7 +37,7 @@ struct dvb_application_signalling_descriptor {
 	struct descriptor d;
 
 	/* struct dvb_application_signalling_entry entries[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * An entry in the entries field of a dvb_application_signalling_descriptor.
@@ -46,7 +46,7 @@ struct dvb_application_signalling_entry {
 	uint16_t application_type;
   EBIT2(uint8_t reserved		: 3; ,
 	uint8_t AIT_version_number	: 5; );
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_application_signalling_descriptor.

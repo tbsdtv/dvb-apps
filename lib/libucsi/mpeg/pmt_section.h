@@ -41,7 +41,7 @@ struct mpeg_pmt_section {
 	uint16_t program_info_length	:12; );
 	/* struct descriptor descriptors[] */
 	/* struct mpeg_pmt_stream streams[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * A stream within an mpeg_pmt_section.
@@ -54,7 +54,7 @@ struct mpeg_pmt_stream {
 	uint16_t es_info_length		:12; );
 
 	/* struct descriptor descriptors[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * Process an mpeg_pmt_section section.

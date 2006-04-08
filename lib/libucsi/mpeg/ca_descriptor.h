@@ -40,7 +40,7 @@ struct mpeg_ca_descriptor {
   EBIT2(uint16_t reserved	: 3;  ,
 	uint16_t ca_pid		: 13; );
 	/* uint8_t  data[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * Process an mpeg_ca_descriptor.

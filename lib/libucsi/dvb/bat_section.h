@@ -48,7 +48,7 @@ struct dvb_bat_section_part2 {
   EBIT2(uint16_t reserved_2			: 4; ,
 	uint16_t transport_stream_loop_length	:12; );
 	/* struct dvb_bat_transport transports[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * An entry in the transports field of a dvb_bat_section_part2.

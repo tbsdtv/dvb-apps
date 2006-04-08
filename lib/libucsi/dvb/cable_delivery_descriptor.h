@@ -42,7 +42,7 @@ struct dvb_cable_delivery_descriptor {
 	uint8_t modulation;
   EBIT2(uint32_t symbol_rate	: 28; ,		// BCD, units 100Hz
 	uint32_t fec_inner	: 4;  );
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_cable_delivery_descriptor.

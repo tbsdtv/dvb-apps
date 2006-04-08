@@ -41,7 +41,7 @@ struct mpeg_system_clock_descriptor {
 	uint8_t clock_accuracy_integer			: 6; );
   EBIT2(uint8_t clock_accuracy_exponent			: 3; ,
 	uint8_t reserved_2				: 5; );
-} packed;
+} __ucsi_packed;
 
 /**
  * Process an mpeg_system_clock_descriptor.

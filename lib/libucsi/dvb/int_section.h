@@ -41,7 +41,7 @@ struct dvb_int_section {
 	uint16_t platform_descriptors_length		:12;  );
 	/* struct descriptor platform_descriptors[] */
 	/* struct dvb_int_target target_loop[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * An entry in the target_loop field of a dvb_int_section.
@@ -51,7 +51,7 @@ struct dvb_int_target {
 	uint16_t target_descriptors_length	:12;  );
 	/* struct descriptor target_descriptors[] */
 	/* struct dvb_int_operational_loop operational_loop */
-} packed;
+} __ucsi_packed;
 
 /**
  * The operational_loop field in a dvb_int_target.
@@ -60,7 +60,7 @@ struct dvb_int_operational_loop {
   EBIT2(uint16_t reserved4				: 4;  ,
 	uint16_t operational_descriptors_length		:12;  );
 	/* struct descriptor operational_descriptors[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_int_section.

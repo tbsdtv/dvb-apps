@@ -38,7 +38,7 @@ struct dvb_data_broadcast_id_descriptor {
 
 	uint16_t data_broadcast_id;
 	/* uint8_t id_selector_byte[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_data_broadcast_id_descriptor.

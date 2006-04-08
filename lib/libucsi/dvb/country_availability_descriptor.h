@@ -40,14 +40,14 @@ struct dvb_country_availability_descriptor {
   EBIT2(uint8_t country_availability_flag	: 1; ,
 	uint8_t reserved			: 7; );
 	/* struct dvb_country_availability_entry countries[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * An entry in the countries field of a dvb_country_availability_descriptor.
  */
 struct dvb_country_availability_entry {
 	iso639country_t country_code;
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_country_availability_descriptor.

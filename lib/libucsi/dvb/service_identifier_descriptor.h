@@ -37,7 +37,7 @@ struct dvb_service_identifier_descriptor {
 	struct descriptor d;
 
 	/* uint8_t identifier[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_service_identifier_descriptor.

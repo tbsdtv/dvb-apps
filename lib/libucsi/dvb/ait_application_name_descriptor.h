@@ -38,7 +38,7 @@ struct dvb_ait_application_name_descriptor {
 	struct descriptor d;
 
 	/* struct dvb_ait_application_name names[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * An entry in the names field of a dvb_ait_application_name_descriptor.
@@ -47,7 +47,7 @@ struct dvb_ait_application_name {
 	iso639lang_t language_code;
 	uint8_t application_name_length;
 	/* uint8_t name[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_ait_application_name_descriptor.

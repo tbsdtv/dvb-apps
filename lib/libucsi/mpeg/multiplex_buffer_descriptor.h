@@ -38,7 +38,7 @@ struct mpeg_multiplex_buffer_descriptor {
 
   EBIT2(uint64_t mb_buffer_size : 24;  ,
 	uint64_t tb_leak_rate	: 24;  );
-} packed;
+} __ucsi_packed;
 
 /**
  * Process an mpeg_multiplex_buffer_descriptor.

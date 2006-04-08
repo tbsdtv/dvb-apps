@@ -39,7 +39,7 @@ struct mpeg_iod_descriptor {
 	uint8_t scope_of_iod_label;
 	uint8_t iod_label;
 	/* uint8_t iod[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * Process an mpeg_iod_descriptor.

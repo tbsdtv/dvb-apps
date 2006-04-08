@@ -40,7 +40,7 @@ struct mpeg_multiplex_buffer_utilization_descriptor {
 	uint16_t ltw_offset_lower_bound		: 15; );
   EBIT2(uint16_t reserved			: 1;  ,
 	uint16_t ltw_offset_upper_bound		: 15; );
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a mpeg_multiplex_buffer_utilization_descriptor.

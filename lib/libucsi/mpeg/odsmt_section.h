@@ -39,14 +39,14 @@ struct mpeg_odsmt_section {
 	/* stream_count==0 => struct mpeg_odsmt_stream_single streams
 	   stream_count>0  => struct mpeg_odsmt_stream_multi streams[] */
 	/* uint8_t object_descriptors[] */
-} packed;
+} __ucsi_packed;
 
 struct mpeg_odsmt_stream_single
 {
 	uint16_t esid;
 	uint8_t es_info_length;
 	/* struct descriptor descriptors[] */
-} packed;
+} __ucsi_packed;
 
 struct mpeg_odsmt_stream_multi
 {
@@ -54,17 +54,17 @@ struct mpeg_odsmt_stream_multi
 	uint8_t fmc;
 	uint8_t es_info_length;
 	/* struct descriptor descriptors[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * Structure describing the stream information held in an mpeg_odsmt_section.
  */
 struct mpeg_odsmt_stream {
 	union {
-		struct mpeg_odsmt_stream_single single packed;
-		struct mpeg_odsmt_stream_multi multi packed;
-	} u packed;
-} packed;
+		struct mpeg_odsmt_stream_single single __ucsi_packed;
+		struct mpeg_odsmt_stream_multi multi __ucsi_packed;
+	} u __ucsi_packed;
+} __ucsi_packed;
 
 /**
  * Process an mpeg_odsmt_section.

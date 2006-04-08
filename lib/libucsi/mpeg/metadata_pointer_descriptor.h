@@ -55,21 +55,21 @@ struct mpeg_metadata_pointer_descriptor {
 	/* struct mpeg_metadata_pointer_descriptor_program_number program_number */
 	/* struct mpeg_metadata_pointer_descriptor_carriage carriage */
 	/* uint8_t private_data[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * appid field of a metadata_pointer_descriptor.
  */
 struct mpeg_metadata_pointer_descriptor_application_format_identifier {
 	uint32_t id;
-} packed;
+} __ucsi_packed;
 
 /**
  * formid field of a metadata_pointer_descriptor.
  */
 struct mpeg_metadata_pointer_descriptor_format_identifier {
 	uint32_t id;
-} packed;
+} __ucsi_packed;
 
 /**
  * Flags field of a metadata_pointer_descriptor
@@ -79,7 +79,7 @@ struct mpeg_metadata_pointer_descriptor_flags {
   EBIT3(uint8_t metadata_locator_record_flag			: 1;  ,
 	uint8_t mpeg_carriage_flags				: 2;  ,
 	uint8_t reserved					: 5;  );
-} packed;
+} __ucsi_packed;
 
 /**
  * Reference_id field of a metadata_pointer_descriptor.
@@ -87,14 +87,14 @@ struct mpeg_metadata_pointer_descriptor_flags {
 struct mpeg_metadata_pointer_descriptor_locator {
 	uint8_t metadata_locator_record_length;
 	/* uint8_t data[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * program_number field of a metadata_pointer_descriptor.
  */
 struct mpeg_metadata_pointer_descriptor_program_number {
 	uint16_t number;
-} packed;
+} __ucsi_packed;
 
 /**
  * carriage field of a metadata_pointer_descriptor.
@@ -102,7 +102,7 @@ struct mpeg_metadata_pointer_descriptor_program_number {
 struct mpeg_metadata_pointer_descriptor_carriage {
 	uint16_t transport_stream_location;
 	uint16_t transport_stream_id;
-} packed;
+} __ucsi_packed;
 
 
 

@@ -37,7 +37,7 @@ struct dvb_tva_container_section {
 	struct section_ext head;
 
 	/* uint8_t data[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_tva_container_section.

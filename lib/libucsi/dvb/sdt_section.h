@@ -38,7 +38,7 @@ struct dvb_sdt_section {
 	uint16_t original_network_id;
 	uint8_t reserved;
 	/* struct dvb_sdt_service services[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * An entry in the services field of a dvb_sdt_section.
@@ -52,7 +52,7 @@ struct dvb_sdt_service {
 	uint16_t free_ca_mode			: 1; ,
 	uint16_t descriptors_loop_length	:12; );
 	/* struct descriptor descriptors[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_sdt_section.

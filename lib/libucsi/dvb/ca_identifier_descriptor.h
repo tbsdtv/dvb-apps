@@ -37,7 +37,7 @@ struct dvb_ca_identifier_descriptor {
 	struct descriptor d;
 
 	/* uint16_t ca_system_ids[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_ca_identifier_descriptor.

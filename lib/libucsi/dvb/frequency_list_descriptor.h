@@ -48,7 +48,7 @@ struct dvb_frequency_list_descriptor {
   EBIT2(uint8_t reserved	: 6; ,
 	uint8_t coding_type	: 2; );
 	/* uint32_t centre_frequencies [] */
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_frequency_list_descriptor.

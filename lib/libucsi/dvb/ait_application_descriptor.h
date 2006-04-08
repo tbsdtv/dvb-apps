@@ -48,7 +48,7 @@ struct dvb_ait_application_descriptor {
 	uint8_t application_profiles_length;
 	/* struct dvb_ait_application_profile profiles [] */
 	/* struct dvb_ait_application_descriptor_part2 part2 */
-} packed;
+} __ucsi_packed;
 
 /**
  * An entry in the profiles field of a dvb_ait_application_descriptor.
@@ -58,7 +58,7 @@ struct dvb_ait_application_profile {
 	uint8_t version_major;
 	uint8_t version_minor;
 	uint8_t version_micro;
-} packed;
+} __ucsi_packed;
 
 /**
  * Second part of a dvb_ait_application_descriptor structure.
@@ -69,7 +69,7 @@ struct dvb_ait_application_descriptor_part2 {
 	uint8_t reserved			: 5; );
 	uint8_t application_priority;
 	/* uint8_t transport_protocol_label[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_ait_application_descriptor.

@@ -43,7 +43,7 @@ struct dvb_rnt_rar_over_ip_descriptor {
 	uint8_t reserved		: 1; );
 	uint8_t url_length;
 	/* uint8_t url[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_rnt_rar_over_ip_descriptor.

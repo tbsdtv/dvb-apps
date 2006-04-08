@@ -38,7 +38,7 @@ struct mpeg_registration_descriptor {
 
 	uint32_t format_identifier;
 	/* uint8_t additional_id_info[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * Process an mpeg_registration_descriptor.

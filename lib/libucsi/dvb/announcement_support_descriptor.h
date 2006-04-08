@@ -75,7 +75,7 @@ struct dvb_announcement_support_descriptor {
 	struct descriptor d;
 	uint16_t announcement_support_indicator;
 	/* struct dvb_announcement_support_entry entries[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * An entry in the entries field of a dvb_announcement_support_descriptor.
@@ -86,7 +86,7 @@ struct dvb_announcement_support_entry {
 	uint8_t reference_type			: 3; );
 	/* Only if reference_type == 1, 2 or 3:
 	 * struct dvb_announcement_support_reference reference */
-} packed;
+} __ucsi_packed;
 
 /**
  * The optional reference field only present in a dvb_announcement_support_descriptor if
@@ -97,7 +97,7 @@ struct dvb_announcement_support_reference {
 	uint16_t transport_stream_id;
 	uint16_t service_id;
 	uint8_t component_tag;
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_announcement_support_descriptor.

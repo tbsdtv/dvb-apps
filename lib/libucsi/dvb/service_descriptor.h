@@ -62,7 +62,7 @@ struct dvb_service_descriptor {
 	uint8_t service_provider_name_length;
 	/* uint8_t service_provider_name[] */
 	/* struct dvb_service_descriptor_part2 part2 */
-} packed;
+} __ucsi_packed;
 
 /**
  * Second part of a dvb_service_descriptor following the variable length
@@ -71,7 +71,7 @@ struct dvb_service_descriptor {
 struct dvb_service_descriptor_part2 {
 	uint8_t service_name_length;
 	/* uint8_t service_name[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_service_descriptor.

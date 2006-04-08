@@ -39,7 +39,7 @@ struct dvb_content_descriptor {
 	struct descriptor d;
 
 	/* struct dvb_content_nibble nibbles[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * An entry in the nibbles field of a dvb_content_descriptor.
@@ -49,7 +49,7 @@ struct dvb_content_nibble {
 	uint8_t content_nibble_level_2	: 4; );
   EBIT2(uint8_t user_nibble_1		: 4; ,
 	uint8_t user_nibble_2		: 4; );
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_content_descriptor.

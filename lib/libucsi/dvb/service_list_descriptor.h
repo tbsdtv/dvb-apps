@@ -37,7 +37,7 @@ struct dvb_service_list_descriptor {
 	struct descriptor d;
 
 	/* struct dvb_service_list_service services[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * An entry in the services field of a dvb_service_list_descriptor.
@@ -45,7 +45,7 @@ struct dvb_service_list_descriptor {
 struct dvb_service_list_service {
 	uint16_t service_id;
 	uint8_t service_type;
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_service_list_descriptor.

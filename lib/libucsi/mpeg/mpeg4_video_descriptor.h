@@ -37,7 +37,7 @@ struct mpeg4_video_descriptor {
 	struct descriptor d;
 
 	uint8_t mpeg4_visual_profile_and_level;
-} packed;
+} __ucsi_packed;
 
 /**
  * Process an mpeg4_video_descriptor structure.

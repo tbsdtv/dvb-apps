@@ -42,7 +42,7 @@ struct dvb_eit_section {
 	uint8_t segment_last_section_number;
 	uint8_t last_table_id;
 	/* struct eit_event events[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * An entry in the events field of a dvb_eit_section.
@@ -55,7 +55,7 @@ struct dvb_eit_event {
 	uint16_t free_ca_mode		: 1;  ,
 	uint16_t descriptors_loop_length:12; );
 	/* struct descriptor descriptors[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_eit_section.

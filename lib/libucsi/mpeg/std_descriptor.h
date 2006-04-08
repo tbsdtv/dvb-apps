@@ -38,7 +38,7 @@ struct mpeg_std_descriptor {
 
   EBIT2(uint8_t reserved	: 7; ,
 	uint8_t leak_valid_flag	: 1; );
-} packed;
+} __ucsi_packed;
 
 /**
  * Process an mpeg_std_descriptor.

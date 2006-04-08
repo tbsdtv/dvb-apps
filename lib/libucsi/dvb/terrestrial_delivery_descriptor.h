@@ -50,7 +50,7 @@ struct dvb_terrestrial_delivery_descriptor {
 	uint8_t transmission_mode	: 2; ,
 	uint8_t other_frequency_flag	: 1; );
 	uint32_t reserved_2;
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_terrestrial_delivery_descriptor.

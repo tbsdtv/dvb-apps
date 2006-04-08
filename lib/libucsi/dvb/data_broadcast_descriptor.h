@@ -42,7 +42,7 @@ struct dvb_data_broadcast_descriptor {
 	uint8_t selector_length;
 	/* uint8_t selector[] */
 	/* struct dvb_data_broadcast_descriptor_part2 part2 */
-} packed;
+} __ucsi_packed;
 
 /**
  * Second part of a dvb_data_broadcast_descriptor following the variable length selector field.
@@ -51,7 +51,7 @@ struct dvb_data_broadcast_descriptor_part2 {
 	iso639lang_t language_code;
 	uint8_t text_length;
 	/* uint8_t text[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_data_broadcast_descriptor.

@@ -57,7 +57,7 @@ struct dvb_ait_application_icons_descriptor {
 	uint8_t icon_locator_length;
 	/* uint8_t icon_locator[] */
 	/* struct dvb_ait_application_icons_descriptor_part2 */
-} packed;
+} __ucsi_packed;
 
 /**
  * Second part of a dvb_ait_application_icons_descriptor.
@@ -65,7 +65,7 @@ struct dvb_ait_application_icons_descriptor {
 struct dvb_ait_application_icons_descriptor_part2 {
 	uint16_t icon_flags;
 	/* uint8_t reserved[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_ait_application_icons_descriptor.

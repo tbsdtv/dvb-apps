@@ -37,7 +37,7 @@ struct mpeg_fmc_descriptor {
 	struct descriptor d;
 
 	/* struct mpeg_flex_mux muxes[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * An entry in the muxes field of an mpeg_fmc_descriptor structure.
@@ -45,7 +45,7 @@ struct mpeg_fmc_descriptor {
 struct mpeg_flex_mux {
 	uint16_t es_id;
 	uint8_t flex_mux_channel;
-} packed;
+} __ucsi_packed;
 
 /**
  * Process an mpeg_fmc_descriptor structure.

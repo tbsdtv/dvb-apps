@@ -30,7 +30,7 @@ extern "C"
 #include <byteswap.h>
 #include <endian.h>
 
-#define packed __attribute__((packed))
+#define __ucsi_packed __attribute__((packed))
 
 
 

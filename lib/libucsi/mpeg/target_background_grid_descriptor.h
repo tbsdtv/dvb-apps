@@ -39,7 +39,7 @@ struct mpeg_target_background_grid_descriptor {
   EBIT3(uint32_t horizontal_size		: 14; ,
 	uint32_t vertical_size			: 14; ,
 	uint32_t aspect_ratio_information	: 4;  );
-} packed;
+} __ucsi_packed;
 
 /**
  * Process an mpeg_target_background_grid_descriptor structure.

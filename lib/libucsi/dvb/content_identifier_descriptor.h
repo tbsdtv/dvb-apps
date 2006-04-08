@@ -57,7 +57,7 @@ struct dvb_content_identifier_descriptor {
 	struct descriptor d;
 
 	/* struct dvb_content_identifier_entry entries[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * An entry in the entries field of a dvb_content_identifier_descriptor.
@@ -67,7 +67,7 @@ struct dvb_content_identifier_entry {
 	uint8_t crid_location		: 2; );
 	/* struct dvb_content_identifier_data_00 data0 */
 	/* struct dvb_content_identifier_data_01 data1 */
-} packed;
+} __ucsi_packed;
 
 /**
  * The data if crid_location == 0
@@ -75,14 +75,14 @@ struct dvb_content_identifier_entry {
 struct dvb_content_identifier_entry_data_0 {
 	uint8_t crid_length;
 	/* uint8_t data[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * The data if crid_location == 1
  */
 struct dvb_content_identifier_entry_data_1 {
 	uint16_t crid_ref;
-} packed;
+} __ucsi_packed;
 
 
 /**

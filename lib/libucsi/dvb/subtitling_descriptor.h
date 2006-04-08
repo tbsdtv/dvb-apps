@@ -38,7 +38,7 @@ struct dvb_subtitling_descriptor {
 	struct descriptor d;
 
 	/* struct dvb_subtitling_entry subtitles[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * An entry in the subtitles field of the a dvb_subtitling_descriptor.
@@ -48,7 +48,7 @@ struct dvb_subtitling_entry {
 	uint8_t subtitling_type;
 	uint16_t composition_page_id;
 	uint16_t ancillary_page_id;
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_subtitling_descriptor.

@@ -36,7 +36,7 @@ struct mpeg_pat_section {
 	struct section_ext head; /* table_id_ext == transport_stream_id */
 
 	/* struct mpeg_pat_program programs[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * A program within an mpeg_pat_section.
@@ -45,7 +45,7 @@ struct mpeg_pat_program {
 	uint16_t program_number;
   EBIT2(uint16_t reserved	: 3; ,
 	uint16_t pid		:13; );
-} packed;
+} __ucsi_packed;
 
 /**
  * Process an mpeg_pat_section.

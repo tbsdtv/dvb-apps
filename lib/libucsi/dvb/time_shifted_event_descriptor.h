@@ -38,7 +38,7 @@ struct dvb_time_shifted_event_descriptor {
 
 	uint16_t reference_service_id;
 	uint16_t reference_event_id;
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_time_shifted_event_descriptor.

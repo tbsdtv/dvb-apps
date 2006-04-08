@@ -109,7 +109,7 @@ struct transport_packet {
 	uint8_t adaptation_field_control	: 2; ,
 	uint8_t continuity_counter		: 4; );
 	/* values */
-} packed;
+} __ucsi_packed;
 
 /**
  * Structure to extract values into using the transport_packet_values_extract()

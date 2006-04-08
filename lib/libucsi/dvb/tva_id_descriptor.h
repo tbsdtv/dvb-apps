@@ -37,7 +37,7 @@ struct dvb_tva_id_descriptor {
 	struct descriptor d;
 
 	/* struct dvb_tva_id_entry entries[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * An entry in the entries field of a dvb_tva_id_descriptor.
@@ -46,7 +46,7 @@ struct dvb_tva_id_entry {
 	uint16_t tva_id;
   EBIT2(uint8_t reserved		: 5; ,
 	uint8_t running_status		: 3; );
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_tva_id_descriptor.

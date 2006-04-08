@@ -37,7 +37,7 @@ struct dvb_dsng_descriptor {
 	struct descriptor d;
 
 	/* uint8_t data[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_dsng_descriptor.

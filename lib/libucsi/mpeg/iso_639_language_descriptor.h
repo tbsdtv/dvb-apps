@@ -47,7 +47,7 @@ struct mpeg_iso_639_language_descriptor {
 	struct descriptor d;
 
 	/* struct mpeg_iso_639_language_code languages[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * An entry in the mpeg_iso_639_language_descriptor languages field.
@@ -55,7 +55,7 @@ struct mpeg_iso_639_language_descriptor {
 struct mpeg_iso_639_language_code {
 	iso639lang_t language_code;
 	uint8_t audio_type;
-} packed;
+} __ucsi_packed;
 
 /**
  * Process an mpeg_iso_639_language_descriptor.

@@ -41,7 +41,7 @@ struct dvb_short_event_descriptor {
 	uint8_t event_name_length;
 	/* uint8_t event_name[] */
 	/* struct dvb_short_event_descriptor_part2 part2 */
-} packed;
+} __ucsi_packed;
 
 /**
  * Second part of a dvb_short_event_descriptor, following the variable length
@@ -50,7 +50,7 @@ struct dvb_short_event_descriptor {
 struct dvb_short_event_descriptor_part2 {
 	uint8_t text_length;
 	/* uint8_t text[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_short_event_descriptor.

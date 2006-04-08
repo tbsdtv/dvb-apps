@@ -95,7 +95,7 @@ extern int dvbhhmm_to_seconds(dvbhhmm_t dvbhhmm);
 extern void seconds_to_dvbhhmm(int seconds, dvbhhmm_t dvbhhmm);
 
 /**
- * Convert a packed BCD value into a normal integer.
+ * Convert a __ucsi_packed BCD value into a normal integer.
  *
  * @param bcd The value to convert.
  * @return The value.
@@ -103,7 +103,7 @@ extern void seconds_to_dvbhhmm(int seconds, dvbhhmm_t dvbhhmm);
 extern uint32_t bcd_to_integer(uint32_t bcd);
 
 /**
- * Convert a normal integer into a packed BCD value.
+ * Convert a normal integer into a __ucsi_packed BCD value.
  *
  * @param integer The value to convert.
  * @return The value.

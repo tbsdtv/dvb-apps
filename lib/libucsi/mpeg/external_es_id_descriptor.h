@@ -37,7 +37,7 @@ struct mpeg_external_es_id_descriptor {
 	struct descriptor d;
 
 	uint16_t external_es_id;
-} packed;
+} __ucsi_packed;
 
 /**
  * Process an mpeg_external_es_id_descriptor structure.

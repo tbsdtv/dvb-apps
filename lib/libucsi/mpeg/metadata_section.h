@@ -36,7 +36,7 @@ struct mpeg_metadata_section {
 	struct section_ext head;
 
 	/* uint8_t data[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * Process an mpeg_metadata_section structure.

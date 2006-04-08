@@ -37,7 +37,7 @@ struct dvb_nvod_reference_descriptor {
 	struct descriptor d;
 
 	/* struct dvb_nvod_reference references[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * An entry in the references field of a dvb_nvod_reference_descriptor.
@@ -46,7 +46,7 @@ struct dvb_nvod_reference {
 	uint16_t transport_stream_id;
 	uint16_t original_network_id;
 	uint16_t service_id;
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_nvod_reference_descriptor.

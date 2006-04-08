@@ -35,7 +35,7 @@ extern "C"
  */
 struct dvb_related_content_descriptor {
 	struct descriptor d;
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_related_content_descriptor.

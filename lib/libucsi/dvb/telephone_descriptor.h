@@ -51,7 +51,7 @@ struct dvb_telephone_descriptor {
 	/* uint8_t operator_code[] */
 	/* uint8_t national_area_code[] */
 	/* uint8_t core_number[] */
-} packed;
+} __ucsi_packed;
 
 
 /**

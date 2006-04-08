@@ -49,7 +49,7 @@ struct dvb_vbi_data_descriptor {
 	struct descriptor d;
 
 	/* struct dvb_vbi_data_entry entries[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * An entry in the dvb_vbi_data_descriptor entries field.
@@ -58,7 +58,7 @@ struct dvb_vbi_data_entry {
 	uint8_t data_service_id;
 	uint8_t data_length;
 	/* uint8_t data[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * Format of the dvb_vbi_data_entry data field, if data_service_id == 1,2,4,5,6,7.
@@ -67,7 +67,7 @@ struct dvb_vbi_data_x {
   EBIT3(uint8_t reserved 	: 2; ,
 	uint8_t field_parity 	: 1; ,
 	uint8_t line_offset	: 5; );
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_vbi_data_descriptor.

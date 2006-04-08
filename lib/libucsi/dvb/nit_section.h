@@ -48,7 +48,7 @@ struct dvb_nit_section_part2 {
   EBIT2(uint16_t reserved_2			: 4; ,
 	uint16_t transport_stream_loop_length	:12; );
 	/* struct dvb_nit_transport transports[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * An entry in the transports field of a dvb_nit_section_part2
@@ -59,7 +59,7 @@ struct dvb_nit_transport {
   EBIT2(uint16_t reserved			: 4; ,
 	uint16_t transport_descriptors_length	:12; );
 	/* struct descriptor descriptors[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_nit_section.

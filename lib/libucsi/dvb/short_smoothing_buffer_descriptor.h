@@ -39,7 +39,7 @@ struct dvb_short_smoothing_buffer_descriptor {
   EBIT2(uint8_t sb_size		: 2; ,
 	uint8_t sb_leak_rate	: 6; );
 	/* uint8_t reserved [] */
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_short_smoothing_buffer_descriptor.

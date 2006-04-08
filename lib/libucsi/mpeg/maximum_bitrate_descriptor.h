@@ -38,7 +38,7 @@ struct mpeg_maximum_bitrate_descriptor {
 
   EBIT2(uint32_t reserved		: 2;  ,
 	uint32_t maximum_bitrate	: 22; );
-} packed;
+} __ucsi_packed;
 
 /**
  * Process an mpeg_maximum_bitrate_descriptor.

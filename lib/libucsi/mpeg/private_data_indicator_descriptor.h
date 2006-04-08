@@ -37,7 +37,7 @@ struct mpeg_private_data_indicator_descriptor {
 	struct descriptor d;
 
 	uint32_t private_data_indicator;
-} packed;
+} __ucsi_packed;
 
 /**
  * Process an mpeg_private_data_indicator_descriptor structure.

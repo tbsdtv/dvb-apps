@@ -37,7 +37,7 @@ struct dvb_private_data_specifier_descriptor {
 	struct descriptor d;
 
 	uint32_t private_data_specifier;
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_private_data_specifier_descriptor.

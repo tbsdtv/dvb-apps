@@ -58,21 +58,21 @@ struct mpeg_metadata_descriptor {
 	/* struct mpeg_metadata_descriptor_decoder_config_service_id decoder_config_service_id */
 	/* struct mpeg_metadata_descriptor_decoder_config_reserved decoder_config_reserved */
 	/* uint8_t private_data[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * appid field of a metadata_descriptor.
  */
 struct mpeg_metadata_descriptor_application_format_identifier {
 	uint32_t id;
-} packed;
+} __ucsi_packed;
 
 /**
  * formid field of a metadata_descriptor.
  */
 struct mpeg_metadata_descriptor_format_identifier {
 	uint32_t id;
-} packed;
+} __ucsi_packed;
 
 /**
  * Flags field of a metadata_descriptor
@@ -82,7 +82,7 @@ struct mpeg_metadata_descriptor_flags {
   EBIT3(uint8_t decoder_config_flags				: 3;  ,
 	uint8_t dsm_cc_flag					: 1;  ,
 	uint8_t reserved					: 4;  );
-} packed;
+} __ucsi_packed;
 
 /**
  * service_identifier field of a metadata_descriptor.
@@ -90,7 +90,7 @@ struct mpeg_metadata_descriptor_flags {
 struct mpeg_metadata_descriptor_service_identifier {
 	uint8_t service_identification_length;
 	/* uint8_t data[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * decoder_config field of a metadata_descriptor.
@@ -98,7 +98,7 @@ struct mpeg_metadata_descriptor_service_identifier {
 struct mpeg_metadata_descriptor_decoder_config {
 	uint8_t decoder_config_length;
 	/* uint8_t data[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * decoder_config_id_record field of a metadata_descriptor.
@@ -106,14 +106,14 @@ struct mpeg_metadata_descriptor_decoder_config {
 struct mpeg_metadata_descriptor_decoder_config_id_record {
 	uint8_t decoder_config_id_record_length;
 	/* uint8_t data[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * decoder_config_service_id field of a metadata_descriptor.
  */
 struct mpeg_metadata_descriptor_decoder_config_service_id {
 	uint8_t decoder_config_metadata_service_id;
-} packed;
+} __ucsi_packed;
 
 /**
  * decoder_config_reserved field of a metadata_descriptor.
@@ -121,7 +121,7 @@ struct mpeg_metadata_descriptor_decoder_config_service_id {
 struct mpeg_metadata_descriptor_decoder_config_reserved {
 	uint8_t reserved_data_length;
 	/* uint8_t data[] */
-} packed;
+} __ucsi_packed;
 
 
 

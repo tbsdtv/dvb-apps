@@ -59,7 +59,7 @@ struct mpeg_hierarchy_descriptor {
 	uint8_t hierarchy_embedded_layer_index	: 6; );
   EBIT2(uint8_t reserved_4			: 2; ,
 	uint8_t hierarchy_channel		: 6; );
-} packed;
+} __ucsi_packed;
 
 /**
  * Process an mpeg_hierarchy_descriptor.

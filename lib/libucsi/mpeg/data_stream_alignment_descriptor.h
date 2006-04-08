@@ -49,7 +49,7 @@ struct mpeg_data_stream_alignment_descriptor {
 	struct descriptor d;
 
 	uint8_t alignment_type;
-} packed;
+} __ucsi_packed;
 
 /**
  * Process an mpeg_data_stream_alignment_descriptor.

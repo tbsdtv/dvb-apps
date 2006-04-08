@@ -37,7 +37,7 @@ struct dvb_time_shifted_service_descriptor {
 	struct descriptor d;
 
 	uint16_t reference_service_id;
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_time_shifted_service_descriptor.

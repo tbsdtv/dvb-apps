@@ -38,7 +38,7 @@ struct mpeg_fmxbuffer_size_descriptor {
 	struct descriptor d;
 
 	/* uint8_t descriptors[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * Process an mpeg_fmxbuffer_size_descriptor structure.

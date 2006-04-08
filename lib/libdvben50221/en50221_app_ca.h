@@ -67,7 +67,7 @@ struct en50221_app_pmt_reply {
   EBIT2(uint8_t CA_enable_flag          : 1; ,
         uint8_t CA_enable               : 7; );
         /* struct en50221_app_pmt_stream streams[] */
-} packed;
+} __attribute__((packed));
 
 /**
  * A stream within a pmt reply structure.
@@ -77,7 +77,7 @@ struct en50221_app_pmt_stream {
           uint16_t es_pid                 :13; );
     EBIT2(uint8_t CA_enable_flag          : 1; ,
           uint8_t CA_enable               : 7; );
-} packed;
+} __attribute__((packed));
 
 /**
  * Convenience iterator for the streams field of the en50221_app_pmt_reply structure.

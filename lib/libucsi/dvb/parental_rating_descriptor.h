@@ -59,7 +59,7 @@ struct dvb_parental_rating_descriptor {
 	struct descriptor d;
 
 	/* struct dvb_parental_rating ratings[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * An entry in the ratings field of a dvb_parental_rating_descriptor.
@@ -67,7 +67,7 @@ struct dvb_parental_rating_descriptor {
 struct dvb_parental_rating {
 	iso639country_t country_code;
 	uint8_t rating;
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_parental_rating_descriptor.

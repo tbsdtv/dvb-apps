@@ -39,7 +39,7 @@ struct dvb_multilingual_component_descriptor {
 
 	uint8_t component_tag;
 	/* struct dvb_multilingual_component components[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * An entry in the components field of a dvb_multilingual_component_descriptor.
@@ -48,7 +48,7 @@ struct dvb_multilingual_component {
 	iso639lang_t language_code;
 	uint8_t text_description_length;
 	/* uint8_t text_char[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_multilingual_component_descriptor.

@@ -37,7 +37,7 @@ struct dvb_default_authority_descriptor {
 	struct descriptor d;
 
 	/* char name[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_default_authority_descriptor.

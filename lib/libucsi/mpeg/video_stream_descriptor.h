@@ -42,7 +42,7 @@ struct mpeg_video_stream_descriptor {
 	uint8_t constrained_parameter_flag	: 1; ,
 	uint8_t still_picture_flag		: 1; );
 	/* if (mpeg_1_only_flag == 0) struct mpeg_video_stream_extra extra */
-} packed;
+} __ucsi_packed;
 
 /**
  * The mpeg_video_stream_extra - only present in non-MPEG1-only streams.
@@ -52,7 +52,7 @@ struct mpeg_video_stream_extra {
   EBIT3(uint8_t chroma_format			: 2; ,
 	uint8_t frame_rate_extension		: 1; ,
 	uint8_t reserved			: 5; );
-} packed;
+} __ucsi_packed;
 
 /**
  * Process an mpeg_video_stream_descriptor structure.

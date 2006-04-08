@@ -40,7 +40,7 @@ struct dvb_tot_section {
   EBIT2(uint16_t reserved		: 4; ,
 	uint16_t descriptors_loop_length:12; );
   	/* struct descriptor descriptors[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_tot_section.

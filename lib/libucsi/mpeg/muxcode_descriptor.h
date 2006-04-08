@@ -37,7 +37,7 @@ struct mpeg_muxcode_descriptor {
 	struct descriptor d;
 
 	/* uint8_t entries[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * Process an mpeg_muxcode_descriptor.

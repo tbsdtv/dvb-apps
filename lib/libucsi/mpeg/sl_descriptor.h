@@ -37,7 +37,7 @@ struct mpeg_sl_descriptor {
 	struct descriptor d;
 
 	uint16_t es_id;
-} packed;
+} __ucsi_packed;
 
 /**
  * Process an mpeg_sl_descriptor.

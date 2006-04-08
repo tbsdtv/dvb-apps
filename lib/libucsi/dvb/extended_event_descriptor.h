@@ -43,7 +43,7 @@ struct dvb_extended_event_descriptor {
 	uint8_t length_of_items;
 	/* struct dvb_extended_event_item items[] */
 	/* struct dvb_extended_event_descriptor_part2 part2 */
-} packed;
+} __ucsi_packed;
 
 /**
  * An entry in the items field of a dvb_extended_event_descriptor.
@@ -52,7 +52,7 @@ struct dvb_extended_event_item {
 	uint8_t item_description_length;
 	/* uint8_t item_description[] */
 	/* struct dvb_extended_event_item_part2 part2 */
-} packed;
+} __ucsi_packed;
 
 /**
  * The second part of a dvb_extended_event_item, following the variable length
@@ -61,7 +61,7 @@ struct dvb_extended_event_item {
 struct dvb_extended_event_item_part2 {
 	uint8_t item_length;
 	/* uint8_t item[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * The second part of a dvb_extended_event_descriptor, following the variable
@@ -70,7 +70,7 @@ struct dvb_extended_event_item_part2 {
 struct dvb_extended_event_descriptor_part2 {
 	uint8_t text_length;
 	/* uint8_t text[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_extended_event_descriptor.

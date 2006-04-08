@@ -39,7 +39,7 @@ struct dvb_service_availability_descriptor {
   EBIT2(uint8_t availability_flag	: 1; ,
 	uint8_t reserved		: 7; );
 	/* uint16_t cell_ids[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_service_availability_descriptor.

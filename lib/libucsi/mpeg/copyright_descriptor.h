@@ -38,7 +38,7 @@ struct mpeg_copyright_descriptor {
 
 	uint32_t copyright_identifier;
 	/* uint8_t data[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * Process an mpeg_copyright_descriptor.

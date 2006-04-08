@@ -38,7 +38,7 @@ struct dvb_rnt_rnt_scan_descriptor {
 	struct descriptor d;
 
 	/* struct dvb_rnt_rnt_scan_entry entries[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * An entry in the entries field of a dvb_rnt_rnt_scan_descriptor.
@@ -47,7 +47,7 @@ struct dvb_rnt_rnt_scan_entry {
 	uint16_t transport_stream_id;
 	uint16_t original_network_id;
 	uint8_t scan_weighting;
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_rnt_rnt_scan_descriptor.

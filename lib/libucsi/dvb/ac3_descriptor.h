@@ -42,7 +42,7 @@ struct dvb_ac3_descriptor {
 	uint8_t asvc_flag		: 1; ,
 	uint8_t reserved		: 4; );
 	/* uint8_t additional_info[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_ac3_descriptor.

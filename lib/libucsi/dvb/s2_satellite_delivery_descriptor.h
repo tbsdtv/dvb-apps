@@ -42,7 +42,7 @@ struct dvb_s2_satellite_delivery_descriptor {
 	uint8_t reserved			: 5; );
 	/* uint32_t scrambling_sequence_index if scrambling_sequence_selector = 1 */
 	/* uint8_t input_stream_id if multiple_input_stream = 1 */
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_s2_satellite_delivery_descriptor.

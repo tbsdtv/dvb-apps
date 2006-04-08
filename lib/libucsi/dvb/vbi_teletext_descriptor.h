@@ -38,7 +38,7 @@ struct dvb_vbi_teletext_descriptor {
 	struct descriptor d;
 
 	/* struct dvb_vbi_teletext_entry entries[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * An entry in a dvb_vbi_teletext_descriptor structure.
@@ -48,7 +48,7 @@ struct dvb_vbi_teletext_entry {
   EBIT2(uint8_t type		: 5; ,
 	uint8_t magazine_number: 3;  );
 	uint8_t page_number;
-} packed;
+} __ucsi_packed;
 
 /**
  * Process an dvb_vbi_teletext_descriptor.

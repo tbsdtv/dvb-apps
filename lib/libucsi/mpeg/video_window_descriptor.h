@@ -38,7 +38,7 @@ struct mpeg_video_window_descriptor {
   EBIT3(uint32_t horizontal_offset		: 14; ,
 	uint32_t vertical_offset		: 14; ,
 	uint32_t window_priority		: 4;  );
-} packed;
+} __ucsi_packed;
 
 /**
  * Process an mpeg_video_window_descriptor.

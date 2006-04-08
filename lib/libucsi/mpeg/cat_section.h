@@ -36,7 +36,7 @@ struct mpeg_cat_section {
 	struct section_ext head;
 
 	/* struct descriptor descriptors[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * Process an mpeg_cat_section.

@@ -41,7 +41,7 @@ struct mpeg_audio_stream_descriptor {
 	uint8_t layer				: 2; ,
 	uint8_t variable_rate_audio_indicator	: 1; ,
 	uint8_t reserved			: 3; );
-} packed;
+} __ucsi_packed;
 
 /**
  * Process an mpeg_audio_stream_descriptor.

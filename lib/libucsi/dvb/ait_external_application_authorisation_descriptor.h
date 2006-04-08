@@ -38,7 +38,7 @@ struct dvb_ait_external_application_authorisation_descriptor {
 	struct descriptor d;
 
 	/* struct dvb_ait_external_application_authorisation auths[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * An entry in the auths field of a dvb_ait_external_application_authorisation_descriptor.
@@ -47,7 +47,7 @@ struct dvb_ait_external_application_authorisation {
 	uint32_t organization_id;
 	uint16_t application_id;
 	uint8_t application_priority;
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_ait_external_application_authorisation_descriptor.

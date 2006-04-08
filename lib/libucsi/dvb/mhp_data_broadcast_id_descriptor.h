@@ -45,7 +45,7 @@ enum {
 struct dvb_mhp_data_broadcast_id_descriptor {
 	struct dvb_data_broadcast_id_descriptor d;
 	/* uint16_t application_type[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_mhp_data_broadcast_id_descriptor.

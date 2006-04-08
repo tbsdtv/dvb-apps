@@ -99,7 +99,7 @@ struct dvb_component_descriptor {
 	uint8_t component_tag;
 	iso639lang_t language_code;
 	/* uint8_t text[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_component_descriptor.

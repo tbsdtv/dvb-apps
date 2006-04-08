@@ -39,7 +39,7 @@ struct dvb_local_time_offset_descriptor {
 	struct descriptor d;
 
 	/* struct dvb_local_time_offset offsets[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * Entry in the offsets field of dvb_local_time_offset_descriptor.
@@ -52,7 +52,7 @@ struct dvb_local_time_offset {
 	dvbhhmm_t local_time_offset;
 	dvbdate_t time_of_change;
 	dvbhhmm_t next_time_offset;
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_local_time_offset_descriptor.

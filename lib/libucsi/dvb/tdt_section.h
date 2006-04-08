@@ -37,7 +37,7 @@ struct dvb_tdt_section {
 	struct section head;
 
 	dvbdate_t utc_time;
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_tdt_section.

@@ -41,7 +41,7 @@ struct dvb_mosaic_descriptor {
 	uint8_t reserved			: 1; ,
 	uint8_t number_of_vert_elementary_cells	: 3; );
 	/* struct dvb_mosaic_info infos[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * An entry in the infos field of a dvb_mosaic_descriptor.
@@ -54,7 +54,7 @@ struct dvb_mosaic_info {
 	/* struct dvb_mosaic_elementary_cell_field fields[] */
 	/* struct dvb_mosaic_info_part2 part2 */
 	/* struct dvb_mosaic_linkage linkage */
-} packed;
+} __ucsi_packed;
 
 /**
  * An entry in the fields field of a dvb_mosaic_info.
@@ -62,37 +62,37 @@ struct dvb_mosaic_info {
 struct dvb_mosaic_elementary_cell_field {
   EBIT2(uint8_t reserved		: 2; ,
 	uint8_t elementary_cell_id	: 6; );
-} packed;
+} __ucsi_packed;
 
 /**
  * Part2 of dvb_mosaic_info, following the variable length fields field.
  */
 struct dvb_mosaic_info_part2 {
 	uint8_t cell_linkage_info;
-} packed;
+} __ucsi_packed;
 
 struct dvb_mosaic_linkage_01 {
 	uint16_t bouquet_id;
-} packed;
+} __ucsi_packed;
 
 struct dvb_mosaic_linkage_02 {
 	uint16_t original_network_id;
 	uint16_t transport_stream_id;
 	uint16_t service_id;
-} packed;
+} __ucsi_packed;
 
 struct dvb_mosaic_linkage_03 {
 	uint16_t original_network_id;
 	uint16_t transport_stream_id;
 	uint16_t service_id;
-} packed;
+} __ucsi_packed;
 
 struct dvb_mosaic_linkage_04 {
 	uint16_t original_network_id;
 	uint16_t transport_stream_id;
 	uint16_t service_id;
 	uint16_t event_id;
-} packed;
+} __ucsi_packed;
 
 /**
  * Structure describing the linkage field of a dvb_mosaic_info
@@ -104,7 +104,7 @@ struct dvb_mosaic_linkage {
 		struct dvb_mosaic_linkage_03 linkage_03;
 		struct dvb_mosaic_linkage_04 linkage_04;
 	} u;
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_mosaic_descriptor.

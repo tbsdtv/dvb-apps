@@ -42,7 +42,7 @@ struct mpeg_metadata_std_descriptor {
 	uint32_t metadata_buffer_size		:22; );
   EBIT2(uint32_t reserved_3			: 2; ,
 	uint32_t metadata_output_leak_rate	:22; );
-} packed;
+} __ucsi_packed;
 
 /**
  * Process an mpeg_metadata_std_descriptor.

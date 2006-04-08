@@ -52,14 +52,14 @@ struct mpeg_content_labelling_descriptor {
 	/* struct mpeg_content_labelling_descriptor_content_id content_id */
 	/* struct mpeg_content_labelling_descriptor_time_base_association time_base_assoc */
 	/* uint8_t private_data[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * id field of a content_labelling_descriptor.
  */
 struct mpeg_content_labelling_descriptor_application_format_identifier {
 	uint32_t id;
-} packed;
+} __ucsi_packed;
 
 /**
  * Flags field of a content_labelling_descriptor
@@ -68,7 +68,7 @@ struct mpeg_content_labelling_descriptor_flags {
   EBIT3(uint8_t content_reference_id_record_flag		: 1;  ,
 	uint8_t content_time_base_indicator			: 4;  ,
 	uint8_t reserved					: 3;  );
-} packed;
+} __ucsi_packed;
 
 /**
  * Reference_id field of a content_labelling_descriptor.
@@ -76,7 +76,7 @@ struct mpeg_content_labelling_descriptor_flags {
 struct mpeg_content_labelling_descriptor_reference_id {
 	uint8_t content_reference_id_record_length;
 	/* uint8_t data[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * time_base field of a content_labelling_descriptor.
@@ -86,7 +86,7 @@ struct mpeg_content_labelling_descriptor_time_base {
 	uint64_t content_time_base_value			:33;  );
   EBIT2(uint64_t reserved_2					: 7;  ,
 	uint64_t metadata_time_base_value			:33;  );
-} packed;
+} __ucsi_packed;
 
 /**
  * content_id field of a content_labelling_descriptor.
@@ -94,7 +94,7 @@ struct mpeg_content_labelling_descriptor_time_base {
 struct mpeg_content_labelling_descriptor_content_id {
   EBIT2(uint8_t reserved					: 1;  ,
 	uint8_t contentId					: 7;  );
-} packed;
+} __ucsi_packed;
 
 /**
  * time_base_assoc field of a content_labelling_descriptor.
@@ -102,7 +102,7 @@ struct mpeg_content_labelling_descriptor_content_id {
 struct mpeg_content_labelling_descriptor_time_base_association {
 	uint8_t time_base_association_data_length;
 	/* uint8_t data[] */
-} packed;
+} __ucsi_packed;
 
 
 

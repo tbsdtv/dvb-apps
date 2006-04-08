@@ -77,7 +77,7 @@ struct dvb_linkage_descriptor {
 	uint16_t service_id;
 	uint8_t linkage_type;
 	/* uint8_t data[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * Data for a linkage_type of 0x08.
@@ -89,7 +89,7 @@ struct dvb_linkage_data_08 {
 	/* uint16_t network_id if hand_over_type == 1,2,3 */
 	/* uint16_t initial_service_id if origin_type = 0 */
 	/* uint8_t data[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * Data for an linkage_type of 0x0b (IP/MAC Notification Table).
@@ -97,7 +97,7 @@ struct dvb_linkage_data_08 {
 struct dvb_linkage_data_0b {
 	uint8_t platform_id_data_length;
 	/* struct platform_id ids[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * Entries in the ids field of a dvb_linkage_data_0b.
@@ -106,7 +106,7 @@ struct dvb_platform_id {
   EBIT2(uint32_t platform_id			: 24; ,
 	uint32_t platform_name_loop_length	: 8;  );
 	/* struct platform_name names[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * Entries in the names field of a dvb_platform_id.
@@ -115,7 +115,7 @@ struct dvb_platform_name {
 	iso639lang_t language_code;
 	uint8_t platform_name_length;
 	/* uint8_t text[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * Data for a linkage_type of 0x0c (IP/MAC Notification Table).
@@ -123,7 +123,7 @@ struct dvb_platform_name {
 struct dvb_linkage_data_0c {
 	uint8_t table_type;
 	/* uint16_t bouquet_id if table_type == 0x02 */
-} packed;
+} __ucsi_packed;
 
 
 /**

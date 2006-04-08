@@ -39,7 +39,7 @@ struct mpeg_ibp_descriptor {
   EBIT3(uint16_t closed_gop_flag	: 1;  ,
 	uint16_t identical_gop_flag	: 1;  ,
 	uint16_t max_gop_length		: 14; );
-} packed;
+} __ucsi_packed;
 
 /**
  * Process an mpeg_ibp_descriptor structure.

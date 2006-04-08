@@ -39,7 +39,7 @@ struct dvb_service_move_descriptor {
 	uint16_t new_original_network_id;
 	uint16_t new_transport_stream_id;
 	uint16_t new_service_id;
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_service_move_descriptor.

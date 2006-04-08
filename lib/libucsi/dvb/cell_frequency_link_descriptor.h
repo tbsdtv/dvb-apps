@@ -37,7 +37,7 @@ struct dvb_cell_frequency_link_descriptor {
 	struct descriptor d;
 
 	/* struct dvb_cell_frequency_link_cell cells[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * An entry in the cells field of a dvb_cell_frequency_link_descriptor.
@@ -47,7 +47,7 @@ struct dvb_cell_frequency_link_cell {
 	uint32_t frequency;
 	uint8_t subcell_loop_info_length;
 	/* struct dvb_cell_frequency_link_subcell subcells[] */
-} packed;
+} __ucsi_packed;
 
 /**
  * An entry in the subcells field of a dvb_cell_frequency_link_cell.
@@ -55,7 +55,7 @@ struct dvb_cell_frequency_link_cell {
 struct dvb_cell_frequency_link_cell_subcell {
 	uint8_t cell_id_extension;
 	uint32_t transposer_frequency;
-} packed;
+} __ucsi_packed;
 
 /**
  * Process a dvb_cell_frequency_link_descriptor.
