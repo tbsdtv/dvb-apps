@@ -46,16 +46,15 @@ int dvbca_open(int adapter, int cadevice)
 	return fd;
 }
 
-int dvbca_reset(int fd)
+int dvbca_reset(int fd, uint8_t slot)
 {
-	return ioctl(fd, CA_RESET);
+	return ioctl(fd, CA_RESET, (1 << slot));
 }
 
 int dvbca_get_interface_type(int fd)
 {
 	ca_slot_info_t info;
 
-	memset(&info, 0, sizeof(info));
 	if (ioctl(fd, CA_GET_SLOT_INFO, &info))
 		return -1;
 
@@ -67,11 +66,11 @@ int dvbca_get_interface_type(int fd)
 	return -1;
 }
 
-int dvbca_get_cam_state(int fd)
+int dvbca_get_cam_state(int fd, uint8_t slot)
 {
 	ca_slot_info_t info;
 
-	memset(&info, 0, sizeof(info));
+	info.num = slot;
 	if (ioctl(fd, CA_GET_SLOT_INFO, &info))
 		return -1;
 
@@ -85,14 +84,14 @@ int dvbca_get_cam_state(int fd)
 	return -1;
 }
 
-int dvbca_link_write(int fd, uint8_t connection_id,
+int dvbca_link_write(int fd, uint8_t slot, uint8_t connection_id,
 		     uint8_t *data, uint16_t data_length)
 {
 	uint8_t *buf = malloc(data_length + 2);
 	if (buf == NULL)
 		return -1;
 
-	buf[0] = 0;
+	buf[0] = slot;
 	buf[1] = connection_id;
 	memcpy(buf+2, data, data_length);
 
@@ -101,7 +100,7 @@ int dvbca_link_write(int fd, uint8_t connection_id,
 	return result;
 }
 
-int dvbca_link_read(int fd, uint8_t *connection_id,
+int dvbca_link_read(int fd, uint8_t *slot, uint8_t *connection_id,
 		     uint8_t *data, uint16_t data_length)
 {
 	int size;
@@ -115,6 +114,7 @@ int dvbca_link_read(int fd, uint8_t *connection_id,
 
 	if (buf[0] != 0)
 		return -1;
+	*slot = buf[0];
 	*connection_id = buf[1];
 	memcpy(data, buf+2, size-2);
 	free(buf);
@@ -122,8 +122,7 @@ int dvbca_link_read(int fd, uint8_t *connection_id,
 	return size - 2;
 }
 
-int dvbca_hlci_write(int fd,
-   	 	     uint8_t *data, uint16_t data_length)
+int dvbca_hlci_write(int fd, uint8_t *data, uint16_t data_length)
 {
 	struct ca_msg msg;
 
@@ -138,8 +137,8 @@ int dvbca_hlci_write(int fd,
 	return ioctl(fd, CA_SEND_MSG, &msg);
 }
 
-int dvbca_hlci_read(int fd, uint32_t app_tag,
-  		    uint8_t *data, uint16_t data_length)
+int dvbca_hlci_read(int fd, uint32_t app_tag, uint8_t *data,
+		    uint16_t data_length)
 {
 	struct ca_msg msg;
 

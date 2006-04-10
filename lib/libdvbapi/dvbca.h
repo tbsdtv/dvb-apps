@@ -27,7 +27,6 @@ extern "C"
 #endif
 
 #include <stdint.h>
-#include <sys/uio.h>
 
 /**
  * The types of CA interface we support.
@@ -36,7 +35,7 @@ extern "C"
 #define DVBCA_INTERFACE_HLCI 1
 
 /**
- * States a cam in a slot can be in.
+ * States a CAM in a slot can be in.
  */
 #define DVBCA_CAMSTATE_MISSING 0
 #define DVBCA_CAMSTATE_INITIALISING 1
@@ -44,8 +43,7 @@ extern "C"
 
 
 /**
- * Open a CA device. This assumes that there is only one slot associated
- * per CA device.
+ * Open a CA device. Multiple CAMs can be accessed through a CA device.
  *
  * @param adapter Index of the DVB adapter.
  * @param cadevice Index of the CA device on that adapter (usually 0).
@@ -54,12 +52,13 @@ extern "C"
 extern int dvbca_open(int adapter, int cadevice);
 
 /**
- * Reset the CA device and attached CAM.
+ * Reset a CAM.
  *
  * @param fd File handle opened with dvbca_open.
+ * @param slot Slot where the requested CAM is in.
  * @return 0 on success, -1 on failure.
  */
-extern int dvbca_reset(int fd);
+extern int dvbca_reset(int fd, uint8_t slot);
 
 /**
  * Get the interface type.
@@ -70,35 +69,38 @@ extern int dvbca_reset(int fd);
 extern int dvbca_get_interface_type(int fd);
 
 /**
- * Get the state of the cam.
+ * Get the state of the CAM.
  *
  * @param fd File handle opened with dvbca_open.
+ * @param slot Slot where the requested CAM is in.
  * @return One of the DVBCA_CAMSTATE_* values, or -1 on failure.
  */
-extern int dvbca_get_cam_state(int fd);
+extern int dvbca_get_cam_state(int fd, uint8_t slot);
 
 /**
  * Write a message to a CAM using a link-layer interface.
  *
  * @param fd File handle opened with dvbca_open.
+ * @param slot Slot where the requested CAM is in.
  * @param connection_id Connection ID of the message.
  * @param data Data to write.
  * @param data_length Number of bytes to write.
  * @return 0 on success, or -1 on failure.
  */
-extern int dvbca_link_write(int fd, uint8_t connection_id,
+extern int dvbca_link_write(int fd, uint8_t slot, uint8_t connection_id,
 			    uint8_t *data, uint16_t data_length);
 
 /**
- * Read a message from a CA device using a link-layer interface.
+ * Read a message from a CAM using a link-layer interface.
  *
  * @param fd File handle opened with dvbca_open.
+ * @param slot Slot where the responding CAM is in.
  * @param connection_id Destination for the connection ID the message came from.
  * @param data Data that was read.
  * @param data_length Max number of bytes to read.
  * @return Number of bytes read on success, or -1 on failure.
  */
-extern int dvbca_link_read(int fd, uint8_t *connection_id,
+extern int dvbca_link_read(int fd, uint8_t *slot, uint8_t *connection_id,
 			   uint8_t *data, uint16_t data_length);
 
 /**
@@ -109,11 +111,10 @@ extern int dvbca_link_read(int fd, uint8_t *connection_id,
  * @param data_length Number of bytes to write.
  * @return 0 on success, or -1 on failure.
  */
-extern int dvbca_hlci_write(int fd,
-			    uint8_t *data, uint16_t data_length);
+extern int dvbca_hlci_write(int fd, uint8_t *data, uint16_t data_length);
 
 /**
- * Read a message from a CA device using an HLCI interface.
+ * Read a message from a CAM  using an HLCI interface.
  *
  * @param fd File handle opened with dvbca_open.
  * @param app_tag Application layer tag giving the message type to read.
@@ -121,8 +122,8 @@ extern int dvbca_hlci_write(int fd,
  * @param data_length Max number of bytes to read.
  * @return Number of bytes read on success, or -1 on failure.
  */
-extern int dvbca_hlci_read(int fd, uint32_t app_tag,
-			   uint8_t *data, uint16_t data_length);
+extern int dvbca_hlci_read(int fd, uint32_t app_tag, uint8_t *data,
+			   uint16_t data_length);
 
 #ifdef __cplusplus
 }
