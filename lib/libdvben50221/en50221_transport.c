@@ -357,8 +357,9 @@ int en50221_tl_poll(en50221_transport_layer tl)
 
         if (private->slot_pollfds[slot_id].revents & (POLLPRI | POLLIN)) {
             // read data
+	    uint8_t r_slot_id;
             uint8_t connection_id;
-            int readcnt = dvbca_link_read(ca_hndl, &connection_id, data, sizeof(data));
+            int readcnt = dvbca_link_read(ca_hndl, &r_slot_id, &connection_id, data, sizeof(data));
             if (readcnt < 0) {
                 private->error_slot = slot_id;
                 private->error = EN50221ERR_CAREAD;
@@ -404,7 +405,7 @@ int en50221_tl_poll(en50221_transport_layer tl)
                     }
 
                     // send the message
-                    if (dvbca_link_write(private->slots[slot_id].ca_hndl, j, msg->data, msg->length) < 0) {
+                    if (dvbca_link_write(private->slots[slot_id].ca_hndl, 0, j, msg->data, msg->length) < 0) {
                         free(msg);
                         pthread_mutex_unlock(&private->slots[slot_id].slot_lock);
                         private->error_slot = slot_id;
@@ -781,7 +782,7 @@ static int en50221_tl_poll_tc(struct en50221_transport_layer_private *private, u
     hdr[0] = T_DATA_LAST;
     hdr[1] = 1;
     hdr[2] = connection_id;
-    if (dvbca_link_write(private->slots[slot_id].ca_hndl, connection_id, hdr, 3) < 0) {
+    if (dvbca_link_write(private->slots[slot_id].ca_hndl, 0, connection_id, hdr, 3) < 0) {
         private->error_slot = slot_id;
         private->error = EN50221ERR_CAWRITE;
         return -1;
@@ -933,7 +934,7 @@ static int en50221_tl_handle_delete_tc(struct en50221_transport_layer_private *p
         hdr[0] = T_D_T_C_REPLY;
         hdr[1] = 1;
         hdr[2] = connection_id;
-        if (dvbca_link_write(private->slots[slot_id].ca_hndl, connection_id, hdr, 3) < 0) {
+        if (dvbca_link_write(private->slots[slot_id].ca_hndl, 0, connection_id, hdr, 3) < 0) {
             private->error_slot = slot_id;
             private->error = EN50221ERR_CAWRITE;
             return -1;
@@ -990,7 +991,7 @@ static int en50221_tl_handle_request_tc(struct en50221_transport_layer_private *
         hdr[1] = 2;
         hdr[2] = connection_id;
         hdr[3] = 1;
-        if (dvbca_link_write(ca_hndl, connection_id, hdr, 4) < 0) {
+        if (dvbca_link_write(ca_hndl, 0, connection_id, hdr, 4) < 0) {
             private->error_slot = slot_id;
             private->error = EN50221ERR_CAWRITE;
             return -1;
@@ -1003,7 +1004,7 @@ static int en50221_tl_handle_request_tc(struct en50221_transport_layer_private *
         hdr[1] = 2;
         hdr[2] = connection_id;
         hdr[3] = conid;
-        if (dvbca_link_write(ca_hndl, connection_id, hdr, 4) < 0) {
+        if (dvbca_link_write(ca_hndl, 0, connection_id, hdr, 4) < 0) {
             private->slots[slot_id].connections[conid].state = T_STATE_IDLE;
             private->error_slot = slot_id;
             private->error = EN50221ERR_CAWRITE;
@@ -1015,7 +1016,7 @@ static int en50221_tl_handle_request_tc(struct en50221_transport_layer_private *
         hdr[0] = T_CREATE_T_C;
         hdr[1] = 1;
         hdr[2] = conid;
-        if (dvbca_link_write(ca_hndl, conid, hdr, 3) < 0) {
+        if (dvbca_link_write(ca_hndl, conid, 0, hdr, 3) < 0) {
             private->slots[slot_id].connections[conid].state = T_STATE_IDLE;
             private->error_slot = slot_id;
             private->error = EN50221ERR_CAWRITE;
@@ -1163,7 +1164,7 @@ static int en50221_tl_handle_sb(struct en50221_transport_layer_private *private,
         hdr[0] = T_RCV;
         hdr[1] = 1;
         hdr[2] = connection_id;
-        if (dvbca_link_write(ca_hndl, connection_id, hdr, 3) < 0) {
+        if (dvbca_link_write(ca_hndl, 0, connection_id, hdr, 3) < 0) {
             private->error_slot = slot_id;
             private->error = EN50221ERR_CAWRITE;
             return -1;
