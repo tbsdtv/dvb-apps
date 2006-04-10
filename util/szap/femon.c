@@ -49,6 +49,7 @@
 
 static char *usage_str =
     "\nusage: femon [options]\n"
+    "     -r        : human readable output\n"
     "     -a number : use given adapter (default 0)\n"
     "     -f number : use given frontend (default 0)\n\n";
 
@@ -61,7 +62,7 @@ static void usage(void)
 
 
 static
-int check_frontend (int fe_fd)
+int check_frontend (int fe_fd, int human_readable)
 {
    fe_status_t status;
    uint16_t snr, signal;
@@ -74,8 +75,13 @@ int check_frontend (int fe_fd)
       ioctl(fe_fd, FE_READ_BER, &ber);
       ioctl(fe_fd, FE_READ_UNCORRECTED_BLOCKS, &uncorrected_blocks);
 
-      printf ("status %02x | signal %04x | snr %04x | ber %08x | unc %08x | ",
-	      status, signal, snr, ber, uncorrected_blocks);
+	  if (human_readable) {
+	      printf ("status %02x | signal %02d | snr %02d | ber %08x | unc %08x | ",
+		      status, (signal * 100) / 0xffff, (snr * 100) / 0xffff, ber, uncorrected_blocks);
+	  } else {
+	      printf ("status %02x | signal %04x | snr %04x | ber %08x | unc %08x | ",
+		      status, signal, snr, ber, uncorrected_blocks);
+	  }
 
       if (status & FE_HAS_LOCK)
 	 printf("FE_HAS_LOCK");
@@ -89,7 +95,7 @@ int check_frontend (int fe_fd)
 
 
 static
-int do_mon(unsigned int adapter, unsigned int frontend)
+int do_mon(unsigned int adapter, unsigned int frontend, int human_readable)
 {
    char fedev[128];
    int fefd;
@@ -115,7 +121,7 @@ int do_mon(unsigned int adapter, unsigned int frontend)
    printf("FE: %s (%s)\n", fe_info.name, fe_info.type == FE_QPSK ? "SAT" :
 		   fe_info.type == FE_QAM ? "CABLE": "TERRESTRIAL");
 
-   check_frontend (fefd);
+   check_frontend (fefd, human_readable);
 
    close(fefd);
 
@@ -125,9 +131,10 @@ int do_mon(unsigned int adapter, unsigned int frontend)
 int main(int argc, char *argv[])
 {
    unsigned int adapter = 0, frontend = 0;
+   int human_readable = 0;
    int opt;
 
-   while ((opt = getopt(argc, argv, "hlrn:a:f:d:")) != -1) {
+   while ((opt = getopt(argc, argv, "hra:f:")) != -1) {
       switch (opt)
       {
 	 case '?':
@@ -139,10 +146,12 @@ int main(int argc, char *argv[])
 	    break;
 	 case 'f':
 	    frontend = strtoul(optarg, NULL, 0);
+	 case 'r':
+		human_readable = 1;
       }
    }
 
-   do_mon(adapter, frontend);
+   do_mon(adapter, frontend, human_readable);
 
    return FALSE;
 }
