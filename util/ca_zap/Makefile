@@ -22,7 +22,7 @@ TARGETS =ca_zap
 all: $(OBJS) $(TARGETS)
 
 ca_zap: $(OBJS)
-	$(CC) -static $(CPPFLAGS) $(CFLAGS) -o ca_zap $(OBJS) $(LDFLAGS)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o ca_zap $(OBJS) $(LDFLAGS)
 
 clean:
 	$(RM) $(TARGETS) *.o *.d ca_zap *~ *#

@@ -359,7 +359,7 @@ int en50221_tl_poll(en50221_transport_layer tl)
 
         if (private->slot_pollfds[slot_id].revents & (POLLPRI | POLLIN)) {
             // read data
-    	    uint8_t r_slot_id;
+            uint8_t r_slot_id;
             uint8_t connection_id;
             int readcnt = dvbca_link_read(ca_hndl, &r_slot_id, &connection_id, data, sizeof(data));
             if (readcnt < 0) {
@@ -383,12 +383,13 @@ int en50221_tl_poll(en50221_transport_layer tl)
                         pthread_mutex_lock(&private->slots[new_slot_id].slot_lock);
                         if (en50221_tl_process_data(private, new_slot_id, data, readcnt)) {
                             pthread_mutex_unlock(&private->slots[new_slot_id].slot_lock);
+                            pthread_mutex_unlock(&private->slots[slot_id].slot_lock);
                             return -1;
                         }
                         pthread_mutex_unlock(&private->slots[new_slot_id].slot_lock);
                     } else {
                         private->error = EN50221ERR_BADSLOTID;
-                        pthread_mutex_unlock(&private->global_lock);
+                        pthread_mutex_unlock(&private->slots[slot_id].slot_lock);
                         return -1;
                     }
                 }
