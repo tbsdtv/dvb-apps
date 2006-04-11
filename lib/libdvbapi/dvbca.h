@@ -61,15 +61,16 @@ extern int dvbca_open(int adapter, int cadevice);
 extern int dvbca_reset(int fd, uint8_t slot);
 
 /**
- * Get the interface type.
+ * Get the interface type of a CAM.
  *
  * @param fd File handle opened with dvbca_open.
+ * @param slot Slot where the requested CAM is in.
  * @return One of the DVBCA_INTERFACE_* values, or -1 on failure.
  */
-extern int dvbca_get_interface_type(int fd);
+extern int dvbca_get_interface_type(int fd, uint8_t slot);
 
 /**
- * Get the state of the CAM.
+ * Get the state of a CAM.
  *
  * @param fd File handle opened with dvbca_open.
  * @param slot Slot where the requested CAM is in.
@@ -103,6 +104,7 @@ extern int dvbca_link_write(int fd, uint8_t slot, uint8_t connection_id,
 extern int dvbca_link_read(int fd, uint8_t *slot, uint8_t *connection_id,
 			   uint8_t *data, uint16_t data_length);
 
+// FIXME how do we determine which CAM slot of a CA is meant?
 /**
  * Write a message to a CAM using an HLCI interface.
  *
@@ -113,8 +115,9 @@ extern int dvbca_link_read(int fd, uint8_t *slot, uint8_t *connection_id,
  */
 extern int dvbca_hlci_write(int fd, uint8_t *data, uint16_t data_length);
 
+// FIXME how do we determine which CAM slot of a CA is meant?
 /**
- * Read a message from a CAM  using an HLCI interface.
+ * Read a message from a CAM using an HLCI interface.
  *
  * @param fd File handle opened with dvbca_open.
  * @param app_tag Application layer tag giving the message type to read.

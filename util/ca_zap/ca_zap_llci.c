@@ -159,7 +159,7 @@ int llci_init()
 	return 0;
 }
 
-int llci_cam_added(int cafd)
+int llci_cam_added(int cafd, uint8_t slot)
 {
 	// clear down any old structures
 	if (slot_id != -1) {
@@ -168,15 +168,15 @@ int llci_cam_added(int cafd)
 
 	// reset the CAM
 	printf("Waiting for CAM...\n");
-	dvbca_reset(cafd);
-	while(dvbca_get_cam_state(cafd) != DVBCA_CAMSTATE_READY) {
+	dvbca_reset(cafd, slot);
+	while(dvbca_get_cam_state(cafd, slot) != DVBCA_CAMSTATE_READY) {
 		if (quit_app)
 			return 0;
 		usleep(100);
 	}
 
 	// register the slot
-	if ((slot_id = en50221_tl_register_slot(tl, cafd, 1000, 100)) < 0) {
+	if ((slot_id = en50221_tl_register_slot(tl, cafd, slot, 1000, 100)) < 0) {
 		return -1;
 	}
 

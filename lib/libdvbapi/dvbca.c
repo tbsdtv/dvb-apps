@@ -51,10 +51,11 @@ int dvbca_reset(int fd, uint8_t slot)
 	return ioctl(fd, CA_RESET, (1 << slot));
 }
 
-int dvbca_get_interface_type(int fd)
+int dvbca_get_interface_type(int fd, uint8_t slot)
 {
 	ca_slot_info_t info;
 
+	info.num = slot;
 	if (ioctl(fd, CA_GET_SLOT_INFO, &info))
 		return -1;
 
@@ -112,8 +113,6 @@ int dvbca_link_read(int fd, uint8_t *slot, uint8_t *connection_id,
 	if ((size = read(fd, buf, data_length+2)) < 2)
 		return -1;
 
-	if (buf[0] != 0)
-		return -1;
 	*slot = buf[0];
 	*connection_id = buf[1];
 	memcpy(data, buf+2, size-2);

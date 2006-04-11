@@ -123,6 +123,8 @@ void usage(void)
 	exit(1);
 }
 
+#define DEFAULT_SLOT 0
+
 int main(int argc, char *argv[])
 {
 	struct dvbcfg_zapchannel *channels = NULL;
@@ -189,7 +191,7 @@ int main(int argc, char *argv[])
 	// initialise the CA stack
 	cafd = dvbca_open(dvb_adapter, ca_device);
 	if (cafd != -1) {
-		ca_type = dvbca_get_interface_type(cafd);
+		ca_type = dvbca_get_interface_type(cafd, DEFAULT_SLOT);
 		switch(ca_type) {
 		case DVBCA_INTERFACE_LINK:
 			if (llci_init()) {
@@ -337,7 +339,7 @@ static void *camthread_func(void* arg)
 	int cam_state = 0;
 	while(!camthread_shutdown) {
 		// monitor the cam state
-		switch(dvbca_get_cam_state(cafd)) {
+		switch(dvbca_get_cam_state(cafd, DEFAULT_SLOT)) {
 		case DVBCA_CAMSTATE_MISSING:
 			if (cam_state) {
 				switch(ca_type) {
@@ -357,7 +359,7 @@ static void *camthread_func(void* arg)
 			if (!cam_state) {
 				switch(ca_type) {
 					case DVBCA_INTERFACE_LINK:
-						llci_cam_added(cafd);
+						llci_cam_added(cafd, DEFAULT_SLOT);
 						break;
 
 					case DVBCA_INTERFACE_HLCI:

@@ -98,12 +98,14 @@ extern void en50221_tl_destroy(en50221_transport_layer tl);
  *
  * @param tl The en50221_transport_layer instance.
  * @param ca_hndl FD for talking to the slot.
+ * @param slot CAM slot where the requested CAM of the CA is in.
  * @param response_timeout Maximum timeout in ms to a response we send before signalling a timeout.
  * @param poll_delay Interval between polls in ms.
  * @return slot_id on sucess, or -1 on error.
  */
 extern int en50221_tl_register_slot(en50221_transport_layer tl, int ca_hndl,
-                                    uint32_t response_timeout, uint32_t poll_delay);
+                                    uint8_t slot, uint32_t response_timeout,
+                                    uint32_t poll_delay);
 
 /**
  * Destroy a registered slot - e.g. if a CAM is removed, or an error occurs. Does
@@ -134,7 +136,7 @@ extern int en50221_tl_poll(en50221_transport_layer tl);
  * @param arg Private data passed as arg0 of the callback.
  */
 extern void en50221_tl_register_callback(en50221_transport_layer tl,
-						                 en50221_tl_callback callback, void *arg);
+                                         en50221_tl_callback callback, void *arg);
 
 /**
  * Gets the ID of the slot an error occurred on.
@@ -178,9 +180,9 @@ extern int en50221_tl_send_data(en50221_transport_layer tl,
  * @param io_count Number of elements in vector.
  * @return 0 on success, or -1 on error.
  */
-extern int en50221_tl_send_datav(en50221_transport_layer tl,
-  			                    uint8_t slot_id, uint8_t connection_id,
-                                struct iovec *vector, int iov_count);
+extern int en50221_tl_send_datav(en50221_transport_layer tl, uint8_t slot_id,
+                                 uint8_t connection_id, struct iovec *vector,
+                                 int iov_count);
 
 /**
  * Create a new transport connection to the cam.
@@ -208,8 +210,8 @@ extern int en50221_tl_new_tc(en50221_transport_layer tl, uint8_t slot_id);
  * @param connection_id Connection id to send the request _on_.
  * @return 0 on success, or -1 on error.
  */
-extern int en50221_tl_del_tc(en50221_transport_layer tl,
- 			     uint8_t slot_id, uint8_t connection_id);
+extern int en50221_tl_del_tc(en50221_transport_layer tl, uint8_t slot_id,
+                             uint8_t connection_id);
 
 /**
  * Checks the state of a connection.

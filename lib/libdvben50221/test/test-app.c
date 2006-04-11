@@ -44,6 +44,7 @@
 #include <ucsi/section.h>
 #include <ucsi/mpeg/section.h>
 
+#define DEFAULT_SLOT 0
 
 #define MAX_SESSIONS 256
 #define MAX_TC 32
@@ -193,21 +194,21 @@ int main(int argc, char * argv[])
 
     // find CAMs
     int cafd;
-    if (((cafd = dvbca_open(adapterid, 0)) < 0) || (dvbca_get_cam_state(cafd) == DVBCA_CAMSTATE_MISSING)) {
+    if (((cafd = dvbca_open(adapterid, 0)) < 0) || (dvbca_get_cam_state(cafd, DEFAULT_SLOT) == DVBCA_CAMSTATE_MISSING)) {
         fprintf(stderr, "Unable to open CAM on adapter %i\n", adapterid);
         exit(1);
     }
 
     // reset it and wait
-    dvbca_reset(cafd);
+    dvbca_reset(cafd, DEFAULT_SLOT);
     printf("Found a CAM on adapter%i... waiting...\n", adapterid);
-    while(dvbca_get_cam_state(cafd) != DVBCA_CAMSTATE_READY) {
+    while(dvbca_get_cam_state(cafd, DEFAULT_SLOT) != DVBCA_CAMSTATE_READY) {
         usleep(1000);
     }
 
     // register it with the CA stack
     int slot_id = 0;
-    if ((slot_id = en50221_tl_register_slot(tl, cafd, 1000, 100)) < 0) {
+    if ((slot_id = en50221_tl_register_slot(tl, cafd, DEFAULT_SLOT, 1000, 100)) < 0) {
         fprintf(stderr, "Slot registration failed\n");
         exit(1);
     }

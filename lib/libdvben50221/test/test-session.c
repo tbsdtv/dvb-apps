@@ -36,6 +36,8 @@ int test_session_callback(void *arg, int reason, uint8_t slot_id, uint16_t sessi
 
 int shutdown_stackthread = 0;
 
+#define DEFAULT_SLOT 0
+
 int main(int argc, char * argv[])
 {
     int i;
@@ -53,21 +55,21 @@ int main(int argc, char * argv[])
     int cafd= -1;
     for(i=0; i<20; i++) {
         if ((cafd = dvbca_open(i, 0)) > 0) {
-            if (dvbca_get_cam_state(cafd) == DVBCA_CAMSTATE_MISSING) {
+            if (dvbca_get_cam_state(cafd, DEFAULT_SLOT) == DVBCA_CAMSTATE_MISSING) {
                 close(cafd);
                 continue;
             }
 
             // reset it and wait
-            dvbca_reset(cafd);
+            dvbca_reset(cafd, DEFAULT_SLOT);
             printf("Found a CAM on adapter%i... waiting...\n", i);
-            while(dvbca_get_cam_state(cafd) != DVBCA_CAMSTATE_READY) {
+            while(dvbca_get_cam_state(cafd, DEFAULT_SLOT) != DVBCA_CAMSTATE_READY) {
                 usleep(1000);
             }
 
             // register it with the CA stack
             int slot_id = 0;
-            if ((slot_id = en50221_tl_register_slot(tl, cafd, 1000, 100)) < 0) {
+            if ((slot_id = en50221_tl_register_slot(tl, cafd, DEFAULT_SLOT, 1000, 100)) < 0) {
                 fprintf(stderr, "Slot registration failed\n");
                 exit(1);
             }

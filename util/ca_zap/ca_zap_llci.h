@@ -22,9 +22,11 @@
 #ifndef LLCI_H
 #define LLCI_H
 
+#include <stdint.h>
+
 extern int llci_init();
 
-extern int llci_cam_added(int cafd);
+extern int llci_cam_added(int cafd, uint8_t slot);
 
 extern void llci_cam_removed();
 
