@@ -26,7 +26,7 @@ extern "C"
 {
 #endif
 
-#include <dvbcfg/dvbcfg_source.h>
+#include <libdvbcfg/dvbcfg_source.h>
 
 /**
  * dvbcfg_adapter describes each DVB adapter in a system, and indicates what

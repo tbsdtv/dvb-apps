@@ -26,7 +26,7 @@ extern "C"
 {
 #endif
 
-#include <dvbcfg/dvbcfg_common.h>
+#include <libdvbcfg/dvbcfg_common.h>
 
 /**
  * dvbcfg_seed describes a list of known deliveries which are used to scan and

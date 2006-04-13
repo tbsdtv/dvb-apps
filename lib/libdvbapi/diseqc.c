@@ -23,7 +23,7 @@
 #include <fcntl.h>
 #include <linux/dvb/frontend.h>
 #include "diseqc.h"
-#include "dvbmisc.h"
+#include <libdvbmisc/dvbmisc.h>
 
 
 int verbose = 1;

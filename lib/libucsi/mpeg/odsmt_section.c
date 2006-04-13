@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include <ucsi/mpeg/odsmt_section.h>
+#include <libucsi/mpeg/odsmt_section.h>
 
 struct mpeg_odsmt_section *mpeg_odsmt_section_codec(struct section_ext * ext)
 {

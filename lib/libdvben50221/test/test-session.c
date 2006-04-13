@@ -23,9 +23,9 @@
 
 #include <stdio.h>
 #include <unistd.h>
-#include <dvben50221/en50221_session.h>
-#include <dvben50221/en50221_app_utils.h>
-#include <dvbapi/dvbca.h>
+#include <libdvben50221/en50221_session.h>
+#include <libdvben50221/en50221_app_utils.h>
+#include <libdvbapi/dvbca.h>
 #include <pthread.h>
 
 void *stackthread_func(void* arg);

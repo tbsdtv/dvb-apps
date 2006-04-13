@@ -7,9 +7,8 @@ OBJS =  dvbdemux.o	\
 INCLUDES = dvbdemux.h dvbfe.h dvbnet.h diseqc.h dvbca.h
 
 CFLAGS ?= -fPIC -O2 -g -Wall -Wstrict-prototypes -Wshadow -Wpointer-arith
-CPPFLAGS = 	-I. \
-		-I../../include \
-		-I../libdvbmisc
+CPPFLAGS = 	-I../../include \
+		-I../../lib
 
 LDFLAGS = -shared -lc
 
@@ -19,11 +18,7 @@ RANLIB = ranlib
 STRIP = strip
 INSTDIR=/usr/local
 
-all: symlink $(STATICLIB) $(SHAREDLIB)
-
-symlink:
-	@rm -f dvbapi
-	@ln -s . dvbapi
+all: $(STATICLIB) $(SHAREDLIB)
 
 $(STATICLIB): $(OBJS)
 	$(AR) rc $(STATICLIB) $(OBJS)

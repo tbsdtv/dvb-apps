@@ -27,7 +27,7 @@ extern "C"
 {
 #endif
 
-#include <ucsi/endianops.h>
+#include <libucsi/endianops.h>
 
 /**
  * Enumeration of ATSC descriptor tags.

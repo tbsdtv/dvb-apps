@@ -27,7 +27,7 @@ extern "C"
 {
 #endif
 
-#include <ucsi/section.h>
+#include <libucsi/section.h>
 
 /**
  * mpeg_pat_section structure.
@@ -57,8 +57,8 @@ extern struct mpeg_pat_section *mpeg_pat_section_codec(struct section_ext *secti
 
 /**
  * Accessor for the transport_stream_id field of a PAT.
- * 
- * @Âpaam pat PAT pointer.
+ *
+ * @param pat PAT pointer.
  * @return The transport_stream_id.
  */
 static inline uint16_t mpeg_pat_section_transport_stream_id(struct mpeg_pat_section *pat)

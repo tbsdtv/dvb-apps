@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include <ucsi/mpeg/pmt_section.h>
+#include <libucsi/mpeg/pmt_section.h>
 
 struct mpeg_pmt_section * mpeg_pmt_section_codec(struct section_ext * ext)
 {

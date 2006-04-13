@@ -29,8 +29,8 @@
 #include <sys/ioctl.h>
 #include <sys/poll.h>
 #include <time.h>
-#include <dvbmisc.h>
-#include <dvbapi/dvbca.h>
+#include <libdvbmisc/dvbmisc.h>
+#include <libdvbapi/dvbca.h>
 #include "en50221_errno.h"
 #include "en50221_transport.h"
 #include "asn_1.h"

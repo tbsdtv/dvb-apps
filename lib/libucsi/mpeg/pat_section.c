@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include <ucsi/mpeg/pat_section.h>
+#include <libucsi/mpeg/pat_section.h>
 
 struct mpeg_pat_section *mpeg_pat_section_codec(struct section_ext * ext)
 {

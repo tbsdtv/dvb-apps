@@ -20,13 +20,13 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include "dvbcfg_source_backend_file.h"
-#include "dvbcfg_diseqc_backend_file.h"
-#include "dvbcfg_adapter_backend_file.h"
-#include "dvbcfg_multiplex_backend_file.h"
-#include "dvbcfg_seed_backend_file.h"
-#include "dvbcfg_vdrchannel.h"
-#include "dvbcfg_zapchannel.h"
+#include <libdvbcfg/dvbcfg_source_backend_file.h>
+#include <libdvbcfg/dvbcfg_diseqc_backend_file.h>
+#include <libdvbcfg/dvbcfg_adapter_backend_file.h>
+#include <libdvbcfg/dvbcfg_multiplex_backend_file.h>
+#include <libdvbcfg/dvbcfg_seed_backend_file.h>
+#include <libdvbcfg/dvbcfg_vdrchannel.h>
+#include <libdvbcfg/dvbcfg_zapchannel.h>
 
 void syntax();
 

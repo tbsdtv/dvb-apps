@@ -26,7 +26,7 @@ extern "C"
 {
 #endif
 
-#include <ucsi/endianops.h>
+#include <libucsi/endianops.h>
 #include <stdint.h>
 #include <stdlib.h>
 

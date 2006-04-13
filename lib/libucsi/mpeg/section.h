@@ -27,12 +27,12 @@ extern "C"
 {
 #endif
 
-#include <ucsi/mpeg/cat_section.h>
-#include <ucsi/mpeg/odsmt_section.h>
-#include <ucsi/mpeg/pat_section.h>
-#include <ucsi/mpeg/pmt_section.h>
-#include <ucsi/mpeg/tsdt_section.h>
-#include <ucsi/mpeg/metadata_section.h>
+#include <libucsi/mpeg/cat_section.h>
+#include <libucsi/mpeg/odsmt_section.h>
+#include <libucsi/mpeg/pat_section.h>
+#include <libucsi/mpeg/pmt_section.h>
+#include <libucsi/mpeg/tsdt_section.h>
+#include <libucsi/mpeg/metadata_section.h>
 
 #define TRANSPORT_PAT_PID 0x00
 #define TRANSPORT_CAT_PID 0x01

@@ -31,7 +31,7 @@ extern "C"
 
 #include <stdlib.h>
 #include <stdint.h>
-#include <dvben50221/en50221_app_utils.h>
+#include <libdvben50221/en50221_app_utils.h>
 
 #define EPG_COMMAND_ID_MMI                          0x02
 #define EPG_COMMAND_ID_QUERY                        0x03

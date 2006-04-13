@@ -2,7 +2,7 @@
 OBJ =	testucsi.o
 
 CC = gcc
-CFLAGS = -Wall -Wpointer-arith -g -fPIC -I.. -I../../libdvbapi -I../../libdvbcfg
+CFLAGS = -Wall -Wpointer-arith -g -fPIC -I../../../lib
 
 testucsi: testucsi.o
 	$(CC) -static -o testucsi testucsi.o -L../ -lucsi -L../../libdvbapi -ldvbapi -L../../libdvbcfg -ldvbcfg

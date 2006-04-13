@@ -30,7 +30,7 @@ extern "C"
 #endif
 
 #include <stdint.h>
-#include <dvbcfg/dvbcfg_source.h>
+#include <libdvbcfg/dvbcfg_source.h>
 
 /**
  * dvbcfg_diseqc defines DISEQC command sequences to use for DVBS channels.

@@ -23,15 +23,15 @@
 #include <unistd.h>
 #include <limits.h>
 #include <string.h>
-#include <dvben50221/en50221_session.h>
-#include <dvben50221/en50221_transport.h>
-#include <dvben50221/en50221_app_utils.h>
-#include <dvben50221/en50221_app_ai.h>
-#include <dvben50221/en50221_app_ca.h>
-#include <dvben50221/en50221_app_mmi.h>
-#include <dvben50221/en50221_app_rm.h>
-#include <dvben50221/en50221_app_datetime.h>
-#include <dvbapi/dvbca.h>
+#include <libdvben50221/en50221_session.h>
+#include <libdvben50221/en50221_transport.h>
+#include <libdvben50221/en50221_app_utils.h>
+#include <libdvben50221/en50221_app_ai.h>
+#include <libdvben50221/en50221_app_ca.h>
+#include <libdvben50221/en50221_app_mmi.h>
+#include <libdvben50221/en50221_app_rm.h>
+#include <libdvben50221/en50221_app_datetime.h>
+#include <libdvbapi/dvbca.h>
 #include "ca_zap.h"
 #include "ca_zap_llci.h"
 

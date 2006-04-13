@@ -22,9 +22,9 @@
 */
 
 #include <string.h>
-#include <dvbmisc.h>
+#include <libdvbmisc/dvbmisc.h>
 #include <pthread.h>
-#include <ucsi/dvb/types.h>
+#include <libucsi/dvb/types.h>
 #include "en50221_app_datetime.h"
 #include "en50221_app_tags.h"
 #include "asn_1.h"

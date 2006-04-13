@@ -2,7 +2,7 @@
 OBJ =	test-transport.o
 
 CC = gcc
-CFLAGS = -Wall -Wpointer-arith -g -fPIC -I.. -I../../libdvbapi -I../../libdvbcfg -I../../libucsi
+CFLAGS = -Wall -Wpointer-arith -g -fPIC -I../../../lib
 
 all: test-transport test-session test-app
 

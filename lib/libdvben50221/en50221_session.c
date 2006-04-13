@@ -27,7 +27,7 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <time.h>
-#include <dvbmisc.h>
+#include <libdvbmisc/dvbmisc.h>
 #include <sys/uio.h>
 #include <pthread.h>
 #include "en50221_transport.h"

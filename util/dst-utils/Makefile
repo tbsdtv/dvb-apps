@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS ?= -g -O2 -W -Wall
 CFLAGS += $(ARCH)
-CPPFLAGS += -MD -I../../lib/libdvben50221 -I../../include
+CPPFLAGS += -MD -I../../lib -I../../include
 LDFLAGS = -g -O2 -L ../../lib/libdvben50221 -ldvben50221
 RM = rm -f
 

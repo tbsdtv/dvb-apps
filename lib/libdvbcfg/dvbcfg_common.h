@@ -27,7 +27,7 @@ extern "C"
 #endif
 
 #include <stdint.h>
-#include <dvbapi/dvbfe.h>
+#include <libdvbapi/dvbfe.h>
 
 /**
  * A <source_id> defines a unique standardised ID for all DVB networks. It is divided into

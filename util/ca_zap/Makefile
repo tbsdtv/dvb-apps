@@ -1,11 +1,7 @@
 CC = gcc
 CFLAGS ?= -g -O2 -W -Wall
 CFLAGS += $(ARCH)
-CPPFLAGS += -MD \
-	    -I../../lib/libdvben50221 \
-	    -I../../lib/libdvbapi \
-	    -I../../lib/libucsi \
-	    -I../../lib/libdvbcfg
+CPPFLAGS += -MD -I../../lib
 
 LDFLAGS =   -g -O2 \
 	    -L ../../lib/libdvben50221 -ldvben50221 \

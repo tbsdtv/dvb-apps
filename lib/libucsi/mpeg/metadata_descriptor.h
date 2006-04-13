@@ -27,8 +27,8 @@ extern "C"
 {
 #endif
 
-#include <ucsi/descriptor.h>
-#include <ucsi/endianops.h>
+#include <libucsi/descriptor.h>
+#include <libucsi/endianops.h>
 
 /**
  * Values for the decoder_config_flags field.

@@ -22,9 +22,9 @@
 */
 
 #include <string.h>
-#include <dvbmisc.h>
+#include <libdvbmisc/dvbmisc.h>
 #include <pthread.h>
-#include <ucsi/mpeg/descriptor.h>
+#include <libucsi/mpeg/descriptor.h>
 #include "en50221_app_ca.h"
 #include "asn_1.h"
 

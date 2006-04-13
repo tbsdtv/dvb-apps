@@ -18,18 +18,18 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include <ucsi/mpeg/descriptor.h>
-#include <ucsi/mpeg/section.h>
-#include <ucsi/dvb/descriptor.h>
-#include <ucsi/dvb/section.h>
-#include <ucsi/transport_packet.h>
-#include <ucsi/section_buf.h>
-#include <ucsi/dvb/types.h>
-#include <dvbapi/dvbdemux.h>
-#include <dvbapi/dvbfe.h>
-#include <dvbcfg/dvbcfg_seed_backend_file.h>
-#include <dvbcfg/dvbcfg_diseqc_backend_file.h>
-#include <dvbcfg/dvbcfg_source.h>
+#include <libucsi/mpeg/descriptor.h>
+#include <libucsi/mpeg/section.h>
+#include <libucsi/dvb/descriptor.h>
+#include <libucsi/dvb/section.h>
+#include <libucsi/transport_packet.h>
+#include <libucsi/section_buf.h>
+#include <libucsi/dvb/types.h>
+#include <libdvbapi/dvbdemux.h>
+#include <libdvbapi/dvbfe.h>
+#include <libdvbcfg/dvbcfg_seed_backend_file.h>
+#include <libdvbcfg/dvbcfg_diseqc_backend_file.h>
+#include <libdvbcfg/dvbcfg_source.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <errno.h>

@@ -31,9 +31,9 @@ extern "C"
 
 #include <stdlib.h>
 #include <stdint.h>
-#include <dvben50221/en50221_app_utils.h>
-#include <ucsi/mpeg/pmt_section.h>
-#include <ucsi/dvb/descriptor.h>
+#include <libdvben50221/en50221_app_utils.h>
+#include <libucsi/mpeg/pmt_section.h>
+#include <libucsi/dvb/descriptor.h>
 
 #define CA_LIST_MANAGEMENT_MORE     0x00
 #define CA_LIST_MANAGEMENT_FIRST    0x01

@@ -32,7 +32,7 @@ extern "C"
 
 #include <stdlib.h>
 #include <stdint.h>
-#include <dvben50221/en50221_transport.h>
+#include <libdvben50221/en50221_transport.h>
 
 #define S_SCALLBACK_REASON_CAMCONNECTING  0x00  // CAM originated session connecting to resource (check for availability)
 #define S_SCALLBACK_REASON_CAMCONNECTED   0x01  // CAM originated session connection established succesfully

@@ -26,8 +26,8 @@ extern "C"
 {
 #endif
 
-#include <dvbcfg/dvbcfg_common.h>
-#include <dvbcfg/dvbcfg_source.h>
+#include <libdvbcfg/dvbcfg_common.h>
+#include <libdvbcfg/dvbcfg_source.h>
 #include <stdint.h>
 
 /**

@@ -26,9 +26,9 @@ extern "C"
 {
 #endif
 
-#include <ucsi/endianops.h>
-#include <ucsi/descriptor.h>
-#include <ucsi/crc32.h>
+#include <libucsi/endianops.h>
+#include <libucsi/descriptor.h>
+#include <libucsi/crc32.h>
 #include <stdint.h>
 #include <string.h>
 

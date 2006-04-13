@@ -27,8 +27,8 @@ extern "C"
 {
 #endif
 
-#include <ucsi/descriptor.h>
-#include <ucsi/endianops.h>
+#include <libucsi/descriptor.h>
+#include <libucsi/endianops.h>
 
 /**
  * dvb_data_broadcast_id_descriptor structure.
@@ -87,4 +87,4 @@ static inline int
 
 #endif
 
-#include <ucsi/dvb/mhp_data_broadcast_id_descriptor.h>
+#include <libucsi/dvb/mhp_data_broadcast_id_descriptor.h>

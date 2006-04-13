@@ -31,7 +31,7 @@ INCLUDES = 	dvbcfg_common.h \
 DVBCFG_DEFAULT_DIR = /etc/dvb
 
 CFLAGS ?= -fPIC -O2 -g -Wall -Wstrict-prototypes -Wshadow -Wpointer-arith -DDVBCFG_DEFAULT_DIR=\"$(DVBCFG_DEFAULT_DIR)\"
-CPPFLAGS = -I. -I../libdvbapi
+CPPFLAGS = -I../../lib
 LDFLAGS = -shared -lc
 
 STATICLIB = libdvbcfg.a
@@ -40,11 +40,7 @@ RANLIB = ranlib
 STRIP = strip
 INSTDIR=/usr/local
 
-all: symlink $(STATICLIB) $(SHAREDLIB)
-
-symlink:
-	@rm -f dvbcfg
-	@ln -s . dvbcfg
+all: $(STATICLIB) $(SHAREDLIB)
 
 $(STATICLIB): $(OBJS)
 	$(AR) rc $(STATICLIB) $(OBJS)

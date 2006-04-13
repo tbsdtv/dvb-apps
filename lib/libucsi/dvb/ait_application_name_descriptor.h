@@ -27,9 +27,9 @@ extern "C"
 {
 #endif
 
-#include <ucsi/descriptor.h>
-#include <ucsi/endianops.h>
-#include <ucsi/types.h>
+#include <libucsi/descriptor.h>
+#include <libucsi/endianops.h>
+#include <libucsi/types.h>
 
 /**
  * dvb_ait_application_name_descriptor structure.

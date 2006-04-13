@@ -27,7 +27,7 @@ extern "C"
 #endif
 
 #include <stdint.h>
-#include <dvbapi/dvbfe.h>
+#include <libdvbapi/dvbfe.h>
 
 
 #define DVBCFG_VDRCHANNEL_AUDIO_MPEG 0

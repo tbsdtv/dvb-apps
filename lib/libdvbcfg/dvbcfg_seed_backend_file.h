@@ -26,7 +26,7 @@ extern "C"
 {
 #endif
 
-#include <dvbcfg/dvbcfg_seed.h>
+#include <libdvbcfg/dvbcfg_seed.h>
 
 /**
  * The file backend consists of multiple lines as follows:

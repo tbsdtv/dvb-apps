@@ -29,7 +29,7 @@ extern "C"
 {
 #endif
 
-#include <dvbcfg/dvbcfg_common.h>
+#include <libdvbcfg/dvbcfg_common.h>
 
 /**
  * dvbcfg_source are standardised unique IDs defined for all DVB transmitters

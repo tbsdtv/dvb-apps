@@ -3,11 +3,7 @@ CC=gcc
 #DEBUG= -DDEBUG_RXDATA=1 -DDEBUG_TXDATA=1 -DLOG_LEVEL=5
 DEBUG=-DLOG_LEVEL=1
 
-CPPFLAGS += -fPIC -O2 -g -Wall -W -MD $(DEBUG) \
-		 	-I. \
-			-I../libucsi \
-			-I../libdvbmisc \
-			-I../libdvbapi
+CPPFLAGS += -fPIC -O2 -g -Wall -W -MD $(DEBUG) -I../../lib
 
 OBJS = 	asn_1.o \
 		en50221_transport.o \
@@ -49,13 +45,9 @@ RANLIB = ranlib
 STATICLIB = libdvben50221.a
 SHAREDLIB = libdvben50221.so
 
-all: symlink $(STATICLIB) $(SHAREDLIB)
+all: $(STATICLIB) $(SHAREDLIB)
 
-symlink:
-	@rm -f dvben50221
-	@ln -s . dvben50221
-
-test: symlink $(STATICLIB) $(SHAREDLIB)
+test: $(STATICLIB) $(SHAREDLIB)
 	$(MAKE) -C test
 
 $(SHAREDLIB): $(OBJS)

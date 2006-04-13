@@ -32,7 +32,7 @@
 
 #include <linux/dvb/dmx.h>
 #include <linux/dvb/ca.h>
-#include <dvben50221/en50221_app_tags.h>
+#include <libdvben50221/en50221_app_tags.h>
 
 #define CA_NODE "/dev/dvb/adapter0/ca0"
 

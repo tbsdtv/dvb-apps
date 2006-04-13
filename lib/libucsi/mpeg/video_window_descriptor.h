@@ -27,7 +27,7 @@ extern "C"
 {
 #endif
 
-#include <ucsi/descriptor.h>
+#include <libucsi/descriptor.h>
 
 /**
  * mpeg_video_window_descriptor structure.

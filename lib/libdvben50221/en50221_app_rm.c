@@ -22,9 +22,9 @@
 */
 
 #include <string.h>
-#include <dvbmisc.h>
+#include <libdvbmisc/dvbmisc.h>
 #include <pthread.h>
-#include <ucsi/endianops.h>
+#include <libucsi/endianops.h>
 #include "en50221_app_rm.h"
 #include "en50221_app_tags.h"
 #include "asn_1.h"

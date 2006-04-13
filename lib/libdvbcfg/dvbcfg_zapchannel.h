@@ -27,7 +27,7 @@ extern "C"
 #endif
 
 #include <stdint.h>
-#include <dvbapi/dvbfe.h>
+#include <libdvbapi/dvbfe.h>
 
 struct dvbcfg_zapchannel
 {

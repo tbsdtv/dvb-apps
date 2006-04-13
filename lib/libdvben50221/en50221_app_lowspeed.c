@@ -22,7 +22,7 @@
 */
 
 #include <string.h>
-#include <dvbmisc.h>
+#include <libdvbmisc/dvbmisc.h>
 #include <pthread.h>
 #include "en50221_app_lowspeed.h"
 #include "en50221_app_tags.h"

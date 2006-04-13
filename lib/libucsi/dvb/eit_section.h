@@ -27,8 +27,8 @@ extern "C"
 {
 #endif
 
-#include <ucsi/section.h>
-#include <ucsi/dvb/types.h>
+#include <libucsi/section.h>
+#include <libucsi/dvb/types.h>
 
 
 /**

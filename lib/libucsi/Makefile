@@ -13,7 +13,7 @@ INC = 	crc32.h \
 
 CC = gcc
 CFLAGS = -Wall -Wpointer-arith -g -fPIC
-CPPFLAGS = -MD -I. $(DEFS)
+CPPFLAGS = -MD -I../../lib $(DEFS)
 LDFLAGS = -shared
 RANLIB = ranlib
 
@@ -21,15 +21,11 @@ STATICLIB = libucsi.a
 SHAREDLIB = libucsi.so
 INSTDIR= /usr/local
 
-.PHONY: symlink all mpeg dvb atsc test
+.PHONY: all mpeg dvb atsc test
 
-all: symlink $(STATICLIB) $(SHAREDLIB) 
+all: $(STATICLIB) $(SHAREDLIB) 
 
-symlink:
-	@rm -f ucsi
-	@ln -s . ucsi
-	
-test: symlink $(SHAREDLIB) $(STATICLIB)
+test: $(SHAREDLIB) $(STATICLIB)
 	$(MAKE) -C test
 
 $(SHAREDLIB): $(OBJ) mpeg dvb # atsc

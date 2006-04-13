@@ -27,8 +27,8 @@ extern "C"
 {
 #endif
 
-#include <ucsi/descriptor.h>
-#include <ucsi/endianops.h>
+#include <libucsi/descriptor.h>
+#include <libucsi/endianops.h>
 
 /**
  * mpeg_private_data_indicator_descriptor structure

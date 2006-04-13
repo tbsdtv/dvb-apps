@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include <ucsi/mpeg/metadata_section.h>
+#include <libucsi/mpeg/metadata_section.h>
 
 struct mpeg_metadata_section * mpeg_metadata_section_codec(struct section_ext * ext)
 {

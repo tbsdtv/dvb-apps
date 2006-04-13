@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include <ucsi/dvb/bat_section.h>
+#include <libucsi/dvb/bat_section.h>
 
 struct dvb_bat_section * dvb_bat_section_codec(struct section_ext * ext)
 {

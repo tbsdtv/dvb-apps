@@ -31,7 +31,7 @@ extern "C"
 
 #include <stdlib.h>
 #include <stdint.h>
-#include <dvben50221/en50221_app_utils.h>
+#include <libdvben50221/en50221_app_utils.h>
 
 #define EN50221_APP_RM_RESOURCEID MKRID(1,1,1)
 

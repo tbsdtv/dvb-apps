@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include <ucsi/dvb/tot_section.h>
+#include <libucsi/dvb/tot_section.h>
 
 struct dvb_tot_section *dvb_tot_section_codec(struct section *section)
 {

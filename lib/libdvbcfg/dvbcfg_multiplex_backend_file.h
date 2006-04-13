@@ -26,8 +26,8 @@ extern "C"
 {
 #endif
 
-#include <dvbcfg/dvbcfg_multiplex.h>
-#include <dvbcfg/dvbcfg_common.h>
+#include <libdvbcfg/dvbcfg_multiplex.h>
+#include <libdvbcfg/dvbcfg_common.h>
 
 /**
  * The file backend consists of multiple sections, each describing a

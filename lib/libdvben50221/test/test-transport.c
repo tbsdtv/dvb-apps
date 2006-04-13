@@ -23,8 +23,8 @@
 
 #include <stdio.h>
 #include <unistd.h>
-#include <dvben50221/en50221_transport.h>
-#include <dvbapi/dvbca.h>
+#include <libdvben50221/en50221_transport.h>
+#include <libdvbapi/dvbca.h>
 #include <pthread.h>
 
 void *stackthread_func(void* arg);

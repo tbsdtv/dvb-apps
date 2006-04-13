@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include <ucsi/mpeg/tsdt_section.h>
+#include <libucsi/mpeg/tsdt_section.h>
 
 struct mpeg_tsdt_section * mpeg_tsdt_section_codec(struct section_ext * ext)
 {

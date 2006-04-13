@@ -30,7 +30,7 @@ extern "C"
 #endif
 
 #include <stdint.h>
-#include <dvbcfg/dvbcfg_diseqc.h>
+#include <libdvbcfg/dvbcfg_diseqc.h>
 
 /**
  * The dvbcfg_diseqc file backend consists of a set of lines as follows:

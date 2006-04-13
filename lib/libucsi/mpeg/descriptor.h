@@ -27,37 +27,37 @@ extern "C"
 {
 #endif
 
-#include <ucsi/mpeg/mpeg4_audio_descriptor.h>
-#include <ucsi/mpeg/mpeg4_video_descriptor.h>
-#include <ucsi/mpeg/audio_stream_descriptor.h>
-#include <ucsi/mpeg/ca_descriptor.h>
-#include <ucsi/mpeg/content_labelling_descriptor.h>
-#include <ucsi/mpeg/copyright_descriptor.h>
-#include <ucsi/mpeg/data_stream_alignment_descriptor.h>
-#include <ucsi/mpeg/external_es_id_descriptor.h>
-#include <ucsi/mpeg/fmc_descriptor.h>
-#include <ucsi/mpeg/fmxbuffer_size_descriptor.h>
-#include <ucsi/mpeg/hierarchy_descriptor.h>
-#include <ucsi/mpeg/ibp_descriptor.h>
-#include <ucsi/mpeg/iod_descriptor.h>
-#include <ucsi/mpeg/iso_639_language_descriptor.h>
-#include <ucsi/mpeg/maximum_bitrate_descriptor.h>
-#include <ucsi/mpeg/metadata_descriptor.h>
-#include <ucsi/mpeg/metadata_pointer_descriptor.h>
-#include <ucsi/mpeg/metadata_std_descriptor.h>
-#include <ucsi/mpeg/multiplex_buffer_descriptor.h>
-#include <ucsi/mpeg/multiplex_buffer_utilization_descriptor.h>
-#include <ucsi/mpeg/muxcode_descriptor.h>
-#include <ucsi/mpeg/private_data_indicator_descriptor.h>
-#include <ucsi/mpeg/registration_descriptor.h>
-#include <ucsi/mpeg/sl_descriptor.h>
-#include <ucsi/mpeg/smoothing_buffer_descriptor.h>
-#include <ucsi/mpeg/std_descriptor.h>
-#include <ucsi/mpeg/system_clock_descriptor.h>
-#include <ucsi/mpeg/target_background_grid_descriptor.h>
-#include <ucsi/mpeg/video_stream_descriptor.h>
-#include <ucsi/mpeg/video_window_descriptor.h>
-#include <ucsi/endianops.h>
+#include <libucsi/mpeg/mpeg4_audio_descriptor.h>
+#include <libucsi/mpeg/mpeg4_video_descriptor.h>
+#include <libucsi/mpeg/audio_stream_descriptor.h>
+#include <libucsi/mpeg/ca_descriptor.h>
+#include <libucsi/mpeg/content_labelling_descriptor.h>
+#include <libucsi/mpeg/copyright_descriptor.h>
+#include <libucsi/mpeg/data_stream_alignment_descriptor.h>
+#include <libucsi/mpeg/external_es_id_descriptor.h>
+#include <libucsi/mpeg/fmc_descriptor.h>
+#include <libucsi/mpeg/fmxbuffer_size_descriptor.h>
+#include <libucsi/mpeg/hierarchy_descriptor.h>
+#include <libucsi/mpeg/ibp_descriptor.h>
+#include <libucsi/mpeg/iod_descriptor.h>
+#include <libucsi/mpeg/iso_639_language_descriptor.h>
+#include <libucsi/mpeg/maximum_bitrate_descriptor.h>
+#include <libucsi/mpeg/metadata_descriptor.h>
+#include <libucsi/mpeg/metadata_pointer_descriptor.h>
+#include <libucsi/mpeg/metadata_std_descriptor.h>
+#include <libucsi/mpeg/multiplex_buffer_descriptor.h>
+#include <libucsi/mpeg/multiplex_buffer_utilization_descriptor.h>
+#include <libucsi/mpeg/muxcode_descriptor.h>
+#include <libucsi/mpeg/private_data_indicator_descriptor.h>
+#include <libucsi/mpeg/registration_descriptor.h>
+#include <libucsi/mpeg/sl_descriptor.h>
+#include <libucsi/mpeg/smoothing_buffer_descriptor.h>
+#include <libucsi/mpeg/std_descriptor.h>
+#include <libucsi/mpeg/system_clock_descriptor.h>
+#include <libucsi/mpeg/target_background_grid_descriptor.h>
+#include <libucsi/mpeg/video_stream_descriptor.h>
+#include <libucsi/mpeg/video_window_descriptor.h>
+#include <libucsi/endianops.h>
 
 /**
  * Enumeration of MPEG descriptor tags.

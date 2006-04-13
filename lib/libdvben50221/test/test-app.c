@@ -24,25 +24,25 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <unistd.h>
-#include <dvben50221/en50221_session.h>
-#include <dvben50221/en50221_app_utils.h>
-#include <dvben50221/en50221_app_ai.h>
-#include <dvben50221/en50221_app_auth.h>
-#include <dvben50221/en50221_app_ca.h>
-#include <dvben50221/en50221_app_datetime.h>
-#include <dvben50221/en50221_app_dvb.h>
-#include <dvben50221/en50221_app_epg.h>
-#include <dvben50221/en50221_app_lowspeed.h>
-#include <dvben50221/en50221_app_mmi.h>
-#include <dvben50221/en50221_app_rm.h>
-#include <dvben50221/en50221_app_smartcard.h>
-#include <dvben50221/en50221_app_teletext.h>
-#include <dvbapi/dvbca.h>
+#include <libdvben50221/en50221_session.h>
+#include <libdvben50221/en50221_app_utils.h>
+#include <libdvben50221/en50221_app_ai.h>
+#include <libdvben50221/en50221_app_auth.h>
+#include <libdvben50221/en50221_app_ca.h>
+#include <libdvben50221/en50221_app_datetime.h>
+#include <libdvben50221/en50221_app_dvb.h>
+#include <libdvben50221/en50221_app_epg.h>
+#include <libdvben50221/en50221_app_lowspeed.h>
+#include <libdvben50221/en50221_app_mmi.h>
+#include <libdvben50221/en50221_app_rm.h>
+#include <libdvben50221/en50221_app_smartcard.h>
+#include <libdvben50221/en50221_app_teletext.h>
+#include <libdvbapi/dvbca.h>
 #include <pthread.h>
-#include <dvbcfg/dvbcfg_zapchannel.h>
-#include <dvbapi/dvbdemux.h>
-#include <ucsi/section.h>
-#include <ucsi/mpeg/section.h>
+#include <libdvbcfg/dvbcfg_zapchannel.h>
+#include <libdvbapi/dvbdemux.h>
+#include <libucsi/section.h>
+#include <libucsi/mpeg/section.h>
 
 #define DEFAULT_SLOT 0
 

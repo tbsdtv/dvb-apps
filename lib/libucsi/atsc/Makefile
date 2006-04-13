@@ -1,7 +1,7 @@
 
 CC = gcc
 CFLAGS = -Wall -Wpointer-arith -g
-CPPFLAGS = -MD -I. -I.. $(DEFS)
+CPPFLAGS = -MD -I../../../lib $(DEFS)
 LDFLAGS = -r
 
 OBJ =

@@ -27,30 +27,30 @@ extern "C"
 {
 #endif
 
-#include <ucsi/dvb/bat_section.h>
-#include <ucsi/dvb/dit_section.h>
-#include <ucsi/dvb/eit_section.h>
-#include <ucsi/dvb/nit_section.h>
-#include <ucsi/dvb/rst_section.h>
-#include <ucsi/dvb/sdt_section.h>
-#include <ucsi/dvb/sit_section.h>
-#include <ucsi/dvb/st_section.h>
-#include <ucsi/dvb/tdt_section.h>
-#include <ucsi/dvb/tot_section.h>
-#include <ucsi/dvb/tva_container_section.h>
-#include <ucsi/dvb/int_section.h>
+#include <libucsi/dvb/bat_section.h>
+#include <libucsi/dvb/dit_section.h>
+#include <libucsi/dvb/eit_section.h>
+#include <libucsi/dvb/nit_section.h>
+#include <libucsi/dvb/rst_section.h>
+#include <libucsi/dvb/sdt_section.h>
+#include <libucsi/dvb/sit_section.h>
+#include <libucsi/dvb/st_section.h>
+#include <libucsi/dvb/tdt_section.h>
+#include <libucsi/dvb/tot_section.h>
+#include <libucsi/dvb/tva_container_section.h>
+#include <libucsi/dvb/int_section.h>
 
 /**
  * The following are not implemented just now.
  */
 /*
-#include <ucsi/dvb/tva_related_content_section.h>
-#include <ucsi/dvb/tva_content_identifier_section.h>
-#include <ucsi/dvb/tva_resolution_provider_notification_section.h>
-#include <ucsi/dvb/ait_section.h>
-#include <ucsi/dvb/cit_section.h>
-#include <ucsi/dvb/rct_section.h>
-#include <ucsi/dvb/rnt_section.h>
+#include <libucsi/dvb/tva_related_content_section.h>
+#include <libucsi/dvb/tva_content_identifier_section.h>
+#include <libucsi/dvb/tva_resolution_provider_notification_section.h>
+#include <libucsi/dvb/ait_section.h>
+#include <libucsi/dvb/cit_section.h>
+#include <libucsi/dvb/rct_section.h>
+#include <libucsi/dvb/rnt_section.h>
 */
 
 #define TRANSPORT_NIT_PID 0x10

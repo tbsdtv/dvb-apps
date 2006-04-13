@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include <ucsi/dvb/tva_container_section.h>
+#include <libucsi/dvb/tva_container_section.h>
 
 struct dvb_tva_container_section *dvb_tva_container_section_codec(struct section_ext *ext)
 {

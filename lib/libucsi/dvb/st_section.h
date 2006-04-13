@@ -27,7 +27,7 @@ extern "C"
 {
 #endif
 
-#include <ucsi/section.h>
+#include <libucsi/section.h>
 
 /**
  * dvb_st_section structure.

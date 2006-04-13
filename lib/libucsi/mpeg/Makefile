@@ -1,7 +1,7 @@
 
 CC = gcc
 CFLAGS = -Wall -Wpointer-arith -g -fPIC
-CPPFLAGS = -MD -I. -I.. $(DEFS)
+CPPFLAGS = -MD -I../../../lib $(DEFS)
 LDFLAGS = -r
 
 OBJ = cat_section.o \

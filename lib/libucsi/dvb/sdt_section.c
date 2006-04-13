@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include <ucsi/dvb/sdt_section.h>
+#include <libucsi/dvb/sdt_section.h>
 
 struct dvb_sdt_section * dvb_sdt_section_codec(struct section_ext * ext)
 {

@@ -24,7 +24,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <ctype.h>
-#include <dvbcfg_common.h>
+#include "dvbcfg_common.h"
 #include "dvbcfg_util.h"
 
 static const struct dvbcfg_setting bandwidth_list [] = {
