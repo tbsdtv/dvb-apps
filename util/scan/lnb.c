@@ -27,9 +27,15 @@ static char *enhan_desc[] = {
 		(char *)NULL };
 
 static char *cband_desc[] = {
-		"Big Dish",
+		"Big Dish - Monopoint LNBf",
 		"3700 to 4200 MHz",
 		"Single LO, 5150 Mhz",
+		(char *)NULL };
+
+static char *cmulti_desc[] = {
+		"Big Dish - Multipoint LNBf",
+		"3700 to 4200 MHz",
+		"Dual LO, 5150/5750 Mhz",
 		(char *)NULL };
 
 static struct lnb_types_st lnbs[] = {
@@ -37,7 +43,8 @@ static struct lnb_types_st lnbs[] = {
  	{"DBS",		dbs_desc, 		11250, 0, 0 },
 	{"STANDARD",	standard_desc,		10000, 0, 0 },
 	{"ENHANCED",	enhan_desc,		9750, 0, 0 },
-	{"C-BAND",	cband_desc,		5150, 0, 0 }
+	{"C-BAND",	cband_desc,		5150, 0, 0 },
+	{"C-MULTI",	cmulti_desc,		5150, 5750, 0 }
 };
 
 /* Enumerate through standard types of LNB's until NULL returned.
