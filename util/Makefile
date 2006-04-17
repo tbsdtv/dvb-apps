@@ -1,12 +1,15 @@
 # Makefile for linuxtv.org dvb-apps/util
 
-all %::
-	$(MAKE) -C szap $(MAKECMDGOALS)
-	$(MAKE) -C scan $(MAKECMDGOALS)
-	$(MAKE) -C ca_zap $(MAKECMDGOALS)
-	$(MAKE) -C dvbnet $(MAKECMDGOALS)
-	$(MAKE) -C dvbdate $(MAKECMDGOALS)
-	$(MAKE) -C dvbtraffic $(MAKECMDGOALS)
-	$(MAKE) -C av7110_loadkeys $(MAKECMDGOALS)
-	$(MAKE) -C ttusb_dec_reset $(MAKECMDGOALS)
-	$(MAKE) -C dst-utils $(MAKECMDGOALS)
+.PHONY: all clean install
+
+all clean install:
+	$(MAKE) -C av7110_loadkeys $@
+	$(MAKE) -C ca_zap $@
+	$(MAKE) -C dib3000-watch $@
+	$(MAKE) -C dst-utils $@
+	$(MAKE) -C dvbdate $@
+	$(MAKE) -C dvbnet $@
+	$(MAKE) -C dvbtraffic $@
+	$(MAKE) -C scan $@
+	$(MAKE) -C szap $@
+#	$(MAKE) -C ttusb_dec_reset $@

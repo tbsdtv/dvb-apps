@@ -16,6 +16,8 @@ DYNSRC = atsc_psip_section.c atsc_psip_section.h
 TARGET = dvbscan
 TARGETS = $(TARGET) atscscan
 
+all: $(TARGET)
+
 $(TARGET): $(DYNSRC) $(OBJS)
 	$(CC) $(LFLAGS) -o $(TARGET) $(OBJS)
 	cp dvbscan atscscan

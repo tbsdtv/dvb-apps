@@ -10,6 +10,8 @@ bindir  = /usr/local/bin
 OBJS	= ttusb_dec_reset.o
 TARGET	= ttusb_dec_reset
 
+all: $(TARGET)
+
 $(TARGET): $(OBJS)
 	$(CC) $(LFLAGS) $(LDFLAGS) -o $(TARGET) $(OBJS)
 

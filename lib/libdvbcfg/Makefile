@@ -1,67 +1,63 @@
+# Makefile for linuxtv.org dvb-apps/lib/libdvbcfg
 
-OBJS =  dvbcfg_util.o \
-	dvbcfg_common.o \
-        dvbcfg_source.o \
-        dvbcfg_source_backend_file.o \
-	dvbcfg_adapter.o \
-        dvbcfg_adapter_backend_file.o \
-	dvbcfg_diseqc.o \
-        dvbcfg_diseqc_backend_file.o \
-	dvbcfg_multiplex.o \
-	dvbcfg_multiplex_backend_file.o \
-        dvbcfg_seed.o \
-        dvbcfg_seed_backend_file.o \
-	dvbcfg_vdrchannel.o \
-	dvbcfg_zapchannel.o
+CPPFLAGS += -I../../lib
+CFLAGS   += -g -O2 -Wall -Wextra -Wshadow -Wpointer-arith -Wstrict-prototypes -fPIC
+LDFLAGS  += -shared
 
-INCLUDES = 	dvbcfg_common.h \
-		dvbcfg_source.h \
-		dvbcfg_source_backend_file.h \
-		dvbcfg_adapter.h \
-		dvbcfg_adapter_backend_file.h \
-		dvbcfg_diseqc.h \
-		dvbcfg_diseqc_backend_file.h \
-		dvbcfg_multiplex.h \
-		dvbcfg_multiplex_backend_file.h \
-		dvbcfg_seed.h \
-		dvbcfg_seed_backend_file.h \
-		dvbcfg_vdrchannel.h \
-		dvbcfg_zapchannel.h
+includes = dvbcfg_adapter.h                \
+           dvbcfg_adapter_backend_file.h   \
+           dvbcfg_common.h                 \
+           dvbcfg_diseqc.h                 \
+           dvbcfg_diseqc_backend_file.h    \
+           dvbcfg_multiplex.h              \
+           dvbcfg_multiplex_backend_file.h \
+           dvbcfg_seed.h                   \
+           dvbcfg_seed_backend_file.h      \
+           dvbcfg_source.h                 \
+           dvbcfg_source_backend_file.h    \
+           dvbcfg_util.h                   \
+           dvbcfg_vdrchannel.h             \
+           dvbcfg_zapchannel.h
 
-DVBCFG_DEFAULT_DIR = /etc/dvb
+objects  = dvbcfg_adapter.o                \
+           dvbcfg_adapter_backend_file.o   \
+           dvbcfg_common.o                 \
+           dvbcfg_diseqc.o                 \
+           dvbcfg_diseqc_backend_file.o    \
+           dvbcfg_multiplex.o              \
+           dvbcfg_multiplex_backend_file.o \
+           dvbcfg_seed.o                   \
+           dvbcfg_seed_backend_file.o      \
+           dvbcfg_source.o                 \
+           dvbcfg_source_backend_file.o    \
+           dvbcfg_util.o                   \
+           dvbcfg_vdrchannel.o             \
+           dvbcfg_zapchannel.o
 
-CFLAGS ?= -fPIC -O2 -g -Wall -Wstrict-prototypes -Wshadow -Wpointer-arith -DDVBCFG_DEFAULT_DIR=\"$(DVBCFG_DEFAULT_DIR)\"
-CPPFLAGS = -I../../lib
-LDFLAGS = -shared -lc
+sharedlib = libdvbcfg.so
+staticlib = libdvbcfg.a
 
-STATICLIB = libdvbcfg.a
-SHAREDLIB = libdvbcfg.so
-RANLIB = ranlib
-STRIP = strip
-INSTDIR=/usr/local
+ifeq ($(prefix),)
+prefix = /usr
+endif
 
-all: $(STATICLIB) $(SHAREDLIB)
+CFLAGS += -DDVBCFG_DEFAULT_DIR=\"/etc/dvb\" # FIXME
 
-$(STATICLIB): $(OBJS)
-	$(AR) rc $(STATICLIB) $(OBJS)
-	$(RANLIB) $(STATICLIB)
+.PHONY: all clean install
 
-$(SHAREDLIB): $(OBJS)
-	$(LD) $(LDFLAGS) $(OBJS) -o $(SHAREDLIB)
+all:		$(sharedlib) $(staticlib)
 
-test: $(LIB)
-	make -C test
+$(sharedlib):	$(objects)
+	$(CC) $(LDFLAGS) -o $(sharedlib) $(objects)
 
-install: $(STATICLIB) $(SHAREDLIB) $(INCLUDES)
-	mkdir -p $(INSTDIR)/lib
-	mkdir -p $(INSTDIR)/include/dvbcfg
-	cp -f $(STATICLIB) $(INSTDIR)/lib
-	cp -f $(SHAREDLIB) $(INSTDIR)/lib
-	$(STRIP) $(INSTDIR)/lib/$(SHAREDLIB)
-	cp -f $(INCLUDES) $(INSTDIR)/include/dvbcfg
+$(staticlib):	$(objects)
+	$(AR) rcs $(staticlib) $(objects)
 
 clean:
-	rm -f *~ *# *.o *.a *.so dvbcfg
-	make -C test clean
+	rm -f $(objects) $(sharedlib) $(staticlib)
 
-.PHONY: clean test all
+install:
+	mkdir -p $(prefix)/include/libdvbcfg
+	cp $(includes) $(prefix)/include/libdvbcfg
+	mkdir -p $(prefix)/lib
+	cp $(sharedlib) $(staticlib) $(prefix)/lib

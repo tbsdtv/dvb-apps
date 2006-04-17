@@ -1,41 +1,43 @@
-OBJS =  dvbdemux.o	\
-	dvbfe.o		\
-	dvbnet.o	\
-	diseqc.o	\
-	dvbca.o
+# Makefile for linuxtv.org dvb-apps/lib/libdvbapi
 
-INCLUDES = dvbdemux.h dvbfe.h dvbnet.h diseqc.h dvbca.h
+CPPFLAGS += -I../../include -I../../lib
+CFLAGS   += -g -O2 -Wall -Wextra -Wshadow -Wpointer-arith -Wstrict-prototypes -fPIC
+LDFLAGS  += -shared
 
-CFLAGS ?= -fPIC -O2 -g -Wall -Wstrict-prototypes -Wshadow -Wpointer-arith
-CPPFLAGS = 	-I../../include \
-		-I../../lib
+includes = diseqc.h   \
+           dvbca.h    \
+           dvbdemux.h \
+           dvbfe.h    \
+           dvbnet.h
 
-LDFLAGS = -shared -lc
+objects  = diseqc.o   \
+           dvbca.o    \
+           dvbdemux.o \
+           dvbfe.o    \
+           dvbnet.o
 
-STATICLIB = libdvbapi.a
-SHAREDLIB = libdvbapi.so
-RANLIB = ranlib
-STRIP = strip
-INSTDIR=/usr/local
+sharedlib = libdvbapi.so
+staticlib = libdvbapi.a
 
-all: $(STATICLIB) $(SHAREDLIB)
+ifeq ($(prefix),)
+prefix = /usr
+endif
 
-$(STATICLIB): $(OBJS)
-	$(AR) rc $(STATICLIB) $(OBJS)
-	$(RANLIB) $(STATICLIB)
+.PHONY: all clean install
 
-$(SHAREDLIB): $(OBJS)
-	$(LD) $(LDFLAGS) $(OBJS) -o $(SHAREDLIB)
+all:		$(sharedlib) $(staticlib)
 
-install: $(STATICLIB) $(SHAREDLIB) $(INCLUDES)
-	mkdir -p $(INSTDIR)/lib
-	mkdir -p $(INSTDIR)/include/dvbapi
-	cp -f $(STATICLIB) $(INSTDIR)/lib
-	cp -f $(SHAREDLIB) $(INSTDIR)/lib
-	$(STRIP) $(INSTDIR)/lib/$(SHAREDLIB)
-	cp -f $(INCLUDES) $(INSTDIR)/include/dvbapi
+$(sharedlib):	$(objects)
+	$(CC) $(LDFLAGS) -o $(sharedlib) $(objects)
+
+$(staticlib):	$(objects)
+	$(AR) rcs $(staticlib) $(objects)
 
 clean:
-	rm -f *~ *# *.o *.a *.so dvbapi
+	rm -f $(objects) $(sharedlib) $(staticlib)
 
-.PHONY: clean all
+install:
+	mkdir -p $(prefix)/include/libdvbapi
+	cp $(includes) $(prefix)/include/libdvbapi
+	mkdir -p $(prefix)/lib
+	cp $(sharedlib) $(staticlib) $(prefix)/lib

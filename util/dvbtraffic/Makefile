@@ -3,6 +3,8 @@ CFLAGS   += $(ARCH)
 CPPFLAGS += -MD -I../../include $(DEFS)
 bindir = /usr/local/bin
 
+all: dvbtraffic
+
 dvbtraffic: dvbtraffic.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $< -o $@
 

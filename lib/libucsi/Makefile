@@ -1,66 +1,52 @@
+# Makefile for linuxtv.org dvb-apps/lib/libucsi
 
-OBJ =	crc32.o \
-	section_buf.o \
-	transport_packet.o
+CPPFLAGS += -I../../lib
+CFLAGS   += -g -O2 -Wall -Wextra -Wshadow -Wpointer-arith -Wstrict-prototypes -fPIC
+LDFLAGS  += -shared
 
-INC = 	crc32.h \
-    	descriptor.h \
-	endianops.h \
-	section_buf.h \
-	section.h \
-	transport_packet.h \
-	types.h
+includes = crc32.h            \
+           descriptor.h       \
+           endianops.h        \
+           section.h          \
+           section_buf.h      \
+           transport_packet.h \
+           types.h
 
-CC = gcc
-CFLAGS = -Wall -Wpointer-arith -g -fPIC
-CPPFLAGS = -MD -I../../lib $(DEFS)
-LDFLAGS = -shared
-RANLIB = ranlib
+objects  = crc32.o            \
+           section_buf.o      \
+           transport_packet.o
 
-STATICLIB = libucsi.a
-SHAREDLIB = libucsi.so
-INSTDIR= /usr/local
+sharedlib = libucsi.so
+staticlib = libucsi.a
 
-.PHONY: all mpeg dvb atsc test
+ifeq ($(prefix),)
+prefix = /usr
+endif
 
-all: $(STATICLIB) $(SHAREDLIB) 
+.DEFAULT_GOAL = all
 
-test: $(SHAREDLIB) $(STATICLIB)
-	$(MAKE) -C test
+include atsc/Makefile
+include dvb/Makefile
+include mpeg/Makefile
 
-$(SHAREDLIB): $(OBJ) mpeg dvb # atsc
-	$(LD) $(LDFLAGS) -o $(SHAREDLIB) $(OBJ) mpeg/libmpeg.a dvb/libdvb.a # atsc/libatsc.a
+.PHONY: all clean install $(sub-install)
 
-$(STATICLIB): $(OBJ) mpeg dvb # atsc
-	$(AR) rc $(STATICLIB) $(OBJ) mpeg/*.o dvb/*.o # atsc/*.o
-	$(RANLIB) $(STATICLIB)
+all:		$(sharedlib) $(staticlib)
 
-install: $(SHAREDLIB) $(STATICLIB) $(INC)
-	make -C mpeg install INSTDIR=$(INSTDIR)
-	make -C dvb install INSTDIR=$(INSTDIR)
-	make -C atsc install INSTDIR=$(INSTDIR)
-	mkdir -p $(INSTDIR)/lib
-	mkdir -p $(INSTDIR)/include/ucsi
-	cp -f $(STATICLIB) $(INSTDIR)/lib
-	cp -f $(SHAREDLIB) $(INSTDIR)/lib
-	strip $(INSTDIR)/lib/$(SHAREDLIB)
-	cp -f $(INC) $(INSTDIR)/include/ucsi
+$(sharedlib):	$(objects)
+	$(CC) $(LDFLAGS) -o $(sharedlib) $(objects)
 
-mpeg:
-	$(MAKE) -C mpeg
-
-dvb:
-	$(MAKE) -C dvb
-
-atsc:
-	$(MAKE) -C atsc
+$(staticlib):	$(objects)
+	$(AR) rcs $(staticlib) $(objects)
 
 clean:
-	$(MAKE) -C atsc clean
-	$(MAKE) -C dvb clean
-	$(MAKE) -C mpeg clean
-	$(MAKE) -C test clean
-	rm -f *.d *.o *.a *.so *~ *# ucsi
+	rm -f $(objects) $(sharedlib) $(staticlib)
 
--include $(wildcard *.d) dummy
+install:	$(sub-install)
+	mkdir -p $(prefix)/include/libucsi
+	cp $(includes) $(prefix)/include/libucsi
+	mkdir -p $(prefix)/lib
+	cp $(sharedlib) $(staticlib) $(prefix)/lib
 
+$(sub-install):
+	$(MAKE) -C $@ sub-install-$@

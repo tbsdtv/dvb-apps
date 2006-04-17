@@ -1,10 +1,9 @@
+# Makefile for linuxtv.org dvb-apps/lib
 
-.PHONY: libdvbapi libdvbcfg libucsi libdvben50221
+.PHONY: all clean install
 
-all:
-
-%::
-	$(MAKE) -C libdvbapi $(MAKECMDGOALS)
-	$(MAKE) -C libdvbcfg $(MAKECMDGOALS)
-	$(MAKE) -C libucsi $(MAKECMDGOALS)
-	$(MAKE) -C libdvben50221 $(MAKECMDGOALS)
+all clean install:
+	$(MAKE) -C libdvbapi $@
+	$(MAKE) -C libdvbcfg $@
+	$(MAKE) -C libdvben50221 $@
+	$(MAKE) -C libucsi $@
