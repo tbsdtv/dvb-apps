@@ -1,7 +1,7 @@
 # Makefile for linuxtv.org dvb-apps/lib/libdvbapi
 
 CPPFLAGS += -I../../include -I../../lib
-CFLAGS   += -g -O2 -Wall -Wextra -Wshadow -Wpointer-arith -Wstrict-prototypes -fPIC
+CFLAGS   += -g -O2 -Wall -W -Wshadow -Wpointer-arith -Wstrict-prototypes -fPIC
 LDFLAGS  += -shared
 
 includes = diseqc.h   \
