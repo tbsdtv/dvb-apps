@@ -227,7 +227,10 @@ static inline int section_ext_useful(struct section_ext *section, struct psi_tab
 {
 	if ((section->version_number == tstate->version_number) && tstate->complete)
 		return 0;
-	if ((section->version_number != tstate->version_number) && (section->section_number == 0)) {
+	if (section->version_number != tstate->version_number) {
+	        if (section->section_number != 0)
+	                return 0;
+     
 		tstate->next_section_number = 0;
 		tstate->complete = 0;
 		tstate->version_number = section->version_number;
