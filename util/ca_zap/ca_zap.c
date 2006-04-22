@@ -357,11 +357,10 @@ static void *camthread_func(void* arg)
 
 		case DVBCA_CAMSTATE_INITIALISING: // hlci workaround
 			if ((!cam_state) && (ca_type == DVBCA_INTERFACE_HLCI)) {
-					hlci_cam_added(cafd);
-					cam_state = 1;
-				}
+				hlci_cam_added(cafd);
+				cam_state = 1;
+			}
 			break;
-		}
 
 		case DVBCA_CAMSTATE_READY:
 			if (!cam_state) {
