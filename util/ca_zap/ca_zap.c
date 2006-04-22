@@ -355,6 +355,14 @@ static void *camthread_func(void* arg)
 			}
 			break;
 
+		case DVBCA_CAMSTATE_INITIALISING: // hlci workaround
+			if ((!cam_state) && (ca_type == DVBCA_INTERFACE_HLCI)) {
+					hlci_cam_added(cafd);
+					cam_state = 1;
+				}
+			break;
+		}
+
 		case DVBCA_CAMSTATE_READY:
 			if (!cam_state) {
 				switch(ca_type) {
@@ -428,7 +436,7 @@ static void *dvbthread_func(void* arg)
 		// is there SI data?
 		int count = poll(pollfds, 3, 100);
 		if (count < 0) {
-			fprintf(stderr, "Poll error");
+			fprintf(stderr, "Poll error\n");
 			break;
 		}
 		if (count == 0) {
