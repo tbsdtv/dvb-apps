@@ -189,7 +189,7 @@ struct dvbfe_info {
 /**
  * Frontend handle datatype.
  */
-typedef void *dvbfe_handle_t;
+struct dvbfe_handle;
 
 /**
  * Open a DVB frontend.
@@ -199,14 +199,14 @@ typedef void *dvbfe_handle_t;
  * @param readonly If 1, frontend will be opened in readonly mode only.
  * @return A handle on success, or NULL on failure.
  */
-extern dvbfe_handle_t dvbfe_open(int adapter, int frontend, int readonly);
+extern struct dvbfe_handle *dvbfe_open(int adapter, int frontend, int readonly);
 
 /**
  * Close a DVB frontend.
  *
  * @param fehandle Handle opened with dvbfe_open().
  */
-extern void dvbfe_close(dvbfe_handle_t handle);
+extern void dvbfe_close(struct dvbfe_handle *handle);
 
 /**
  * Set the frontend tuning parameters.
@@ -218,14 +218,14 @@ extern void dvbfe_close(dvbfe_handle_t handle);
  * @return 0 on locked (or if timeout==0 and everything else worked), or
  * nonzero on failure (including no lock).
  */
-extern int dvbfe_set(dvbfe_handle_t fehandle, struct dvbfe_parameters *params, int timeout);
+extern int dvbfe_set(struct dvbfe_handle *fehandle, struct dvbfe_parameters *params, int timeout);
 
 /**
  * Call this function regularly from a loop to maintain the frontend lock.
  *
  * @param fehandle Handle opened with dvbfe_open().
  */
-extern void dvbfe_poll(dvbfe_handle_t fehandle);
+extern void dvbfe_poll(struct dvbfe_handle *fehandle);
 
 /**
  * Retrieve information about the frontend.
@@ -235,7 +235,7 @@ extern void dvbfe_poll(dvbfe_handle_t fehandle);
  * @param result Where to put the retrieved results.
  * @return ORed bitmask of DVBFE_INFO_* indicating which values were read successfully.
  */
-extern int dvbfe_get_info(dvbfe_handle_t fehandle, dvbfe_info_mask_t querymask, struct dvbfe_info *result);
+extern int dvbfe_get_info(struct dvbfe_handle *fehandle, dvbfe_info_mask_t querymask, struct dvbfe_info *result);
 
 /**
  * Execute a DISEQC command string.
@@ -288,7 +288,7 @@ extern int dvbfe_get_info(dvbfe_handle_t fehandle, dvbfe_info_mask_t querymask, 
  * @param command Command to execute.
  * @return 0 on success, nonzero on failure.
  */
-extern int dvbfe_diseqc_command(dvbfe_handle_t fehandle, char *command);
+extern int dvbfe_diseqc_command(struct dvbfe_handle *fehandle, char *command);
 
 /**
  * Read a DISEQC response from the frontend.
@@ -299,7 +299,7 @@ extern int dvbfe_diseqc_command(dvbfe_handle_t fehandle, char *command);
  * @param len Number of bytes in buffer.
  * @return >= 0 on success (number of received bytes), <0 on failure.
  */
-extern int dvbfe_diseqc_read(dvbfe_handle_t fehandle, int timeout, unsigned char *buf, unsigned int len);
+extern int dvbfe_diseqc_read(struct dvbfe_handle *fehandle, int timeout, unsigned char *buf, unsigned int len);
 
 #ifdef __cplusplus
 }

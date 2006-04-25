@@ -149,7 +149,7 @@ static int lookupval(int val, int reverse, int table[][2])
 }
 
 
-struct dvbfe_handle_prv {
+struct dvbfe_handle {
 	int fd;
 	dvbfe_type_t type;
 	char *name;
@@ -158,10 +158,10 @@ struct dvbfe_handle_prv {
 	int cachedreturnval;
 };
 
-dvbfe_handle_t dvbfe_open(int adapter, int frontend, int readonly)
+struct dvbfe_handle *dvbfe_open(int adapter, int frontend, int readonly)
 {
 	char filename[PATH_MAX+1];
-	struct dvbfe_handle_prv *fehandle;
+	struct dvbfe_handle *fehandle;
 	int fd;
 	struct dvb_frontend_info info;
 
@@ -188,8 +188,8 @@ dvbfe_handle_t dvbfe_open(int adapter, int frontend, int readonly)
 	}
 
 	// setup structure
-	fehandle = (struct dvbfe_handle_prv*) malloc(sizeof(struct dvbfe_handle_prv));
-	memset(fehandle, 0, sizeof(struct dvbfe_handle_prv));
+	fehandle = (struct dvbfe_handle*) malloc(sizeof(struct dvbfe_handle));
+	memset(fehandle, 0, sizeof(struct dvbfe_handle));
 	fehandle->fd = fd;
 	switch(info.type) {
 	case FE_QPSK:
@@ -214,21 +214,18 @@ dvbfe_handle_t dvbfe_open(int adapter, int frontend, int readonly)
 	return fehandle;
 }
 
-void dvbfe_close(dvbfe_handle_t _fehandle)
+void dvbfe_close(struct dvbfe_handle *fehandle)
 {
-	struct dvbfe_handle_prv *fehandle = (struct dvbfe_handle_prv*) _fehandle;
-
 	close(fehandle->fd);
 	free(fehandle->name);
 	free(fehandle);
 }
 
-int dvbfe_get_info(dvbfe_handle_t _fehandle, dvbfe_info_mask_t querymask, struct dvbfe_info *result)
+int dvbfe_get_info(struct dvbfe_handle *fehandle, dvbfe_info_mask_t querymask, struct dvbfe_info *result)
 {
 	int returnval = 0;
 	fe_status_t status;
 	struct dvb_frontend_parameters kparams;
-	struct dvbfe_handle_prv *fehandle = (struct dvbfe_handle_prv*) _fehandle;
 	struct timeval curtime;
 
 	// limit how often this is called to reduce bus traffic
@@ -338,10 +335,9 @@ int dvbfe_get_info(dvbfe_handle_t _fehandle, dvbfe_info_mask_t querymask, struct
 	return returnval;
 }
 
-int dvbfe_set(dvbfe_handle_t _fehandle, struct dvbfe_parameters *params, int timeout)
+int dvbfe_set(struct dvbfe_handle *fehandle, struct dvbfe_parameters *params, int timeout)
 {
 	struct dvb_frontend_parameters kparams;
-	struct dvbfe_handle_prv *fehandle = (struct dvbfe_handle_prv*) _fehandle;
 	int res;
 	struct timeval endtime;
 	fe_status_t status;
@@ -428,8 +424,9 @@ int dvbfe_set(dvbfe_handle_t _fehandle, struct dvbfe_parameters *params, int tim
 	return -ETIMEDOUT;
 }
 
-void dvbfe_poll(dvbfe_handle_t fehandle)
+void dvbfe_poll(struct dvbfe_handle *fehandle)
 {
+	(void) fehandle;
 	// no implementation required yet
 }
 
@@ -439,14 +436,13 @@ void dvbfe_poll(dvbfe_handle_t fehandle)
 
 
 
-int dvbfe_diseqc_command(dvbfe_handle_t _fehandle, char *command)
+int dvbfe_diseqc_command(struct dvbfe_handle *fehandle, char *command)
 {
 	int i = 0;
 	int waittime;
 	int status;
 	struct dvb_diseqc_master_cmd master_cmd;
 	unsigned int tmpcmd[6];
-	struct dvbfe_handle_prv *fehandle = (struct dvbfe_handle_prv*) _fehandle;
 	char value_s[20];
 	int value_i;
 	int addr;
@@ -737,11 +733,11 @@ int dvbfe_diseqc_command(dvbfe_handle_t _fehandle, char *command)
 	return 0;
 }
 
-int dvbfe_diseqc_read(dvbfe_handle_t _fehandle, int timeout, unsigned char *buf, unsigned int len)
+int dvbfe_diseqc_read(struct dvbfe_handle *_fehandle, int timeout, unsigned char *buf, unsigned int len)
 {
 	struct dvb_diseqc_slave_reply reply;
 	int result;
-	struct dvbfe_handle_prv *fehandle = (struct dvbfe_handle_prv*) _fehandle;
+	struct dvbfe_handle *fehandle = (struct dvbfe_handle*) _fehandle;
 
 	if (len > 4)
 		len = 4;

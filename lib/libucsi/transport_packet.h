@@ -145,7 +145,7 @@ static inline int transport_packet_pid(struct transport_packet *pkt)
 /**
  * Process a buffer into a transport packet.
  *
- * @param buf Raw buffer.
+ * @param buf Raw buffer. Note, this function assumes there are 188 bytes available.
  * @return transport_packet pointer, or NULL on error.
  */
 static inline struct transport_packet *transport_packet_init(unsigned char *buf)
