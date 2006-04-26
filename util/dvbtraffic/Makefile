@@ -1,19 +1,21 @@
-CFLAGS   ?= -g -O2 -Wall
-CFLAGS   += $(ARCH)
-CPPFLAGS += -MD -I../../include $(DEFS)
-bindir = /usr/local/bin
+# Makefile for linuxtv.org dvb-apps/util/dvbtraffic
 
-all: dvbtraffic
+CPPFLAGS += -I../../include
+CFLAGS   += -g -O2 -Wall -W -Wshadow -Wpointer-arith -Wstrict-prototypes
 
-dvbtraffic: dvbtraffic.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) $< -o $@
+binaries = dvbtraffic
+
+ifeq ($(prefix),)
+prefix = /usr
+endif
+
+.PHONY: all clean install
+
+all:		$(binaries)
 
 clean:
-	rm -f *.o *.d dvbtraffic
+	rm -f $(binaries)
 
-DVBTARGETS = dvbtraffic
-install: install-bin
-install-bin:
-	test "$(bindir)/" != "/"
-	mkdir -p $(DESTDIR)$(bindir)/
-	for i in $(DVBTARGETS) ; do cp $$i $(DESTDIR)$(bindir)/$$i ; done
+install:
+	mkdir -p $(prefix)/bin
+	cp $(binaries) $(prefix)/bin

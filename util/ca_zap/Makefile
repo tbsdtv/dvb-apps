@@ -1,28 +1,29 @@
-CC = gcc
-CFLAGS ?= -g -O2 -W -Wall
-CFLAGS += $(ARCH)
-CPPFLAGS += -MD -I../../lib
+# Makefile for linuxtv.org dvb-apps/util/ca_zap
 
-LDFLAGS =   -g -O2 \
-	    -L ../../lib/libdvben50221 -ldvben50221 \
-	    -L ../../lib/libdvbapi -ldvbapi \
-	    -L ../../lib/libucsi -lucsi \
-	    -L ../../lib/libdvbcfg -ldvbcfg \
-	    -lpthread
+CPPFLAGS += -I../../lib
+CFLAGS   += -g -O2 -Wall -W -Wshadow -Wpointer-arith -Wstrict-prototypes
+LDFLAGS  += -L../../lib/libdvbapi -L../../lib/libdvbcfg -L../../lib/libdvben50221 -L../../lib/libucsi
+LDLIBS   += -ldvbapi -ldvbcfg -ldvben50221 -lucsi -lpthread
 
-RM = rm -f
+objects  = ca_zap.o      \
+           ca_zap_hlci.o \
+           ca_zap_llci.o
 
-OBJS = ca_zap.o ca_zap_llci.o ca_zap_hlci.o
-TARGETS =ca_zap
+binaries = ca_zap
 
-all: $(OBJS) $(TARGETS)
+ifeq ($(prefix),)
+prefix = /usr
+endif
 
-ca_zap: $(OBJS)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o ca_zap $(OBJS) $(LDFLAGS)
+.PHONY: all clean install
+
+all:		$(binaries)
+
+$(binaries):	$(objects)
 
 clean:
-	$(RM) $(TARGETS) *.o *.d ca_zap *~ *#
+	rm -f $(objects) $(binaries)
 
 install:
-
--include $(wildcard *.d) dummy
+	mkdir -p $(prefix)/bin
+	cp $(binaries) $(prefix)/bin

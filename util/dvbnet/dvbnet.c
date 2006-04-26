@@ -35,7 +35,6 @@
 #include <sys/ioctl.h>
 
 #include <linux/dvb/net.h>
-#include <version.h>
 
 #ifndef VERSION_INFO
 #define VERSION_INFO "1.1.0"

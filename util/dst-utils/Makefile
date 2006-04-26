@@ -1,21 +1,21 @@
-CC = gcc
-CFLAGS ?= -g -O2 -W -Wall
-CFLAGS += $(ARCH)
-CPPFLAGS += -MD -I../../lib -I../../include
-LDFLAGS = -g -O2 -L ../../lib/libdvben50221 -ldvben50221
-RM = rm -f
+# Makefile for linuxtv.org dvb-apps/util/dst-utils
 
-OBJS = dst_test.o
-TARGETS = dst_test
+CPPFLAGS += -I../../include -I../../lib
+CFLAGS   += -g -O2 -Wall -W -Wshadow -Wpointer-arith -Wstrict-prototypes
 
-all: $(OBJS) $(TARGETS)
+binaries = dst_test
 
-dst_test: $(OBJS)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o dst_test dst_test.o $(LD_FLAGS)
+ifeq ($(prefix),)
+prefix = /usr
+endif
+
+.PHONY: all clean install
+
+all:		$(binaries)
 
 clean:
-	$(RM) $(TARGETS) *.o *.d dst_test
+	rm -f $(binaries)
 
 install:
-
--include $(wildcard *.d) dummy
+	mkdir -p $(prefix)/bin
+	cp $(binaries) $(prefix)/bin

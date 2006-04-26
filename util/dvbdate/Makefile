@@ -1,27 +1,21 @@
+# Makefile for linuxtv.org dvb-apps/util/dvbdate
 
-CC      = gcc
-CFLAGS  ?= -g -O2 -Wall
-CFLAGS  += $(ARCH)
-CPPFLAGS += -MD -I../../include $(DEFS)
-LFLAGS  =
+CPPFLAGS += -I../../include
+CFLAGS   += -g -O2 -Wall -W -Wshadow -Wpointer-arith -Wstrict-prototypes
 
-OBJS    = dvbdate.o
-TARGET  = dvbdate
-bindir  = /usr/local/bin
+binaries = dvbdate
 
-all: $(TARGET)
+ifeq ($(prefix),)
+prefix = /usr
+endif
 
-.c.o:
-	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+.PHONY: all clean install
 
-$(TARGET): $(OBJS)
-	$(CC) -o $@ $(OBJS) $(LFLAGS)
-
-install: all
-	install -m 755 $(TARGET) $(DESTDIR)$(bindir)
+all:		$(binaries)
 
 clean:
-	rm -f $(TARGET) $(OBJS) core* *~ *.d
+	rm -f $(binaries)
 
--include $(wildcard *.d) dummy
-
+install:
+	mkdir -p $(prefix)/bin
+	cp $(binaries) $(prefix)/bin

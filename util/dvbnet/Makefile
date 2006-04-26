@@ -1,38 +1,23 @@
+# Makefile for linuxtv.org dvb-apps/util/dvbnet
 
-CC      = gcc
-CFLAGS  ?= -g -O2 -Wall
-CFLAGS  += $(ARCH)
-CPPFLAGS += -MD -I. -I../../include $(DEFS)
-LFLAGS  =
-bindir = /usr/local/bin
-libdir = /usr/local/lib
+CPPFLAGS += -I../../include
+CFLAGS   += -g -O2 -Wall -W -Wshadow -Wpointer-arith -Wstrict-prototypes
 
-OBJS    = dvbnet.o
-TARGET  = dvbnet
+binaries = dvbnet
 
-all: version.h $(TARGET)
+ifeq ($(prefix),)
+prefix = /usr
+endif
 
-.c.o:
-	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+CFLAGS += -DVERSION_INFO=\"1.1.0-TVF\" # FIXME
 
-dvbnet.o: version.h
+.PHONY: all clean install
 
-$(TARGET): $(OBJS)
-	$(CC) -o $@ $(OBJS) $(LFLAGS)
-
-version.h:
-	printf '#define VERSION_INFO "%s (Build %s)"\n' \
-		"`cat $@.in`" "`date +'%a %b %d %X %Y'`" > $@
-
-install: install-bin install-scripts
-install-bin: all
-	test "$(bindir)/" != "/"
-	mkdir -p $(DESTDIR)$(bindir)/
-	install -m 755 $(TARGET) $(DESTDIR)$(bindir)/
-install-scripts:
+all:		$(binaries)
 
 clean:
-	rm -f $(TARGET) $(OBJS) version.h core* *~ *.d
+	rm -f $(binaries)
 
--include $(wildcard *.d) dummy
-
+install:
+	mkdir -p $(prefix)/bin
+	cp $(binaries) $(prefix)/bin

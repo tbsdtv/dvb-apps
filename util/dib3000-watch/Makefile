@@ -1,18 +1,21 @@
-CC=gcc
-TARGET=dib3000-watch
-OBJECTS=dib3000-watch.o
-CFLAGS ?= -Wall
-LFLAGS=-lm
+# Makefile for linuxtv.org dvb-apps/util/dib3000-watch
 
-.c.o:
-	$(CC) -c $(CFLAGS) $< -o $@
+CFLAGS  += -g -O2 -Wall -W -Wshadow -Wpointer-arith -Wstrict-prototypes
+LDFLAGS += -lm
 
-all: $(TARGET)
+binaries = dib3000-watch
 
-$(TARGET): $(OBJECTS)
-	$(CC) $(LFLAGS) $(OBJECTS) -o $(TARGET)
+ifeq ($(prefix),)
+prefix = /usr
+endif
+
+.PHONY: all clean install
+
+all:		$(binaries)
 
 clean:
-	rm -f $(TARGET) $(OBJECTS) *~
+	rm -f $(binaries)
 
-dib-demod-watch.o: dib3000-watch.h dib-i2c.h dib3000.h
+install:
+	mkdir -p $(prefix)/bin
+	cp $(binaries) $(prefix)/bin
