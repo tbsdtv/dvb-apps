@@ -298,7 +298,7 @@ int zap_to(unsigned int adapter, unsigned int frontend, unsigned int demux,
       int dvr, int rec_psi, int bypass)
 {
    char fedev[128], dmxdev[128], auddev[128];
-   static int fefd, dmxfd, audiofd = -1, patfd, pmtfd;
+   static int fefd, dmxfda, dmxfdv, audiofd = -1, patfd, pmtfd;
    int pmtpid;
    uint32_t ifreq;
    int hiband, result;
@@ -329,8 +329,14 @@ int zap_to(unsigned int adapter, unsigned int frontend, unsigned int demux,
 	 return FALSE;
       }
 
-      if ((dmxfd = open(dmxdev, O_RDWR)) < 0) {
+      if ((dmxfdv = open(dmxdev, O_RDWR)) < 0) {
 	 perror("opening video demux failed");
+	 close(fefd);
+	 return FALSE;
+      }
+
+      if ((dmxfda = open(dmxdev, O_RDWR)) < 0) {
+	 perror("opening audio demux failed");
 	 close(fefd);
 	 return FALSE;
       }
@@ -340,18 +346,20 @@ int zap_to(unsigned int adapter, unsigned int frontend, unsigned int demux,
 
       if (rec_psi){
          if ((patfd = open(dmxdev, O_RDWR)) < 0) {
-	    perror("opening audio demux failed");
+	    perror("opening pat demux failed");
 	    close(audiofd);
-	    close(dmxfd);
+	    close(dmxfda);
+	    close(dmxfdv);
 	    close(fefd);
 	    return FALSE;
          }
 
          if ((pmtfd = open(dmxdev, O_RDWR)) < 0) {
-	    perror("opening audio demux failed");
+	    perror("opening pmt demux failed");
 	    close(patfd);
 	    close(audiofd);
-	    close(dmxfd);
+	    close(dmxfda);
+	    close(dmxfdv);
 	    close(fefd);
 	    return FALSE;
          }
@@ -375,10 +383,10 @@ int zap_to(unsigned int adapter, unsigned int frontend, unsigned int demux,
 
    if (diseqc(fefd, sat_no, pol, hiband))
       if (do_tune(fefd, ifreq, sr))
-	 if (set_demux(dmxfd, vpid, DMX_PES_VIDEO, dvr))
+	 if (set_demux(dmxfdv, vpid, DMX_PES_VIDEO, dvr))
 	    if (audiofd >= 0)
 	       (void)ioctl(audiofd, AUDIO_SET_BYPASS_MODE, bypass);
-	    if (set_demux(dmxfd, apid, DMX_PES_AUDIO, dvr)) {
+	    if (set_demux(dmxfda, apid, DMX_PES_AUDIO, dvr)) {
 	       if (rec_psi) {
 	          pmtpid = get_pmt_pid(dmxdev, sid);
 		  if (pmtpid < 0) {
@@ -403,7 +411,8 @@ int zap_to(unsigned int adapter, unsigned int frontend, unsigned int demux,
       close(pmtfd);
       if (audiofd >= 0)
 	 close(audiofd);
-      close(dmxfd);
+      close(dmxfda);
+      close(dmxfdv);
       close(fefd);
    }
 
