@@ -31,7 +31,7 @@ extern "C"
 
 struct dvbcfg_zapchannel
 {
-        char* name;
+        char name[128];
         dvbfe_type_t fe_type;
         struct dvbfe_parameters fe_params;
         int polarization;
@@ -40,56 +40,54 @@ struct dvbcfg_zapchannel
         int audio_pid;
         int channel_number;
 
-        struct dvbcfg_zapchannel *prev; /* NULL=> first entry */
-        struct dvbcfg_zapchannel *next; /* NULL=> last entry */
+	/* these two are not used by this library - they're provided as a
+	 * convenience for applications to use */
+	struct dvbcfg_zapchannel *next;
+	struct dvbcfg_zapchannel *prev;
 };
+
+/**
+ * Callback function used in dvbcfg_zapchannel_load().
+ *
+ * @param private Private information to caller.
+ * @param channel The current channel details.
+ * @return 0 to continue, 1 to stop loading.
+ */
+typedef int (*dvbcfg_zapchannel_callback)(void *private, struct dvbcfg_zapchannel *channel);
 
 /**
  * Load a *zap format channels file.
  *
- * @param config_file Config filename to load.
- * @param channels Where to put the pointer to the start of the loaded
- * channels. If NULL, a new list will be created, if it points to an already initialised list,
- * the loaded channels will be appended to it.
+ * @param fd File descriptor to load from.
+ * @param cb Callback function called for each channel loaded from the file.
  * @return 0 on success, or nonzero error code on failure.
  */
-extern int dvbcfg_zapchannel_load(const char *config_file,
-                                  struct dvbcfg_zapchannel **channels);
+extern int dvbcfg_zapchannel_load(FILE *f, void *private,
+				  dvbcfg_zapchannel_callback cb);
+
+/**
+ * Convenience function to parse a config file to find details of a channel.
+ *
+ * @param config_file Config filename to load.
+ * @param channel_name Name of channel to find.
+ * @param channel Where to put the details if found.
+ * @return 0 on success, nonzero on error.
+ */
+extern int dvbcfg_zapchannel_find(const char *config_file,
+				  char *channel_name,
+				  struct dvbcfg_zapchannel *channel);
 
 /**
  * Save *zap format channels to a config file.
  *
- * @param config_file Config filename to save.
- * @param sources Pointer to the list of channels to save.
+ * @param fd File descriptor to save to.
+ * @param channels Pointer to array of channels to save.
+ * @param count Number of entries in the above array.
  * @return 0 on success, or nonzero error code on failure.
  */
-extern int dvbcfg_zapchannel_save(const char *config_file,
-                                  struct dvbcfg_zapchannel *channels);
-
-/**
- * Find the entry for a particular channel name.
- *
- * @param channels Pointer to the list to search.
- * @param name Name of channel to find.
- * @return A dvbcfg_zapchannel structure if found, or NULL if not.
- */
-extern struct dvbcfg_zapchannel *dvbcfg_zapchannel_find(struct dvbcfg_zapchannel* channels, char *name);
-
-/**
- * Unlink a single dvbcfg_zapchannel from a list, and free its memory.
- *
- * @param channels The list of dvbcfg_zapchannels.
- * @param tofree The source to free.
- */
-extern void dvbcfg_zapchannel_free(struct dvbcfg_zapchannel **channels,
-                                   struct dvbcfg_zapchannel *tofree);
-
-/**
- * Free memory for all dvbcfg_zapchannels in a list.
- *
- * @param sources Pointer to list of dvbcfg_zapchannels to free.
- */
-extern void dvbcfg_zapchannel_free_all(struct dvbcfg_zapchannel *channels);
+extern int dvbcfg_zapchannel_save(FILE *f,
+                                  struct dvbcfg_zapchannel *channels,
+				  int count);
 
 #ifdef __cplusplus
 }

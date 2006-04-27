@@ -19,15 +19,18 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
  */
 
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include <errno.h>
 #include "dvbcfg_zapchannel.h"
-#include "dvbcfg_util.h"
-#include "dvbcfg_common.h"
 
+struct dvbcfg_setting {
+        char *name;
+	int value;
+};
 
 static const struct dvbcfg_setting bandwidth_list [] = {
 	{ "BANDWIDTH_6_MHZ", DVBFE_DVBT_BANDWIDTH_6_MHZ },
@@ -107,383 +110,379 @@ static const struct dvbcfg_setting atsc_modulation_list[] = {
         { NULL, -1 },
 };
 
+static int parsesetting(char* text, const struct dvbcfg_setting* settings);
+static char* lookupsetting(int setting, const struct dvbcfg_setting* settings);
+static void curtoken(char *dest, int len, char *src, int delimiter);
+static char *nexttoken(char *src, int delimiter);
 
-int dvbcfg_zapchannel_load(const char *config_file,
-			   struct dvbcfg_zapchannel **zapchannels)
+
+int dvbcfg_zapchannel_load(FILE *f,
+			   void *private,
+			   dvbcfg_zapchannel_callback cb)
 {
-        FILE *in;
-        char curline[256];
-        char *linepos;
-        struct dvbcfg_zapchannel tmpzapchannel;
-        struct dvbcfg_zapchannel *curzapchannel;
-        struct dvbcfg_zapchannel *newzapchannel;
-        int numtokens;
-        int error = 0;
-        int has_channel_number;
-        int val;
+	struct dvbcfg_zapchannel tmpzapchannel;
+	char *linebuf = NULL;
+	size_t line_size = 0;
+	int len;
+	int val;
 
-        /* open the file */
-        in = fopen(config_file, "r");
-        if (in == NULL)
-                return -errno;
+	/* process each line */
+	while((len = getline(&linebuf, &line_size, f)) > 0) {
+		char *line = linebuf;
 
-        /* move to the tail entry */
-        curzapchannel = *zapchannels;
-        if (curzapchannel)
-                while (curzapchannel->next)
-                        curzapchannel = curzapchannel->next;
+		/* chop any comments */
+		char *hashpos = strchr(line, '#');
+		if (hashpos)
+			*hashpos = 0;
+		char *lineend = line + strlen(line);
 
-        while (fgets(curline, sizeof(curline), in)) {
-                linepos = curline;
-                memset(&tmpzapchannel, 0, sizeof(struct dvbcfg_zapchannel));
-                has_channel_number = 0;
+		/* trim the line */
+		while(*line && isspace(*line))
+			line++;
+		while((lineend != line) && isspace(*(lineend-1)))
+			lineend--;
+		*lineend = 0;
 
-                /* clean any comments/ whitespace */
-                if (dvbcfg_cleanline(linepos) == 0)
-                        continue;
+		/* skip blank lines */
+		if (*line == 0)
+			continue;
+		memset(&tmpzapchannel, 0, sizeof(tmpzapchannel));
 
-                /* determine frontend type */
-                if (strstr(linepos, ":FEC_")) {
-                        if (strstr(linepos, ":HIERARCHY_")) {
-                                tmpzapchannel.fe_type = DVBFE_TYPE_DVBT;
-                        } else {
+		/* determine frontend type */
+		if (strstr(line, ":FEC_")) {
+			if (strstr(line, ":HIERARCHY_")) {
+				tmpzapchannel.fe_type = DVBFE_TYPE_DVBT;
+			} else {
 				tmpzapchannel.fe_type = DVBFE_TYPE_DVBC;
-                        }
-                } else {
-                        if (strstr(linepos, "VSB:") || strstr(linepos, ":QAM_")) {
+			}
+		} else {
+			if (strstr(line, "VSB:") || strstr(line, ":QAM_")) {
 				tmpzapchannel.fe_type = DVBFE_TYPE_ATSC;
-                        } else {
+			} else {
 				tmpzapchannel.fe_type = DVBFE_TYPE_DVBS;
-                        }
-                }
+			}
+		}
 
-                /* tokenise the line */
-                numtokens = dvbcfg_tokenise(linepos, ":", -1, 0);
-                if (numtokens < 3)
-                        continue;
+		/* get the name */
+		curtoken(tmpzapchannel.name, sizeof(tmpzapchannel.name), line, ':');
+		if ((line = nexttoken(line, ':')) == NULL)
+			continue;
 
-                /* the name */
-                tmpzapchannel.name = linepos;
-                linepos = dvbcfg_nexttoken(linepos);
+		/* the frequency */
+		if (sscanf(line, "%i", &tmpzapchannel.fe_params.frequency) != 1)
+			continue;
+		if ((line = nexttoken(line, ':')) == NULL)
+			continue;
 
-                /* the frequency */
-                if (sscanf(linepos, "%i", &val) != 1)
-                        continue;
-                tmpzapchannel.fe_params.frequency = val;
-                linepos = dvbcfg_nexttoken(linepos);
+		/* the frontend settings */
+		switch(tmpzapchannel.fe_type) {
+		case DVBFE_TYPE_DVBT:
+			/* inversion */
+			if ((val = parsesetting(line, inversion_list)) < 0)
+				continue;
+			tmpzapchannel.fe_params.inversion = val;
+			if ((line = nexttoken(line, ':')) == NULL)
+				continue;
 
-                /* the frontend settings */
-                switch(tmpzapchannel.fe_type) {
-                case DVBFE_TYPE_DVBT:
-                        if (numtokens < 12)
-                                continue;
-                        if (numtokens > 12)
-                                has_channel_number = 1;
+			/* bandwidth */
+			if ((val = parsesetting(line, bandwidth_list)) < 0)
+				continue;
+			tmpzapchannel.fe_params.u.dvbt.bandwidth = val;
+			if ((line = nexttoken(line, ':')) == NULL)
+				continue;
 
-                        /* inversion */
-                        if ((val = dvbcfg_parsesetting(linepos, inversion_list)) < 0)
-                                continue;
-                        tmpzapchannel.fe_params.inversion = val;
-                        linepos = dvbcfg_nexttoken(linepos);
+			/* FEC HP */
+			if ((val = parsesetting(line, fec_list)) < 0)
+				continue;
+			tmpzapchannel.fe_params.u.dvbt.code_rate_HP = val;
+			if ((line = nexttoken(line, ':')) == NULL)
+				continue;
 
-                        /* bandwidth */
-                        if ((val = dvbcfg_parsesetting(linepos, bandwidth_list)) < 0)
-                                continue;
-                        tmpzapchannel.fe_params.u.dvbt.bandwidth = val;
-                        linepos = dvbcfg_nexttoken(linepos);
+			/* FEC LP */
+			if ((val = parsesetting(line, fec_list)) < 0)
+				continue;
+			tmpzapchannel.fe_params.u.dvbt.code_rate_LP = val;
+			if ((line = nexttoken(line, ':')) == NULL)
+				continue;
 
-                        /* FEC HP */
-                        if ((val = dvbcfg_parsesetting(linepos, fec_list)) < 0)
-                                continue;
-                        tmpzapchannel.fe_params.u.dvbt.code_rate_HP = val;
-                        linepos = dvbcfg_nexttoken(linepos);
+			/* Constellation */
+			if ((val = parsesetting(line, constellation_list)) < 0)
+				continue;
+			tmpzapchannel.fe_params.u.dvbt.constellation = val;
+			if ((line = nexttoken(line, ':')) == NULL)
+				continue;
 
-                        /* FEC LP */
-                        if ((val = dvbcfg_parsesetting(linepos, fec_list)) < 0)
-                                continue;
-                        tmpzapchannel.fe_params.u.dvbt.code_rate_LP = val;
-                        linepos = dvbcfg_nexttoken(linepos);
+			/* Transmit mode */
+			if ((val = parsesetting(line, transmission_mode_list)) < 0)
+				continue;
+			tmpzapchannel.fe_params.u.dvbt.transmission_mode = val;
+			if ((line = nexttoken(line, ':')) == NULL)
+				continue;
 
-                        /* Constellation */
-                        if ((val = dvbcfg_parsesetting(linepos, constellation_list)) < 0)
-                                continue;
-                        tmpzapchannel.fe_params.u.dvbt.constellation = val;
-                        linepos = dvbcfg_nexttoken(linepos);
+			/* Guard interval */
+			if ((val = parsesetting(line, guard_interval_list)) < 0)
+				continue;
+			tmpzapchannel.fe_params.u.dvbt.guard_interval = val;
+			if ((line = nexttoken(line, ':')) == NULL)
+				continue;
 
-                        /* Transmit mode */
-                        if ((val = dvbcfg_parsesetting(linepos, transmission_mode_list)) < 0)
-                                continue;
-                        tmpzapchannel.fe_params.u.dvbt.transmission_mode = val;
-                        linepos = dvbcfg_nexttoken(linepos);
+			/* hierarchy */
+			if ((val = parsesetting(line, hierarchy_list)) < 0)
+				continue;
+			tmpzapchannel.fe_params.u.dvbt.hierarchy_information = val;
+			if ((line = nexttoken(line, ':')) == NULL)
+				continue;
+			break;
 
-                        /* Guard interval */
-                        if ((val = dvbcfg_parsesetting(linepos, guard_interval_list)) < 0)
-                                continue;
-                        tmpzapchannel.fe_params.u.dvbt.guard_interval = val;
-                        linepos = dvbcfg_nexttoken(linepos);
+		case DVBFE_TYPE_DVBC:
+			/* inversion */
+			if ((val = parsesetting(line, inversion_list)) < 0)
+				continue;
+			tmpzapchannel.fe_params.inversion = val;
+			if ((line = nexttoken(line, ':')) == NULL)
+				continue;
 
-                        /* hierarchy */
-                        if ((val = dvbcfg_parsesetting(linepos, hierarchy_list)) < 0)
-                                continue;
-                        tmpzapchannel.fe_params.u.dvbt.hierarchy_information = val;
-                        linepos = dvbcfg_nexttoken(linepos);
+			/* symrate */
+			if (sscanf(line, "%i", &val) != 1)
+				continue;
+			tmpzapchannel.fe_params.u.dvbc.symbol_rate = val;
+			if ((line = nexttoken(line, ':')) == NULL)
+				continue;
 
-                        break;
+			/* FEC */
+			if ((val = parsesetting(line, fec_list)) < 0)
+				continue;
+			tmpzapchannel.fe_params.u.dvbc.fec_inner = val;
+			if ((line = nexttoken(line, ':')) == NULL)
+				continue;
 
-                case DVBFE_TYPE_DVBC:
-                        if (numtokens < 8)
-                                continue;
-                        if (numtokens > 8)
-                                has_channel_number = 1;
+			/* modulation */
+			if ((val = parsesetting(line, qam_modulation_list)) < 0)
+				continue;
+			tmpzapchannel.fe_params.u.dvbc.modulation = val;
+			if ((line = nexttoken(line, ':')) == NULL)
+				continue;
+			break;
 
-                        /* inversion */
-                        if ((val = dvbcfg_parsesetting(linepos, inversion_list)) < 0)
-                                continue;
-                        tmpzapchannel.fe_params.inversion = val;
-                        linepos = dvbcfg_nexttoken(linepos);
+		case DVBFE_TYPE_DVBS:
+			/* adjust frequency */
+			tmpzapchannel.fe_params.frequency *= 1000;
 
-                        /* symrate */
-                        if (sscanf(linepos, "%i", &val) != 1)
-                                continue;
-                        tmpzapchannel.fe_params.u.dvbc.symbol_rate = val;
-                        linepos = dvbcfg_nexttoken(linepos);
-
-                        /* FEC */
-                        if ((val = dvbcfg_parsesetting(linepos, fec_list)) < 0)
-                                continue;
-                        tmpzapchannel.fe_params.u.dvbc.fec_inner = val;
-                        linepos = dvbcfg_nexttoken(linepos);
-
-                        /* modulation */
-                        if ((val = dvbcfg_parsesetting(linepos, qam_modulation_list)) < 0)
-                                continue;
-                        tmpzapchannel.fe_params.u.dvbc.modulation = val;
-                        linepos = dvbcfg_nexttoken(linepos);
-
-                        break;
-
-                case DVBFE_TYPE_DVBS:
-                        if (numtokens < 7)
-                                continue;
-                        if (numtokens > 7)
-                                has_channel_number = 1;
-
-                        /* adjust frequency */
-                        tmpzapchannel.fe_params.frequency *= 1000;
-
-                        /* inversion */
-                        tmpzapchannel.fe_params.inversion = DVBFE_INVERSION_AUTO;
-
-                        /* fec */
-			tmpzapchannel.fe_params.u.dvbs.fec_inner = DVBFE_FEC_AUTO;
-
-                        /* polarization */
-                        if (toupper(linepos[0]) == 'H')
-                                tmpzapchannel.polarization = DVBFE_POLARIZATION_H;
-                        else if (toupper(linepos[0]) == 'V')
-                                tmpzapchannel.polarization = DVBFE_POLARIZATION_V;
-                        else
-                                continue;
-                        linepos = dvbcfg_nexttoken(linepos);
-
-                        /* satellite switch position */
-                        if (sscanf(linepos, "%i", &val) != 1)
-                                continue;
-                        tmpzapchannel.satellite_switch = val;
-                        linepos = dvbcfg_nexttoken(linepos);
-
-                        /* symrate */
-                        if (sscanf(linepos, "%i", &val) != 1)
-                                continue;
-                        tmpzapchannel.fe_params.u.dvbs.symbol_rate = val;
-                        tmpzapchannel.fe_params.u.dvbs.symbol_rate *= 1000;
-                        linepos = dvbcfg_nexttoken(linepos);
-
-                        break;
-
-                case DVBFE_TYPE_ATSC:
-                        if (numtokens < 5)
-                                continue;
-                        if (numtokens > 5)
-                                has_channel_number = 1;
-
-                        /* inversion */
+			/* inversion */
 			tmpzapchannel.fe_params.inversion = DVBFE_INVERSION_AUTO;
 
-                        /* Modulation */
-                        if ((val = dvbcfg_parsesetting(linepos, atsc_modulation_list)) < 0)
-                                continue;
-                        tmpzapchannel.fe_params.u.atsc.modulation = val;
-                        linepos = dvbcfg_nexttoken(linepos);
+			/* fec */
+			tmpzapchannel.fe_params.u.dvbs.fec_inner = DVBFE_FEC_AUTO;
 
-                        break;
-                }
+			/* polarization */
+			if (toupper(line[0]) == 'H')
+				tmpzapchannel.polarization = DVBFE_POLARIZATION_H;
+			else if (toupper(line[0]) == 'V')
+				tmpzapchannel.polarization = DVBFE_POLARIZATION_V;
+			else
+				continue;
+			if ((line = nexttoken(line, ':')) == NULL)
+				continue;
 
-                /* finally, read in the PIDs */
-                if (sscanf(linepos, "%i", &val) != 1)
-                        continue;
-                tmpzapchannel.video_pid = val;
-                linepos = dvbcfg_nexttoken(linepos);
-                if (sscanf(linepos, "%i", &val) != 1)
-                        continue;
-                tmpzapchannel.audio_pid = val;
-                linepos = dvbcfg_nexttoken(linepos);
+			/* satellite switch position */
+			if (sscanf(line, "%i", &val) != 1)
+				continue;
+			tmpzapchannel.satellite_switch = val;
+			if ((line = nexttoken(line, ':')) == NULL)
+				continue;
 
-                /* this one may not be present in all config files */
-                if (has_channel_number) {
-                        if (sscanf(linepos, "%i", &val) != 1)
-                                continue;
-                        tmpzapchannel.channel_number = val;
-                }
+			/* symrate */
+			if (sscanf(line, "%i", &val) != 1)
+				continue;
+			tmpzapchannel.fe_params.u.dvbs.symbol_rate = val;
+			tmpzapchannel.fe_params.u.dvbs.symbol_rate *= 1000;
+			if ((line = nexttoken(line, ':')) == NULL)
+				continue;
+			break;
 
+		case DVBFE_TYPE_ATSC:
+			/* inversion */
+			tmpzapchannel.fe_params.inversion = DVBFE_INVERSION_AUTO;
 
-                /* create new entry */
-                newzapchannel = (struct dvbcfg_zapchannel *) malloc(sizeof(struct dvbcfg_zapchannel));
-                if (newzapchannel == NULL) {
-                        error = -ENOMEM;
-                        break;
-                }
-                memcpy(newzapchannel, &tmpzapchannel, sizeof(struct dvbcfg_zapchannel));
-                newzapchannel->name =
-                        dvbcfg_strdupandtrim(tmpzapchannel.name, -1);
-                if (!newzapchannel->name) {
-                        if (newzapchannel->name)
-                                free(newzapchannel->name);
-                        free(newzapchannel);
-                        error = -ENOMEM;
-                        break;
-                }
+			/* Modulation */
+			if ((val = parsesetting(line, atsc_modulation_list)) < 0)
+				continue;
+			tmpzapchannel.fe_params.u.atsc.modulation = val;
+			if ((line = nexttoken(line, ':')) == NULL)
+				continue;
 
-                /* add it into the list */
-                if (curzapchannel) {
-                        curzapchannel->next = newzapchannel;
-                        newzapchannel->prev = curzapchannel;
-                }
-                if (!*zapchannels)
-                        *zapchannels = newzapchannel;
-                curzapchannel = newzapchannel;
-        }
+			break;
+		}
 
-        /* tidy up and return */
-        if (error) {
-                dvbcfg_zapchannel_free_all(*zapchannels);
-                *zapchannels = NULL;
-        }
-        fclose(in);
-        return error;
+		/* finally, read in the PIDs */
+		if (sscanf(line, "%i", &tmpzapchannel.video_pid) != 1)
+			continue;
+		if ((line = nexttoken(line, ':')) == NULL)
+			continue;
+		if (sscanf(line, "%i", &tmpzapchannel.audio_pid) != 1)
+			continue;
+
+		/* this one may not be present in all config files */
+		if ((line = nexttoken(line, ':')) != NULL) {
+			if (sscanf(line, "%i", &tmpzapchannel.channel_number) != 1)
+				continue;
+		}
+
+		// tell caller
+		if (cb(private, &tmpzapchannel))
+			break;
+	}
+
+	if (linebuf)
+		free(linebuf);
+	return 0;
 }
 
-int dvbcfg_zapchannel_save(const char *config_file,
-			   struct dvbcfg_zapchannel *zapchannels)
+static int dvbcfg_zapchannel_find_callback(void *private, struct dvbcfg_zapchannel *channel);
+
+struct findparams {
+	char *channel_name;
+	struct dvbcfg_zapchannel *channel_dest;
+};
+
+int dvbcfg_zapchannel_find(const char *config_file,
+			   char *channel_name,
+			   struct dvbcfg_zapchannel *channel)
 {
-        FILE *out;
-        char polarization = 'h';
+	struct findparams findp;
 
-        /* open the file */
-        out = fopen(config_file, "w");
-        if (out == NULL)
-                return -errno;
+	// open the file
+	FILE *f = fopen(config_file, "r");
+	if (f == NULL)
+		return -EIO;
 
-        while (zapchannels) {
-                fprintf(out, "%s:", zapchannels->name);
+	// parse each entry
+	memset(channel, 0, sizeof(struct dvbcfg_zapchannel));
+	findp.channel_name = channel_name;
+	findp.channel_dest = channel;
+	dvbcfg_zapchannel_load(f, &findp, dvbcfg_zapchannel_find_callback);
 
-                switch(zapchannels->fe_type) {
+	// done
+	fclose(f);
+	if (channel->name[0])
+		return 0;
+	return -1;
+}
+
+static int dvbcfg_zapchannel_find_callback(void *private, struct dvbcfg_zapchannel *channel)
+{
+	struct findparams *findp = private;
+
+	if (strcmp(findp->channel_name, channel->name))
+		return 0;
+
+	memcpy(findp->channel_dest, channel, sizeof(struct dvbcfg_zapchannel));
+	return 1;
+}
+
+int dvbcfg_zapchannel_save(FILE *f,
+			   struct dvbcfg_zapchannel *channels,
+			   int count)
+{
+	int i;
+	char polarization = ' ';
+
+	for(i=0; i<count; i++) {
+		fprintf(f,  "%s:", channels[i].name);
+
+		switch(channels[i].fe_type) {
 		case DVBFE_TYPE_DVBT:
-                        fprintf(out, "%i:%s:%s:%s:%s:%s:%s:%s:%s:",
-                                zapchannels->fe_params.frequency,
-                                dvbcfg_lookupsetting(zapchannels->fe_params.inversion, inversion_list),
-                                dvbcfg_lookupsetting(zapchannels->fe_params.u.dvbt.bandwidth, bandwidth_list),
-                                dvbcfg_lookupsetting(zapchannels->fe_params.u.dvbt.code_rate_HP, fec_list),
-                                dvbcfg_lookupsetting(zapchannels->fe_params.u.dvbt.code_rate_LP, fec_list),
-                                dvbcfg_lookupsetting(zapchannels->fe_params.u.dvbt.constellation, constellation_list),
-                                dvbcfg_lookupsetting(zapchannels->fe_params.u.dvbt.transmission_mode, transmission_mode_list),
-                                dvbcfg_lookupsetting(zapchannels->fe_params.u.dvbt.guard_interval, guard_interval_list),
-                                dvbcfg_lookupsetting(zapchannels->fe_params.u.dvbt.hierarchy_information, hierarchy_list));
-                        break;
+			fprintf(f,  "%i:%s:%s:%s:%s:%s:%s:%s:%s:",
+				channels[i].fe_params.frequency,
+				lookupsetting(channels[i].fe_params.inversion, inversion_list),
+				lookupsetting(channels[i].fe_params.u.dvbt.bandwidth, bandwidth_list),
+				lookupsetting(channels[i].fe_params.u.dvbt.code_rate_HP, fec_list),
+				lookupsetting(channels[i].fe_params.u.dvbt.code_rate_LP, fec_list),
+				lookupsetting(channels[i].fe_params.u.dvbt.constellation, constellation_list),
+				lookupsetting(channels[i].fe_params.u.dvbt.transmission_mode, transmission_mode_list),
+				lookupsetting(channels[i].fe_params.u.dvbt.guard_interval, guard_interval_list),
+				lookupsetting(channels[i].fe_params.u.dvbt.hierarchy_information, hierarchy_list));
+			break;
 
-                case DVBFE_TYPE_DVBC:
-                        fprintf(out, "%i:%s:%i:%s:%s:",
-                                zapchannels->fe_params.frequency,
-                                dvbcfg_lookupsetting(zapchannels->fe_params.inversion, inversion_list),
-                                zapchannels->fe_params.u.dvbc.symbol_rate,
-                                dvbcfg_lookupsetting(zapchannels->fe_params.u.dvbc.fec_inner, fec_list),
-                                dvbcfg_lookupsetting(zapchannels->fe_params.u.dvbc.modulation, qam_modulation_list));
-                        break;
+		case DVBFE_TYPE_DVBC:
+			fprintf(f,  "%i:%s:%i:%s:%s:",
+				channels[i].fe_params.frequency,
+				lookupsetting(channels[i].fe_params.inversion, inversion_list),
+				channels[i].fe_params.u.dvbc.symbol_rate,
+				lookupsetting(channels[i].fe_params.u.dvbc.fec_inner, fec_list),
+				lookupsetting(channels[i].fe_params.u.dvbc.modulation, qam_modulation_list));
+			break;
 
-                case DVBFE_TYPE_DVBS:
-                        switch(zapchannels->polarization) {
-                        case DVBFE_POLARIZATION_H:
-                                polarization = 'h';
-                                break;
+		case DVBFE_TYPE_DVBS:
+			switch(channels[i].polarization) {
+			case DVBFE_POLARIZATION_H:
+				polarization = 'h';
+				break;
 
-                        case DVBFE_POLARIZATION_V:
-                                polarization = 'v';
-                                break;
-                        }
-                        fprintf(out, "%i:%c:%i:%i:",
-                                zapchannels->fe_params.frequency / 1000,
-                                polarization,
-                                zapchannels->satellite_switch,
-                                zapchannels->fe_params.u.dvbs.symbol_rate / 1000);
-                        break;
+			case DVBFE_POLARIZATION_V:
+				polarization = 'v';
+				break;
+			}
+			fprintf(f,  "%i:%c:%i:%i:",
+				channels[i].fe_params.frequency / 1000,
+				polarization,
+				channels[i].satellite_switch,
+				channels[i].fe_params.u.dvbs.symbol_rate / 1000);
+			break;
 
-                case DVBFE_TYPE_ATSC:
-                        fprintf(out, "%i:%s:",
-                                zapchannels->fe_params.frequency,
-                                dvbcfg_lookupsetting(zapchannels->fe_params.u.atsc.modulation, atsc_modulation_list));
-                        break;
-                }
-                fprintf(out, "%i:%i", zapchannels->video_pid, zapchannels->audio_pid);
-                if (zapchannels->channel_number)
-                        fprintf(out, ":%i", zapchannels->channel_number);
-                fprintf(out, "\n");
+		case DVBFE_TYPE_ATSC:
+			fprintf(f,  "%i:%s:",
+				channels[i].fe_params.frequency,
+				lookupsetting(channels[i].fe_params.u.atsc.modulation, atsc_modulation_list));
+			break;
+		}
+		fprintf(f,  "%i:%i", channels[i].video_pid, channels[i].audio_pid);
+		if (channels[i].channel_number)
+			fprintf(f,  ":%i", channels[i].channel_number);
+		fprintf(f,  "\n");
+	}
 
-                zapchannels = zapchannels->next;
-        }
-
-        fclose(out);
-        return 0;
+	return 0;
 }
 
-struct dvbcfg_zapchannel *dvbcfg_zapchannel_find(struct dvbcfg_zapchannel *zapchannels,
-                                                 char *name)
+static int parsesetting(char* text, const struct dvbcfg_setting* settings)
 {
-        while (zapchannels) {
-                if (!strcmp(name, zapchannels->name))
-                        return zapchannels;
+	while(settings->name) {
+		if (!strcmp(text, settings->name))
+			return settings->value;
 
-                zapchannels = zapchannels->next;
-        }
+		settings++;
+	}
 
-        return NULL;
+	return -1;
 }
 
-void dvbcfg_zapchannel_free(struct dvbcfg_zapchannel **zapchannels,
-                            struct dvbcfg_zapchannel *tofree)
+static char* lookupsetting(int setting, const struct dvbcfg_setting* settings)
 {
-        struct dvbcfg_zapchannel *prev;
-        struct dvbcfg_zapchannel *next;
+	while(settings->name) {
+		if (setting == settings->value)
+			return settings->name;
 
-        prev = tofree->prev;
-        next = tofree->next;
+		settings++;
+	}
 
-        /* free internal structures */
-        if (tofree->name)
-                free(tofree->name);
-        free(tofree);
-
-        /* adjust pointers */
-        if (prev == NULL)
-                *zapchannels = next;
-        else
-                prev->next = next;
-
-        if (next != NULL)
-                next->prev = prev;
+	return NULL;
 }
 
-void dvbcfg_zapchannel_free_all(struct dvbcfg_zapchannel *zapchannels)
+static void curtoken(char *dest, int len, char *src, int delimiter)
 {
-        while (zapchannels)
-                dvbcfg_zapchannel_free(&zapchannels, zapchannels);
+	while((len > 1) && (*src) && (*src != delimiter)) {
+		*dest++ = *src++;
+		len--;
+	}
+	*dest = 0;
+}
+
+static char *nexttoken(char *src, int delimiter)
+{
+	while(*src && (*src != delimiter))
+		src++;
+	if (*src)
+		return src;
+	return NULL;
 }

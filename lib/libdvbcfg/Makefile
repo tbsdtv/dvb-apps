@@ -4,15 +4,9 @@ CPPFLAGS += -I../../lib
 CFLAGS   += -g -O2 -Wall -W -Wshadow -Wpointer-arith -Wstrict-prototypes -fPIC
 LDFLAGS  += -shared
 
-includes = dvbcfg_common.h                 \
-           dvbcfg_util.h                   \
-           dvbcfg_vdrchannel.h             \
-           dvbcfg_zapchannel.h
+includes = dvbcfg_zapchannel.h
 
-objects  = dvbcfg_common.o                 \
-           dvbcfg_util.o                   \
-           dvbcfg_vdrchannel.o             \
-           dvbcfg_zapchannel.o
+objects  = dvbcfg_zapchannel.o
 
 sharedlib = libdvbcfg.so
 staticlib = libdvbcfg.a
