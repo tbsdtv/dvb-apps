@@ -276,9 +276,13 @@ int dvbcfg_zapchannel_load(FILE *f,
 
 			/* polarization */
 			if (toupper(line[0]) == 'H')
-				tmpzapchannel.polarization = DVBFE_POLARIZATION_H;
+				tmpzapchannel.fe_params.u.dvbs.polarization = DVBFE_POLARIZATION_H;
 			else if (toupper(line[0]) == 'V')
-				tmpzapchannel.polarization = DVBFE_POLARIZATION_V;
+				tmpzapchannel.fe_params.u.dvbs.polarization = DVBFE_POLARIZATION_V;
+			if (toupper(line[0]) == 'L')
+				tmpzapchannel.fe_params.u.dvbs.polarization = DVBFE_POLARIZATION_L;
+			else if (toupper(line[0]) == 'R')
+				tmpzapchannel.fe_params.u.dvbs.polarization = DVBFE_POLARIZATION_R;
 			else
 				continue;
 			if ((line = nexttoken(line, ':')) == NULL)
@@ -414,13 +418,21 @@ int dvbcfg_zapchannel_save(FILE *f,
 			break;
 
 		case DVBFE_TYPE_DVBS:
-			switch(channels[i].polarization) {
+			switch(channels[i].fe_params.u.dvbs.polarization) {
 			case DVBFE_POLARIZATION_H:
 				polarization = 'h';
 				break;
 
 			case DVBFE_POLARIZATION_V:
 				polarization = 'v';
+				break;
+
+			case DVBFE_POLARIZATION_L:
+				polarization = 'l';
+				break;
+
+			case DVBFE_POLARIZATION_R:
+				polarization = 'r';
 				break;
 			}
 			fprintf(f,  "%i:%c:%i:%i:",

@@ -34,7 +34,6 @@ struct dvbcfg_zapchannel
         char name[128];
         dvbfe_type_t fe_type;
         struct dvbfe_parameters fe_params;
-        int polarization;
         int satellite_switch;
         int video_pid;
         int audio_pid;
@@ -58,7 +57,8 @@ typedef int (*dvbcfg_zapchannel_callback)(void *private, struct dvbcfg_zapchanne
 /**
  * Load a *zap format channels file.
  *
- * @param fd File descriptor to load from.
+ * @param f File to load from.
+ * @param private Value to pass to 'private' in callback above.
  * @param cb Callback function called for each channel loaded from the file.
  * @return 0 on success, or nonzero error code on failure.
  */
@@ -80,7 +80,7 @@ extern int dvbcfg_zapchannel_find(const char *config_file,
 /**
  * Save *zap format channels to a config file.
  *
- * @param fd File descriptor to save to.
+ * @param f File to save to.
  * @param channels Pointer to array of channels to save.
  * @param count Number of entries in the above array.
  * @return 0 on success, or nonzero error code on failure.
