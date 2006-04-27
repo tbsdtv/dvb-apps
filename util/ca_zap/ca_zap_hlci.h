@@ -22,14 +22,14 @@
 #ifndef CA_ZAP_HLCI_H
 #define CA_ZAP_HLCI_H
 
-extern int hlci_init();
+extern int hlci_init(void);
 
 extern int hlci_cam_added(int cafd);
 
-extern void hlci_cam_removed();
+extern void hlci_cam_removed(void);
 
-extern void hlci_poll();
+extern void hlci_poll(void);
 
-extern void hlci_shutdown();
+extern void hlci_shutdown(void);
 
 #endif

@@ -24,14 +24,14 @@
 
 #include <stdint.h>
 
-extern int llci_init();
+extern int llci_init(void);
 
 extern int llci_cam_added(int cafd, uint8_t slot);
 
-extern void llci_cam_removed();
+extern void llci_cam_removed(void);
 
-extern void llci_poll();
+extern void llci_poll(void);
 
-extern void llci_shutdown();
+extern void llci_shutdown(void);
 
 #endif

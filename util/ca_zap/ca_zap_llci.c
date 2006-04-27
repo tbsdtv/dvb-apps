@@ -73,15 +73,15 @@ int slot_id = -1;
 int lasterror = 0;
 
 // function declarations
-static int llci_lookup_callback(void *arg, uint8_t slot_id, uint32_t requested_resource_id,
+static int llci_lookup_callback(void *arg, uint8_t _slot_id, uint32_t requested_resource_id,
 				en50221_sl_resource_callback *callback_out, void **arg_out,
 				uint32_t *connected_resource_id);
-static int llci_session_callback(void *arg, int reason, uint8_t slot_id, uint16_t session_number, uint32_t resource_id);
-static int llci_rm_enq_callback(void *arg, uint8_t slot_id, uint16_t session_number);
-static int llci_rm_reply_callback(void *arg, uint8_t slot_id, uint16_t session_number, uint32_t resource_id_count, uint32_t *resource_ids);
-static int llci_rm_changed_callback(void *arg, uint8_t slot_id, uint16_t session_number);
+static int llci_session_callback(void *arg, int reason, uint8_t _slot_id, uint16_t session_number, uint32_t resource_id);
+static int llci_rm_enq_callback(void *arg, uint8_t _slot_id, uint16_t session_number);
+static int llci_rm_reply_callback(void *arg, uint8_t _slot_id, uint16_t session_number, uint32_t resource_id_count, uint32_t *_resource_ids);
+static int llci_rm_changed_callback(void *arg, uint8_t _slot_id, uint16_t session_number);
 
-static int llci_datetime_enquiry_callback(void *arg, uint8_t slot_id, uint16_t session_number, uint8_t response_interval);
+static int llci_datetime_enquiry_callback(void *arg, uint8_t _slot_id, uint16_t session_number, uint8_t response_interval);
 
 
 int llci_init()
@@ -240,13 +240,13 @@ void llci_shutdown()
 	en50221_app_datetime_destroy(datetime_resource);
 }
 
-static int llci_lookup_callback(void *arg, uint8_t slot_id, uint32_t requested_resource_id,
+static int llci_lookup_callback(void *arg, uint8_t _slot_id, uint32_t requested_resource_id,
 				en50221_sl_resource_callback *callback_out, void **arg_out,
 				uint32_t *connected_resource_id)
 {
 	struct en50221_app_public_resource_id resid;
 	(void) arg;
-	(void) slot_id;
+	(void) _slot_id;
 
 	// decode the resource id
 	if (!en50221_app_decode_public_resource_id(&resid, requested_resource_id)) {
@@ -268,10 +268,10 @@ static int llci_lookup_callback(void *arg, uint8_t slot_id, uint32_t requested_r
 	return -1;
 }
 
-static int llci_session_callback(void *arg, int reason, uint8_t slot_id, uint16_t session_number, uint32_t resource_id)
+static int llci_session_callback(void *arg, int reason, uint8_t _slot_id, uint16_t session_number, uint32_t resource_id)
 {
 	(void) arg;
-	(void) slot_id;
+	(void) _slot_id;
 
 	switch(reason) {
 	case S_SCALLBACK_REASON_CAMCONNECTED:
@@ -292,10 +292,10 @@ static int llci_session_callback(void *arg, int reason, uint8_t slot_id, uint16_
 	return 0;
 }
 
-static int llci_rm_enq_callback(void *arg, uint8_t slot_id, uint16_t session_number)
+static int llci_rm_enq_callback(void *arg, uint8_t _slot_id, uint16_t session_number)
 {
 	(void) arg;
-	(void) slot_id;
+	(void) _slot_id;
 
 	if (en50221_app_rm_reply(rm_resource, session_number, resource_ids_count, resource_ids)) {
 		printf("Failed to send reply to ENQ\n");
@@ -303,12 +303,12 @@ static int llci_rm_enq_callback(void *arg, uint8_t slot_id, uint16_t session_num
 	return 0;
 }
 
-static int llci_rm_reply_callback(void *arg, uint8_t slot_id, uint16_t session_number, uint32_t resource_id_count, uint32_t *resource_ids)
+static int llci_rm_reply_callback(void *arg, uint8_t _slot_id, uint16_t session_number, uint32_t resource_id_count, uint32_t *_resource_ids)
 {
 	(void) arg;
-	(void) slot_id;
+	(void) _slot_id;
 	(void) resource_id_count;
-	(void) resource_ids;
+	(void) _resource_ids;
 
 	if (en50221_app_rm_changed(rm_resource, session_number)) {
 		printf("Failed to send REPLY\n");
@@ -316,10 +316,10 @@ static int llci_rm_reply_callback(void *arg, uint8_t slot_id, uint16_t session_n
 	return 0;
 }
 
-static int llci_rm_changed_callback(void *arg, uint8_t slot_id, uint16_t session_number)
+static int llci_rm_changed_callback(void *arg, uint8_t _slot_id, uint16_t session_number)
 {
 	(void) arg;
-	(void) slot_id;
+	(void) _slot_id;
 
 	if (en50221_app_rm_enq(rm_resource, session_number)) {
 		printf("Failed to send ENQ\n");
@@ -327,10 +327,10 @@ static int llci_rm_changed_callback(void *arg, uint8_t slot_id, uint16_t session
 	return 0;
 }
 
-static int llci_datetime_enquiry_callback(void *arg, uint8_t slot_id, uint16_t session_number, uint8_t response_interval)
+static int llci_datetime_enquiry_callback(void *arg, uint8_t _slot_id, uint16_t session_number, uint8_t response_interval)
 {
 	(void) arg;
-	(void) slot_id;
+	(void) _slot_id;
 
 	datetime_response_intervals[session_number] = response_interval;
 	datetime_next_send[session_number] = 0;

@@ -93,8 +93,8 @@ int hlci_cam_added(int _cafd)
 	// we forge a fake CA_INFO here so the main ca_zap code works -
 	// this will be replaced with a proper call (below) when the driver support is there
 	buf[0] = TAG_CA_INFO >> 16;
-	buf[1] = TAG_CA_INFO >> 8;
-	buf[2] = TAG_CA_INFO;
+	buf[1] = (uint8_t) (TAG_CA_INFO >> 8);
+	buf[2] = (uint8_t) TAG_CA_INFO;
 	buf[3] = 0;
 	if (en50221_app_ca_message(ca_resource, 0, 0, EN50221_APP_CA_RESOURCEID, buf, 4)) {
 		fprintf(stderr, "Failed to parse AI INFO\n");

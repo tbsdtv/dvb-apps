@@ -65,7 +65,7 @@ static int cazap_mmi_menu_callback(void *arg, uint8_t slot_id, uint16_t session_
 
 static void *dvbthread_func(void* arg);
 static void *camthread_func(void* arg);
-static void signal_handler(int signal);
+static void signal_handler(int _signal);
 
 static int create_section_filter(int adapter, int demux, uint16_t pid, uint8_t table_id);
 static void process_pat(int pat_fd, int *pat_version, int *pmt_fd, int *pmt_version, struct pollfd *pollfd);
@@ -97,7 +97,7 @@ int ca_device = 0;
 int move_to_programme = 0;
 int cafd;
 int ca_type;
-struct dvbcfg_zapchannel *channel;
+struct dvbcfg_zapchannel channel;
 time_t dvb_time = 0;
 
 int camthread_shutdown = 0;
@@ -106,7 +106,7 @@ int quit_app = 0;
 
 void usage(void)
 {
-	static const char *usage = "\n"
+	static const char *_usage = "\n"
 		" CA-ZAP: A CA zapping application\n"
 		" Copyright (C) 2004, 2005 Manu Abraham (manu@kromtek.com)\n\n"
 		" usage: ca_zap options\n"
@@ -118,7 +118,7 @@ void usage(void)
 		" -s	ca slot to use (default 0)\n"
 		" -m    Move CA descriptors from stream to programme level if possible\n";
 
-	fprintf(stderr, "%s\n", usage);
+	fprintf(stderr, "%s\n", _usage);
 
 	exit(1);
 }
@@ -127,7 +127,6 @@ void usage(void)
 
 int main(int argc, char *argv[])
 {
-	struct dvbcfg_zapchannel *channels = NULL;
 	pthread_t dvbthread;
 	pthread_t camthread;
 	char chanfile[PATH_MAX];
@@ -176,14 +175,8 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	// parse the supplied channel list
-	if (dvbcfg_zapchannel_load(chanfile, &channels)) {
-		fprintf(stderr, "Failed to load channels %s\n", chanfile);
-		exit(1);
-	}
-
 	// find the requested channel
-	if ((channel = dvbcfg_zapchannel_find(channels, channel_name)) == NULL) {
+	if (dvbcfg_zapchannel_find(chanfile, channel_name, &channel)) {
 		fprintf(stderr, "Unable to find requested channel %s\n", channel_name);
 		exit(1);
 	}
@@ -322,9 +315,9 @@ int main(int argc, char *argv[])
 	exit(0);
 }
 
-static void signal_handler(int signal)
+static void signal_handler(int _signal)
 {
-	(void) signal;
+	(void) _signal;
 
 	if (!quit_app) {
 		printf("Shutting down..\n");
@@ -528,7 +521,7 @@ static void process_pat(int pat_fd, int *pat_version, int *pmt_fd, int *pmt_vers
 	// try and find the requested program
 	struct mpeg_pat_program *cur_program;
 	mpeg_pat_section_programs_for_each(pat, cur_program) {
-		if (cur_program->program_number == channel->channel_number) {
+		if (cur_program->program_number == channel.channel_number) {
 			// close old PMT fd
 			if (*pmt_fd != -1)
 				close(*pmt_fd);
@@ -621,7 +614,6 @@ static void process_pmt(int pmt_fd, int *pmt_version)
 			listmgmt = CA_LIST_MANAGEMENT_UPDATE;
 		}
 
-		int size;
 		if ((size = en50221_ca_format_pmt(pmt, capmt, sizeof(capmt),
 		     				  move_to_programme, listmgmt, CA_PMT_CMD_ID_OK_DESCRAMBLING)) < 0) {
 			fprintf(stderr, "Failed to format PMT\n");
