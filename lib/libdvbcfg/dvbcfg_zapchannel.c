@@ -447,8 +447,12 @@ int dvbcfg_zapchannel_save(FILE *f,
 
 static int parsesetting(char* text, const struct dvbcfg_setting* settings)
 {
+	char tmp[128];
+
+	curtoken(tmp, sizeof(tmp), text, ':');
+
 	while(settings->name) {
-		if (!strcmp(text, settings->name))
+		if (!strcmp(tmp, settings->name))
 			return settings->value;
 
 		settings++;
@@ -482,6 +486,10 @@ static char *nexttoken(char *src, int delimiter)
 {
 	while(*src && (*src != delimiter))
 		src++;
+	if (*src == 0)
+		return NULL;
+
+	src++;
 	if (*src)
 		return src;
 	return NULL;

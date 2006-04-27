@@ -65,11 +65,13 @@ int zapload_callback(void *private, struct dvbcfg_zapchannel *channel)
 {
 	(void) private;
 
-	struct dvbcfg_zapchannel *tmp = realloc(zapchannels, zapcount * sizeof(struct dvbcfg_zapchannel));
+	struct dvbcfg_zapchannel *tmp = realloc(zapchannels, (zapcount+1) * sizeof(struct dvbcfg_zapchannel));
 	if (tmp == NULL) {
 		fprintf(stderr, "Out of memory\n");
 		exit(1);
 	}
+	zapchannels = tmp;
+
 	memcpy(&zapchannels[zapcount++], channel, sizeof(struct dvbcfg_zapchannel));
 
 	return 0;

@@ -31,11 +31,15 @@ TARGETS = \
 #	test_video	\
 
 all: $(TARGETS)
+	make -C libdvbcfg
+	make -C libdvben50221
 
 test_sections test_sec_ne test_pes test_tt: hex_dump.o
 
 clean:
 	rm -f $(TARGETS) *.o
+	make -C libdvbcfg clean
+	make -C libdvben50221 clean
 
 install:
 
