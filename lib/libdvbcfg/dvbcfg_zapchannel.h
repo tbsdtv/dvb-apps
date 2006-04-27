@@ -66,7 +66,7 @@ extern int dvbcfg_zapchannel_load(FILE *f, void *private,
 				  dvbcfg_zapchannel_callback cb);
 
 /**
- * Convenience function to parse a config file to find details of a channel.
+ * Convenience function to parse a config file and find details of a channel.
  *
  * @param config_file Config filename to load.
  * @param channel_name Name of channel to find.
