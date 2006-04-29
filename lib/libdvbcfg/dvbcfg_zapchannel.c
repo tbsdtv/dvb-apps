@@ -279,7 +279,7 @@ int dvbcfg_zapchannel_load(FILE *f,
 				tmpzapchannel.fe_params.u.dvbs.polarization = DVBFE_POLARIZATION_H;
 			else if (toupper(line[0]) == 'V')
 				tmpzapchannel.fe_params.u.dvbs.polarization = DVBFE_POLARIZATION_V;
-			if (toupper(line[0]) == 'L')
+			else if (toupper(line[0]) == 'L')
 				tmpzapchannel.fe_params.u.dvbs.polarization = DVBFE_POLARIZATION_L;
 			else if (toupper(line[0]) == 'R')
 				tmpzapchannel.fe_params.u.dvbs.polarization = DVBFE_POLARIZATION_R;
