@@ -27,9 +27,7 @@
 #include <libucsi/dvb/types.h>
 #include <libdvbapi/dvbdemux.h>
 #include <libdvbapi/dvbfe.h>
-#include <libdvbcfg/dvbcfg_seed_backend_file.h>
-#include <libdvbcfg/dvbcfg_diseqc_backend_file.h>
-#include <libdvbcfg/dvbcfg_source.h>
+#include <libdvbcfg/dvbcfg_zapchannel.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <errno.h>
@@ -40,6 +38,7 @@ void parse_section(uint8_t *buf, int len, int pid);
 void parse_descriptor(struct descriptor *d, int indent);
 void iprintf(int indent, char *fmt, ...);
 void hexdump(int indent, char *prefix, uint8_t *buf, int buflen);
+int zapchannels_cb(void *private, struct dvbcfg_zapchannel *channel);
 
 #define TIME_CHECK_VAL 1131835761
 #define DURATION_CHECK_VAL 5643
@@ -47,38 +46,28 @@ void hexdump(int indent, char *prefix, uint8_t *buf, int buflen);
 #define MAX_TUNE_TIME 3000
 #define MAX_DUMP_TIME 60
 
+struct dvbfe_handle *fe;
+struct dvbfe_info feinfo;
+int demuxfd;
+int dvrfd;
 
 int main(int argc, char *argv[])
 {
-	int demuxfd;
-	int dvrfd;
 	int adapter;
-	char *seedfile;
-	char *diseqcfile;
+	char *channelsfile;
 	int pidlimit = -1;
 	dvbdate_t dvbdate;
 	dvbduration_t dvbduration;
-	struct dvbcfg_seed_backend *seedbackend;
-	struct dvbcfg_seed *seeds = NULL;
-	struct dvbcfg_diseqc_backend *diseqcbackend;
-	struct dvbcfg_diseqc *diseqcs = NULL;
-	struct dvbcfg_source *sources = NULL;
-	dvbfe_handle_t fe;
-	struct dvbfe_info feinfo;
-	struct dvbcfg_diseqc *diseqc_wildcard;
-	struct dvbcfg_diseqc *diseqc;
-	struct dvbcfg_diseqc_entry *dentry;
 
 	// process arguments
-	if ((argc < 4) || (argc > 5)) {
-		fprintf(stderr, "Syntax: testucsi <adapter id> <seed file> <diseqc file> [<pid to limit to>]\n");
+	if ((argc < 3) || (argc > 4)) {
+		fprintf(stderr, "Syntax: testucsi <adapter id> <channels file> [<pid to limit to>]\n");
 		exit(1);
 	}
 	adapter = atoi(argv[1]);
-	seedfile = argv[2];
-	diseqcfile = argv[3];
-	if (argc == 5)
-		sscanf(argv[4], "%i", &pidlimit);
+	channelsfile = argv[2];
+	if (argc == 4)
+		sscanf(argv[3], "%i", &pidlimit);
 	printf("Using adapter %i\n", adapter);
 
 	// check the dvbdate conversion functions
@@ -105,26 +94,6 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	// try and open the seed file
-	if (dvbcfg_seed_backend_file_create(seedfile, 1, &sources, 1, &seedbackend)) {
-		fprintf(stderr, "XXXX Failed to create seed backend\n");
-		exit(1);
-	}
-	if (dvbcfg_seed_load(seedbackend, &seeds)) {
-		fprintf(stderr, "XXXX Failed to load seeds from supplied file\n");
-		exit(1);
-	}
-
-	// try and open the disqec file
-	if (dvbcfg_diseqc_backend_file_create(diseqcfile, &sources, 1, &diseqcbackend)) {
-		fprintf(stderr, "XXXX Failed to create diseqc backend\n");
-		exit(1);
-	}
-	if (dvbcfg_diseqc_load(diseqcbackend, &diseqcs)) {
-		fprintf(stderr, "XXXX Failed to load disecqs from supplied file\n");
-		exit(1);
-	}
-
 	// open demux devices
 	if ((demuxfd = dvbdemux_open_demux(adapter, 0, 0)) < 0) {
 		perror("demux");
@@ -147,40 +116,34 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	// process all seeds
-	diseqc_wildcard = dvbcfg_diseqc_find(diseqcs, NULL);
-	while(seeds) {
-		struct dvbfe_parameters delivery;
-		delivery = seeds->delivery.u.dvb;
-		if (feinfo.type == DVBFE_TYPE_DVBS) {
-			if ((diseqc = dvbcfg_diseqc_find(diseqcs, seeds->source)) == NULL) {
-				diseqc = diseqc_wildcard;
-			}
-			if (diseqc != NULL) {
-				if ((dentry = dvbcfg_diseqc_find_entry(diseqc,
-						seeds->delivery.u.dvb.frequency,
-						seeds->delivery.u.dvb.u.dvbs.polarization)) != NULL) {
-					printf("Diseqc: %s\n", dentry->command);
-					delivery.frequency -= dentry->lof;
-					dvbfe_diseqc_command(fe, dentry->command);
-				}
-			}
-		}
-
-		printf("Tuning to: %i(%i) %i %i\n",
-		       seeds->delivery.u.dvb.frequency,
-		       delivery.frequency,
-		       delivery.u.dvbs.symbol_rate,
-		       delivery.u.dvbs.fec_inner);
-		if (dvbfe_set(fe, &delivery, MAX_TUNE_TIME)) {
-			fprintf(stderr, "Failed to lock!\n");
-		} else {
-			printf("Tuned successfully!\n");
-			receive_data(dvrfd, MAX_DUMP_TIME);
-		}
-
-		seeds = seeds->next;
+	// process all the channels
+	FILE *channels = fopen(channelsfile, "r");
+	if (channels == NULL) {
+		fprintf(stderr, "Unable to open %s\n", channelsfile);
+		exit(1);
 	}
+        dvbcfg_zapchannel_load(channels, NULL, zapchannels_cb);
+        return 0;
+}
+
+int zapchannels_cb(void *private, struct dvbcfg_zapchannel *channel)
+{
+        (void) private;
+
+        if (feinfo.type == DVBFE_TYPE_DVBS) {
+                // FIXME: do diseqc
+        }
+
+        printf("Tuning to: %i %i %i\n",
+                channel->fe_params.frequency,
+                channel->fe_params.u.dvbs.symbol_rate,
+                channel->fe_params.u.dvbs.fec_inner);
+        if (dvbfe_set(fe, &channel->fe_params, MAX_TUNE_TIME)) {
+                fprintf(stderr, "Failed to lock!\n");
+        } else {
+                printf("Tuned successfully!\n");
+                receive_data(dvrfd, MAX_DUMP_TIME);
+        }
 
 	return 0;
 }
