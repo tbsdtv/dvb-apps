@@ -1,9 +1,20 @@
-Prerequisites:
+Requirements:
 
-- ttusb_dec_reset depends on libusb; is you don't need it
-  you can uncomment it from util/Makefile
+- ttusb_dec_reset depends on libusb; to build it
+  you have to specify ttusb_dec_reset=1 (see below)
 
-Building and installing:
+Building:
 
-$ make bindir=/usr/local/bin datadir=/usr/local/share libdir=/usr/local/lib
-$ make bindir=/usr/local/bin datadir=/usr/local/share libdir=/usr/local/lib DESTDIR=/foo/bar install
+simply type
+$ make
+
+to also build ttusb_dec_reset type
+$ make ttusb_dec_reset=1
+
+Installing:
+
+$ make install
+installs libraries and utils to /usr/[bin,include,lib]
+
+$ make install prefix=<path>
+installs libraries and utils to <path>/[bin,include,lib]

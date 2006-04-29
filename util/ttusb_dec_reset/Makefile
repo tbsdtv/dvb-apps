@@ -1,25 +1,27 @@
-CC	= gcc
-RM	= rm -f
-CFLAGS  ?= -g -Wall -O2 
-CFLAGS  += $(ARCH)
-CPPFLAGS += $(DEFS)
-LFLAGS	= -g -Wall
-LDFLAGS = -lusb
-bindir  = /usr/local/bin
+# Makefile for linuxtv.org dvb-apps/util/ttusb_dec_reset
 
-OBJS	= ttusb_dec_reset.o
-TARGET	= ttusb_dec_reset
+CFLAGS ?= -g -O2 -Wall -W -Wshadow -Wpointer-arith -Wstrict-prototypes
+LDLIBS += -lusb
 
-all: $(TARGET)
+binaries = ttusb_dec_reset
 
-$(TARGET): $(OBJS)
-	$(CC) $(LFLAGS) $(LDFLAGS) -o $(TARGET) $(OBJS)
+ifeq ($(prefix),)
+prefix = /usr
+endif
 
-.c.o:
-	$(CC) $(CFLAGS) -c $< -o $@
+.PHONY: all clean install
+
+ifeq ($(ttusb_dec_reset),1)
+all:		$(binaries)
+else
+all:		clean
+endif
 
 clean:
-	$(RM) *.o $(TARGET)
+	rm -f $(binaries)
 
-install: $(TARGET)
-	install -m 755 $(TARGET) $(DESTDIR)$(bindir)
+install:
+ifneq ($(realpath $(binaries)),)
+	mkdir -p $(prefix)/bin
+	cp $(binaries) $(prefix)/bin
+endif

@@ -1,7 +1,7 @@
 # Makefile for linuxtv.org dvb-apps/util/dvbnet
 
 CPPFLAGS += -I../../include
-CFLAGS   += -g -O2 -Wall -W -Wshadow -Wpointer-arith -Wstrict-prototypes
+CFLAGS   ?= -g -O2 -Wall -W -Wshadow -Wpointer-arith -Wstrict-prototypes
 
 binaries = dvbnet
 

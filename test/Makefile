@@ -1,45 +1,37 @@
-# Makefile for Linux DVB API Version 3 test programs
+# Makefile for linuxtv.org dvb-apps/test
 
-CC = gcc
-CFLAGS ?= -g -O2 -W -Wall
-CFLAGS += -D__user= $(ARCH)
-CPPFLAGS += -I../include $(DEFS)
+CPPFLAGS += -I../../include
+CFLAGS   ?= -g -O2 -Wall -W -Wshadow -Wpointer-arith -Wstrict-prototypes
 
-TARGETS = \
-	diseqc		\
-	set22k		\
-	sendburst	\
-	setvoltage	\
-	setpid		\
-	video		\
-	test_sections	\
-	test_sec_ne	\
-	test_pes	\
-	test_dvr	\
-	test_dvr_play	\
-	test_tt		\
-	test_av		\
-	test_av_play	\
-	test_vevent	\
-	test_stc	\
-	test_stillimage
+binaries = diseqc          \
+           sendburst       \
+           set22k          \
+           setpid          \
+           setvoltage      \
+           test_av         \
+           test_av_play    \
+           test_dvr        \
+           test_dvr_play   \
+           test_pes        \
+           test_sec_ne     \
+           test_sections   \
+           test_stc        \
+           test_stillimage \
+           test_tt         \
+           test_vevent     \
+           video
 
-#	test		\
-#	test_audio	\
-#	test_front	\
-#	test_switch	\
-#	test_video	\
+.PHONY: all clean install
 
-all: $(TARGETS)
-	make -C libdvbcfg
-	make -C libdvben50221
+all:		$(binaries)
+	make -C libdvbcfg $@
+	make -C libdvben50221 $@
 
-test_sections test_sec_ne test_pes test_tt: hex_dump.o
+test_pes test_sec_ne test_sections test_tt: hex_dump.o
 
 clean:
-	rm -f $(TARGETS) *.o
-	make -C libdvbcfg clean
-	make -C libdvben50221 clean
+	rm -f hex_dump.o $(binaries)
+	make -C libdvbcfg $@
+	make -C libdvben50221 $@
 
 install:
-

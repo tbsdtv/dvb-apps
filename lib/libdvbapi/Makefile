@@ -1,8 +1,7 @@
 # Makefile for linuxtv.org dvb-apps/lib/libdvbapi
 
 CPPFLAGS += -I../../include -I../../lib
-CFLAGS   += -g -O2 -Wall -W -Wshadow -Wpointer-arith -Wstrict-prototypes -fPIC
-LDFLAGS  += -shared
+CFLAGS   ?= -g -O2 -Wall -W -Wshadow -Wpointer-arith -Wstrict-prototypes -fPIC
 
 includes = diseqc.h   \
            dvbca.h    \
@@ -28,7 +27,7 @@ endif
 all:		$(sharedlib) $(staticlib)
 
 $(sharedlib):	$(objects)
-	$(CC) $(LDFLAGS) -o $(sharedlib) $(objects)
+	$(LD) -shared -o $(sharedlib) $(objects)
 
 $(staticlib):	$(objects)
 	$(AR) rcs $(staticlib) $(objects)

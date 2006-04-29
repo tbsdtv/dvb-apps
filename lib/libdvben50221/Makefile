@@ -1,8 +1,7 @@
 # Makefile for linuxtv.org dvb-apps/lib/libdvben50221
 
 CPPFLAGS += -I../../lib
-CFLAGS   += -g -O2 -Wall -W -Wshadow -Wpointer-arith -Wstrict-prototypes -fPIC
-LDFLAGS  += -shared
+CFLAGS   ?= -g -O2 -Wall -W -Wshadow -Wpointer-arith -Wstrict-prototypes -fPIC
 
 includes = asn_1.h                 \
            en50221_app_ai.h        \
@@ -52,7 +51,7 @@ CFLAGS += -DLOG_LEVEL=1 # FIXME
 all:		$(sharedlib) $(staticlib)
 
 $(sharedlib):	$(objects)
-	$(CC) $(LDFLAGS) -o $(sharedlib) $(objects)
+	$(LD) -shared -o $(sharedlib) $(objects)
 
 $(staticlib):	$(objects)
 	$(AR) rcs $(staticlib) $(objects)

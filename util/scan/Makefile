@@ -1,48 +1,36 @@
+# Makefile for linuxtv.org dvb-apps/util/scan
 
-CC = gcc
-CFLAGS ?= -g -Wall -O2
-CFLAGS +=$(ARCH)
-CPPFLAGS += -MD -I../../include $(DEFS)
-LFLAGS = -g -Wall
-DEFS = '-DDATADIR="$(datadir)"'
-bindir = /usr/local/bin
-datadir = /usr/local/share
+CPPFLAGS += -I../../include
+CFLAGS   ?= -g -O2 -Wall -W -Wshadow -Wpointer-arith -Wstrict-prototypes
 
-OBJS = diseqc.o dump-zap.o dump-vdr.o scan.o section.o atsc_psip_section.o lnb.o
-SRCS = $(OBJS:.o=.c)
+objects  = atsc_psip_section.o \
+           diseqc.o            \
+           dump-vdr.o          \
+           dump-zap.o          \
+           lnb.o               \
+           scan.o              \
+           section.o
 
-DYNSRC = atsc_psip_section.c atsc_psip_section.h
+binaries = scan
 
-TARGET = dvbscan
-TARGETS = $(TARGET) atscscan
+ifeq ($(prefix),)
+prefix = /usr
+endif
 
-all: $(TARGET)
+.PHONY: all clean install
 
-$(TARGET): $(DYNSRC) $(OBJS)
-	$(CC) $(LFLAGS) -o $(TARGET) $(OBJS)
-	cp dvbscan atscscan
+all:		$(binaries)
 
-.c.o:
-	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+$(binaries):	$(objects)
+
+$(objects):	atsc_psip_section.c atsc_psip_section.h
+
+atsc_psip_section.c atsc_psip_section.h:
+	perl section_generate.pl atsc_psip_section.pl
 
 clean:
-	$(RM) *.o *.d $(TARGETS) $(DYNSRC)
+	rm -f atsc_psip_section.c atsc_psip_section.h $(objects) $(binaries)
 
-install: install-bin install-data
-install-bin:
-	test "$(bindir)/" != "/"
-	mkdir -p $(DESTDIR)$(bindir)/
-	for i in $(TARGETS) ; do cp $$i $(DESTDIR)$(bindir)/ ; done
-install-data:
-	test "$(datadir)/" != "/"
-	mkdir -p $(DESTDIR)$(datadir)/dvb
-	for d in dvb-* atsc ; do test -d $$d || continue ; echo ..... $$d ..... \
-	; mkdir -p $(DESTDIR)$(datadir)/dvb/scan/$$d/ \
-	; cp `find $$d -type f|grep -v CVS` $(DESTDIR)$(datadir)/dvb/scan/$$d/ ; done
-
--include $(wildcard *.d) dummy
-
-atsc_psip_section.h: atsc_psip_section.c
-
-atsc_psip_section.c: atsc_psip_section.pl section_generate.pl
-	perl section_generate.pl atsc_psip_section.pl
+install:
+	mkdir -p $(prefix)/bin
+	cp $(binaries) $(prefix)/bin
