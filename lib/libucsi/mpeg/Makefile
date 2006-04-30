@@ -1,9 +1,5 @@
 # Makefile for linuxtv.org dvb-apps/lib/libucsi/mpeg
 
-ifeq ($(MAKELEVEL),0)
-$(error You can't use this makefile directly.)
-endif
-
 objects += mpeg/cat_section.o      \
            mpeg/metadata_section.o \
            mpeg/odsmt_section.o    \
@@ -53,7 +49,10 @@ sub-includes = audio_stream_descriptor.h                 \
 
 sub-install += mpeg
 
-.PHONY: sub-install-mpeg
+.PHONY: sub-error-mpeg sub-install-mpeg
+
+sub-error-mpeg:
+	$(error You can't use this makefile directly.)
 
 sub-install-mpeg:
 	mkdir -p $(prefix)/include/libucsi/mpeg

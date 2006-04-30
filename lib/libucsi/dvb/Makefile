@@ -1,9 +1,5 @@
 # Makefile for linuxtv.org dvb-apps/lib/libucsi/dvb
 
-ifeq ($(MAKELEVEL),0)
-$(error You can't use this makefile directly.)
-endif
-
 objects += dvb/bat_section.o           \
            dvb/dit_section.o           \
            dvb/eit_section.o           \
@@ -100,7 +96,10 @@ sub-includes = ac3_descriptor.h                                    \
 
 sub-install += dvb
 
-.PHONY: sub-install-dvb
+.PHONY: sub-error-dvb sub-install-dvb
+
+sub-error-dvb:
+	$(error You can't use this makefile directly.)
 
 sub-install-dvb:
 	mkdir -p $(prefix)/include/libucsi/dvb

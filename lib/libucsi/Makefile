@@ -22,15 +22,15 @@ ifeq ($(prefix),)
 prefix = /usr
 endif
 
-.DEFAULT_GOAL = all
+.PHONY: all clean install
+
+all:		$(sharedlib) $(staticlib)
 
 include atsc/Makefile
 include dvb/Makefile
 include mpeg/Makefile
 
-.PHONY: all clean install $(sub-install)
-
-all:		$(sharedlib) $(staticlib)
+.PHONY: $(sub-install)
 
 $(sharedlib):	$(objects)
 	$(LD) -shared -o $(sharedlib) $(objects)
