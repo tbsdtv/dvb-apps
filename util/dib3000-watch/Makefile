@@ -1,6 +1,5 @@
 # Makefile for linuxtv.org dvb-apps/util/dib3000-watch
 
-CFLAGS ?= -g -O2 -Wall -W -Wshadow -Wpointer-arith -Wstrict-prototypes
 LDLIBS += -lm
 
 binaries = dib3000-watch
@@ -11,11 +10,13 @@ endif
 
 .PHONY: all clean install
 
-all:		$(binaries)
+all: $(binaries)
 
-clean:
+clean::
 	rm -f $(binaries)
 
 install:
 	mkdir -p $(prefix)/bin
 	cp $(binaries) $(prefix)/bin
+
+include ../../Make.rules

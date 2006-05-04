@@ -1,7 +1,6 @@
 # Makefile for linuxtv.org dvb-apps/lib/libucsi
 
-CPPFLAGS += -I../../lib
-CFLAGS   ?= -g -O2 -Wall -W -Wshadow -Wpointer-arith -Wstrict-prototypes -fPIC
+CPPFLAGS += -I..
 
 includes = crc32.h            \
            descriptor.h       \
@@ -24,7 +23,7 @@ endif
 
 .PHONY: all clean install
 
-all:		$(sharedlib) $(staticlib)
+all: $(sharedlib) $(staticlib)
 
 include atsc/Makefile
 include dvb/Makefile
@@ -32,13 +31,11 @@ include mpeg/Makefile
 
 .PHONY: $(sub-install)
 
-$(sharedlib):	$(objects)
-	$(LD) -shared -o $(sharedlib) $(objects)
+$(sharedlib): $(objects)
 
-$(staticlib):	$(objects)
-	$(AR) rcs $(staticlib) $(objects)
+$(staticlib): $(objects)
 
-clean:
+clean::
 	rm -f $(objects) $(sharedlib) $(staticlib)
 
 install:	$(sub-install)
@@ -49,3 +46,5 @@ install:	$(sub-install)
 
 $(sub-install):
 	$(MAKE) -C $@ sub-install-$@
+
+include ../../Make.rules

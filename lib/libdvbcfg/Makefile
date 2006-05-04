@@ -1,7 +1,6 @@
 # Makefile for linuxtv.org dvb-apps/lib/libdvbcfg
 
-CPPFLAGS += -I../../lib
-CFLAGS   ?= -g -O2 -Wall -W -Wshadow -Wpointer-arith -Wstrict-prototypes -fPIC
+CPPFLAGS += -I..
 
 includes = dvbcfg_zapchannel.h
 
@@ -16,15 +15,13 @@ endif
 
 .PHONY: all clean install
 
-all:		$(sharedlib) $(staticlib)
+all: $(sharedlib) $(staticlib)
 
-$(sharedlib):	$(objects)
-	$(LD) -shared -o $(sharedlib) $(objects)
+$(sharedlib): $(objects)
 
-$(staticlib):	$(objects)
-	$(AR) rcs $(staticlib) $(objects)
+$(staticlib): $(objects)
 
-clean:
+clean::
 	rm -f $(objects) $(sharedlib) $(staticlib)
 
 install:
@@ -32,3 +29,5 @@ install:
 	cp $(includes) $(prefix)/include/libdvbcfg
 	mkdir -p $(prefix)/lib
 	cp $(sharedlib) $(staticlib) $(prefix)/lib
+
+include ../../Make.rules

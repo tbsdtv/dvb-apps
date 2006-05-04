@@ -1,6 +1,5 @@
 # Makefile for linuxtv.org dvb-apps/util/ttusb_dec_reset
 
-CFLAGS ?= -g -O2 -Wall -W -Wshadow -Wpointer-arith -Wstrict-prototypes
 LDLIBS += -lusb
 
 binaries = ttusb_dec_reset
@@ -12,12 +11,12 @@ endif
 .PHONY: all clean install
 
 ifeq ($(ttusb_dec_reset),1)
-all:		$(binaries)
+all: $(binaries)
 else
-all:		clean
+all: clean
 endif
 
-clean:
+clean::
 	rm -f $(binaries)
 
 install:
@@ -25,3 +24,5 @@ ifneq ($(realpath $(binaries)),)
 	mkdir -p $(prefix)/bin
 	cp $(binaries) $(prefix)/bin
 endif
+
+include ../../Make.rules

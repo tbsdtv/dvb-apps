@@ -1,7 +1,6 @@
 # Makefile for linuxtv.org dvb-apps/lib/libdvben50221
 
-CPPFLAGS += -I../../lib
-CFLAGS   ?= -g -O2 -Wall -W -Wshadow -Wpointer-arith -Wstrict-prototypes -fPIC
+CPPFLAGS += -I..
 
 includes = asn_1.h                 \
            en50221_app_ai.h        \
@@ -48,15 +47,13 @@ CFLAGS += -DLOG_LEVEL=1 # FIXME
 
 .PHONY: all clean install
 
-all:		$(sharedlib) $(staticlib)
+all: $(sharedlib) $(staticlib)
 
-$(sharedlib):	$(objects)
-	$(LD) -shared -o $(sharedlib) $(objects)
+$(sharedlib): $(objects)
 
-$(staticlib):	$(objects)
-	$(AR) rcs $(staticlib) $(objects)
+$(staticlib): $(objects)
 
-clean:
+clean::
 	rm -f $(objects) $(sharedlib) $(staticlib)
 
 install:
@@ -64,3 +61,5 @@ install:
 	cp $(includes) $(prefix)/include/libdvben50221
 	mkdir -p $(prefix)/lib
 	cp $(sharedlib) $(staticlib) $(prefix)/lib
+
+include ../../Make.rules

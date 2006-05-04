@@ -1,7 +1,6 @@
 # Makefile for linuxtv.org dvb-apps/test
 
 CPPFLAGS += -I../include
-CFLAGS   ?= -g -O2 -Wall -W -Wshadow -Wpointer-arith -Wstrict-prototypes
 
 binaries = diseqc          \
            sendburst       \
@@ -23,17 +22,19 @@ binaries = diseqc          \
 
 .PHONY: all clean install
 
-all:		$(binaries)
+all: $(binaries)
 	make -C libdvbcfg $@
 	make -C libdvben50221 $@
 	make -C libucsi $@
 
 test_pes test_sec_ne test_sections test_tt: hex_dump.o
 
-clean:
+clean::
 	rm -f hex_dump.o $(binaries)
 	make -C libdvbcfg $@
 	make -C libdvben50221 $@
 	make -C libucsi $@
 
 install:
+
+include ../Make.rules
