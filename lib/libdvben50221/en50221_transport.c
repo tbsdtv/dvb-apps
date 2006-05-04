@@ -1233,6 +1233,7 @@ static void queue_message(struct en50221_transport_layer_private *private, uint8
     msg->next = NULL;
     if (private->slots[slot_id].connections[connection_id].send_queue_tail) {
         private->slots[slot_id].connections[connection_id].send_queue_tail->next = msg;
+        private->slots[slot_id].connections[connection_id].send_queue_tail = msg;
     } else {
         private->slots[slot_id].connections[connection_id].send_queue = msg;
         private->slots[slot_id].connections[connection_id].send_queue_tail = msg;
