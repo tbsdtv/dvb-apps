@@ -352,6 +352,7 @@ int test_lookup_callback(void *arg, uint8_t slot_id, uint32_t requested_resource
                          en50221_sl_resource_callback *callback_out, void **arg_out, uint32_t *connected_resource_id)
 {
     struct en50221_app_public_resource_id resid;
+    (void)arg;
 
     // decode the resource id
     if (en50221_app_decode_public_resource_id(&resid, requested_resource_id)) {
@@ -382,6 +383,7 @@ int test_lookup_callback(void *arg, uint8_t slot_id, uint32_t requested_resource
 
 int test_session_callback(void *arg, int reason, uint8_t slot_id, uint16_t session_number, uint32_t resource_id)
 {
+    (void)arg;
     switch(reason) {
         case S_SCALLBACK_REASON_CAMCONNECTING:
             printf("%02x:CAM connecting to resource %08x, session_number %i\n",
@@ -430,6 +432,8 @@ int test_session_callback(void *arg, int reason, uint8_t slot_id, uint16_t sessi
 
 int test_rm_enq_callback(void *arg, uint8_t slot_id, uint16_t session_number)
 {
+    (void)arg;
+
     printf("%02x:%s\n", slot_id, __func__);
 
     if (en50221_app_rm_reply(rm_resource, session_number, resource_ids_count, resource_ids)) {
@@ -439,13 +443,14 @@ int test_rm_enq_callback(void *arg, uint8_t slot_id, uint16_t session_number)
     return 0;
 }
 
-int test_rm_reply_callback(void *arg, uint8_t slot_id, uint16_t session_number, uint32_t resource_id_count, uint32_t *resource_ids)
+int test_rm_reply_callback(void *arg, uint8_t slot_id, uint16_t session_number, uint32_t resource_id_count, uint32_t *_resource_ids)
 {
+    (void)arg;
     printf("%02x:%s\n", slot_id, __func__);
 
-    int i;
+    uint32_t i;
     for(i=0; i< resource_id_count; i++) {
-        printf("  CAM provided resource id: %08x\n", resource_ids[i]);
+        printf("  CAM provided resource id: %08x\n", _resource_ids[i]);
     }
 
     if (en50221_app_rm_changed(rm_resource, session_number)) {
@@ -457,6 +462,7 @@ int test_rm_reply_callback(void *arg, uint8_t slot_id, uint16_t session_number, 
 
 int test_rm_changed_callback(void *arg, uint8_t slot_id, uint16_t session_number)
 {
+    (void)arg;
     printf("%02x:%s\n", slot_id, __func__);
 
     if (en50221_app_rm_enq(rm_resource, session_number)) {
@@ -470,6 +476,7 @@ int test_rm_changed_callback(void *arg, uint8_t slot_id, uint16_t session_number
 
 int test_datetime_enquiry_callback(void *arg, uint8_t slot_id, uint16_t session_number, uint8_t response_interval)
 {
+    (void)arg;
     printf("%02x:%s\n", slot_id, __func__);
     printf("  response_interval:%i\n", response_interval);
 
@@ -487,6 +494,8 @@ int test_ai_callback(void *arg, uint8_t slot_id, uint16_t session_number,
                      uint16_t manufacturer_code, uint8_t menu_string_length,
                      uint8_t *menu_string)
 {
+    (void)arg;
+
     printf("%02x:%s\n", slot_id, __func__);
     printf("  Application type: %02x\n", application_type);
     printf("  Application manufacturer: %04x\n", application_manufacturer);
@@ -502,8 +511,11 @@ int test_ai_callback(void *arg, uint8_t slot_id, uint16_t session_number,
 
 int test_ca_info_callback(void *arg, uint8_t slot_id, uint16_t session_number, uint32_t ca_id_count, uint16_t *ca_ids)
 {
+    (void)arg;
+    (void)session_number;
+
     printf("%02x:%s\n", slot_id, __func__);
-    int i;
+    uint32_t i;
     for(i=0; i< ca_id_count; i++) {
         printf("  Supported CA ID: %04x\n", ca_ids[i]);
     }
@@ -515,6 +527,11 @@ int test_ca_info_callback(void *arg, uint8_t slot_id, uint16_t session_number, u
 int test_ca_pmt_reply_callback(void *arg, uint8_t slot_id, uint16_t session_number,
                                struct en50221_app_pmt_reply *reply, uint32_t reply_size)
 {
+    (void)arg;
+    (void)session_number;
+    (void)reply;
+    (void)reply_size;
+
     printf("%02x:%s\n", slot_id, __func__);
 
     return 0;
@@ -523,6 +540,9 @@ int test_ca_pmt_reply_callback(void *arg, uint8_t slot_id, uint16_t session_numb
 
 int test_mmi_close_callback(void *arg, uint8_t slot_id, uint16_t session_number, uint8_t cmd_id, uint8_t delay)
 {
+    (void)arg;
+    (void)session_number;
+
     printf("%02x:%s\n", slot_id, __func__);
     printf("  cmd_id: %02x\n", cmd_id);
     printf("  delay: %02x\n", delay);
@@ -533,6 +553,9 @@ int test_mmi_close_callback(void *arg, uint8_t slot_id, uint16_t session_number,
 int test_mmi_display_control_callback(void *arg, uint8_t slot_id, uint16_t session_number,
                                         uint8_t cmd_id, uint8_t mmi_mode)
 {
+    (void)arg;
+    (void)session_number;
+
     printf("%02x:%s\n", slot_id, __func__);
     printf("  cmd_id: %02x\n", cmd_id);
     printf("  mode: %02x\n", mmi_mode);
@@ -552,6 +575,12 @@ int test_mmi_display_control_callback(void *arg, uint8_t slot_id, uint16_t sessi
 int test_mmi_keypad_control_callback(void *arg, uint8_t slot_id, uint16_t session_number,
                                         uint8_t cmd_id, uint8_t *key_codes, uint32_t key_codes_count)
 {
+    (void)arg;
+    (void)session_number;
+    (void)cmd_id;
+    (void)key_codes;
+    (void)key_codes_count;
+
     printf("%02x:%s\n", slot_id, __func__);
 
     return 0;
@@ -560,6 +589,11 @@ int test_mmi_keypad_control_callback(void *arg, uint8_t slot_id, uint16_t sessio
 int test_mmi_subtitle_segment_callback(void *arg, uint8_t slot_id, uint16_t session_number,
                                         uint8_t *segment, uint32_t segment_size)
 {
+    (void)arg;
+    (void)session_number;
+    (void)segment;
+    (void)segment_size;
+
     printf("%02x:%s\n", slot_id, __func__);
 
     return 0;
@@ -569,6 +603,13 @@ int test_mmi_scene_end_mark_callback(void *arg, uint8_t slot_id, uint16_t sessio
                                         uint8_t decoder_continue_flag, uint8_t scene_reveal_flag,
                                         uint8_t send_scene_done, uint8_t scene_tag)
 {
+    (void)arg;
+    (void)session_number;
+    (void)decoder_continue_flag;
+    (void)scene_reveal_flag;
+    (void)send_scene_done;
+    (void)scene_tag;
+
     printf("%02x:%s\n", slot_id, __func__);
 
     return 0;
@@ -578,6 +619,12 @@ int test_mmi_scene_control_callback(void *arg, uint8_t slot_id, uint16_t session
                                     uint8_t decoder_continue_flag, uint8_t scene_reveal_flag,
                                     uint8_t scene_tag)
 {
+    (void)arg;
+    (void)session_number;
+    (void)decoder_continue_flag;
+    (void)scene_reveal_flag;
+    (void)scene_tag;
+
     printf("%02x:%s\n", slot_id, __func__);
 
     return 0;
@@ -586,6 +633,11 @@ int test_mmi_scene_control_callback(void *arg, uint8_t slot_id, uint16_t session
 int test_mmi_subtitle_download_callback(void *arg, uint8_t slot_id, uint16_t session_number,
                                         uint8_t *segment, uint32_t segment_size)
 {
+    (void)arg;
+    (void)session_number;
+    (void)segment;
+    (void)segment_size;
+
     printf("%02x:%s\n", slot_id, __func__);
 
     return 0;
@@ -593,6 +645,9 @@ int test_mmi_subtitle_download_callback(void *arg, uint8_t slot_id, uint16_t ses
 
 int test_mmi_flush_download_callback(void *arg, uint8_t slot_id, uint16_t session_number)
 {
+    (void)arg;
+    (void)session_number;
+
     printf("%02x:%s\n", slot_id, __func__);
 
     return 0;
@@ -602,6 +657,10 @@ int test_mmi_enq_callback(void *arg, uint8_t slot_id, uint16_t session_number,
                             uint8_t blind_answer, uint8_t expected_answer_length,
                             uint8_t *text, uint32_t text_size)
 {
+    (void)arg;
+    (void)text;
+    (void)text_size;
+
     printf("%02x:%s\n", slot_id, __func__);
     printf("  blind: %i\n", blind_answer);
     printf("  expected_answer_length: %i\n", expected_answer_length);
@@ -619,13 +678,16 @@ int test_mmi_menu_callback(void *arg, uint8_t slot_id, uint16_t session_number,
                             uint32_t item_count, struct en50221_app_mmi_text *items,
                             uint32_t item_raw_length, uint8_t *items_raw)
 {
+    (void)arg;
+    (void)items_raw;
+
     printf("%02x:%s\n", slot_id, __func__);
 
     printf("  title: %.*s\n", title->text_length, title->text);
     printf("  sub_title: %.*s\n", sub_title->text_length, sub_title->text);
     printf("  bottom: %.*s\n", bottom->text_length, bottom->text);
 
-    int i;
+    uint32_t i;
     for(i=0; i< item_count; i++) {
         printf("  item %i: %.*s\n", i+1, items[i].text_length, items[i].text);
     }
@@ -644,13 +706,17 @@ int test_app_mmi_list_callback(void *arg, uint8_t slot_id, uint16_t session_numb
                                 uint32_t item_count, struct en50221_app_mmi_text *items,
                                 uint32_t item_raw_length, uint8_t *items_raw)
 {
+    (void)arg;
+    (void)items_raw;
+    (void)arg;
+
     printf("%02x:%s\n", slot_id, __func__);
 
     printf("  title: %.*s\n", title->text_length, title->text);
     printf("  sub_title: %.*s\n", sub_title->text_length, sub_title->text);
     printf("  bottom: %.*s\n", bottom->text_length, bottom->text);
 
-    int i;
+    uint32_t i;
     for(i=0; i< item_count; i++) {
         printf("  item %i: %.*s\n", i+1, items[i].text_length, items[i].text);
     }
@@ -689,6 +755,7 @@ void *stackthread_func(void* arg) {
 }
 
 void *pmtthread_func(void* arg) {
+    (void)arg;
     char buf[4096];
     char capmt[4096];
     int pmtversion = -1;

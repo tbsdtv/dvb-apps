@@ -845,12 +845,12 @@ static void en50221_sl_transport_callback(void *arg, int reason, uint8_t *data, 
 
             private->sessions[i].state = S_STATE_IDLE;
 
-            uint8_t slot_id = private->sessions[i].slot_id;
+            uint8_t _slot_id = private->sessions[i].slot_id;
             uint32_t resource_id = private->sessions[i].resource_id;
             pthread_mutex_unlock(&private->sessions[i].session_lock);
 
             if (cb)
-                cb(cb_arg, S_SCALLBACK_REASON_CLOSE, slot_id, i, resource_id);
+                cb(cb_arg, S_SCALLBACK_REASON_CLOSE, _slot_id, i, resource_id);
         }
         return;
     }

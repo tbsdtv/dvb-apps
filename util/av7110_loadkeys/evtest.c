@@ -9,18 +9,18 @@
 /*
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or 
+ * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * 
+ *
  * Should you need to contact me, the author, you can do so either by
  * e-mail - mail your message to <vojtech@ucw.cz>, or by paper mail:
  * Vojtech Pavlik, Simunkova 1594, Prague 8, 182 00 Czech Republic
@@ -39,38 +39,38 @@ NULL, NULL, NULL, "LED", "Sound", NULL, "Repeat", "ForceFeedback", "Power", "For
 char *syncs[2] = { "Sync", "Config"};
 char *keys[KEY_MAX + 1] = {
   // 0x000
-  "Reserved", "Esc", "1", "2", "3", "4", "5", "6", 
+  "Reserved", "Esc", "1", "2", "3", "4", "5", "6",
   "7", "8", "9", "0", "Minus", "Equal", "Backspace", "Tab",
   // 0x010
-  "Q", "W", "E", "R", "T", "Y", "U", "I", 
+  "Q", "W", "E", "R", "T", "Y", "U", "I",
   "O", "P", "LeftBrace", "RightBrace", "Enter", "LeftControl", "A", "S",
   // 0x020
-  "D", "F", "G", "H", "J", "K", "L", "Semicolon", 
+  "D", "F", "G", "H", "J", "K", "L", "Semicolon",
   "Apostrophe", "Grave", "LeftShift", "BackSlash", "Z", "X", "C", "V",
   // 0x030
-  "B", "N", "M", "Comma", "Dot", "Slash", "RightShift", "KPAsterisk", 
+  "B", "N", "M", "Comma", "Dot", "Slash", "RightShift", "KPAsterisk",
   "LeftAlt", "Space", "CapsLock", "F1", "F2", "F3", "F4", "F5",
   // 0x040
   "F6", "F7", "F8", "F9", "F10", "NumLock", "ScrollLock", "KP7",
   "KP8", "KP9", "KPMinus", "KP4", "KP5", "KP6", "KPPlus", "KP1",
   // 0x050
-  "KP2", "KP3", "KP0", "KPDot", NULL, "ZENKAKUHANKAKU", "102nd", "F11", 
+  "KP2", "KP3", "KP0", "KPDot", NULL, "ZENKAKUHANKAKU", "102nd", "F11",
   "F12", "RO", "KATAKANA", "HIRAGANA", "HENKAN", "KATAKANAHIRAGANA", "MUHENKAN", "KPJPCOMMA",
   // 0x060
   "KPEnter", "RightCtrl", "KPSlash", "SysRq", "RightAlt", "LineFeed", "Home", "Up",
-  "PageUp", "Left", "Right", "End", "Down", "PageDown", "Insert", "Delete", 
+  "PageUp", "Left", "Right", "End", "Down", "PageDown", "Insert", "Delete",
   // 0x070
-  "Macro", "Mute", "VolumeDown", "VolumeUp", "Power", "KPEqual", "KPPlusMinus", "Pause", 
+  "Macro", "Mute", "VolumeDown", "VolumeUp", "Power", "KPEqual", "KPPlusMinus", "Pause",
   NULL, "KPComma", "HANGUEL", "HANJA", "YEN", "LeftMeta", "RightMeta", "Compose",
   // 0x080
   "Stop", "Again", "Props", "Undo", "Front", "Copy", "Open", "Paste",
   "Find", "Cut", "Help", "Menu", "Calc", "Setup", "Sleep", "WakeUp",
   // 0x090
-  "File", "SendFile", "DeleteFile", "X-fer", "Prog1", "Prog2", "WWW", "MSDOS", 
-  "Coffee", "Direction", "CycleWindows", "Mail", "Bookmarks", "Computer", "Back", "Forward", 
+  "File", "SendFile", "DeleteFile", "X-fer", "Prog1", "Prog2", "WWW", "MSDOS",
+  "Coffee", "Direction", "CycleWindows", "Mail", "Bookmarks", "Computer", "Back", "Forward",
   // 0x0A0
   "CloseCD", "EjectCD", "EjectCloseCD", "NextSong", "PlayPause", "PreviousSong", "StopCD", "Record",
-  "Rewind", "Phone", "ISOKey", "Config", "HomePage", "Refresh", "Exit", "Move", 
+  "Rewind", "Phone", "ISOKey", "Config", "HomePage", "Refresh", "Exit", "Move",
   // 0x0B0
   "Edit", "ScrollUp", "ScrollDown", "KPLeftParenthesis", "KPRightParenthesis", NULL, NULL, "F13",
   "F14", "F15", "F16", "F17", "F18", "F19", "F20", "F21",
@@ -87,16 +87,16 @@ char *keys[KEY_MAX + 1] = {
   "Unknown", NULL, NULL, NULL, NULL, NULL, NULL, NULL,
   NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
   // 0x100
-  "Btn0", "Btn1", "Btn2", "Btn3", "Btn4", "Btn5", "Btn6", "Btn7", 
+  "Btn0", "Btn1", "Btn2", "Btn3", "Btn4", "Btn5", "Btn6", "Btn7",
   "Btn8", "Btn9", NULL, NULL,  NULL, NULL, NULL, NULL,
   // 0x110
-  "LeftBtn", "RightBtn", "MiddleBtn", "SideBtn", "ExtraBtn", "ForwardBtn", "BackBtn", "TaskBtn", 
+  "LeftBtn", "RightBtn", "MiddleBtn", "SideBtn", "ExtraBtn", "ForwardBtn", "BackBtn", "TaskBtn",
   NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
   // 0x120
-  "Trigger", "ThumbBtn", "ThumbBtn2", "TopBtn", "TopBtn2", "PinkieBtn", "BaseBtn", "BaseBtn2", 
+  "Trigger", "ThumbBtn", "ThumbBtn2", "TopBtn", "TopBtn2", "PinkieBtn", "BaseBtn", "BaseBtn2",
   "BaseBtn3", "BaseBtn4", "BaseBtn5", "BaseBtn6", NULL, NULL, NULL, "BtnDead",
   // 0x130
-  "BtnA", "BtnB", "BtnC", "BtnX", "BtnY", "BtnZ", "BtnTL", "BtnTR", 
+  "BtnA", "BtnB", "BtnC", "BtnX", "BtnY", "BtnZ", "BtnTL", "BtnTR",
   "BtnTL2", "BtnTR2", "BtnSelect", "BtnStart", "BtnMode", "BtnThumbL", "BtnThumbR", NULL,
   // 0x140
   "ToolPen", "ToolRubber", "ToolBrush", "ToolPencil", "ToolAirbrush", "ToolFinger", "ToolMouse", "ToolLens",
@@ -111,7 +111,7 @@ char *keys[KEY_MAX + 1] = {
   "Language", "Title", "Subtitle", "Angle", "Zoom", "Mode", "Keyboard", "Screen",
   "PC", "TV", "TV2", "VCR", "VCR2", "Sat", "Sat2", "CD",
   // 0x180
-  "Tape", "Radio", "Tuner", "Player", "Text", "DVD", "Aux", "MP3", 
+  "Tape", "Radio", "Tuner", "Player", "Text", "DVD", "Aux", "MP3",
   "Audio", "Video", "Directory", "List", "Memo", "Calendar", "Red", "Green",
   // 0x190
   "Yellow", "Blue", "ChannelUp", "ChannelDown", "First", "Last", "AB", "Next",
@@ -138,15 +138,15 @@ char *keys[KEY_MAX + 1] = {
 
 char *absval[5] = { "Value", "Min  ", "Max  ", "Fuzz ", "Flat " };
 char *relatives[REL_MAX + 1] = {
-  "X", "Y", "Z", NULL, NULL, NULL, "HWheel", "Dial", 
-  "Wheel", "Misc", NULL, NULL, NULL, NULL, NULL, NULL, 
+  "X", "Y", "Z", NULL, NULL, NULL, "HWheel", "Dial",
+  "Wheel", "Misc", NULL, NULL, NULL, NULL, NULL, NULL,
 };
-char *absolutes[ABS_MAX + 1] = { 
+char *absolutes[ABS_MAX + 1] = {
   // 0x00
   "X", "Y", "Z", "Rx", "Ry", "Rz", "Throttle", "Rudder",
   "Wheel", "Gas", "Brake", NULL, NULL, NULL, NULL, NULL,
   // 0x10
-  "Hat0X", "Hat0Y", "Hat1X", "Hat1Y", "Hat2X", "Hat2Y", "Hat3X", "Hat 3Y", 
+  "Hat0X", "Hat0Y", "Hat1X", "Hat1Y", "Hat2X", "Hat2Y", "Hat3X", "Hat 3Y",
   "Pressure", "Distance", "XTilt", "YTilt", "ToolWidth", NULL, NULL, NULL,
   // 0x20
   "Volume", NULL, NULL, NULL, NULL, NULL, NULL, NULL,
@@ -177,7 +177,7 @@ int main (int argc, char **argv)
 	unsigned short id[4];
 	unsigned long bit[EV_MAX][NBITS(KEY_MAX)];
 	char name[256] = "Unknown";
-	int abs[5];
+	int _abs[5];
 
 	if (argc < 2) {
 		printf("Usage: evtest /dev/input/eventX\n");
@@ -213,18 +213,18 @@ int main (int argc, char **argv)
 		if (test_bit(i, bit[0])) {
 			printf("  Event type %d (%s)\n", i, events[i] ? events[i] : "?");
 			ioctl(fd, EVIOCGBIT(i, KEY_MAX), bit[i]);
-			for (j = 0; j < KEY_MAX; j++) 
+			for (j = 0; j < KEY_MAX; j++)
 				if (test_bit(j, bit[i])) {
 					printf("    Event code %d (%s)\n", j, names[i] ? (names[i][j] ? names[i][j] : "?") : "?");
 					if (i == EV_ABS) {
-						ioctl(fd, EVIOCGABS(j), abs);
+						ioctl(fd, EVIOCGABS(j), _abs);
 						for (k = 0; k < 5; k++)
-							if ((k < 3) || abs[k])
-								printf("      %s %6d\n", absval[k], abs[k]);
+							if ((k < 3) || _abs[k])
+								printf("      %s %6d\n", absval[k], _abs[k]);
 					}
 				}
 		}
-		
+
 
 	printf("Testing ... (interrupt to exit)\n");
 
@@ -237,7 +237,7 @@ int main (int argc, char **argv)
 			exit (1);
 		}
 
-		for (i = 0; i < rd / sizeof(struct input_event); i++)
+		for (i = 0; i < rd / (int) sizeof(struct input_event); i++)
 			printf("Event: time %ld.%06ld, type %d (%s), code %d (%s), value %d\n",
 				ev[i].time.tv_sec, ev[i].time.tv_usec, ev[i].type,
 				events[ev[i].type] ? events[ev[i].type] : "?",

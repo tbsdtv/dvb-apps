@@ -148,16 +148,16 @@ int main(int argc, char **argv)
 			    (now.tv_sec - startt.tv_sec) * 1000 +
 			    (now.tv_usec - startt.tv_usec) / 1000;
 			if (diff > 1000) {
-				int pid = 0;
-				for (pid = 0; pid < 0x2001; pid++) {
-					if (pidt[pid]) {
+				int _pid = 0;
+				for (_pid = 0; _pid < 0x2001; _pid++) {
+					if (pidt[_pid]) {
 						printf("%04x %5d p/s %5d kb/s %5d kbit\n",
-						     pid,
-						     pidt[pid] * 1000 / diff,
-						     pidt[pid] * 1000 / diff * 188 / 1024,
-						     pidt[pid] * 8 * 1000 / diff * 188 / 1000);
+						     _pid,
+						     pidt[_pid] * 1000 / diff,
+						     pidt[_pid] * 1000 / diff * 188 / 1024,
+						     pidt[_pid] * 8 * 1000 / diff * 188 / 1000);
 					}
-					pidt[pid] = 0;
+					pidt[_pid] = 0;
 				}
 				printf("-PID--FREQ-----BANDWIDTH-BANDWIDTH-\n");
 				startt = now;

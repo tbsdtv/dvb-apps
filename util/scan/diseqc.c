@@ -93,7 +93,7 @@ int setup_switch (int frontend_fd, int switch_pos, int voltage_18, int hiband)
 	verbose("DiSEqC: switch pos %i, %sV, %sband (index %d)\n",
 	    switch_pos, voltage_18 ? "18" : "13", hiband ? "hi" : "lo", i);
 
-	if (i < 0 || i >= sizeof(switch_cmds)/sizeof(struct diseqc_cmd))
+	if (i < 0 || i >= (int) (sizeof(switch_cmds)/sizeof(struct diseqc_cmd)))
 		return -EINVAL;
 
 	cmd[0] = &switch_cmds[i];

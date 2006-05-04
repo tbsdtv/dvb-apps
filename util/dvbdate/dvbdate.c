@@ -8,7 +8,7 @@
 
    Revamped by Johannes Stezenbach <js@convergence.de>
    and Michael Hunold <hunold@convergence.de>
-  
+
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License
    as published by the Free Software Foundation; either version 2
@@ -65,13 +65,13 @@ void errmsg(char *message, ...)
 	va_end(ap);
 }
 
-void usage()
+void usage(void)
 {
 	fprintf(stderr, "usage: %s [-p] [-s] [-f] [-q] [-h]\n", ProgName);
 	_exit(1);
 }
 
-void help()
+void help(void)
 {
 	fprintf(stderr, "\nhelp:\n" "%s [-p] [-s] [-f] [-q] [-h] [-t n]\n" "  --print	(print current time, TDT time and delta)\n" "  --set	(set the system clock to TDT time)\n" "  --force	(force the setting of the clock)\n" "  --quiet	(be silent)\n" "  --help	(display this message)\n""  --timout n	(max seconds to wait, default: 25)\n", ProgName);
 	_exit(1);
@@ -209,7 +209,7 @@ int scan_date(time_t *dvb_time, unsigned int to)
 	struct dmx_sct_filter_params sctFilterParams;
 	struct pollfd ufd;
 	int found = 0;
-	
+
 	t = 0;
 	if ((fd_date = open("/dev/dvb/adapter0/demux0", O_RDWR | O_NONBLOCK)) < 0) {
 		perror("fd_date DEVICE: ");

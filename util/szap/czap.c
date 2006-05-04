@@ -146,18 +146,18 @@ int parse(const char *fname, int list_channels, int chan_no, const char *channel
 		return -3;
 	}
 	frontend->inversion = parse_param(inv, inversion_list, LIST_SIZE(inversion_list));
-	if (frontend->inversion < 0) {
+	if ((int) frontend->inversion < 0) {
 		ERROR("inversion field syntax '%s'", inv);
 		return -4;
 	}
 	frontend->u.qam.fec_inner = parse_param(fec, fec_list, LIST_SIZE(fec_list));
-	if (frontend->u.qam.fec_inner < 0) {
+	if ((int) frontend->u.qam.fec_inner < 0) {
 		ERROR("FEC field syntax '%s'", fec);
 		return -5;
 	}
 	frontend->u.qam.modulation = parse_param(mod, modulation_list,
 			LIST_SIZE(modulation_list));
-	if (frontend->u.qam.modulation < 0) {
+	if ((int) frontend->u.qam.modulation < 0) {
 		ERROR("modulation field syntax '%s'", mod);
 		return -6;
 	}

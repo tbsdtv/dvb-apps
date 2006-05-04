@@ -144,12 +144,12 @@ static inline struct mpeg_odsmt_stream *
 static inline struct mpeg_odsmt_stream *
 	mpeg_odsmt_section_streams_next(struct mpeg_odsmt_section *odsmt,
 					struct mpeg_odsmt_stream *pos,
-				        int index)
+				        int _index)
 {
 	uint8_t *end = (uint8_t*) odsmt + section_ext_length(&odsmt->head);
 	uint8_t *next;
 
-	if (index > odsmt->stream_count)
+	if (_index > odsmt->stream_count)
 		return NULL;
 
 	next = (uint8_t *) pos + sizeof(struct mpeg_odsmt_stream_multi) +
@@ -202,9 +202,9 @@ static inline uint8_t*
 {
 	struct mpeg_odsmt_stream* pos;
 	size_t size = sizeof(struct mpeg_odsmt_section);
-	int index;
+	int _index;
 
-	mpeg_odsmt_section_streams_for_each(odsmt, pos, index) {
+	mpeg_odsmt_section_streams_for_each(odsmt, pos, _index) {
 		if (odsmt->stream_count == 0)
 			size += sizeof(struct mpeg_odsmt_stream_single) +
 					pos->u.single.es_info_length;

@@ -12,7 +12,7 @@ static char *univ_desc[] = {
 static char *dbs_desc[] = {
 		"Expressvu, North America",
 		"12200 to 12700 MHz",
-		"Single LO, 11250 MHz",	
+		"Single LO, 11250 MHz",
 		(char *)NULL };
 
 static char *standard_desc[] = {
@@ -47,7 +47,7 @@ static struct lnb_types_st lnbs[] = {
 struct lnb_types_st *
 lnb_enum(int curno)
 {
-	if (curno >= sizeof(lnbs) / sizeof(lnbs[0]))
+	if (curno >= (int) (sizeof(lnbs) / sizeof(lnbs[0])))
 		return (struct lnb_types_st *)NULL;
 	return &lnbs[curno];
 }
@@ -68,7 +68,7 @@ char *cp, *np;
 	while(*cp && isspace(*cp))
 		cp++;
 	if (isalpha(*cp)) {
-		for (i = 0; i < (sizeof(lnbs) / sizeof(lnbs[0])); i++) {
+		for (i = 0; i < (int)(sizeof(lnbs) / sizeof(lnbs[0])); i++) {
 			if (!strcasecmp(lnbs[i].name, cp)) {
 				*lnbp = lnbs[i];
 				return 1;

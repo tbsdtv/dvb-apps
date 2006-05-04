@@ -1,4 +1,4 @@
-/* 
+/*
  * test_av.c - Test for audio and video MPEG decoder API.
  *
  * Copyright (C) 2000 - 2002 convergence GmbH
@@ -94,11 +94,11 @@ int audioSetMute(int fd, char *arg)
 
 int audioSetAVSync(int fd, char *arg)
 {
-	int sync;
+	int _sync;
 	if (!arg)
 		return -1;
-	sync = atoi(arg);
-	if (ioctl(fd, AUDIO_SET_AV_SYNC, sync) == -1)
+	_sync = atoi(arg);
+	if (ioctl(fd, AUDIO_SET_AV_SYNC, _sync) == -1)
 		perror("AUDIO_SET_AV_SYNC");
 	return 0;
 }
@@ -127,66 +127,66 @@ int audioChannelSelect(int fd, char *arg)
 
 int audioGetStatus(int fd, char *arg)
 {
-	struct audio_status stat;
+	struct audio_status _stat;
 
 	if (arg)
 		return -1;
-	if (ioctl(fd, AUDIO_GET_STATUS, &stat) == -1) {
+	if (ioctl(fd, AUDIO_GET_STATUS, &_stat) == -1) {
 		perror("AUDIO_GET_STATUS");
 		return 0;
 	}
 
 	printf("Audio Status:\n");
 	printf("  Sync State          : %s\n",
-	       (stat.AV_sync_state ? "SYNC" : "NO SYNC"));
+	       (_stat.AV_sync_state ? "SYNC" : "NO SYNC"));
 	printf("  Mute State          : %s\n",
-	       (stat.mute_state ? "muted" : "not muted"));
+	       (_stat.mute_state ? "muted" : "not muted"));
 	printf("  Play State          : ");
-	switch ((int)stat.play_state){
+	switch ((int)_stat.play_state){
 	case AUDIO_STOPPED:
-		printf("STOPPED (%d)\n",stat.play_state);
+		printf("STOPPED (%d)\n",_stat.play_state);
 		break;
 	case AUDIO_PLAYING:
-		printf("PLAYING (%d)\n",stat.play_state);
+		printf("PLAYING (%d)\n",_stat.play_state);
 		break;
 	case AUDIO_PAUSED:
-		printf("PAUSED (%d)\n",stat.play_state);
+		printf("PAUSED (%d)\n",_stat.play_state);
 		break;
 	default:
-		printf("unknown (%d)\n",stat.play_state);
+		printf("unknown (%d)\n",_stat.play_state);
 		break;
 	}
 
 	printf("  Stream Source       : ");
-	switch((int)stat.stream_source){
+	switch((int)_stat.stream_source){
 	case AUDIO_SOURCE_DEMUX:
-		printf("DEMUX (%d)\n",stat.stream_source);
+		printf("DEMUX (%d)\n",_stat.stream_source);
 		break;
 	case AUDIO_SOURCE_MEMORY:
-		printf("MEMORY (%d)\n",stat.stream_source);
+		printf("MEMORY (%d)\n",_stat.stream_source);
 		break;
 	default:
-		printf("unknown (%d)\n",stat.stream_source);
+		printf("unknown (%d)\n",_stat.stream_source);
 		break;
 	}
 
 	printf("  Channel Select      : ");
-	switch((int)stat.channel_select){
+	switch((int)_stat.channel_select){
 	case AUDIO_STEREO:
-		printf("Stereo (%d)\n",stat.channel_select);
+		printf("Stereo (%d)\n",_stat.channel_select);
 		break;
 	case AUDIO_MONO_LEFT:
-		printf("Mono left(%d)\n",stat.channel_select);
+		printf("Mono left(%d)\n",_stat.channel_select);
 		break;
 	case AUDIO_MONO_RIGHT:
-		printf("Mono right (%d)\n",stat.channel_select);
+		printf("Mono right (%d)\n",_stat.channel_select);
 		break;
 	default:
-		printf("unknown (%d)\n",stat.channel_select);
+		printf("unknown (%d)\n",_stat.channel_select);
 		break;
 	}
 	printf("  Bypass Mode         : %s\n",
-	       (stat.bypass_mode ? "ON" : "OFF"));
+	       (_stat.bypass_mode ? "ON" : "OFF"));
 
 	return 0;
 
@@ -300,76 +300,76 @@ int videoSlowMotion(int fd, char *arg)
 
 int videoGetStatus(int fd, char *arg)
 {
-	struct video_status stat;
+	struct video_status _stat;
 
 	if (arg)
 		return -1;
-	if (ioctl(fd, VIDEO_GET_STATUS, &stat) == -1){
+	if (ioctl(fd, VIDEO_GET_STATUS, &_stat) == -1){
 		perror("VIDEO_GET_STATUS");
 		return 0;
 	}
 
 	printf("Video Status:\n");
 	printf("  Blank State          : %s\n",
-	       (stat.video_blank ? "BLANK" : "STILL"));
+	       (_stat.video_blank ? "BLANK" : "STILL"));
 	printf("  Play State           : ");
-	switch ((int)stat.play_state){
+	switch ((int)_stat.play_state){
 	case VIDEO_STOPPED:
-		printf("STOPPED (%d)\n",stat.play_state);
+		printf("STOPPED (%d)\n",_stat.play_state);
 		break;
 	case VIDEO_PLAYING:
-		printf("PLAYING (%d)\n",stat.play_state);
+		printf("PLAYING (%d)\n",_stat.play_state);
 		break;
 	case VIDEO_FREEZED:
-		printf("FREEZED (%d)\n",stat.play_state);
+		printf("FREEZED (%d)\n",_stat.play_state);
 		break;
 	default:
-		printf("unknown (%d)\n",stat.play_state);
+		printf("unknown (%d)\n",_stat.play_state);
 		break;
 	}
 
 	printf("  Stream Source        : ");
-	switch((int)stat.stream_source){
+	switch((int)_stat.stream_source){
 	case VIDEO_SOURCE_DEMUX:
-		printf("DEMUX (%d)\n",stat.stream_source);
+		printf("DEMUX (%d)\n",_stat.stream_source);
 		break;
 	case VIDEO_SOURCE_MEMORY:
-		printf("MEMORY (%d)\n",stat.stream_source);
+		printf("MEMORY (%d)\n",_stat.stream_source);
 		break;
 	default:
-		printf("unknown (%d)\n",stat.stream_source);
+		printf("unknown (%d)\n",_stat.stream_source);
 		break;
 	}
 
 	printf("  Format (Aspect Ratio): ");
-	switch((int)stat.video_format){
+	switch((int)_stat.video_format){
 	case VIDEO_FORMAT_4_3:
-		printf("4:3 (%d)\n",stat.video_format);
+		printf("4:3 (%d)\n",_stat.video_format);
 		break;
 	case VIDEO_FORMAT_16_9:
-		printf("16:9 (%d)\n",stat.video_format);
+		printf("16:9 (%d)\n",_stat.video_format);
 		break;
 	case VIDEO_FORMAT_221_1:
-		printf("2.21:1 (%d)\n",stat.video_format);
+		printf("2.21:1 (%d)\n",_stat.video_format);
 		break;
 	default:
-		printf("unknown (%d)\n",stat.video_format);
+		printf("unknown (%d)\n",_stat.video_format);
 		break;
 	}
 
 	printf("  Display Format       : ");
-	switch((int)stat.display_format){
+	switch((int)_stat.display_format){
 	case VIDEO_PAN_SCAN:
-		printf("Pan&Scan (%d)\n",stat.display_format);
+		printf("Pan&Scan (%d)\n",_stat.display_format);
 		break;
 	case VIDEO_LETTER_BOX:
-		printf("Letterbox (%d)\n",stat.display_format);
+		printf("Letterbox (%d)\n",_stat.display_format);
 		break;
 	case VIDEO_CENTER_CUT_OUT:
-		printf("Center cutout (%d)\n",stat.display_format);
+		printf("Center cutout (%d)\n",_stat.display_format);
 		break;
 	default:
-		printf("unknown (%d)\n",stat.display_format);
+		printf("unknown (%d)\n",_stat.display_format);
 		break;
 	}
 	return 0;

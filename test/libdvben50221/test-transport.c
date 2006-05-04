@@ -38,6 +38,9 @@ int shutdown_stackthread = 0;
 
 int main(int argc, char * argv[])
 {
+    (void)argc;
+    (void)argv;
+
     int i;
     pthread_t stackthread;
 
@@ -109,10 +112,12 @@ void test_callback(void *arg, int reason,
                    uint8_t *data, uint32_t data_length,
                    uint8_t slot_id, uint8_t connection_id)
 {
+    (void) arg;
+
     printf("-----------------------------------\n");
     printf("CALLBACK SLOTID:%i %i %i\n", slot_id, connection_id, reason);
 
-    int i;
+    uint32_t i;
     for(i=0; i< data_length; i++) {
         printf("%02x %02x\n", i, data[i]);
     }

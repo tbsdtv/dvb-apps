@@ -53,7 +53,7 @@ int parse_param (int fd, const Param * plist, int list_size, int *param)
 {
 	char c;
 	int character = 0;
-	int index = 0;
+	int _index = 0;
 
 	while (1) {
 		if (read(fd, &c, 1) < 1)
@@ -64,9 +64,9 @@ int parse_param (int fd, const Param * plist, int list_size, int *param)
 			break;
 
 		while (toupper(c) != plist->name[character]) {
-			index++;
+			_index++;
 			plist++;
-			if (index >= list_size)	 /*  parse error, no valid */
+			if (_index >= list_size)	 /*  parse error, no valid */
 				return -2;	 /*  parameter name found  */
 		}
 

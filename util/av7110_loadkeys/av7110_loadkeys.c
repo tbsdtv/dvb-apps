@@ -33,7 +33,7 @@ void print_error (const char *action, const char *file)
 static
 int parse_keyname (char *pos, char **nend, int limit)
 {
-	int cmp, index;
+	int cmp, _index;
 	int l = 1;
 	const struct input_key_name *kn;
 	int r;
@@ -68,21 +68,21 @@ int parse_keyname (char *pos, char **nend, int limit)
 	while (r >= l) {
 		int len0, len1 = 0;
 
-		index = (l + r) / 2;
-		
-		len0 = strlen(kn[index-1].name);
+		_index = (l + r) / 2;
+
+		len0 = strlen(kn[_index-1].name);
 
 		while (len1 < limit && isgraph(pos[len1]))
 			len1++;
 
-		cmp = strncmp (kn[index-1].name, pos,
-			       strlen(kn[index-1].name));
-	
+		cmp = strncmp (kn[_index-1].name, pos,
+			       strlen(kn[_index-1].name));
+
 		if (len0 < len1 && cmp == 0)
 			cmp = -1;
 
 		if (cmp == 0) {
-			*nend = pos + strlen (kn[index-1].name);
+			*nend = pos + strlen (kn[_index-1].name);
 
 			if (**nend != '\n' &&
 			    **nend != '\t' &&
@@ -90,13 +90,13 @@ int parse_keyname (char *pos, char **nend, int limit)
 			    *nend != pos)
 				return -3;
 
-			return kn[index-1].key;
+			return kn[_index-1].key;
 		}
 
 		if (cmp < 0)
-			l = index + 1;
+			l = _index + 1;
 		else
-			r = index - 1;
+			r = _index - 1;
 
 		if (r < l) {
 			static const char msg [] = "\nunknown key '";
@@ -163,18 +163,18 @@ int main (int argc, char **argv)
 
 	while (pos < buf + len) {
 		int key, keycode;
-		
+
 		while (!isxdigit(*pos) && pos < buf + len)
 			pos++;
 
 		if (pos == buf + len)
 			break;
-		
+
 		key = strtol (pos, &pos, 0);
 		keycode = parse_keyname (pos, &pos, buf + len - pos);
 
 		if (key < 0 || key > 0xff) {
-			const char msg [] = 
+			const char msg [] =
 				"\nERROR: key must be in range 0 ... 0xff!\n\n";
 
 			write (0, msg, strlen(msg));
@@ -186,7 +186,7 @@ int main (int argc, char **argv)
 
 		setup.keytab[key] = keycode;
 	}
-	
+
 	munmap (buf, len);
 	close (fd);
 

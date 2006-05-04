@@ -242,7 +242,7 @@ int en50221_ca_format_pmt(struct mpeg_pmt_section *pmt, uint8_t *data, uint32_t 
     // append the PMT descriptors
     if (pmt_descriptors_length) {
         data[data_pos++] = ca_pmt_cmd_id;
-        struct ca_pmt_descriptor *cur_d = pmt_descriptors;
+        cur_d = pmt_descriptors;
         while(cur_d) {
             memcpy(data+data_pos, cur_d->descriptor, cur_d->length);
             data_pos += cur_d->length;
@@ -262,7 +262,7 @@ int en50221_ca_format_pmt(struct mpeg_pmt_section *pmt, uint8_t *data, uint32_t 
         // append the stream descriptors
         if (cur_s->descriptors_length) {
             data[data_pos++] = ca_pmt_cmd_id;
-            struct ca_pmt_descriptor *cur_d = cur_s->descriptors;
+            cur_d = cur_s->descriptors;
             while(cur_d) {
                 memcpy(data+data_pos, cur_d->descriptor, cur_d->length);
                 data_pos += cur_d->length;

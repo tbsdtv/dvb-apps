@@ -3,12 +3,12 @@
  * with an extended output.
  *
  * Copyright (C) 2005 by Patrick Boettcher <patrick.boettcher@desy.de>
- * 
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -79,7 +79,7 @@ __u16 dib_read_reg(struct dib_demod *dib,__u16 reg)
 		.msgs  = msg,
 		.nmsgs = 2,
 	};
-		
+
 	if ((ret = ioctl(dib->fd,I2C_RDWR,&i2c_data)) != 2) {
 		err("i2c_rdwr read failed. (%d)\n",ret);
 		return 0;
@@ -90,7 +90,7 @@ __u16 dib_read_reg(struct dib_demod *dib,__u16 reg)
 int dib_write_reg(struct dib_demod *dib, __u16 reg, __u16 val)
 {
 	int ret;
-	__u8 b[] = { 
+	__u8 b[] = {
 		(reg >> 8) & 0xff, reg & 0xff,
 		(val >> 8) & 0xff, val & 0xff,
 	};
@@ -101,7 +101,7 @@ int dib_write_reg(struct dib_demod *dib, __u16 reg, __u16 val)
 		.msgs  = msg,
 		.nmsgs = 1,
 	};
-	
+
 	if ((ret = ioctl(dib->fd,I2C_RDWR,&i2c_data)) != 1) {
 		err("i2c_rdwr write failed. (%d)\n",ret);
 		return -1;
@@ -116,7 +116,7 @@ int dib3000mb_monitoring(struct dib_demod *dib,struct dib3000mb_monitoring *m)
 		rf_power = dib_read_reg(dib,DIB3000MB_REG_RF_POWER),
 		timing_offset;
 	double ad_power_dB, minor_power;
-	
+
 	m->invspec = dib_read_reg(dib,DIB3000MB_REG_DDS_INV);
 	m->nfft = dib_read_reg(dib,DIB3000MB_REG_TPS_FFT);
 
@@ -129,29 +129,29 @@ int dib3000mb_monitoring(struct dib_demod *dib,struct dib3000mb_monitoring *m)
 
 	p_dds_freq = ((dib_read_reg(dib,DIB3000MB_REG_DDS_FREQ_MSB) & 0xff) << 8) |
 				 ((dib_read_reg(dib,DIB3000MB_REG_DDS_FREQ_LSB) & 0xff00) >> 8);
-	dds_freq =   ((dib_read_reg(dib,DIB3000MB_REG_DDS_VALUE_MSB) & 0xff) << 8) | 
+	dds_freq =   ((dib_read_reg(dib,DIB3000MB_REG_DDS_VALUE_MSB) & 0xff) << 8) |
 				 ((dib_read_reg(dib,DIB3000MB_REG_DDS_VALUE_LSB) & 0xff00) >> 8);
 	if (m->invspec)
 		dds_freq = (1 << 16) - dds_freq;
 	m->carrier_offset = (double)(dds_freq - p_dds_freq) / (double)(1 << 16) * DEF_SampFreq_KHz;
-	
+
 	m->ber = (double)((dib_read_reg(dib,DIB3000MB_REG_BER_MSB) << 16) | dib_read_reg(dib,DIB3000MB_REG_BER_LSB)) / (double) 1e8;
 	m->per = dib_read_reg(dib,DIB3000MB_REG_PACKET_ERROR_RATE);
 	m->unc = dib_read_reg(dib,DIB3000MB_REG_UNC);
 	m->fft_pos = dib_read_reg(dib,DIB3000MB_REG_FFT_WINDOW_POS);
-	m->snr = 10.0 * log10( (double)(dib_read_reg(dib,DIB3000MB_REG_SIGNAL_POWER) << 8) / 
-		(double)((dib_read_reg(dib,DIB3000MB_REG_NOISE_POWER_MSB) << 16) + dib_read_reg(dib,DIB3000MB_REG_NOISE_POWER_LSB))); 
-	
+	m->snr = 10.0 * log10( (double)(dib_read_reg(dib,DIB3000MB_REG_SIGNAL_POWER) << 8) /
+		(double)((dib_read_reg(dib,DIB3000MB_REG_NOISE_POWER_MSB) << 16) + dib_read_reg(dib,DIB3000MB_REG_NOISE_POWER_LSB)));
+
 	m->mer = (double) ((dib_read_reg(dib,DIB3000MB_REG_MER_MSB) << 16) + dib_read_reg(dib,DIB3000MB_REG_MER_LSB))
 		/ (double) (1<<9) / (m->nfft ? 767.0 : 191.0);
-	
+
 	if (n_agc_power == 0)
 		n_agc_power = 1;
 	ad_power_dB = 10 * log10( (double)(n_agc_power) / (double)(1<<16));
 	minor_power = ad_power_dB - DEF_agc_ref_dB ;
 	m->rf_power = -DEF_gain_slope_dB * (double)rf_power/(double)(1<<16) + DEF_gain_delta_dB + minor_power;
 
-	timing_offset = 
+	timing_offset =
 		(dib_read_reg(dib,DIB3000MB_REG_TIMING_OFFSET_MSB) << 16) + dib_read_reg(dib,DIB3000MB_REG_TIMING_OFFSET_LSB);
 	if (timing_offset >= 0x800000)
 		timing_offset |= 0xff000000;
@@ -191,6 +191,7 @@ int interrupted;
 
 void sighandler (int sig)
 {
+	(void)sig;
 	interrupted = 1;
 }
 
@@ -207,7 +208,7 @@ int main (int argc, char * const argv[])
 	float intervall = 0.1;
 	dib3000m_output_t out = OUT_PRINT;
 	int c;
-	
+
 	while ((c = getopt(argc,argv,"d:a:o:i:")) != -1) {
 		switch (c) {
 			case 'd':
@@ -221,7 +222,7 @@ int main (int argc, char * const argv[])
 				else if (strcasecmp(optarg,"csv") == 0)   out = OUT_CSV;
 				else usage();
 				break;
-			case 'i': 
+			case 'i':
 				intervall = atof(optarg);
 				break;
 			default:
@@ -231,29 +232,29 @@ int main (int argc, char * const argv[])
 
 	if (dev == NULL)
 		usage();
-	
+
 	interrupted = 0;
 	signal(SIGINT, sighandler);
 	signal(SIGKILL, sighandler);
 	signal(SIGHUP, sighandler);
 
 	verb("will use '%s' as i2c-device and %d as i2c address.\n",dev,dib.i2c_addr);
-	
+
 	if ((dib.fd = open(dev,O_RDWR)) < 0) {
 		err("could not open %s\n",dev);
-		exit(1);	
+		exit(1);
 	}
-	
+
     if (ioctl(dib.fd,I2C_SLAVE,dib.i2c_addr) < 0) {
 		err("could not set i2c address\n");
 		exit(1);
 	}
-	
+
 	if (dib_read_reg(&dib,DIB3000_REG_MANUFACTOR_ID) != DIB3000_I2C_ID_DIBCOM) {
 		err("could not find a dib3000 demodulator at i2c-address %d\n",dib.i2c_addr);
 		exit(1);
 	}
-	
+
 	switch (dib_read_reg(&dib,DIB3000_REG_DEVICE_ID)) {
 		case DIB3000MB_DEVICE_ID:
 			verb("found a DiB3000M-B demodulator.\n");
@@ -263,7 +264,7 @@ int main (int argc, char * const argv[])
 			verb("found a DiB3000M-C demodulator.\n");
 			dib.rev = DIB3000MC;
 			break;
-		case DIB3000P_DEVICE_ID: 
+		case DIB3000P_DEVICE_ID:
 			verb("found a DiB3000-P demodulator.\n");
 			dib.rev = DIB3000P;
 			break;
@@ -288,7 +289,7 @@ int main (int argc, char * const argv[])
 		}
 		usleep((int) (intervall * 1000000));
 	}
-	
+
 	close(dib.fd);
 
 	return 0;

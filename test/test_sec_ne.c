@@ -65,7 +65,7 @@ void process_section(int fd)
 }
 
 int set_filter(int fd, unsigned int pid, unsigned int tid,
-		unsigned int tid_ext, unsigned int version_number)
+		unsigned int tid_ext, unsigned int _version_number)
 {
 	struct dmx_sct_filter_params f;
 	unsigned long bufsz;
@@ -92,8 +92,8 @@ int set_filter(int fd, unsigned int pid, unsigned int tid,
 		f.filter.mask[1]   = 0xff;
 		f.filter.mask[2]   = 0xff;
 	}
-	if (version_number < 0x20) {
-		f.filter.filter[3] = (uint8_t) (version_number << 1);
+	if (_version_number < 0x20) {
+		f.filter.filter[3] = (uint8_t) (_version_number << 1);
 		f.filter.mask[3]   = 0x3e;
 		f.filter.mode[3]   = 0x3e;
 	}

@@ -255,6 +255,7 @@ static int do_tune(int fefd, unsigned int ifreq, unsigned int sr)
 static
 int check_frontend (int fe_fd, int dvr)
 {
+   (void)dvr;
    fe_status_t status;
    uint16_t snr, signal;
    uint32_t ber, uncorrected_blocks;

@@ -148,7 +148,7 @@ int zapchannels_cb(void *private, struct dvbcfg_zapchannel *channel)
 	return 0;
 }
 
-void receive_data(int dvrfd, int timeout)
+void receive_data(int _dvrfd, int timeout)
 {
 	unsigned char databuf[TRANSPORT_PACKET_LENGTH*20];
 	int sz;
@@ -168,7 +168,7 @@ void receive_data(int dvrfd, int timeout)
 	memset(section_bufs, 0, sizeof(section_bufs));
 	while((time(NULL) - starttime) < timeout) {
 		// got some!
-		if ((sz = read(dvrfd, databuf, sizeof(databuf))) < 0) {
+		if ((sz = read(_dvrfd, databuf, sizeof(databuf))) < 0) {
 			if (errno == EOVERFLOW) {
 				fprintf(stderr, "data overflow!\n");
 				continue;
@@ -345,7 +345,7 @@ void parse_section(uint8_t *buf, int len, int pid)
 		struct mpeg_odsmt_section *odsmt;
 		struct mpeg_odsmt_stream *cur_stream;
 		struct descriptor *curd;
-		int index;
+		int _index;
 		uint8_t *objects;
 		size_t objects_length;
 
@@ -358,7 +358,7 @@ void parse_section(uint8_t *buf, int len, int pid)
 			return;
 		}
 		printf("SCT PID:0x%04x\n", mpeg_odsmt_section_pid(odsmt));
-		mpeg_odsmt_section_streams_for_each(osdmt, cur_stream, index) {
+		mpeg_odsmt_section_streams_for_each(osdmt, cur_stream, _index) {
 			if (odsmt->stream_count == 0) {
 				printf("\tSCT SINGLE 0x%04x\n", cur_stream->u.single.esid);
 			} else {

@@ -286,7 +286,7 @@ static void parse_ca_identifier_descriptor (const unsigned char *buf,
 				     struct service *s)
 {
 	unsigned char len = buf [1];
-	int i;
+	unsigned int i;
 
 	buf += 2;
 
@@ -324,6 +324,8 @@ static void parse_iso639_language_descriptor (const unsigned char *buf, struct s
 
 static void parse_network_name_descriptor (const unsigned char *buf, void *dummy)
 {
+	(void)dummy;
+
 	unsigned char len = buf [1];
 
 	info("Network Name '%.*s'\n", len, buf + 2);
@@ -331,6 +333,8 @@ static void parse_network_name_descriptor (const unsigned char *buf, void *dummy
 
 static void parse_terrestrial_uk_channel_number (const unsigned char *buf, void *dummy)
 {
+	(void)dummy;
+
 	int i, n, channel_num, service_id;
 	struct list_head *p1, *p2;
 	struct transponder *t;
@@ -694,6 +698,8 @@ static void parse_descriptors(enum table_type t, const unsigned char *buf,
 static void parse_pat(const unsigned char *buf, int section_length,
 		      int transport_stream_id)
 {
+	(void)transport_stream_id;
+
 	while (section_length > 0) {
 		struct service *s;
 		int service_id = (buf[0] << 8) | buf[1];
@@ -875,6 +881,8 @@ static void parse_nit (const unsigned char *buf, int section_length, int network
 static void parse_sdt (const unsigned char *buf, int section_length,
 		int transport_stream_id)
 {
+	(void)transport_stream_id;
+
 	buf += 3;	       /*  skip original network id + reserved field */
 
 	while (section_length >= 5) {
@@ -995,6 +1003,10 @@ static void parse_psip_descriptors(struct service *s,const unsigned char *buf,in
 static void parse_psip_vct (const unsigned char *buf, int section_length,
 		int table_id, int transport_stream_id)
 {
+	(void)section_length;
+	(void)table_id;
+	(void)transport_stream_id;
+
 /*	int protocol_version = buf[0];*/
 	int num_channels_in_section = buf[1];
 	int i;
@@ -1415,7 +1427,7 @@ static void read_filters (void)
 static int mem_is_zero (const void *mem, int size)
 {
 	const char *p = mem;
-	unsigned long i;
+	int i;
 
 	for (i=0; i<size; i++) {
 		if (p[i] != 0x00)
@@ -1898,6 +1910,8 @@ static char sat_polarisation (struct transponder *t)
 
 static int sat_number (struct transponder *t)
 {
+	(void) t;
+
 	return switch_pos;
 }
 
@@ -1933,7 +1947,7 @@ static void dump_lists (void)
 					snprintf(sn, sizeof(sn), "[%03x-%04x]",
 						 anon_services, s->service_id);
 				else
-					snprintf(sn, sizeof(sn), "[%04x]", 
+					snprintf(sn, sizeof(sn), "[%04x]",
 						 s->service_id);
 				s->service_name = strdup(sn);
 				anon_services++;
@@ -2012,11 +2026,11 @@ static void show_existing_tuning_data_files(void)
 #endif
 	static const char* prefixlist[] = { DATADIR "/dvb", "/etc/dvb",
 					    DATADIR "/doc/packages/dvb", 0 };
-	int i;
+	unsigned int i;
 	const char **prefix;
 	fprintf(stderr, "initial tuning data files:\n");
 	for (prefix = prefixlist; *prefix; prefix++) {
-		glob_t globbuf = {0};
+		glob_t globbuf;
 		char* globspec = malloc (strlen(*prefix)+9);
 		strcpy (globspec, *prefix); strcat (globspec, "/dvb-?/*");
 		if (! glob (globspec, 0, 0, &globbuf)) {
@@ -2030,6 +2044,7 @@ static void show_existing_tuning_data_files(void)
 
 static void handle_sigint(int sig)
 {
+	(void)sig;
 	error("interrupted by SIGINT, dumping partial result...\n");
 	dump_lists();
 	exit(2);

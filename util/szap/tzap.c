@@ -125,7 +125,7 @@ int parse_param (int fd, const Param * plist, int list_size, int *param)
 {
 	char c;
 	int character = 0;
-	int index = 0;
+	int _index = 0;
 
 	while (1) {
 		if (read(fd, &c, 1) < 1)
@@ -136,9 +136,9 @@ int parse_param (int fd, const Param * plist, int list_size, int *param)
 			break;
 
 		while (toupper(c) != plist->name[character]) {
-			index++;
+			_index++;
 			plist++;
-			if (index >= list_size)	 /*  parse error, no valid */
+			if (_index >= list_size)	 /*  parse error, no valid */
 				return -2;	 /*  parameter name found  */
 		}
 
@@ -399,6 +399,7 @@ int setup_frontend (int fe_fd, struct dvb_frontend_parameters *frontend)
 static void
 do_timeout(int x)
 {
+	(void)x;
 	if (timeout_flag==0)
 	{
 		timeout_flag=1;
@@ -416,18 +417,18 @@ static void
 print_frontend_stats (int fe_fd)
 {
 	fe_status_t status;
-	uint16_t snr, signal;
+	uint16_t snr, _signal;
 	uint32_t ber, uncorrected_blocks;
 
 	ioctl(fe_fd, FE_READ_STATUS, &status);
-	ioctl(fe_fd, FE_READ_SIGNAL_STRENGTH, &signal);
+	ioctl(fe_fd, FE_READ_SIGNAL_STRENGTH, &_signal);
 	ioctl(fe_fd, FE_READ_SNR, &snr);
 	ioctl(fe_fd, FE_READ_BER, &ber);
 	ioctl(fe_fd, FE_READ_UNCORRECTED_BLOCKS, &uncorrected_blocks);
 
 	fprintf (stderr,"status %02x | signal %04x | snr %04x | "
 		"ber %08x | unc %08x | ",
-		status, signal, snr, ber, uncorrected_blocks);
+		status, _signal, snr, ber, uncorrected_blocks);
 
 	if (status & FE_HAS_LOCK)
 		fprintf(stderr,"FE_HAS_LOCK");

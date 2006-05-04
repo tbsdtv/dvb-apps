@@ -40,6 +40,9 @@ int shutdown_stackthread = 0;
 
 int main(int argc, char * argv[])
 {
+    (void)argc;
+    (void)argv;
+
     int i;
     pthread_t stackthread;
 
@@ -121,6 +124,11 @@ int main(int argc, char * argv[])
 int test_lookup_callback(void *arg, uint8_t slot_id, uint32_t requested_resource_id,
                          en50221_sl_resource_callback *callback_out, void **arg_out, uint32_t *connected_resource_id)
 {
+    (void)arg;
+    (void)callback_out;
+    (void)arg_out;
+    (void)connected_resource_id;
+
     struct en50221_app_public_resource_id resid;
 
     if (en50221_app_decode_public_resource_id(&resid, requested_resource_id)) {
@@ -135,6 +143,8 @@ int test_lookup_callback(void *arg, uint8_t slot_id, uint32_t requested_resource
 
 int test_session_callback(void *arg, int reason, uint8_t slot_id, uint16_t session_number, uint32_t resource_id)
 {
+   (void)arg;
+
     printf("Session callback %i %i %i %04x\n", slot_id, session_number, reason, resource_id);
 
     return -1;
