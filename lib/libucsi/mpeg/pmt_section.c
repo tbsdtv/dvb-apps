@@ -25,8 +25,8 @@ struct mpeg_pmt_section * mpeg_pmt_section_codec(struct section_ext * ext)
 {
 	uint8_t * buf = (uint8_t *) ext;
 	struct mpeg_pmt_section * pmt = (struct mpeg_pmt_section *) ext;
-	unsigned int pos = sizeof(struct section_ext);
-	unsigned int len = section_ext_length(ext);
+	size_t pos = sizeof(struct section_ext);
+	size_t len = section_ext_length(ext);
 
 	if (len < sizeof(struct mpeg_pmt_section))
 		return NULL;

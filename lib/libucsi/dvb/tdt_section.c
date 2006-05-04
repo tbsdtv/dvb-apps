@@ -23,7 +23,7 @@
 
 struct dvb_tdt_section * dvb_tdt_section_codec(struct section * section)
 {
-	int len = section->length + sizeof(struct section);
+	size_t len = section_length(section);
 	struct dvb_tdt_section * ret = (struct dvb_tdt_section *) section;
 
 	if (len != sizeof(struct dvb_tdt_section))

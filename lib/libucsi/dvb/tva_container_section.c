@@ -23,7 +23,7 @@
 
 struct dvb_tva_container_section *dvb_tva_container_section_codec(struct section_ext *ext)
 {
-	int len = section_ext_length(ext);
+	size_t len = section_ext_length(ext);
 	struct dvb_tva_container_section* ret = (struct dvb_tva_container_section*) ext;
 
 	if (len < sizeof(struct dvb_tva_container_section))

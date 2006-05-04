@@ -109,7 +109,7 @@ static inline uint16_t dvb_sdt_section_transport_stream_id(struct dvb_sdt_sectio
 static inline struct dvb_sdt_service *
 	dvb_sdt_section_services_first(struct dvb_sdt_section * sdt)
 {
-	int pos = sizeof(struct dvb_sdt_section);
+	size_t pos = sizeof(struct dvb_sdt_section);
 
 	if (pos >= section_ext_length(&sdt->head))
 		return NULL;

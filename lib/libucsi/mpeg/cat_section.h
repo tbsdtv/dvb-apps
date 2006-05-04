@@ -69,7 +69,7 @@ extern struct mpeg_cat_section *mpeg_cat_section_codec(struct section_ext *secti
 static inline struct descriptor *
 	mpeg_cat_section_descriptors_first(struct mpeg_cat_section *cat)
 {
-	int pos = sizeof(struct mpeg_cat_section);
+	size_t pos = sizeof(struct mpeg_cat_section);
 
 	if (pos >= section_ext_length(&cat->head))
 		return NULL;

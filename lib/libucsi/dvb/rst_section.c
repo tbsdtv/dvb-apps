@@ -24,8 +24,8 @@
 struct dvb_rst_section * dvb_rst_section_codec(struct section *section)
 {
 	uint8_t * buf = (uint8_t *) section;
-	int pos = sizeof(struct section);
-	int len = section_length(section);
+	size_t pos = sizeof(struct section);
+	size_t len = section_length(section);
 	struct dvb_rst_section * ret = (struct dvb_rst_section *) section;
 
 	while (pos < len) {

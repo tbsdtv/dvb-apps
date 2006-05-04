@@ -40,9 +40,9 @@ extern uint32_t crc32tbl[];
  * @param len Number of bytes.
  * @return Calculated CRC.
  */
-static inline uint32_t crc32(uint32_t crc, uint8_t* buf, int len)
+static inline uint32_t crc32(uint32_t crc, uint8_t* buf, size_t len)
 {
-	int i;
+	size_t i;
 
 	for (i=0; i< len; i++) {
 		crc = (crc << 8) ^ crc32tbl[((crc >> 24) ^ buf[i]) & 0xff];

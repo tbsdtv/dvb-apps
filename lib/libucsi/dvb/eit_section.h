@@ -111,7 +111,7 @@ static inline uint16_t dvb_eit_section_service_id(struct dvb_eit_section *eit)
 static inline struct dvb_eit_event *
 	dvb_eit_section_events_first(struct dvb_eit_section *eit)
 {
-	int pos = sizeof(struct dvb_eit_section);
+	size_t pos = sizeof(struct dvb_eit_section);
 
 	if (pos >= section_ext_length(&eit->head))
 		return NULL;

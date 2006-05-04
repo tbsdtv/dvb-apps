@@ -24,8 +24,8 @@
 struct dvb_tot_section *dvb_tot_section_codec(struct section *section)
 {
 	uint8_t * buf = (uint8_t *)section;
-	int pos = sizeof(struct section);
-	int len = section->length + sizeof(struct section) - CRC_SIZE;
+	size_t pos = sizeof(struct section);
+	size_t len = section_length(section) - CRC_SIZE;
 	struct dvb_tot_section * ret = (struct dvb_tot_section *)section;
 
 	if (len < sizeof(struct dvb_tot_section))

@@ -24,8 +24,8 @@
 struct dvb_bat_section * dvb_bat_section_codec(struct section_ext * ext)
 {
 	uint8_t * buf = (uint8_t *) ext;
-	unsigned int pos = sizeof(struct section_ext);
-	unsigned int len = section_ext_length(ext);
+	size_t pos = sizeof(struct section_ext);
+	size_t len = section_ext_length(ext);
 	struct dvb_bat_section * ret = (struct dvb_bat_section *) ext;
 
 	if (len < sizeof(struct dvb_bat_section))

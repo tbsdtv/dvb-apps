@@ -24,7 +24,7 @@
 struct mpeg_tsdt_section * mpeg_tsdt_section_codec(struct section_ext * ext)
 {
 	uint8_t * buf = (uint8_t *)ext;
-	int pos = sizeof(struct section_ext);
+	size_t pos = sizeof(struct section_ext);
 
 	if (verify_descriptors(buf + pos,
 	    section_ext_length(ext) - sizeof(struct mpeg_tsdt_section)))

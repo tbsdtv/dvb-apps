@@ -25,8 +25,8 @@ struct dvb_nit_section *dvb_nit_section_codec(struct section_ext * ext)
 {
 	uint8_t * buf = (uint8_t *) ext;
 	struct dvb_nit_section * ret = (struct dvb_nit_section *) ext;
-	unsigned int pos = sizeof(struct section_ext);
-	unsigned int len = section_ext_length(ext);
+	size_t pos = sizeof(struct section_ext);
+	size_t len = section_ext_length(ext);
 
 	if (len < sizeof(struct dvb_nit_section))
 		return NULL;

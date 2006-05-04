@@ -25,8 +25,8 @@ struct mpeg_odsmt_section *mpeg_odsmt_section_codec(struct section_ext * ext)
 {
 	struct mpeg_odsmt_section * odsmt = (struct mpeg_odsmt_section *)ext;
 	uint8_t * buf = (uint8_t *)ext;
-	int pos = sizeof(struct section_ext);
-	int len = section_ext_length(ext);
+	size_t pos = sizeof(struct section_ext);
+	size_t len = section_ext_length(ext);
 	int i;
 
 	if (len < sizeof(struct mpeg_odsmt_section))

@@ -70,7 +70,7 @@ extern struct mpeg_tsdt_section *mpeg_tsdt_section_codec(struct section_ext *sec
 static inline struct descriptor *
 	mpeg_tsdt_section_descriptors_first(struct mpeg_tsdt_section * tsdt)
 {
-	int pos = sizeof(struct mpeg_tsdt_section);
+	size_t pos = sizeof(struct mpeg_tsdt_section);
 
 	if (pos >= section_ext_length(&tsdt->head))
 		return NULL;

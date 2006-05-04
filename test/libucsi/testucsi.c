@@ -347,7 +347,7 @@ void parse_section(uint8_t *buf, int len, int pid)
 		struct descriptor *curd;
 		int index;
 		uint8_t *objects;
-		int objects_length;
+		size_t objects_length;
 
 		if ((section_ext = section_ext_decode(section, 1)) == NULL) {
 			return;
@@ -1309,7 +1309,7 @@ void parse_descriptor(struct descriptor *d, int indent)
 			int length = 0;
 			uint8_t *data;
 
-			dvb_linkage_data_08_data(dx, d08, &length);
+			data = dvb_linkage_data_08_data(dx, d08, &length);
 			iprintf(indent, "DSC hand_over_type:%i origin_type:%i\n",
 				d08->hand_over_type, d08->origin_type);
 			if (network_id != -1) {

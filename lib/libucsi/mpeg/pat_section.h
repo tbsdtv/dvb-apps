@@ -90,7 +90,7 @@ static inline uint16_t mpeg_pat_section_transport_stream_id(struct mpeg_pat_sect
 static inline struct mpeg_pat_program *
 	mpeg_pat_section_programs_first(struct mpeg_pat_section * pat)
 {
-	int pos = sizeof(struct mpeg_pat_section);
+	size_t pos = sizeof(struct mpeg_pat_section);
 
 	if (pos >= section_ext_length(&pat->head))
 		return NULL;

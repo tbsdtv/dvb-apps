@@ -76,13 +76,36 @@ struct psi_table_state {
 
 
 /**
+ * Determine the total length of a section, including the header.
+ *
+ * @param section The parsed section structure.
+ * @return The length.
+ */
+static inline size_t section_length(struct section *section)
+{
+	return section->length + sizeof(struct section);
+}
+
+/**
+ * Determine the total length of an extended section, including the header,
+ * but omitting the CRC.
+ *
+ * @param section The parsed section_ext structure.
+ * @return The length.
+ */
+static inline size_t section_ext_length(struct section_ext * section)
+{
+	return section->length + sizeof(struct section) - CRC_SIZE;
+}
+
+/**
  * Process a section structure in-place.
  *
  * @param buf Pointer to the data.
  * @param len Length of data.
  * @return Pointer to the section structure, or NULL if invalid.
  */
-static inline struct section * section_codec(uint8_t * buf, int len)
+static inline struct section * section_codec(uint8_t * buf, size_t len)
 {
 	struct section * ret = (struct section *)buf;
 
@@ -91,7 +114,7 @@ static inline struct section * section_codec(uint8_t * buf, int len)
 
 	bswap16(buf+1);
 
-	if (len != ret->length + 3)
+	if (len != ret->length + 3U)
 		return NULL;
 
 	return ret;
@@ -107,7 +130,7 @@ static inline struct section * section_codec(uint8_t * buf, int len)
 static inline int section_check_crc(struct section *section)
 {
 	uint8_t * buf = (uint8_t *) section;
-	int len = sizeof(struct section) + section->length;
+	size_t len = section_length(section);
 	uint32_t crc;
 
 	/* the crc check has to be performed on the unswapped data */
@@ -181,29 +204,6 @@ static inline struct section_ext * section_ext_encode(struct section_ext* sectio
 	}
 
 	return (struct section_ext *)section;
-}
-
-/**
- * Determine the total length of a section, including the header.
- *
- * @param section The parsed section structure.
- * @return The length.
- */
-static inline int section_length(struct section *section)
-{
-	return section->length + sizeof(struct section);
-}
-
-/**
- * Determine the total length of an extended section, including the header,
- * but omitting the CRC.
- *
- * @param section The parsed section_ext structure.
- * @return The length.
- */
-static inline int section_ext_length(struct section_ext * section)
-{
-	return section->length + sizeof(struct section) - CRC_SIZE;
 }
 
 /**

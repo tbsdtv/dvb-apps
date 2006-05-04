@@ -24,8 +24,8 @@
 struct dvb_eit_section *dvb_eit_section_codec(struct section_ext * ext)
 {
 	uint8_t * buf = (uint8_t *) ext;
-	unsigned int pos = sizeof(struct section_ext);
-	unsigned int len = section_ext_length(ext);
+	size_t pos = sizeof(struct section_ext);
+	size_t len = section_ext_length(ext);
    
 	if (len < sizeof(struct dvb_eit_section))
 		return NULL;

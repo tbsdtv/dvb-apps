@@ -133,7 +133,7 @@ static inline uint8_t*
 static inline struct mpeg_odsmt_stream *
 	mpeg_odsmt_section_streams_first(struct mpeg_odsmt_section *odsmt)
 {
-	int pos = sizeof(struct mpeg_odsmt_section);
+	size_t pos = sizeof(struct mpeg_odsmt_section);
 
 	if (pos >= section_ext_length(&odsmt->head))
 		return NULL;
@@ -198,10 +198,10 @@ static inline struct descriptor *
 
 static inline uint8_t*
 	mpeg_odsmt_section_object_descriptors(struct mpeg_odsmt_section * odsmt,
-					      uint32_t* len)
+					      size_t* len)
 {
 	struct mpeg_odsmt_stream* pos;
-	int size = sizeof(struct mpeg_odsmt_section);
+	size_t size = sizeof(struct mpeg_odsmt_section);
 	int index;
 
 	mpeg_odsmt_section_streams_for_each(odsmt, pos, index) {

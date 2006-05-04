@@ -125,7 +125,7 @@ static inline struct descriptor *
 static inline struct dvb_sit_service *
 	dvb_sit_section_services_first(struct dvb_sit_section *sit)
 {
-	int pos = sizeof(struct dvb_sit_section) + sit->transmission_info_loop_length;
+	size_t pos = sizeof(struct dvb_sit_section) + sit->transmission_info_loop_length;
 
 	if (pos >= section_ext_length(&sit->head))
 		return NULL;

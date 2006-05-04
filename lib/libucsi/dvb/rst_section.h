@@ -82,7 +82,7 @@ struct dvb_rst_section *dvb_rst_section_codec(struct section *section);
 static inline struct dvb_rst_status *
 	dvb_rst_section_statuses_first(struct dvb_rst_section *rst)
 {
-	int pos = sizeof(struct dvb_rst_section);
+	size_t pos = sizeof(struct dvb_rst_section);
 
 	if (pos >= section_length(&rst->head))
 		return NULL;

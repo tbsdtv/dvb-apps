@@ -140,7 +140,7 @@ static inline struct descriptor *
 static inline struct mpeg_pmt_stream *
 	mpeg_pmt_section_streams_first(struct mpeg_pmt_section * pmt)
 {
-	int pos = sizeof(struct mpeg_pmt_section) + pmt->program_info_length;
+	size_t pos = sizeof(struct mpeg_pmt_section) + pmt->program_info_length;
 
 	if (pos >= section_ext_length(&pmt->head))
 		return NULL;

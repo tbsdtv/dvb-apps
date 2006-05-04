@@ -47,7 +47,7 @@ struct descriptor {
  * @return Pointer to next descriptor, or NULL if there are none.
  */
 static inline struct descriptor *
-	next_descriptor(uint8_t * buf, int len, struct descriptor * pos)
+	next_descriptor(uint8_t * buf, size_t len, struct descriptor * pos)
 {
 	uint8_t* next;
 
@@ -105,9 +105,9 @@ static inline int
 
 
 /******************************** PRIVATE CODE ********************************/
-static inline int verify_descriptors(uint8_t * buf, int len)
+static inline int verify_descriptors(uint8_t * buf, size_t len)
 {
-	int pos = 0;
+	size_t pos = 0;
 
 	while (pos < len) {
 		if ((pos + 2) > len)
