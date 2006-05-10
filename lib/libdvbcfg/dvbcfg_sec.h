@@ -38,7 +38,7 @@ struct dvbcfg_sec
 	enum dvbfe_polarization polarization;
 
 	/* these elements describe the SEC parameters */
-	uint32_t lof; /* frequency to match */
+	uint32_t lof; /* frequency to subtract */
 	char command[256];
 
 	/* these two are not used by this library - they're provided as a
@@ -61,7 +61,7 @@ typedef int (*dvbcfg_sec_callback)(void *private, struct dvbcfg_sec *sec);
  *
  * @param f File to load from.
  * @param private Value to pass to 'private' in callback above.
- * @param cb Callback function called for each channel loaded from the file.
+ * @param cb Callback function called for each sec loaded from the file.
  * @return 0 on success, or nonzero error code on failure.
  */
 extern int dvbcfg_sec_load(FILE *f, void *private,
@@ -74,7 +74,7 @@ extern int dvbcfg_sec_load(FILE *f, void *private,
  * @param sec_id ID of SEC channel.
  * @param frequency Desired frequency.
  * @param polarization Desired polarization.
- * @param channel Where to put the details if found.
+ * @param sec Where to put the details if found.
  * @return 0 on success, nonzero on error.
  */
 extern int dvbcfg_sec_find(const char *config_file,
