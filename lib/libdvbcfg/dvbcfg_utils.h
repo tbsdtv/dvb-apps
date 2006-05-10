@@ -26,9 +26,9 @@ struct dvbcfg_setting {
 	int value;
 };
 
-extern int parsesetting(char* text, const struct dvbcfg_setting* settings);
-extern char* lookupsetting(int setting, const struct dvbcfg_setting* settings);
-extern void curtoken(char *dest, int len, char *src, int delimiter);
-extern char *nexttoken(char *src, int delimiter);
+extern int dvbcfg_parsesetting(char* text, const struct dvbcfg_setting* settings);
+extern char* dvbcfg_lookupsetting(int setting, const struct dvbcfg_setting* settings);
+extern void dvbcfg_curtoken(char *dest, int len, char *src, int delimiter);
+extern char *dvbcfg_nexttoken(char *src, int delimiter);
 
 #endif

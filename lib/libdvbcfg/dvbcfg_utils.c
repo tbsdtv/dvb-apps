@@ -18,13 +18,14 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
  */
 
+#include <string.h>
 #include "dvbcfg_utils.h"
 
-int parsesetting(char* text, const struct dvbcfg_setting* settings)
+int dvbcfg_parsesetting(char* text, const struct dvbcfg_setting* settings)
 {
 	char tmp[128];
 
-	curtoken(tmp, sizeof(tmp), text, ':');
+	dvbcfg_curtoken(tmp, sizeof(tmp), text, ':');
 
 	while(settings->name) {
 		if (!strcmp(tmp, settings->name))
@@ -36,7 +37,7 @@ int parsesetting(char* text, const struct dvbcfg_setting* settings)
 	return -1;
 }
 
-char* lookupsetting(int setting, const struct dvbcfg_setting* settings)
+char* dvbcfg_lookupsetting(int setting, const struct dvbcfg_setting* settings)
 {
 	while(settings->name) {
 		if (setting == settings->value)
@@ -48,7 +49,7 @@ char* lookupsetting(int setting, const struct dvbcfg_setting* settings)
 	return NULL;
 }
 
-void curtoken(char *dest, int len, char *src, int delimiter)
+void dvbcfg_curtoken(char *dest, int len, char *src, int delimiter)
 {
 	while((len > 1) && (*src) && (*src != delimiter)) {
 		*dest++ = *src++;
@@ -57,7 +58,7 @@ void curtoken(char *dest, int len, char *src, int delimiter)
 	*dest = 0;
 }
 
-char *nexttoken(char *src, int delimiter)
+char *dvbcfg_nexttoken(char *src, int delimiter)
 {
 	while(*src && (*src != delimiter))
 		src++;

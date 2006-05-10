@@ -6,7 +6,8 @@ includes = dvbcfg_zapchannel.h \
 	   dvbcfg_sec.h
 
 objects  = dvbcfg_zapchannel.o \
-	   dvbcfg_sec.o
+	   dvbcfg_sec.o \
+	   dvbcfg_utils.o
 
 sharedlib = libdvbcfg.so
 staticlib = libdvbcfg.a

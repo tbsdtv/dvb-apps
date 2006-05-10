@@ -33,7 +33,7 @@ extern "C"
 struct dvbcfg_zapchannel
 {
         char name[128];
-        dvbfe_type_t fe_type;
+        enum dvbfe_type fe_type;
         struct dvbfe_parameters fe_params;
         int satellite_switch;
         int video_pid;

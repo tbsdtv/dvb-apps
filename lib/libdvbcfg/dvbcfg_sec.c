@@ -60,14 +60,14 @@ int dvbcfg_sec_load(FILE *f,
 		memset(&tmpsec, 0, sizeof(tmpsec));
 
 		/* get the sec_id */
-		curtoken(tmpsec.sec_id, sizeof(tmpsec.sec_id), line, ' ');
-		if ((line = nexttoken(line, ' ')) == NULL)
+		dvbcfg_curtoken(tmpsec.sec_id, sizeof(tmpsec.sec_id), line, ' ');
+		if ((line = dvbcfg_nexttoken(line, ' ')) == NULL)
 			continue;
 
 		/* the slof */
 		if (sscanf(line, "%i", &tmpsec.slof) != 1)
 			continue;
-		if ((line = nexttoken(line, ' ')) == NULL)
+		if ((line = dvbcfg_nexttoken(line, ' ')) == NULL)
 			continue;
 
 		/* the polarization */
@@ -87,13 +87,13 @@ int dvbcfg_sec_load(FILE *f,
 		default:
 			continue;
 		}
-		if ((line = nexttoken(line, ' ')) == NULL)
+		if ((line = dvbcfg_nexttoken(line, ' ')) == NULL)
 			continue;
 
 		/* the LOF */
 		if (sscanf(line, "%i", &tmpsec.lof) != 1)
 			continue;
-		if ((line = nexttoken(line, ' ')) == NULL)
+		if ((line = dvbcfg_nexttoken(line, ' ')) == NULL)
 			continue;
 
 		/* the associated command NOTE: already null terminated */
