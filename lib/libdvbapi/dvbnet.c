@@ -44,7 +44,7 @@ int dvbnet_open(int adapter, int netdeviceid)
 	return fd;
 }
 
-int dvbnet_add_interface(int fd, uint16_t pid, int encapsulation)
+int dvbnet_add_interface(int fd, uint16_t pid, enum dvbnet_encap encapsulation)
 {
 	struct dvb_net_if params;
 
@@ -66,7 +66,7 @@ int dvbnet_add_interface(int fd, uint16_t pid, int encapsulation)
 	return ioctl(fd, NET_ADD_IF, &params);
 }
 
-int dvbnet_get_interface(int fd, int ifnum, uint16_t *pid, int *encapsulation)
+int dvbnet_get_interface(int fd, int ifnum, uint16_t *pid, enum dvbnet_encap *encapsulation)
 {
 	struct dvb_net_if info;
 	int res;

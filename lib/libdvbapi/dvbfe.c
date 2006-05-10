@@ -151,7 +151,7 @@ static int lookupval(int val, int reverse, int table[][2])
 
 struct dvbfe_handle {
 	int fd;
-	dvbfe_type_t type;
+	enum dvbfe_type type;
 	char *name;
 	struct timeval nextinfotime;
 	struct dvbfe_info cachedinfo;
@@ -221,7 +221,7 @@ void dvbfe_close(struct dvbfe_handle *fehandle)
 	free(fehandle);
 }
 
-int dvbfe_get_info(struct dvbfe_handle *fehandle, dvbfe_info_mask_t querymask, struct dvbfe_info *result)
+int dvbfe_get_info(struct dvbfe_handle *fehandle, enum dvbfe_info_mask querymask, struct dvbfe_info *result)
 {
 	int returnval = 0;
 	fe_status_t status;

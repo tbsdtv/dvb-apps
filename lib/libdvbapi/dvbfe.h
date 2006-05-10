@@ -32,27 +32,27 @@ extern "C"
 /**
  * The types of frontend we support.
  */
-typedef enum dvbfe_type {
+enum dvbfe_type {
 	DVBFE_TYPE_DVBS,
 	DVBFE_TYPE_DVBC,
 	DVBFE_TYPE_DVBT,
 	DVBFE_TYPE_ATSC,
-} dvbfe_type_t;
+};
 
-typedef enum dvbfe_polarization {
+enum dvbfe_polarization {
 	DVBFE_POLARIZATION_H,
 	DVBFE_POLARIZATION_V,
 	DVBFE_POLARIZATION_L,
 	DVBFE_POLARIZATION_R,
-} dvbfe_polarization_t;
+};
 
-typedef enum dvbfe_spectral_inversion {
+enum dvbfe_spectral_inversion {
 	DVBFE_INVERSION_OFF,
 	DVBFE_INVERSION_ON,
 	DVBFE_INVERSION_AUTO
-} dvbfe_spectral_inversion_t;
+};
 
-typedef enum dvbfe_code_rate {
+enum dvbfe_code_rate {
 	DVBFE_FEC_NONE,
 	DVBFE_FEC_1_2,
 	DVBFE_FEC_2_3,
@@ -63,9 +63,9 @@ typedef enum dvbfe_code_rate {
 	DVBFE_FEC_7_8,
 	DVBFE_FEC_8_9,
 	DVBFE_FEC_AUTO
-} dvbfe_code_rate_t;
+};
 
-typedef enum dvbfe_dvbt_const {
+enum dvbfe_dvbt_const {
 	DVBFE_DVBT_CONST_QPSK,
 	DVBFE_DVBT_CONST_QAM_16,
 	DVBFE_DVBT_CONST_QAM_32,
@@ -73,85 +73,85 @@ typedef enum dvbfe_dvbt_const {
 	DVBFE_DVBT_CONST_QAM_128,
 	DVBFE_DVBT_CONST_QAM_256,
 	DVBFE_DVBT_CONST_AUTO
-} dvbfe_dvbt_const_t;
+};
 
-typedef enum dvbfe_dvbc_mod {
+enum dvbfe_dvbc_mod {
 	DVBFE_DVBC_MOD_QAM_16,
 	DVBFE_DVBC_MOD_QAM_32,
 	DVBFE_DVBC_MOD_QAM_64,
 	DVBFE_DVBC_MOD_QAM_128,
 	DVBFE_DVBC_MOD_QAM_256,
 	DVBFE_DVBC_MOD_AUTO,
-} dvbfe_dvbc_mod_t;
+};
 
-typedef enum dvbfe_atsc_mod {
+enum dvbfe_atsc_mod {
 	DVBFE_ATSC_MOD_QAM_64,
 	DVBFE_ATSC_MOD_QAM_256,
 	DVBFE_ATSC_MOD_VSB_8,
 	DVBFE_ATSC_MOD_VSB_16,
 	DVBFE_ATSC_MOD_AUTO
-} dvbfe_atsc_mod_t;
+};
 
-typedef enum dvbfe_dvbt_transmit_mode {
+enum dvbfe_dvbt_transmit_mode {
 	DVBFE_DVBT_TRANSMISSION_MODE_2K,
 	DVBFE_DVBT_TRANSMISSION_MODE_8K,
 	DVBFE_DVBT_TRANSMISSION_MODE_AUTO
-} dvbfe_dvbt_transmit_mode_t;
+};
 
-typedef enum dvbfe_dvbt_bandwidth {
+enum dvbfe_dvbt_bandwidth {
 	DVBFE_DVBT_BANDWIDTH_8_MHZ,
 	DVBFE_DVBT_BANDWIDTH_7_MHZ,
 	DVBFE_DVBT_BANDWIDTH_6_MHZ,
 	DVBFE_DVBT_BANDWIDTH_AUTO
-} dvbfe_dvbt_bandwidth_t;
+};
 
-typedef enum dvbfe_dvbt_guard_interval {
+enum dvbfe_dvbt_guard_interval {
 	DVBFE_DVBT_GUARD_INTERVAL_1_32,
 	DVBFE_DVBT_GUARD_INTERVAL_1_16,
 	DVBFE_DVBT_GUARD_INTERVAL_1_8,
 	DVBFE_DVBT_GUARD_INTERVAL_1_4,
 	DVBFE_DVBT_GUARD_INTERVAL_AUTO
-} dvbfe_dvbt_guard_interval_t;
+};
 
-typedef enum dvbfe_dvbt_hierarchy {
+enum dvbfe_dvbt_hierarchy {
 	DVBFE_DVBT_HIERARCHY_NONE,
 	DVBFE_DVBT_HIERARCHY_1,
 	DVBFE_DVBT_HIERARCHY_2,
 	DVBFE_DVBT_HIERARCHY_4,
 	DVBFE_DVBT_HIERARCHY_AUTO
-} dvbfe_dvbt_hierarchy_t;
+};
 
 /**
  * Structure used to store and communicate frontend parameters.
  */
 struct dvbfe_parameters {
 	uint32_t frequency;
-	dvbfe_spectral_inversion_t inversion;
+	enum dvbfe_spectral_inversion inversion;
 	union {
 		struct {
 			uint32_t			symbol_rate;
-			dvbfe_code_rate_t		fec_inner;
-			dvbfe_polarization_t		polarization;
+			enum dvbfe_code_rate		fec_inner;
+			enum dvbfe_polarization		polarization;
 		} dvbs;
 
 		struct {
 			uint32_t			symbol_rate;
-			dvbfe_code_rate_t		fec_inner;
-			dvbfe_dvbc_mod_t		modulation;
+			enum dvbfe_code_rate		fec_inner;
+			enum dvbfe_dvbc_mod		modulation;
 		} dvbc;
 
 		struct {
-			dvbfe_dvbt_bandwidth_t		bandwidth;
-			dvbfe_code_rate_t		code_rate_HP;
-			dvbfe_code_rate_t		code_rate_LP;
-			dvbfe_dvbt_const_t		constellation;
-			dvbfe_dvbt_transmit_mode_t	transmission_mode;
-			dvbfe_dvbt_guard_interval_t	guard_interval;
-			dvbfe_dvbt_hierarchy_t		hierarchy_information;
+			enum dvbfe_dvbt_bandwidth	bandwidth;
+			enum dvbfe_code_rate		code_rate_HP;
+			enum dvbfe_code_rate		code_rate_LP;
+			enum dvbfe_dvbt_const		constellation;
+			enum dvbfe_dvbt_transmit_mode	transmission_mode;
+			enum dvbfe_dvbt_guard_interval	guard_interval;
+			enum dvbfe_dvbt_hierarchy	hierarchy_information;
 		} dvbt;
 
 		struct {
-			dvbfe_atsc_mod_t		modulation;
+			enum dvbfe_atsc_mod		modulation;
 		} atsc;
 	} u;
 };
@@ -159,20 +159,20 @@ struct dvbfe_parameters {
 /**
  * Mask of values used in the dvbfe_get_info() call.
  */
-typedef enum dvbfe_info_mask {
+enum dvbfe_info_mask {
 	DVBFE_INFO_LOCKSTATUS			= 0x01,
 	DVBFE_INFO_FEPARAMS			= 0x02,
 	DVBFE_INFO_BER				= 0x04,
 	DVBFE_INFO_SIGNAL_STRENGTH		= 0x08,
 	DVBFE_INFO_SNR				= 0x10,
 	DVBFE_INFO_UNCORRECTED_BLOCKS		= 0x20,
-} dvbfe_info_mask_t;
+};
 
 /**
  * Structure containing values used by the dvbfe_get_info() call.
  */
 struct dvbfe_info {
-	dvbfe_type_t type;			/* always retrieved */
+	enum dvbfe_type type;			/* always retrieved */
 	const char *name;			/* always retrieved */
 	unsigned int signal     : 1;		/* } DVBFE_INFO_LOCKSTATUS */
 	unsigned int carrier    : 1;		/* } */
@@ -235,7 +235,7 @@ extern void dvbfe_poll(struct dvbfe_handle *fehandle);
  * @param result Where to put the retrieved results.
  * @return ORed bitmask of DVBFE_INFO_* indicating which values were read successfully.
  */
-extern int dvbfe_get_info(struct dvbfe_handle *fehandle, dvbfe_info_mask_t querymask, struct dvbfe_info *result);
+extern int dvbfe_get_info(struct dvbfe_handle *fehandle, enum dvbfe_info_mask querymask, struct dvbfe_info *result);
 
 /**
  * Execute a DISEQC command string.
