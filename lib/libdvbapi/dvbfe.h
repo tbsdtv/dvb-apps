@@ -262,9 +262,7 @@ extern int dvbfe_get_info(struct dvbfe_handle *fehandle, dvbfe_info_mask_t query
  * .Dpolarisation(<addr> <V|H|L|R>) - Set polarisation.
  * .Dsatellite_position(<addr> <A|B>) - Set "satellite position" input switch.
  * .Dswitch_option(<addr> <A|B>) - Set "switch option" input switch.
- * .Dport_pins(<addr> <mask> <value>) - Set all input switches. Mask and value
- * 	are hex-ascii 8 bit bytes. Only bits with a corresponding '1' in mask
- * 	will be changed.
+ * .Dport_group(<addr> <0|1> <value>) - Set port group 0 or 1.
  * .Dgoto_preset(<addr> <index>) - Set a positioner to a preset index (integer)
  * .Dgoto_angle(<addr> <angle>) - Set a positioner to a given angle
  * (e.g. 49.6). The angle may range between -180 to 496. It may include a
@@ -279,10 +277,10 @@ extern int dvbfe_get_info(struct dvbfe_handle *fehandle, dvbfe_info_mask_t query
  * to the end of the line.
  *
  * Examples:
- * S-19.2E  11700000 V  9750000  t v W15 .D(E0 10 38 F0) W15 A W15 t
- * S-19.2E  99999999 V 10600000  t v W15 .D(E0 10 38 F1) W15 A W15 T
- * S-19.2E  11700000 H  9750000  t V W15 .D(E0 10 38 F2) W15 A W15 t
- * S-19.2E  99999999 H 10600000  t V W15 .D(E0 10 38 F3) W15 A W15 T
+ * S-19.2E  11700000 V  9750000  t v W15 .Dport_group(0x10 0 0xf0) W15 A W15 t
+ * S-19.2E  99999999 V 10600000  t v W15 .Dport_group(0x10 0 0xf1) W15 A W15 T
+ * S-19.2E  11700000 H  9750000  t V W15 .Dport_group(0x10 0 0xf2) W15 A W15 t
+ * S-19.2E  99999999 H 10600000  t V W15 .Dport_group(0x10 0 0xf3) W15 A W15 T
  *
  * @param fehandle Handle opened with dvbfe_open().
  * @param command Command to execute.

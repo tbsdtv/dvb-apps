@@ -627,31 +627,23 @@ int dvbfe_diseqc_command(struct dvbfe_handle *fehandle, char *command)
 				if ((status = ioctl(fehandle->fd, FE_DISEQC_SEND_MASTER_CMD, &master_cmd)) != 0)
 					return status;
 
-			} else if (!strncmp(command+i, "Dport_pins(", 11)) {
-				int mask;
-				if (sscanf(command+i+11, "%i %i %i", &addr, &mask, &value_i) != 3)
+			} else if (!strncmp(command+i, "Dport_group(", 12)) {
+				int group;
+				if (sscanf(command+i+12, "%i %i %i", &addr, &group, &value_i) != 3)
 					return -EINVAL;
 
-				if (mask & 0x0f) {
-					master_cmd.msg[0] = 0xe0;
-					master_cmd.msg[1] = addr;
+				master_cmd.msg[0] = 0xe0;
+				master_cmd.msg[1] = addr;
+				if (group == 0) {
 					master_cmd.msg[2] = 0x38;
-					master_cmd.msg[3] = ((mask & 0x0f) << 4) | (value_i & 0x0f);
-					master_cmd.msg_len = 4;
-
-					if ((status = ioctl(fehandle->fd, FE_DISEQC_SEND_MASTER_CMD, &master_cmd)) != 0)
-						return status;
-				}
-				if (mask & 0xf0) {
-					master_cmd.msg[0] = 0xe0;
-					master_cmd.msg[1] = addr;
+				} else {
 					master_cmd.msg[2] = 0x39;
-					master_cmd.msg[3] = (mask & 0xf0) | ((value_i & 0xf0) >> 4);
-					master_cmd.msg_len = 4;
-
-					if ((status = ioctl(fehandle->fd, FE_DISEQC_SEND_MASTER_CMD, &master_cmd)) != 0)
-						return status;
 				}
+				master_cmd.msg[3] = value_i;
+				master_cmd.msg_len = 4;
+
+				if ((status = ioctl(fehandle->fd, FE_DISEQC_SEND_MASTER_CMD, &master_cmd)) != 0)
+					return status;
 
 			} else if (!strncmp(command+i, "Dgoto_preset(", 13)) {
 				if (sscanf(command+i+13, "%i %i", &addr, &value_i) != 2)
