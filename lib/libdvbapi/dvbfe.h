@@ -262,7 +262,7 @@ extern int dvbfe_get_info(struct dvbfe_handle *fehandle, dvbfe_info_mask_t query
  * .Dpolarisation(<addr> <V|H|L|R>) - Set polarisation.
  * .Dsatellite_position(<addr> <A|B>) - Set "satellite position" input switch.
  * .Dswitch_option(<addr> <A|B>) - Set "switch option" input switch.
- * .Dport_group(<addr> <0|1> <value>) - Set port group 0 or 1.
+ * .Dport_group(<addr> <0|1> <value>) - Set port group 0 or 1 setting.
  * .Dgoto_preset(<addr> <index>) - Set a positioner to a preset index (integer)
  * .Dgoto_angle(<addr> <angle>) - Set a positioner to a given angle
  * (e.g. 49.6). The angle may range between -180 to 496. It may include a
@@ -270,7 +270,7 @@ extern int dvbfe_get_info(struct dvbfe_handle *fehandle, dvbfe_info_mask_t query
  *
  * All integer values use standard notation - no prefix=>decimal, 0x=>hex etc.
  *
- * Set <addr> to 0 if you just have a simple DISEQC setup (e.g. one switch). See
+ * Set <addr> to 0x10 if you just have a simple DISEQC setup (e.g. one switch). See
  * the DISEQC specification at http://www.eutelsat.org/ for full information.
  *
  * Comments begin with '#' - any characters after this will be ignored
