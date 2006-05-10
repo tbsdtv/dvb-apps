@@ -26,11 +26,7 @@
 #include <ctype.h>
 #include <errno.h>
 #include "dvbcfg_zapchannel.h"
-
-struct dvbcfg_setting {
-        char *name;
-	int value;
-};
+#include "dvbcfg_utils.h"
 
 static const struct dvbcfg_setting bandwidth_list [] = {
 	{ "BANDWIDTH_6_MHZ", DVBFE_DVBT_BANDWIDTH_6_MHZ },
@@ -109,12 +105,6 @@ static const struct dvbcfg_setting atsc_modulation_list[] = {
 	{ "QAM_256", DVBFE_ATSC_MOD_QAM_256 },
         { NULL, -1 },
 };
-
-static int parsesetting(char* text, const struct dvbcfg_setting* settings);
-static char* lookupsetting(int setting, const struct dvbcfg_setting* settings);
-static void curtoken(char *dest, int len, char *src, int delimiter);
-static char *nexttoken(char *src, int delimiter);
-
 
 int dvbcfg_zapchannel_load(FILE *f,
 			   void *private,
@@ -455,54 +445,4 @@ int dvbcfg_zapchannel_save(FILE *f,
 	}
 
 	return 0;
-}
-
-static int parsesetting(char* text, const struct dvbcfg_setting* settings)
-{
-	char tmp[128];
-
-	curtoken(tmp, sizeof(tmp), text, ':');
-
-	while(settings->name) {
-		if (!strcmp(tmp, settings->name))
-			return settings->value;
-
-		settings++;
-	}
-
-	return -1;
-}
-
-static char* lookupsetting(int setting, const struct dvbcfg_setting* settings)
-{
-	while(settings->name) {
-		if (setting == settings->value)
-			return settings->name;
-
-		settings++;
-	}
-
-	return NULL;
-}
-
-static void curtoken(char *dest, int len, char *src, int delimiter)
-{
-	while((len > 1) && (*src) && (*src != delimiter)) {
-		*dest++ = *src++;
-		len--;
-	}
-	*dest = 0;
-}
-
-static char *nexttoken(char *src, int delimiter)
-{
-	while(*src && (*src != delimiter))
-		src++;
-	if (*src == 0)
-		return NULL;
-
-	src++;
-	if (*src)
-		return src;
-	return NULL;
 }
