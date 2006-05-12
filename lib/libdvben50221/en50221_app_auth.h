@@ -45,21 +45,17 @@ extern "C" {
  * @param auth_data_lenghth Number of bytes.
  * @return 0 on success, -1 on failure.
  */
-	typedef int (*en50221_app_auth_request_callback) (void *arg,
-							  uint8_t slot_id,
-							  uint16_t
-							  session_number,
-							  uint16_t
-							  auth_protcol_id,
-							  uint8_t *
-							  auth_data,
-							  uint32_t
-							  auth_data_length);
+typedef int (*en50221_app_auth_request_callback) (void *arg,
+						  uint8_t slot_id,
+						  uint16_t session_number,
+						  uint16_t auth_protcol_id,
+						  uint8_t *auth_data,
+						  uint32_t auth_data_length);
 
 /**
  * Opaque type representing a auth resource.
  */
-	struct en50221_app_auth;
+struct en50221_app_auth;
 
 /**
  * Create an instance of the auth resource.
@@ -67,17 +63,14 @@ extern "C" {
  * @param funcs Send functions to use.
  * @return Instance, or NULL on failure.
  */
-	extern struct en50221_app_auth *en50221_app_auth_create(struct
-								en50221_app_send_functions
-								*funcs);
+extern struct en50221_app_auth *en50221_app_auth_create(struct en50221_app_send_functions *funcs);
 
 /**
  * Destroy an instance of the auth resource.
  *
  * @param auth Instance to destroy.
  */
-	extern void en50221_app_auth_destroy(struct en50221_app_auth
-					     *auth);
+extern void en50221_app_auth_destroy(struct en50221_app_auth *auth);
 
 /**
  * Register the callback for when we receive a request.
@@ -86,12 +79,9 @@ extern "C" {
  * @param callback The callback. Set to NULL to remove the callback completely.
  * @param arg Private data passed as arg0 of the callback.
  */
-	extern void en50221_app_auth_register_request_callback(struct
-							       en50221_app_auth
-							       *auth,
-							       en50221_app_auth_request_callback
-							       callback,
-							       void *arg);
+extern void en50221_app_auth_register_request_callback(struct en50221_app_auth *auth,
+						       en50221_app_auth_request_callback callback,
+						       void *arg);
 
 /**
  * Send an auth response to the CAM.
@@ -103,11 +93,11 @@ extern "C" {
  * @param auth_data_length Number of bytes.
  * @return 0 on success, -1 on failure.
  */
-	extern int en50221_app_auth_send(struct en50221_app_auth *auth,
-					 uint16_t session_number,
-					 uint16_t auth_protocol_id,
-					 uint8_t * auth_data,
-					 uint32_t auth_data_length);
+extern int en50221_app_auth_send(struct en50221_app_auth *auth,
+				 uint16_t session_number,
+				 uint16_t auth_protocol_id,
+				 uint8_t *auth_data,
+				 uint32_t auth_data_length);
 
 /**
  * Pass data received for this resource into it for parsing.
@@ -120,12 +110,12 @@ extern "C" {
  * @param data_length Length of data in bytes.
  * @return 0 on success, -1 on failure.
  */
-	extern int en50221_app_auth_message(struct en50221_app_auth *auth,
-					    uint8_t slot_id,
-					    uint16_t session_number,
-					    uint32_t resource_id,
-					    uint8_t * data,
-					    uint32_t data_length);
+extern int en50221_app_auth_message(struct en50221_app_auth *auth,
+				    uint8_t slot_id,
+				    uint16_t session_number,
+				    uint32_t resource_id,
+				    uint8_t *data,
+				    uint32_t data_length);
 
 #ifdef __cplusplus
 }

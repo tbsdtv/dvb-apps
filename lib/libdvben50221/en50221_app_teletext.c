@@ -37,17 +37,16 @@ struct en50221_app_teletext {
 	pthread_mutex_t lock;
 };
 
-static int en50221_app_teletext_parse_ebu(struct en50221_app_teletext
-					  *teletext, uint8_t slot_id,
+static int en50221_app_teletext_parse_ebu(struct en50221_app_teletext *teletext,
+					  uint8_t slot_id,
 					  uint16_t session_number,
 					  uint8_t * data,
 					  uint32_t data_length);
 
 
 
-struct en50221_app_teletext *en50221_app_teletext_create(struct
-							 en50221_app_send_functions
-							 *funcs)
+struct en50221_app_teletext *
+	en50221_app_teletext_create(struct en50221_app_send_functions *funcs)
 {
 	struct en50221_app_teletext *teletext = NULL;
 
@@ -71,10 +70,8 @@ void en50221_app_teletext_destroy(struct en50221_app_teletext *teletext)
 	free(teletext);
 }
 
-void en50221_app_teletext_register_callback(struct en50221_app_teletext
-					    *teletext,
-					    en50221_app_teletext_callback
-					    callback, void *arg)
+void en50221_app_teletext_register_callback(struct en50221_app_teletext *teletext,
+					    en50221_app_teletext_callback callback, void *arg)
 {
 	pthread_mutex_lock(&teletext->lock);
 	teletext->callback = callback;
@@ -110,20 +107,20 @@ int en50221_app_teletext_message(struct en50221_app_teletext *teletext,
 }
 
 
-static int en50221_app_teletext_parse_ebu(struct en50221_app_teletext
-					  *teletext, uint8_t slot_id,
+static int en50221_app_teletext_parse_ebu(struct en50221_app_teletext *teletext,
+					  uint8_t slot_id,
 					  uint16_t session_number,
-					  uint8_t * data,
+					  uint8_t *data,
 					  uint32_t data_length)
 {
 	// first of all, decode the length field
 	uint16_t asn_data_length;
 	int length_field_len;
-	if ((length_field_len =
-	     asn_1_decode(&asn_data_length, data, data_length)) < 0) {
+	if ((length_field_len = asn_1_decode(&asn_data_length, data, data_length)) < 0) {
 		print(LOG_LEVEL, ERROR, 1, "ASN.1 decode error\n");
 		return -1;
 	}
+
 	// check it
 	if (asn_data_length > (data_length - length_field_len)) {
 		print(LOG_LEVEL, ERROR, 1, "Received short data\n");

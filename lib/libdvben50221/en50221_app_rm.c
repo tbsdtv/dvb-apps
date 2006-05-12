@@ -130,8 +130,7 @@ int en50221_app_rm_enq(struct en50221_app_rm *rm, uint16_t session_number)
 	buf[3] = 0;
 
 	// create the data and send it
-	return rm->funcs->send_data(rm->funcs->arg, session_number, buf,
-				    4);
+	return rm->funcs->send_data(rm->funcs->arg, session_number, buf, 4);
 }
 
 int en50221_app_rm_reply(struct en50221_app_rm *rm,
@@ -148,8 +147,7 @@ int en50221_app_rm_reply(struct en50221_app_rm *rm,
 
 	// encode the length field
 	int length_field_len;
-	if ((length_field_len =
-	     asn_1_encode(resource_id_count * 4, buf + 3, 3)) < 0) {
+	if ((length_field_len = asn_1_encode(resource_id_count * 4, buf + 3, 3)) < 0) {
 		return -1;
 	}
 	// copy the data and byteswap it
@@ -173,8 +171,7 @@ int en50221_app_rm_reply(struct en50221_app_rm *rm,
 	iov[1].iov_len = resource_id_count * 4;
 
 	// create the data and send it
-	return rm->funcs->send_datav(rm->funcs->arg, session_number, iov,
-				     2);
+	return rm->funcs->send_datav(rm->funcs->arg, session_number, iov, 2);
 }
 
 int en50221_app_rm_changed(struct en50221_app_rm *rm,
@@ -189,8 +186,7 @@ int en50221_app_rm_changed(struct en50221_app_rm *rm,
 	buf[3] = 0;
 
 	// create the data and send it
-	return rm->funcs->send_data(rm->funcs->arg, session_number, buf,
-				    4);
+	return rm->funcs->send_data(rm->funcs->arg, session_number, buf, 4);
 }
 
 int en50221_app_rm_message(struct en50221_app_rm *rm,
@@ -224,8 +220,7 @@ int en50221_app_rm_message(struct en50221_app_rm *rm,
 		return en50221_app_rm_parse_profile_change(rm, slot_id,
 							   session_number,
 							   data + 3,
-							   data_length -
-							   3);
+							   data_length - 3);
 	}
 
 	print(LOG_LEVEL, ERROR, 1, "Received unexpected tag %x\n", tag);
@@ -261,8 +256,7 @@ static int en50221_app_rm_parse_profile_reply(struct en50221_app_rm *rm,
 	// first of all, decode the length field
 	uint16_t asn_data_length;
 	int length_field_len;
-	if ((length_field_len =
-	     asn_1_decode(&asn_data_length, data, data_length)) < 0) {
+	if ((length_field_len = asn_1_decode(&asn_data_length, data, data_length)) < 0) {
 		print(LOG_LEVEL, ERROR, 1, "ASN.1 decode error\n");
 		return -1;
 	}
@@ -288,8 +282,7 @@ static int en50221_app_rm_parse_profile_reply(struct en50221_app_rm *rm,
 	void *cb_arg = rm->replycallback_arg;
 	pthread_mutex_unlock(&rm->lock);
 	if (cb) {
-		return cb(cb_arg, slot_id, session_number, resources_count,
-			  resource_ids);
+		return cb(cb_arg, slot_id, session_number, resources_count, resource_ids);
 	}
 	return 0;
 }

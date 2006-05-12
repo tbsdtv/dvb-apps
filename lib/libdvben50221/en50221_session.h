@@ -46,7 +46,7 @@ extern "C" {
 /**
  * Opaque type representing a session layer.
  */
-	struct en50221_session_layer;
+struct en50221_session_layer;
 
 /**
  * Type definition for resource callback function - called by session layer when data
@@ -60,13 +60,12 @@ extern "C" {
  * @param data_length Length of data in bytes.
  * @return 0 on success, or -1 on failure.
  */
-	typedef int (*en50221_sl_resource_callback) (void *arg,
-						     uint8_t slot_id,
-						     uint16_t
-						     session_number,
-						     uint32_t resource_id,
-						     uint8_t * data,
-						     uint32_t data_length);
+typedef int (*en50221_sl_resource_callback) (void *arg,
+					     uint8_t slot_id,
+					     uint16_t session_number,
+					     uint32_t resource_id,
+					     uint8_t * data,
+					     uint32_t data_length);
 
 /**
  * Type definition for resource lookup callback function - used by the session layer to
@@ -83,15 +82,12 @@ extern "C" {
  * -2 if it exists, but had a lower version, or
  * -3 if it exists, but was unavailable.
  */
-	typedef int (*en50221_sl_lookup_callback) (void *arg,
-						   uint8_t slot_id,
-						   uint32_t
-						   requested_resource_id,
-						   en50221_sl_resource_callback
-						   * callback_out,
-						   void **arg_out,
-						   uint32_t *
-						   resource_id_out);
+typedef int (*en50221_sl_lookup_callback) (void *arg,
+					   uint8_t slot_id,
+					   uint32_t requested_resource_id,
+					   en50221_sl_resource_callback * callback_out,
+					   void **arg_out,
+					   uint32_t *resource_id_out);
 
 
 /**
@@ -105,11 +101,10 @@ extern "C" {
  * @param resource_id Resource id.
  * @return 0 on sucess, or -1 on error.
  */
-	typedef int (*en50221_sl_session_callback) (void *arg, int reason,
-						    uint8_t slot_id,
-						    uint16_t
-						    session_number,
-						    uint32_t resource_id);
+typedef int (*en50221_sl_session_callback) (void *arg, int reason,
+					    uint8_t slot_id,
+					    uint16_t session_number,
+					    uint32_t resource_id);
 
 /**
  * Construct a new instance of the session layer.
@@ -118,18 +113,15 @@ extern "C" {
  * @param max_sessions Maximum number of sessions supported.
  * @return The en50221_session_layer instance, or NULL on error.
  */
-	extern struct en50221_session_layer *en50221_sl_create(struct
-							       en50221_transport_layer
-							       *tl,
-							       uint32_t
-							       max_sessions);
+extern struct en50221_session_layer *en50221_sl_create(struct en50221_transport_layer *tl,
+						       uint32_t max_sessions);
 
 /**
  * Destroy an instance of the session layer.
  *
  * @param tl The en50221_session_layer instance.
  */
-	extern void en50221_sl_destroy(struct en50221_session_layer *sl);
+extern void en50221_sl_destroy(struct en50221_session_layer *sl);
 
 /**
  * Gets the last error.
@@ -137,7 +129,7 @@ extern "C" {
  * @param tl The en50221_session_layer instance.
  * @return One of the EN50221ERR_* values.
  */
-	extern int en50221_sl_get_error(struct en50221_session_layer *tl);
+extern int en50221_sl_get_error(struct en50221_session_layer *tl);
 
 /**
  * Register the callback for resource lookup.
@@ -146,12 +138,9 @@ extern "C" {
  * @param callback The callback. Set to NULL to remove the callback completely.
  * @param arg Private data passed as arg0 of the callback.
  */
-	extern void en50221_sl_register_lookup_callback(struct
-							en50221_session_layer
-							*sl,
-							en50221_sl_lookup_callback
-							callback,
-							void *arg);
+extern void en50221_sl_register_lookup_callback(struct en50221_session_layer *sl,
+						en50221_sl_lookup_callback callback,
+						void *arg);
 
 /**
  * Register the callback for informing about session from a cam.
@@ -160,12 +149,9 @@ extern "C" {
  * @param callback The callback. Set to NULL to remove the callback completely.
  * @param arg Private data passed as arg0 of the callback.
  */
-	extern void en50221_sl_register_session_callback(struct
-							 en50221_session_layer
-							 *sl,
-							 en50221_sl_session_callback
-							 callback,
-							 void *arg);
+extern void en50221_sl_register_session_callback(struct en50221_session_layer *sl,
+						 en50221_sl_session_callback callback,
+						 void *arg);
 
 /**
  * Create a new session to a module in a slot.
@@ -177,12 +163,11 @@ extern "C" {
  * @param arg Argument to pass to the callback.
  * @return The new session_number, or -1 on error.
  */
-	extern int en50221_sl_create_session(struct en50221_session_layer
-					     *sl, int slot_id,
-					     uint8_t connection_id,
-					     uint32_t resource_id,
-					     en50221_sl_resource_callback
-					     callback, void *arg);
+extern int en50221_sl_create_session(struct en50221_session_layer *sl, int slot_id,
+				     uint8_t connection_id,
+				     uint32_t resource_id,
+				     en50221_sl_resource_callback callback,
+				     void *arg);
 
 /**
  * Destroy a session.
@@ -191,9 +176,8 @@ extern "C" {
  * @param session_number The session to destroy.
  * @return 0 on success, or -1 on error.
  */
-	extern int en50221_sl_destroy_session(struct en50221_session_layer
-					      *sl,
-					      uint16_t session_number);
+extern int en50221_sl_destroy_session(struct en50221_session_layer *sl,
+				      uint16_t session_number);
 
 /**
  * this function is used to take a data-block, pack into
@@ -205,10 +189,10 @@ extern "C" {
  * @param data_length Length of data in bytes.
  * @return 0 on success, or -1 on error.
  */
-	extern int en50221_sl_send_data(struct en50221_session_layer *sl,
-					uint16_t session_number,
-					uint8_t * data,
-					uint16_t data_length);
+extern int en50221_sl_send_data(struct en50221_session_layer *sl,
+				uint16_t session_number,
+				uint8_t * data,
+				uint16_t data_length);
 
 /**
  * this function is used to take a data-block, pack into
@@ -220,10 +204,10 @@ extern "C" {
  * @param iov_count Number of elements in io vector.
  * @return 0 on success, or -1 on error.
  */
-	extern int en50221_sl_send_datav(struct en50221_session_layer *sl,
-					 uint16_t session_number,
-					 struct iovec *vector,
-					 int iov_count);
+extern int en50221_sl_send_datav(struct en50221_session_layer *sl,
+				 uint16_t session_number,
+				 struct iovec *vector,
+				 int iov_count);
 
 /**
  * this is used to send a message to all sessions, linked
@@ -236,11 +220,11 @@ extern "C" {
  * @param data_length Length of data in bytes.
  * @return 0 on success, or -1 on error.
  */
-	extern int en50221_sl_broadcast_data(struct en50221_session_layer
-					     *sl, int slot_id,
-					     uint32_t resource_id,
-					     uint8_t * data,
-					     uint16_t data_length);
+extern int en50221_sl_broadcast_data(struct en50221_session_layer *sl,
+				     int slot_id,
+				     uint32_t resource_id,
+				     uint8_t * data,
+				     uint16_t data_length);
 
 #ifdef __cplusplus
 }

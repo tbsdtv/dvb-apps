@@ -143,7 +143,7 @@ struct en50221_transport_layer *en50221_tl_create(uint8_t max_slots,
 
 	// setup structure
 	tl = (struct en50221_transport_layer *)
-	    malloc(sizeof(struct en50221_transport_layer));
+		malloc(sizeof(struct en50221_transport_layer));
 	if (tl == NULL)
 		goto error_exit;
 	tl->max_slots = max_slots;
@@ -169,8 +169,7 @@ struct en50221_transport_layer *en50221_tl_create(uint8_t max_slots,
 
 		// create the connections for this slot
 		tl->slots[i].connections =
-		    malloc(sizeof(struct en50221_connection) *
-			   max_connections_per_slot);
+		    malloc(sizeof(struct en50221_connection) * max_connections_per_slot);
 		if (tl->slots[i].connections == NULL)
 			goto error_exit;
 
@@ -181,10 +180,8 @@ struct en50221_transport_layer *en50221_tl_create(uint8_t max_slots,
 		for (j = 0; j < max_connections_per_slot; j++) {
 			tl->slots[i].connections[j].state = T_STATE_IDLE;
 			tl->slots[i].connections[j].tx_time.tv_sec = 0;
-			tl->slots[i].connections[j].last_poll_time.tv_sec =
-			    0;
-			tl->slots[i].connections[j].last_poll_time.
-			    tv_usec = 0;
+			tl->slots[i].connections[j].last_poll_time.tv_sec = 0;
+			tl->slots[i].connections[j].last_poll_time.tv_usec = 0;
 			tl->slots[i].connections[j].chain_buffer = NULL;
 			tl->slots[i].connections[j].buffer_length = 0;
 			tl->slots[i].connections[j].send_queue = NULL;
@@ -215,43 +212,23 @@ void en50221_tl_destroy(struct en50221_transport_layer *tl)
 		if (tl->slots) {
 			for (i = 0; i < tl->max_slots; i++) {
 				if (tl->slots[i].connections) {
-					for (j = 0;
-					     j <
-					     tl->max_connections_per_slot;
-					     j++) {
-						if (tl->slots[i].
-						    connections[j].
-						    chain_buffer) {
-							free(tl->slots[i].
-							     connections
-							     [j].
-							     chain_buffer);
+					for (j = 0; j < tl->max_connections_per_slot; j++) {
+						if (tl->slots[i].connections[j].chain_buffer) {
+							free(tl->slots[i].connections[j].chain_buffer);
 						}
 
-						struct en50221_message
-						*cur_msg =
-						    tl->slots[i].
-						    connections[j].
-						    send_queue;
+						struct en50221_message *cur_msg =
+							tl->slots[i].connections[j].send_queue;
 						while (cur_msg) {
-							struct
-							    en50221_message
-							*next_msg =
-							    cur_msg->next;
+							struct en50221_message *next_msg = cur_msg->next;
 							free(cur_msg);
 							cur_msg = next_msg;
 						}
-						tl->slots[i].
-						    connections[j].
-						    send_queue = NULL;
-						tl->slots[i].
-						    connections[j].
-						    send_queue_tail = NULL;
+						tl->slots[i].connections[j].send_queue = NULL;
+						tl->slots[i].connections[j].send_queue_tail = NULL;
 					}
 					free(tl->slots[i].connections);
-					pthread_mutex_destroy(&tl->
-							      slots[i].
-							      slot_lock);
+					pthread_mutex_destroy(&tl->slots[i].slot_lock);
 				}
 			}
 			free(tl->slots);
@@ -320,10 +297,8 @@ void en50221_tl_destroy_slot(struct en50221_transport_layer *tl,
 	for (i = 0; i < tl->max_connections_per_slot; i++) {
 		tl->slots[slot_id].connections[i].state = T_STATE_IDLE;
 		tl->slots[slot_id].connections[i].tx_time.tv_sec = 0;
-		tl->slots[slot_id].connections[i].last_poll_time.tv_sec =
-		    0;
-		tl->slots[slot_id].connections[i].last_poll_time.tv_usec =
-		    0;
+		tl->slots[slot_id].connections[i].last_poll_time.tv_sec = 0;
+		tl->slots[slot_id].connections[i].last_poll_time.tv_usec = 0;
 		if (tl->slots[slot_id].connections[i].chain_buffer) {
 			free(tl->slots[slot_id].connections[i].
 			     chain_buffer);
@@ -349,8 +324,7 @@ void en50221_tl_destroy_slot(struct en50221_transport_layer *tl,
 	void *cb_arg = tl->callback_arg;
 	pthread_mutex_unlock(&tl->setcallback_lock);
 	if (cb)
-		cb(cb_arg, T_CALLBACK_REASON_SLOTCLOSE, NULL, 0, slot_id,
-		   0);
+		cb(cb_arg, T_CALLBACK_REASON_SLOTCLOSE, NULL, 0, slot_id, 0);
 
 	tl->slots_changed = 1;
 	pthread_mutex_unlock(&tl->global_lock);
@@ -367,10 +341,8 @@ int en50221_tl_poll(struct en50221_transport_layer *tl)
 	if (tl->slots_changed) {
 		for (slot_id = 0; slot_id < tl->max_slots; slot_id++) {
 			if (tl->slots[slot_id].ca_hndl != -1) {
-				tl->slot_pollfds[slot_id].fd =
-				    tl->slots[slot_id].ca_hndl;
-				tl->slot_pollfds[slot_id].events =
-				    POLLIN | POLLPRI | POLLERR;
+				tl->slot_pollfds[slot_id].fd = tl->slots[slot_id].ca_hndl;
+				tl->slot_pollfds[slot_id].events = POLLIN | POLLPRI | POLLERR;
 				tl->slot_pollfds[slot_id].revents = 0;
 			} else {
 				tl->slot_pollfds[slot_id].fd = 0;
@@ -394,8 +366,7 @@ int en50221_tl_poll(struct en50221_transport_layer *tl)
 		// check if this slot is still used and get its handle
 		pthread_mutex_lock(&tl->slots[slot_id].slot_lock);
 		if (tl->slots[slot_id].ca_hndl == -1) {
-			pthread_mutex_unlock(&tl->slots[slot_id].
-					     slot_lock);
+			pthread_mutex_unlock(&tl->slots[slot_id].slot_lock);
 			continue;
 		}
 		int ca_hndl = tl->slots[slot_id].ca_hndl;
@@ -405,13 +376,12 @@ int en50221_tl_poll(struct en50221_transport_layer *tl)
 			uint8_t r_slot_id;
 			uint8_t connection_id;
 			int readcnt = dvbca_link_read(ca_hndl, &r_slot_id,
-						      &connection_id, data,
-						      sizeof(data));
+						      &connection_id,
+						      data, sizeof(data));
 			if (readcnt < 0) {
 				tl->error_slot = slot_id;
 				tl->error = EN50221ERR_CAREAD;
-				pthread_mutex_unlock(&tl->slots[slot_id].
-						     slot_lock);
+				pthread_mutex_unlock(&tl->slots[slot_id].slot_lock);
 				return -1;
 			}
 			// process it if we got some
@@ -419,58 +389,28 @@ int en50221_tl_poll(struct en50221_transport_layer *tl)
 				if (tl->slots[slot_id].slot != r_slot_id) {
 					// this message is for an other CAM of the same CA
 					int new_slot_id;
-					for (new_slot_id = 0;
-					     new_slot_id < tl->max_slots;
-					     new_slot_id++) {
-						if ((tl->
-						     slots[new_slot_id].
-						     ca_hndl == ca_hndl)
-						    && (tl->
-							slots[new_slot_id].
-							slot == r_slot_id))
+					for (new_slot_id = 0; new_slot_id < tl->max_slots; new_slot_id++) {
+						if ((tl->slots[new_slot_id].ca_hndl == ca_hndl) &&
+						    (tl->slots[new_slot_id].slot == r_slot_id))
 							break;
 					}
 					if (new_slot_id != tl->max_slots) {
 						// we found the requested CAM
-						pthread_mutex_lock(&tl->
-								   slots
-								   [new_slot_id].
-								   slot_lock);
-						if (en50221_tl_process_data
-						    (tl, new_slot_id, data,
-						     readcnt)) {
-							pthread_mutex_unlock
-							    (&tl->
-							     slots
-							     [new_slot_id].
-							     slot_lock);
-							pthread_mutex_unlock
-							    (&tl->
-							     slots
-							     [slot_id].
-							     slot_lock);
+						pthread_mutex_lock(&tl->slots[new_slot_id].slot_lock);
+						if (en50221_tl_process_data(tl, new_slot_id, data, readcnt)) {
+							pthread_mutex_unlock(&tl->slots[new_slot_id].slot_lock);
+							pthread_mutex_unlock(&tl->slots[slot_id].slot_lock);
 							return -1;
 						}
-						pthread_mutex_unlock(&tl->
-								     slots
-								     [new_slot_id].
-								     slot_lock);
+						pthread_mutex_unlock(&tl->slots[new_slot_id].slot_lock);
 					} else {
-						tl->error =
-						    EN50221ERR_BADSLOTID;
-						pthread_mutex_unlock(&tl->
-								     slots
-								     [slot_id].
-								     slot_lock);
+						tl->error = EN50221ERR_BADSLOTID;
+						pthread_mutex_unlock(&tl->slots[slot_id].slot_lock);
 						return -1;
 					}
 				} else
-				    if (en50221_tl_process_data
-					(tl, slot_id, data, readcnt)) {
-					pthread_mutex_unlock(&tl->
-							     slots
-							     [slot_id].
-							     slot_lock);
+				    if (en50221_tl_process_data(tl, slot_id, data, readcnt)) {
+					pthread_mutex_unlock(&tl->slots[slot_id].slot_lock);
 					return -1;
 				}
 			}
@@ -478,141 +418,86 @@ int en50221_tl_poll(struct en50221_transport_layer *tl)
 			// an error was reported
 			tl->error_slot = slot_id;
 			tl->error = EN50221ERR_CAREAD;
-			pthread_mutex_unlock(&tl->slots[slot_id].
-					     slot_lock);
+			pthread_mutex_unlock(&tl->slots[slot_id].slot_lock);
 			return -1;
 		}
 		// poll the connections on this slot + check for timeouts
 		for (j = 0; j < tl->max_connections_per_slot; j++) {
 			// ignore connection if idle
-			if (tl->slots[slot_id].connections[j].state ==
-			    T_STATE_IDLE) {
+			if (tl->slots[slot_id].connections[j].state == T_STATE_IDLE) {
 				continue;
 			}
 			// send queued data
-			if (tl->slots[slot_id].connections[j].
-			    state & (T_STATE_IN_CREATION | T_STATE_ACTIVE |
-				     T_STATE_ACTIVE_DELETEQUEUED)) {
+			if (tl->slots[slot_id].connections[j].state &
+				(T_STATE_IN_CREATION | T_STATE_ACTIVE | T_STATE_ACTIVE_DELETEQUEUED)) {
 				// send data if there is some to go and we're not waiting for a response already
-				if (tl->slots[slot_id].connections[j].
-				    send_queue
-				    && (tl->slots[slot_id].connections[j].
-					tx_time.tv_sec == 0)) {
+				if (tl->slots[slot_id].connections[j].send_queue &&
+				    (tl->slots[slot_id].connections[j].tx_time.tv_sec == 0)) {
 
 					// get the message
 					struct en50221_message *msg =
-					    tl->slots[slot_id].
-					    connections[j].send_queue;
+						tl->slots[slot_id].connections[j].send_queue;
 					if (msg->next != NULL) {
-						tl->slots[slot_id].
-						    connections[j].
-						    send_queue = msg->next;
+						tl->slots[slot_id].connections[j].send_queue = msg->next;
 					} else {
-						tl->slots[slot_id].
-						    connections[j].
-						    send_queue = NULL;
-						tl->slots[slot_id].
-						    connections[j].
-						    send_queue_tail = NULL;
+						tl->slots[slot_id].connections[j].send_queue = NULL;
+						tl->slots[slot_id].connections[j].send_queue_tail = NULL;
 					}
 
 					// send the message
-					if (dvbca_link_write
-					    (tl->slots[slot_id].ca_hndl,
-					     tl->slots[slot_id].slot, j,
-					     msg->data, msg->length) < 0) {
+					if (dvbca_link_write(tl->slots[slot_id].ca_hndl,
+					    		     tl->slots[slot_id].slot,
+							     j,
+							     msg->data, msg->length) < 0) {
 						free(msg);
-						pthread_mutex_unlock(&tl->
-								     slots
-								     [slot_id].
-								     slot_lock);
+						pthread_mutex_unlock(&tl->slots[slot_id].slot_lock);
 						tl->error_slot = slot_id;
-						tl->error =
-						    EN50221ERR_CAWRITE;
-						print(LOG_LEVEL, ERROR, 1,
-						      "CAWrite failed");
+						tl->error = EN50221ERR_CAWRITE;
+						print(LOG_LEVEL, ERROR, 1, "CAWrite failed");
 						return -1;
 					}
-					gettimeofday(&tl->slots[slot_id].
-						     connections[j].
-						     tx_time, 0);
+					gettimeofday(&tl->slots[slot_id].connections[j].tx_time, 0);
 
 					// fixup connection state for T_DELETE_T_C
-					if (msg->length
-					    && (msg->data[0] ==
-						T_DELETE_T_C)) {
-						tl->slots[slot_id].
-						    connections[j].state =
-						    T_STATE_IN_DELETION;
-						if (tl->slots[slot_id].
-						    connections[j].
-						    chain_buffer) {
-							free(tl->
-							     slots
-							     [slot_id].
-							     connections
-							     [j].
-							     chain_buffer);
+					if (msg->length && (msg->data[0] == T_DELETE_T_C)) {
+						tl->slots[slot_id].connections[j].state = T_STATE_IN_DELETION;
+						if (tl->slots[slot_id].connections[j].chain_buffer) {
+							free(tl->slots[slot_id].connections[j].chain_buffer);
 						}
-						tl->slots[slot_id].
-						    connections[j].
-						    chain_buffer = NULL;
-						tl->slots[slot_id].
-						    connections[j].
-						    buffer_length = 0;
+						tl->slots[slot_id].connections[j].chain_buffer = NULL;
+						tl->slots[slot_id].connections[j].buffer_length = 0;
 					}
 
 					free(msg);
 				}
 			}
 			// poll it if we're not expecting a reponse and the poll time has elapsed
-			if (tl->slots[slot_id].connections[j].
-			    state & T_STATE_ACTIVE) {
-				if ((tl->slots[slot_id].connections[j].
-				     tx_time.tv_sec == 0)
-				    &&
-				    (time_after
-				     (tl->slots[slot_id].connections[j].
-				      last_poll_time,
-				      tl->slots[slot_id].poll_delay))) {
+			if (tl->slots[slot_id].connections[j].state & T_STATE_ACTIVE) {
+				if ((tl->slots[slot_id].connections[j].tx_time.tv_sec == 0) &&
+				    (time_after(tl->slots[slot_id].connections[j].last_poll_time,
+				     		tl->slots[slot_id].poll_delay))) {
 
-					gettimeofday(&tl->slots[slot_id].
-						     connections[j].
-						     last_poll_time, 0);
-					if (en50221_tl_poll_tc
-					    (tl, slot_id, j)) {
-						pthread_mutex_unlock(&tl->
-								     slots
-								     [slot_id].
-								     slot_lock);
+					gettimeofday(&tl->slots[slot_id].connections[j].last_poll_time, 0);
+					if (en50221_tl_poll_tc(tl, slot_id, j)) {
+						pthread_mutex_unlock(&tl->slots[slot_id].slot_lock);
 						return -1;
 					}
 				}
 			}
-			// check for timeouts - in any state
-			if (tl->slots[slot_id].connections[j].tx_time.
-			    tv_sec
-			    &&
-			    (time_after
-			     (tl->slots[slot_id].connections[j].tx_time,
-			      tl->slots[slot_id].response_timeout))) {
 
-				if (tl->slots[slot_id].connections[j].
-				    state & (T_STATE_IN_CREATION |
-					     T_STATE_IN_DELETION)) {
-					tl->slots[slot_id].connections[j].
-					    state = T_STATE_IDLE;
-				} else if (tl->slots[slot_id].
-					   connections[j].
-					   state & (T_STATE_ACTIVE |
-						    T_STATE_ACTIVE_DELETEQUEUED))
-				{
+			// check for timeouts - in any state
+			if (tl->slots[slot_id].connections[j].tx_time.tv_sec &&
+			    (time_after(tl->slots[slot_id].connections[j].tx_time,
+			     		tl->slots[slot_id].response_timeout))) {
+
+				if (tl->slots[slot_id].connections[j].state &
+				    (T_STATE_IN_CREATION |T_STATE_IN_DELETION)) {
+					tl->slots[slot_id].connections[j].state = T_STATE_IDLE;
+				} else if (tl->slots[slot_id].connections[j].state &
+					   (T_STATE_ACTIVE | T_STATE_ACTIVE_DELETEQUEUED)) {
 					tl->error_slot = slot_id;
 					tl->error = EN50221ERR_TIMEOUT;
-					pthread_mutex_unlock(&tl->
-							     slots
-							     [slot_id].
-							     slot_lock);
+					pthread_mutex_unlock(&tl->slots[slot_id].slot_lock);
 					return -1;
 				}
 			}
@@ -672,8 +557,7 @@ int en50221_tl_send_data(struct en50221_transport_layer *tl,
 		pthread_mutex_unlock(&tl->slots[slot_id].slot_lock);
 		return -1;
 	}
-	if (tl->slots[slot_id].connections[connection_id].state !=
-	    T_STATE_ACTIVE) {
+	if (tl->slots[slot_id].connections[connection_id].state != T_STATE_ACTIVE) {
 		tl->error = EN50221ERR_BADCONNECTIONID;
 		pthread_mutex_unlock(&tl->slots[slot_id].slot_lock);
 		return -1;
@@ -690,8 +574,7 @@ int en50221_tl_send_data(struct en50221_transport_layer *tl,
 	// make up data to send
 	int length_field_len;
 	msg->data[0] = T_DATA_LAST;
-	if ((length_field_len =
-	     asn_1_encode(data_size + 1, msg->data + 1, 3)) < 0) {
+	if ((length_field_len = asn_1_encode(data_size + 1, msg->data + 1, 3)) < 0) {
 		free(msg);
 		tl->error_slot = slot_id;
 		tl->error = EN50221ERR_ASNENCODE;
@@ -745,8 +628,7 @@ int en50221_tl_send_datav(struct en50221_transport_layer *tl,
 		pthread_mutex_unlock(&tl->slots[slot_id].slot_lock);
 		return -1;
 	}
-	if (tl->slots[slot_id].connections[connection_id].state !=
-	    T_STATE_ACTIVE) {
+	if (tl->slots[slot_id].connections[connection_id].state != T_STATE_ACTIVE) {
 		tl->error = EN50221ERR_BADCONNECTIONID;
 		pthread_mutex_unlock(&tl->slots[slot_id].slot_lock);
 		return -1;
@@ -770,8 +652,7 @@ int en50221_tl_send_datav(struct en50221_transport_layer *tl,
 	// make up data to send
 	int length_field_len;
 	msg->data[0] = T_DATA_LAST;
-	if ((length_field_len =
-	     asn_1_encode(data_size + 1, msg->data + 1, 3)) < 0) {
+	if ((length_field_len = asn_1_encode(data_size + 1, msg->data + 1, 3)) < 0) {
 		free(msg);
 		tl->error_slot = slot_id;
 		tl->error = EN50221ERR_ASNENCODE;
@@ -937,9 +818,9 @@ static int en50221_tl_poll_tc(struct en50221_transport_layer *tl,
 	hdr[0] = T_DATA_LAST;
 	hdr[1] = 1;
 	hdr[2] = connection_id;
-	if (dvbca_link_write
-	    (tl->slots[slot_id].ca_hndl, tl->slots[slot_id].slot,
-	     connection_id, hdr, 3) < 0) {
+	if (dvbca_link_write(tl->slots[slot_id].ca_hndl,
+	    		     tl->slots[slot_id].slot,
+			     connection_id, hdr, 3) < 0) {
 		tl->error_slot = slot_id;
 		tl->error = EN50221ERR_CAWRITE;
 		return -1;
@@ -969,9 +850,7 @@ static int en50221_tl_process_data(struct en50221_transport_layer *tl,
 		uint8_t tpdu_tag = data[0];
 		uint16_t asn_data_length;
 		int length_field_len;
-		if ((length_field_len =
-		     asn_1_decode(&asn_data_length, data + 1,
-				  data_length - 1)) < 0) {
+		if ((length_field_len = asn_1_decode(&asn_data_length, data + 1, data_length - 1)) < 0) {
 			print(LOG_LEVEL, ERROR, 1,
 			      "Received data with invalid asn from module on slot %02x\n",
 			      slot_id);
@@ -979,9 +858,8 @@ static int en50221_tl_process_data(struct en50221_transport_layer *tl,
 			tl->error = EN50221ERR_BADCAMDATA;
 			return -1;
 		}
-		if ((asn_data_length < 1)
-		    || (asn_data_length >
-			(data_length - (1 + length_field_len)))) {
+		if ((asn_data_length < 1) ||
+		    (asn_data_length > (data_length - (1 + length_field_len)))) {
 			print(LOG_LEVEL, ERROR, 1,
 			      "Received data with invalid length from module on slot %02x\n",
 			      slot_id);
@@ -1006,62 +884,46 @@ static int en50221_tl_process_data(struct en50221_transport_layer *tl,
 		// process the TPDUs
 		switch (tpdu_tag) {
 		case T_C_T_C_REPLY:
-			if ((result =
-			     en50221_tl_handle_create_tc_reply(tl, slot_id,
-							       connection_id))
-			    < 0) {
+			if ((result = en50221_tl_handle_create_tc_reply(tl, slot_id, connection_id)) < 0) {
 				return -1;
 			}
 			break;
 		case T_DELETE_T_C:
-			if ((result =
-			     en50221_tl_handle_delete_tc(tl, slot_id,
-							 connection_id)) <
-			    0) {
+			if ((result = en50221_tl_handle_delete_tc(tl, slot_id, connection_id)) < 0) {
 				return -1;
 			}
 			break;
 		case T_D_T_C_REPLY:
-			if ((result =
-			     en50221_tl_handle_delete_tc_reply(tl, slot_id,
-							       connection_id))
-			    < 0) {
+			if ((result = en50221_tl_handle_delete_tc_reply(tl, slot_id, connection_id)) < 0) {
 				return -1;
 			}
 			break;
 		case T_REQUEST_T_C:
-			if ((result =
-			     en50221_tl_handle_request_tc(tl, slot_id,
-							  connection_id)) <
-			    0) {
+			if ((result = en50221_tl_handle_request_tc(tl, slot_id, connection_id)) < 0) {
 				return -1;
 			}
 			break;
 		case T_DATA_MORE:
-			if ((result =
-			     en50221_tl_handle_data_more(tl, slot_id,
-							 connection_id,
-							 data,
-							 asn_data_length))
-			    < 0) {
+			if ((result = en50221_tl_handle_data_more(tl, slot_id,
+			     					  connection_id,
+								  data,
+								  asn_data_length)) < 0) {
 				return -1;
 			}
 			break;
 		case T_DATA_LAST:
-			if ((result =
-			     en50221_tl_handle_data_last(tl, slot_id,
-							 connection_id,
-							 data,
-							 asn_data_length))
-			    < 0) {
+			if ((result = en50221_tl_handle_data_last(tl, slot_id,
+			     					  connection_id,
+								  data,
+								  asn_data_length)) < 0) {
 				return -1;
 			}
 			break;
 		case T_SB:
-			if ((result =
-			     en50221_tl_handle_sb(tl, slot_id,
-						  connection_id, data,
-						  asn_data_length)) < 0) {
+			if ((result = en50221_tl_handle_sb(tl, slot_id,
+			     				   connection_id,
+							   data,
+							   asn_data_length)) < 0) {
 				return -1;
 			}
 			break;
@@ -1087,12 +949,9 @@ static int en50221_tl_handle_create_tc_reply(struct en50221_transport_layer
 					     uint8_t connection_id)
 {
 	// set this connection to state active
-	if (tl->slots[slot_id].connections[connection_id].state ==
-	    T_STATE_IN_CREATION) {
-		tl->slots[slot_id].connections[connection_id].state =
-		    T_STATE_ACTIVE;
-		tl->slots[slot_id].connections[connection_id].tx_time.
-		    tv_sec = 0;
+	if (tl->slots[slot_id].connections[connection_id].state == T_STATE_IN_CREATION) {
+		tl->slots[slot_id].connections[connection_id].state = T_STATE_ACTIVE;
+		tl->slots[slot_id].connections[connection_id].tx_time.tv_sec = 0;
 
 		// tell upper layers
 		pthread_mutex_lock(&tl->setcallback_lock);
@@ -1100,8 +959,7 @@ static int en50221_tl_handle_create_tc_reply(struct en50221_transport_layer
 		void *cb_arg = tl->callback_arg;
 		pthread_mutex_unlock(&tl->setcallback_lock);
 		if (cb)
-			cb(cb_arg, T_CALLBACK_REASON_CONNECTIONOPEN, NULL,
-			   0, slot_id, connection_id);
+			cb(cb_arg, T_CALLBACK_REASON_CONNECTIONOPEN, NULL, 0, slot_id, connection_id);
 	} else {
 		print(LOG_LEVEL, ERROR, 1,
 		      "Received T_C_T_C_REPLY for connection not in "
@@ -1120,29 +978,24 @@ static int en50221_tl_handle_delete_tc(struct en50221_transport_layer *tl,
 				       uint8_t connection_id)
 {
 	// immediately delete this connection and send D_T_C_REPLY
-	if (tl->slots[slot_id].connections[connection_id].
-	    state & (T_STATE_ACTIVE | T_STATE_IN_DELETION)) {
+	if (tl->slots[slot_id].connections[connection_id].state &
+	    (T_STATE_ACTIVE | T_STATE_IN_DELETION)) {
 		// clear down the slot
-		tl->slots[slot_id].connections[connection_id].state =
-		    T_STATE_IDLE;
-		if (tl->slots[slot_id].connections[connection_id].
-		    chain_buffer) {
-			free(tl->slots[slot_id].connections[connection_id].
-			     chain_buffer);
+		tl->slots[slot_id].connections[connection_id].state = T_STATE_IDLE;
+		if (tl->slots[slot_id].connections[connection_id].chain_buffer) {
+			free(tl->slots[slot_id].connections[connection_id].chain_buffer);
 		}
-		tl->slots[slot_id].connections[connection_id].
-		    chain_buffer = NULL;
-		tl->slots[slot_id].connections[connection_id].
-		    buffer_length = 0;
+		tl->slots[slot_id].connections[connection_id].chain_buffer = NULL;
+		tl->slots[slot_id].connections[connection_id].buffer_length = 0;
 
 		// send the reply
 		uint8_t hdr[3];
 		hdr[0] = T_D_T_C_REPLY;
 		hdr[1] = 1;
 		hdr[2] = connection_id;
-		if (dvbca_link_write
-		    (tl->slots[slot_id].ca_hndl, tl->slots[slot_id].slot,
-		     connection_id, hdr, 3) < 0) {
+		if (dvbca_link_write(tl->slots[slot_id].ca_hndl,
+		    		     tl->slots[slot_id].slot,
+				     connection_id, hdr, 3) < 0) {
 			tl->error_slot = slot_id;
 			tl->error = EN50221ERR_CAWRITE;
 			return -1;
@@ -1153,8 +1006,7 @@ static int en50221_tl_handle_delete_tc(struct en50221_transport_layer *tl,
 		void *cb_arg = tl->callback_arg;
 		pthread_mutex_unlock(&tl->setcallback_lock);
 		if (cb)
-			cb(cb_arg, T_CALLBACK_REASON_CONNECTIONCLOSE, NULL,
-			   0, slot_id, connection_id);
+			cb(cb_arg, T_CALLBACK_REASON_CONNECTIONCLOSE, NULL, 0, slot_id, connection_id);
 	} else {
 		print(LOG_LEVEL, ERROR, 1,
 		      "Received T_DELETE_T_C for inactive connection from module on slot %02x\n",
@@ -1172,10 +1024,8 @@ static int en50221_tl_handle_delete_tc_reply(struct en50221_transport_layer
 					     uint8_t connection_id)
 {
 	// delete this connection, should be in T_STATE_IN_DELETION already
-	if (tl->slots[slot_id].connections[connection_id].state ==
-	    T_STATE_IN_DELETION) {
-		tl->slots[slot_id].connections[connection_id].state =
-		    T_STATE_IDLE;
+	if (tl->slots[slot_id].connections[connection_id].state == T_STATE_IN_DELETION) {
+		tl->slots[slot_id].connections[connection_id].state = T_STATE_IDLE;
 	} else {
 		print(LOG_LEVEL, ERROR, 1,
 		      "Received T_D_T_C_REPLY received for connection not in "
@@ -1207,9 +1057,7 @@ static int en50221_tl_handle_request_tc(struct en50221_transport_layer *tl,
 		hdr[1] = 2;
 		hdr[2] = connection_id;
 		hdr[3] = 1;
-		if (dvbca_link_write
-		    (ca_hndl, tl->slots[slot_id].slot, connection_id, hdr,
-		     4) < 0) {
+		if (dvbca_link_write(ca_hndl, tl->slots[slot_id].slot, connection_id, hdr, 4) < 0) {
 			tl->error_slot = slot_id;
 			tl->error = EN50221ERR_CAWRITE;
 			return -1;
@@ -1223,33 +1071,25 @@ static int en50221_tl_handle_request_tc(struct en50221_transport_layer *tl,
 		hdr[1] = 2;
 		hdr[2] = connection_id;
 		hdr[3] = conid;
-		if (dvbca_link_write
-		    (ca_hndl, tl->slots[slot_id].slot, connection_id, hdr,
-		     4) < 0) {
-			tl->slots[slot_id].connections[conid].state =
-			    T_STATE_IDLE;
+		if (dvbca_link_write(ca_hndl, tl->slots[slot_id].slot, connection_id, hdr, 4) < 0) {
+			tl->slots[slot_id].connections[conid].state = T_STATE_IDLE;
 			tl->error_slot = slot_id;
 			tl->error = EN50221ERR_CAWRITE;
 			return -1;
 		}
-		tl->slots[slot_id].connections[connection_id].tx_time.
-		    tv_sec = 0;
+		tl->slots[slot_id].connections[connection_id].tx_time.tv_sec = 0;
 
 		// send the CREATE_T_C on the new connnection
 		hdr[0] = T_CREATE_T_C;
 		hdr[1] = 1;
 		hdr[2] = conid;
-		if (dvbca_link_write
-		    (ca_hndl, tl->slots[slot_id].slot, conid, hdr,
-		     3) < 0) {
-			tl->slots[slot_id].connections[conid].state =
-			    T_STATE_IDLE;
+		if (dvbca_link_write(ca_hndl, tl->slots[slot_id].slot, conid, hdr, 3) < 0) {
+			tl->slots[slot_id].connections[conid].state = T_STATE_IDLE;
 			tl->error_slot = slot_id;
 			tl->error = EN50221ERR_CAWRITE;
 			return -1;
 		}
-		gettimeofday(&tl->slots[slot_id].connections[conid].
-			     tx_time, 0);
+		gettimeofday(&tl->slots[slot_id].connections[conid].tx_time, 0);
 
 		// tell upper layers
 		pthread_mutex_lock(&tl->setcallback_lock);
@@ -1257,8 +1097,7 @@ static int en50221_tl_handle_request_tc(struct en50221_transport_layer *tl,
 		void *cb_arg = tl->callback_arg;
 		pthread_mutex_unlock(&tl->setcallback_lock);
 		if (cb)
-			cb(cb_arg, T_CALLBACK_REASON_CAMCONNECTIONOPEN,
-			   NULL, 0, slot_id, conid);
+			cb(cb_arg, T_CALLBACK_REASON_CAMCONNECTIONOPEN, NULL, 0, slot_id, conid);
 	}
 
 	return 0;
@@ -1271,8 +1110,7 @@ static int en50221_tl_handle_data_more(struct en50221_transport_layer *tl,
 				       uint32_t data_length)
 {
 	// connection in correct state?
-	if (tl->slots[slot_id].connections[connection_id].state !=
-	    T_STATE_ACTIVE) {
+	if (tl->slots[slot_id].connections[connection_id].state != T_STATE_ACTIVE) {
 		print(LOG_LEVEL, ERROR, 1,
 		      "Received T_DATA_MORE for connection not in "
 		      "T_STATE_ACTIVE from module on slot %02x\n",
@@ -1285,24 +1123,20 @@ static int en50221_tl_handle_data_more(struct en50221_transport_layer *tl,
 	// it to the buffer and wait for more
 	tl->slots[slot_id].connections[connection_id].tx_time.tv_sec = 0;
 	int new_data_length =
-	    tl->slots[slot_id].connections[connection_id].buffer_length +
-	    data_length;
+	    tl->slots[slot_id].connections[connection_id].buffer_length + data_length;
 	uint8_t *new_data_buffer =
-	    realloc(tl->slots[slot_id].connections[connection_id].
-		    chain_buffer, new_data_length);
+	    realloc(tl->slots[slot_id].connections[connection_id].chain_buffer, new_data_length);
 	if (new_data_buffer == NULL) {
 		tl->error_slot = slot_id;
 		tl->error = EN50221ERR_OUTOFMEMORY;
 		return -1;
 	}
-	tl->slots[slot_id].connections[connection_id].chain_buffer =
-	    new_data_buffer;
+	tl->slots[slot_id].connections[connection_id].chain_buffer = new_data_buffer;
 
 	memcpy(tl->slots[slot_id].connections[connection_id].chain_buffer +
 	       tl->slots[slot_id].connections[connection_id].buffer_length,
 	       data, data_length);
-	tl->slots[slot_id].connections[connection_id].buffer_length =
-	    new_data_length;
+	tl->slots[slot_id].connections[connection_id].buffer_length = new_data_length;
 
 	return 0;
 }
@@ -1314,8 +1148,7 @@ static int en50221_tl_handle_data_last(struct en50221_transport_layer *tl,
 				       uint32_t data_length)
 {
 	// connection in correct state?
-	if (tl->slots[slot_id].connections[connection_id].state !=
-	    T_STATE_ACTIVE) {
+	if (tl->slots[slot_id].connections[connection_id].state != T_STATE_ACTIVE) {
 		print(LOG_LEVEL, ERROR, 1,
 		      "Received T_DATA_LAST received for connection not in "
 		      "T_STATE_ACTIVE from module on slot %02x\n",
@@ -1326,8 +1159,7 @@ static int en50221_tl_handle_data_last(struct en50221_transport_layer *tl,
 	}
 	// last package of a chain or single package comes in
 	tl->slots[slot_id].connections[connection_id].tx_time.tv_sec = 0;
-	if (tl->slots[slot_id].connections[connection_id].chain_buffer ==
-	    NULL) {
+	if (tl->slots[slot_id].connections[connection_id].chain_buffer == NULL) {
 		// single package => dispatch immediately
 		pthread_mutex_lock(&tl->setcallback_lock);
 		en50221_tl_callback cb = tl->callback;
@@ -1337,17 +1169,14 @@ static int en50221_tl_handle_data_last(struct en50221_transport_layer *tl,
 		if (cb && data_length) {
 			pthread_mutex_unlock(&tl->slots[slot_id].
 					     slot_lock);
-			cb(cb_arg, T_CALLBACK_REASON_DATA, data,
-			   data_length, slot_id, connection_id);
+			cb(cb_arg, T_CALLBACK_REASON_DATA, data, data_length, slot_id, connection_id);
 			pthread_mutex_lock(&tl->slots[slot_id].slot_lock);
 		}
 	} else {
 		int new_data_length =
-		    tl->slots[slot_id].connections[connection_id].
-		    buffer_length + data_length;
+		    tl->slots[slot_id].connections[connection_id].buffer_length + data_length;
 		uint8_t *new_data_buffer =
-		    realloc(tl->slots[slot_id].connections[connection_id].
-			    chain_buffer, new_data_length);
+		    realloc(tl->slots[slot_id].connections[connection_id].chain_buffer, new_data_length);
 		if (new_data_buffer == NULL) {
 			tl->error_slot = slot_id;
 			tl->error = EN50221ERR_OUTOFMEMORY;
@@ -1359,10 +1188,8 @@ static int en50221_tl_handle_data_last(struct en50221_transport_layer *tl,
 		       buffer_length, data, data_length);
 
 		// clean the buffer position
-		tl->slots[slot_id].connections[connection_id].
-		    chain_buffer = NULL;
-		tl->slots[slot_id].connections[connection_id].
-		    buffer_length = 0;
+		tl->slots[slot_id].connections[connection_id].chain_buffer = NULL;
+		tl->slots[slot_id].connections[connection_id].buffer_length = 0;
 
 		// tell the upper layers
 		pthread_mutex_lock(&tl->setcallback_lock);
@@ -1388,8 +1215,7 @@ static int en50221_tl_handle_sb(struct en50221_transport_layer *tl,
 				uint8_t * data, uint32_t data_length)
 {
 	// is the connection id ok?
-	if (tl->slots[slot_id].connections[connection_id].state !=
-	    T_STATE_ACTIVE) {
+	if (tl->slots[slot_id].connections[connection_id].state != T_STATE_ACTIVE) {
 		print(LOG_LEVEL, ERROR, 1,
 		      "Received T_SB for connection not in T_STATE_ACTIVE from module on slot %02x\n",
 		      slot_id);
@@ -1415,20 +1241,16 @@ static int en50221_tl_handle_sb(struct en50221_transport_layer *tl,
 		hdr[0] = T_RCV;
 		hdr[1] = 1;
 		hdr[2] = connection_id;
-		if (dvbca_link_write
-		    (ca_hndl, tl->slots[slot_id].slot, connection_id, hdr,
-		     3) < 0) {
+		if (dvbca_link_write(ca_hndl, tl->slots[slot_id].slot, connection_id, hdr, 3) < 0) {
 			tl->error_slot = slot_id;
 			tl->error = EN50221ERR_CAWRITE;
 			return -1;
 		}
-		gettimeofday(&tl->slots[slot_id].
-			     connections[connection_id].tx_time, 0);
+		gettimeofday(&tl->slots[slot_id].connections[connection_id].tx_time, 0);
 
 	} else {
 		// no data - indicate not waiting for anything now
-		tl->slots[slot_id].connections[connection_id].tx_time.
-		    tv_sec = 0;
+		tl->slots[slot_id].connections[connection_id].tx_time.tv_sec = 0;
 	}
 
 	return 0;
@@ -1441,8 +1263,7 @@ static int en50221_tl_alloc_new_tc(struct en50221_transport_layer *tl,
 	// types, to look for the first unused one
 	int i, conid = -1;
 	for (i = 1; i < tl->max_connections_per_slot; i++) {
-		if (tl->slots[slot_id].connections[i].state ==
-		    T_STATE_IDLE) {
+		if (tl->slots[slot_id].connections[i].state == T_STATE_IDLE) {
 			conid = i;
 			break;
 		}
@@ -1466,14 +1287,10 @@ static void queue_message(struct en50221_transport_layer *tl,
 {
 	msg->next = NULL;
 	if (tl->slots[slot_id].connections[connection_id].send_queue_tail) {
-		tl->slots[slot_id].connections[connection_id].
-		    send_queue_tail->next = msg;
-		tl->slots[slot_id].connections[connection_id].
-		    send_queue_tail = msg;
+		tl->slots[slot_id].connections[connection_id].send_queue_tail->next = msg;
+		tl->slots[slot_id].connections[connection_id].send_queue_tail = msg;
 	} else {
-		tl->slots[slot_id].connections[connection_id].send_queue =
-		    msg;
-		tl->slots[slot_id].connections[connection_id].
-		    send_queue_tail = msg;
+		tl->slots[slot_id].connections[connection_id].send_queue = msg;
+		tl->slots[slot_id].connections[connection_id].send_queue_tail = msg;
 	}
 }

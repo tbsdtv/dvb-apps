@@ -63,19 +63,15 @@ struct ca_pmt_stream {
 	struct ca_pmt_stream *next;
 };
 
-static int en50221_ca_extract_pmt_descriptors(struct mpeg_pmt_section *pmt, struct ca_pmt_descriptor
-					      **outdescriptors);
+static int en50221_ca_extract_pmt_descriptors(struct mpeg_pmt_section *pmt,
+					      struct ca_pmt_descriptor **outdescriptors);
 static int en50221_ca_extract_streams(struct mpeg_pmt_section *pmt,
 				      struct ca_pmt_stream **outstreams);
-static void en50221_ca_try_move_pmt_descriptors(struct ca_pmt_descriptor
-						**pmt_descriptors, struct ca_pmt_stream
-						**pmt_streams);
-static uint32_t en50221_ca_calculate_length(struct ca_pmt_descriptor
-					    *pmt_descriptors,
-					    uint32_t *
-					    pmt_descriptors_length,
-					    struct ca_pmt_stream
-					    *pmt_streams);
+static void en50221_ca_try_move_pmt_descriptors(struct ca_pmt_descriptor **pmt_descriptors,
+						struct ca_pmt_stream **pmt_streams);
+static uint32_t en50221_ca_calculate_length(struct ca_pmt_descriptor *pmt_descriptors,
+					    uint32_t *pmt_descriptors_length,
+					    struct ca_pmt_stream *pmt_streams);
 static int en50221_app_ca_parse_info(struct en50221_app_ca *ca,
 				     uint8_t slot_id,
 				     uint16_t session_number,
@@ -88,9 +84,7 @@ static int en50221_app_ca_parse_reply(struct en50221_app_ca *ca,
 
 
 
-struct en50221_app_ca *en50221_app_ca_create(struct
-					     en50221_app_send_functions
-					     *funcs)
+struct en50221_app_ca *en50221_app_ca_create(struct en50221_app_send_functions *funcs)
 {
 	struct en50221_app_ca *ca = NULL;
 
@@ -144,8 +138,7 @@ int en50221_app_ca_info_enq(struct en50221_app_ca *ca,
 	data[1] = (TAG_CA_INFO_ENQUIRY >> 8) & 0xFF;
 	data[2] = TAG_CA_INFO_ENQUIRY & 0xFF;
 	data[3] = 0;
-	return ca->funcs->send_data(ca->funcs->arg, session_number, data,
-				    4);
+	return ca->funcs->send_data(ca->funcs->arg, session_number, data, 4);
 }
 
 int en50221_app_ca_pmt(struct en50221_app_ca *ca,
@@ -161,8 +154,7 @@ int en50221_app_ca_pmt(struct en50221_app_ca *ca,
 
 	// encode the length field
 	int length_field_len;
-	if ((length_field_len =
-	     asn_1_encode(ca_pmt_length, buf + 3, 3)) < 0) {
+	if ((length_field_len = asn_1_encode(ca_pmt_length, buf + 3, 3)) < 0) {
 		return -1;
 	}
 	// build the iovecs
@@ -173,8 +165,7 @@ int en50221_app_ca_pmt(struct en50221_app_ca *ca,
 	iov[1].iov_len = ca_pmt_length;
 
 	// create the data and send it
-	return ca->funcs->send_datav(ca->funcs->arg, session_number, iov,
-				     2);
+	return ca->funcs->send_datav(ca->funcs->arg, session_number, iov, 2);
 }
 
 int en50221_app_ca_message(struct en50221_app_ca *ca,
@@ -322,8 +313,8 @@ int en50221_ca_format_pmt(struct mpeg_pmt_section *pmt, uint8_t * data,
 
 
 
-static int en50221_ca_extract_pmt_descriptors(struct mpeg_pmt_section *pmt, struct ca_pmt_descriptor
-					      **outdescriptors)
+static int en50221_ca_extract_pmt_descriptors(struct mpeg_pmt_section *pmt,
+					      struct ca_pmt_descriptor **outdescriptors)
 {
 	struct ca_pmt_descriptor *descriptors = NULL;
 	struct ca_pmt_descriptor *descriptors_tail = NULL;
@@ -354,7 +345,7 @@ static int en50221_ca_extract_pmt_descriptors(struct mpeg_pmt_section *pmt, stru
 	*outdescriptors = descriptors;
 	return 0;
 
-      error_exit:
+error_exit:
 	cur_d = descriptors;
 	while (cur_d) {
 		struct ca_pmt_descriptor *next = cur_d->next;
@@ -402,8 +393,7 @@ static int en50221_ca_extract_streams(struct mpeg_pmt_section *pmt,
 			if (cur_descriptor->tag == dtag_mpeg_ca) {
 				// create a new structure
 				struct ca_pmt_descriptor *new_d =
-				    malloc(sizeof
-					   (struct ca_pmt_descriptor));
+				    malloc(sizeof(struct ca_pmt_descriptor));
 				if (new_d == NULL) {
 					goto exit_cleanup;
 				}
@@ -426,7 +416,7 @@ static int en50221_ca_extract_streams(struct mpeg_pmt_section *pmt,
 	*outstreams = streams;
 	return 0;
 
-      exit_cleanup:
+exit_cleanup:
 	// free the streams
 	cur_s = streams;
 	while (cur_s) {
@@ -446,9 +436,8 @@ static int en50221_ca_extract_streams(struct mpeg_pmt_section *pmt,
 	return -1;
 }
 
-static void en50221_ca_try_move_pmt_descriptors(struct ca_pmt_descriptor
-						**pmt_descriptors, struct ca_pmt_stream
-						**pmt_streams)
+static void en50221_ca_try_move_pmt_descriptors(struct ca_pmt_descriptor **pmt_descriptors,
+						struct ca_pmt_stream **pmt_streams)
 {
 	// get the first stream
 	struct ca_pmt_stream *first_stream = *pmt_streams;
@@ -459,26 +448,21 @@ static void en50221_ca_try_move_pmt_descriptors(struct ca_pmt_descriptor
 	struct ca_pmt_stream *cur_stream = first_stream->next;
 	while (cur_stream) {
 		// if there are differing numbers of descriptors, exit right now
-		if (cur_stream->descriptors_count !=
-		    first_stream->descriptors_count)
+		if (cur_stream->descriptors_count != first_stream->descriptors_count)
 			return;
 
 		// now verify the descriptors match
-		struct ca_pmt_descriptor *cur_descriptor =
-		    cur_stream->descriptors;
-		struct ca_pmt_descriptor *first_cur_descriptor =
-		    first_stream->descriptors;
+		struct ca_pmt_descriptor *cur_descriptor = cur_stream->descriptors;
+		struct ca_pmt_descriptor *first_cur_descriptor = first_stream->descriptors;
 		while (cur_descriptor) {
 			// check the descriptors are the same length
-			if (cur_descriptor->length !=
-			    first_cur_descriptor->length)
+			if (cur_descriptor->length != first_cur_descriptor->length)
 				return;
 
 			// check their contents match
-			if (memcmp
-			    (cur_descriptor->descriptor,
-			     first_cur_descriptor->descriptor,
-			     cur_descriptor->length)) {
+			if (memcmp(cur_descriptor->descriptor,
+			    	   first_cur_descriptor->descriptor,
+				   cur_descriptor->length)) {
 				return;
 			}
 			// move to next
@@ -500,11 +484,9 @@ static void en50221_ca_try_move_pmt_descriptors(struct ca_pmt_descriptor
 	// now free up all the descriptors in the other streams
 	cur_stream = first_stream->next;
 	while (cur_stream) {
-		struct ca_pmt_descriptor *cur_descriptor =
-		    cur_stream->descriptors;
+		struct ca_pmt_descriptor *cur_descriptor = cur_stream->descriptors;
 		while (cur_descriptor) {
-			struct ca_pmt_descriptor *next =
-			    cur_descriptor->next;
+			struct ca_pmt_descriptor *next = cur_descriptor->next;
 			free(cur_descriptor);
 			cur_descriptor = next;
 		}
@@ -514,12 +496,9 @@ static void en50221_ca_try_move_pmt_descriptors(struct ca_pmt_descriptor
 	}
 }
 
-static uint32_t en50221_ca_calculate_length(struct ca_pmt_descriptor
-					    *pmt_descriptors,
-					    uint32_t *
-					    pmt_descriptors_length,
-					    struct ca_pmt_stream
-					    *pmt_streams)
+static uint32_t en50221_ca_calculate_length(struct ca_pmt_descriptor *pmt_descriptors,
+					    uint32_t *pmt_descriptors_length,
+					    struct ca_pmt_stream *pmt_streams)
 {
 	uint32_t total_required_length = 6;	// header
 	struct ca_pmt_stream *cur_s;
@@ -572,8 +551,7 @@ static int en50221_app_ca_parse_info(struct en50221_app_ca *ca,
 	// first of all, decode the length field
 	uint16_t asn_data_length;
 	int length_field_len;
-	if ((length_field_len =
-	     asn_1_decode(&asn_data_length, data, data_length)) < 0) {
+	if ((length_field_len = asn_1_decode(&asn_data_length, data, data_length)) < 0) {
 		print(LOG_LEVEL, ERROR, 1, "ASN.1 decode error\n");
 		return -1;
 	}
@@ -615,8 +593,7 @@ static int en50221_app_ca_parse_reply(struct en50221_app_ca *ca,
 	// first of all, decode the length field
 	uint16_t asn_data_length;
 	int length_field_len;
-	if ((length_field_len =
-	     asn_1_decode(&asn_data_length, data, data_length)) < 0) {
+	if ((length_field_len = asn_1_decode(&asn_data_length, data, data_length)) < 0) {
 		print(LOG_LEVEL, ERROR, 1, "ASN.1 decode error\n");
 		return -1;
 	}

@@ -44,9 +44,7 @@ static int en50221_app_ai_parse_app_info(struct en50221_app_ai *ai,
 					 uint32_t data_length);
 
 
-struct en50221_app_ai *en50221_app_ai_create(struct
-					     en50221_app_send_functions
-					     *funcs)
+struct en50221_app_ai *en50221_app_ai_create(struct en50221_app_send_functions *funcs)
 {
 	struct en50221_app_ai *ai = NULL;
 
@@ -66,10 +64,8 @@ struct en50221_app_ai *en50221_app_ai_create(struct
 
 void en50221_app_ai_destroy(struct en50221_app_ai *ai)
 {
-	struct en50221_app_ai *private = (struct en50221_app_ai *) ai;
-
 	pthread_mutex_destroy(&ai->lock);
-	free(private);
+	free(ai);
 }
 
 void en50221_app_ai_register_callback(struct en50221_app_ai *ai,
@@ -92,8 +88,7 @@ int en50221_app_ai_enquiry(struct en50221_app_ai *ai,
 	data[2] = TAG_APP_INFO_ENQUIRY & 0xFF;
 	data[3] = 0;
 
-	return ai->funcs->send_data(ai->funcs->arg, session_number, data,
-				    4);
+	return ai->funcs->send_data(ai->funcs->arg, session_number, data, 4);
 }
 
 int en50221_app_ai_entermenu(struct en50221_app_ai *ai,
@@ -106,8 +101,7 @@ int en50221_app_ai_entermenu(struct en50221_app_ai *ai,
 	data[2] = TAG_ENTER_MENU & 0xFF;
 	data[3] = 0;
 
-	return ai->funcs->send_data(ai->funcs->arg, session_number, data,
-				    4);
+	return ai->funcs->send_data(ai->funcs->arg, session_number, data, 4);
 }
 
 int en50221_app_ai_message(struct en50221_app_ai *ai,
@@ -152,8 +146,7 @@ static int en50221_app_ai_parse_app_info(struct en50221_app_ai *ai,
 	// parse the length field
 	int length_field_len;
 	uint16_t asn_data_length;
-	if ((length_field_len =
-	     asn_1_decode(&asn_data_length, data, data_length)) < 0) {
+	if ((length_field_len = asn_1_decode(&asn_data_length, data, data_length)) < 0) {
 		print(LOG_LEVEL, ERROR, 1,
 		      "Received data with invalid length from module on slot %02x\n",
 		      slot_id);
@@ -172,8 +165,7 @@ static int en50221_app_ai_parse_app_info(struct en50221_app_ai *ai,
 
 	// parse the fields
 	uint8_t application_type = app_info[0];
-	uint16_t application_manufacturer =
-	    (app_info[1] << 8) | app_info[2];
+	uint16_t application_manufacturer = (app_info[1] << 8) | app_info[2];
 	uint16_t manufacturer_code = (app_info[3] << 8) | app_info[4];
 	uint8_t menu_string_length = app_info[5];
 	uint8_t *menu_string = app_info + 6;

@@ -63,9 +63,7 @@ static int en50221_app_dvb_parse_clear_replace(struct en50221_app_dvb *dvb,
 
 
 
-struct en50221_app_dvb *en50221_app_dvb_create(struct
-					       en50221_app_send_functions
-					       *funcs)
+struct en50221_app_dvb *en50221_app_dvb_create(struct en50221_app_send_functions *funcs)
 {
 	struct en50221_app_dvb *dvb = NULL;
 
@@ -92,8 +90,8 @@ void en50221_app_dvb_destroy(struct en50221_app_dvb *dvb)
 }
 
 void en50221_app_dvb_register_tune_callback(struct en50221_app_dvb *dvb,
-					    en50221_app_dvb_tune_callback
-					    callback, void *arg)
+					    en50221_app_dvb_tune_callback callback,
+					    void *arg)
 {
 	pthread_mutex_lock(&dvb->lock);
 	dvb->tune_callback = callback;
@@ -102,8 +100,8 @@ void en50221_app_dvb_register_tune_callback(struct en50221_app_dvb *dvb,
 }
 
 void en50221_app_dvb_register_replace_callback(struct en50221_app_dvb *dvb,
-					       en50221_app_dvb_replace_callback
-					       callback, void *arg)
+					       en50221_app_dvb_replace_callback callback,
+					       void *arg)
 {
 	pthread_mutex_lock(&dvb->lock);
 	dvb->replace_callback = callback;
@@ -111,10 +109,9 @@ void en50221_app_dvb_register_replace_callback(struct en50221_app_dvb *dvb,
 	pthread_mutex_unlock(&dvb->lock);
 }
 
-void en50221_app_dvb_register_clear_replace_callback(struct en50221_app_dvb
-						     *dvb,
-						     en50221_app_dvb_clear_replace_callback
-						     callback, void *arg)
+void en50221_app_dvb_register_clear_replace_callback(struct en50221_app_dvb *dvb,
+						     en50221_app_dvb_clear_replace_callback callback,
+						     void *arg)
 {
 	pthread_mutex_lock(&dvb->lock);
 	dvb->clear_replace_callback = callback;
@@ -132,8 +129,7 @@ int en50221_app_dvb_ask_release(struct en50221_app_dvb *dvb,
 	data[2] = TAG_ASK_RELEASE & 0xFF;
 	data[3] = 0;
 
-	return dvb->funcs->send_data(dvb->funcs->arg, session_number, data,
-				     4);
+	return dvb->funcs->send_data(dvb->funcs->arg, session_number, data, 4);
 }
 
 int en50221_app_dvb_message(struct en50221_app_dvb *dvb,
@@ -165,8 +161,7 @@ int en50221_app_dvb_message(struct en50221_app_dvb *dvb,
 		return en50221_app_dvb_parse_clear_replace(dvb, slot_id,
 							   session_number,
 							   data + 3,
-							   data_length -
-							   3);
+							   data_length - 3);
 	}
 
 	print(LOG_LEVEL, ERROR, 1, "Received unexpected tag %x\n", tag);

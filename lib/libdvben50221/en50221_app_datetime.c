@@ -38,17 +38,15 @@ struct en50221_app_datetime {
 	pthread_mutex_t lock;
 };
 
-static int en50221_app_datetime_parse_enquiry(struct en50221_app_datetime
-					      *datetime, uint8_t slot_id,
+static int en50221_app_datetime_parse_enquiry(struct en50221_app_datetime *datetime,
+					      uint8_t slot_id,
 					      uint16_t session_number,
 					      uint8_t * data,
 					      uint32_t data_length);
 
 
 
-struct en50221_app_datetime *en50221_app_datetime_create(struct
-							 en50221_app_send_functions
-							 *funcs)
+struct en50221_app_datetime *en50221_app_datetime_create(struct en50221_app_send_functions *funcs)
 {
 	struct en50221_app_datetime *datetime = NULL;
 
@@ -72,11 +70,9 @@ void en50221_app_datetime_destroy(struct en50221_app_datetime *datetime)
 	free(datetime);
 }
 
-void en50221_app_datetime_register_enquiry_callback(struct
-						    en50221_app_datetime
-						    *datetime,
-						    en50221_app_datetime_enquiry_callback
-						    callback, void *arg)
+void en50221_app_datetime_register_enquiry_callback(struct en50221_app_datetime *datetime,
+						    en50221_app_datetime_enquiry_callback callback,
+						    void *arg)
 {
 	pthread_mutex_lock(&datetime->lock);
 	datetime->callback = callback;
@@ -147,8 +143,8 @@ int en50221_app_datetime_message(struct en50221_app_datetime *datetime,
 
 
 
-static int en50221_app_datetime_parse_enquiry(struct en50221_app_datetime
-					      *datetime, uint8_t slot_id,
+static int en50221_app_datetime_parse_enquiry(struct en50221_app_datetime *datetime,
+					      uint8_t slot_id,
 					      uint16_t session_number,
 					      uint8_t * data,
 					      uint32_t data_length)

@@ -55,29 +55,28 @@ extern "C" {
 /**
  * Structure holding information on a received comms command.
  */
-	struct en50221_app_lowspeed_command {
-		union {
-			struct {
-				uint8_t descriptor_type;	// CONNECTION_DESCRIPTOR_TYPE_*
-				uint8_t retry_count;
-				uint8_t timeout;
-				union {
-					struct dvb_telephone_descriptor
-					*telephone;
-					uint8_t cable_channel_id;
-				} descriptor;
-			} connect_on_channel;
+struct en50221_app_lowspeed_command {
+	union {
+		struct {
+			uint8_t descriptor_type;	// CONNECTION_DESCRIPTOR_TYPE_*
+			uint8_t retry_count;
+			uint8_t timeout;
+			union {
+				struct dvb_telephone_descriptor *telephone;
+				uint8_t cable_channel_id;
+			} descriptor;
+		} connect_on_channel;
 
-			struct {
-				uint8_t buffer_size;
-				uint8_t timeout;
-			} set_params;
+		struct {
+			uint8_t buffer_size;
+			uint8_t timeout;
+		} set_params;
 
-			struct {
-				uint8_t phase_id;
-			} get_next_buffer;
-		} u;
-	};
+		struct {
+			uint8_t phase_id;
+		} get_next_buffer;
+	} u;
+};
 
 /**
  * Type definition for command - called when we receive a comms command.
@@ -89,16 +88,11 @@ extern "C" {
  * @param command Pointer to a lowspeed command structure containing the command data.
  * @return 0 on success, -1 on failure.
  */
-	typedef int (*en50221_app_lowspeed_command_callback) (void *arg,
-							      uint8_t
-							      slot_id,
-							      uint16_t
-							      session_number,
-							      uint8_t
-							      command_id,
-							      struct
-							      en50221_app_lowspeed_command
-							      * command);
+typedef int (*en50221_app_lowspeed_command_callback) (void *arg,
+						      uint8_t slot_id,
+						      uint16_t session_number,
+						      uint8_t command_id,
+						      struct en50221_app_lowspeed_command *command);
 
 /**
  * Type definition for send - called when we receive data to send. The block can be segmented into
@@ -112,20 +106,17 @@ extern "C" {
  * @param length Number of bytes.
  * @return 0 on success, -1 on failure.
  */
-	typedef int (*en50221_app_lowspeed_send_callback) (void *arg,
-							   uint8_t slot_id,
-							   uint16_t
-							   session_number,
-							   uint8_t
-							   phase_id,
-							   uint8_t * data,
-							   uint32_t
-							   length);
+typedef int (*en50221_app_lowspeed_send_callback) (void *arg,
+						   uint8_t slot_id,
+						   uint16_t session_number,
+						   uint8_t phase_id,
+						   uint8_t *data,
+						   uint32_t length);
 
 /**
  * Opaque type representing a lowspeed resource.
  */
-	struct en50221_app_lowspeed;
+struct en50221_app_lowspeed;
 
 /**
  * Create an instance of the lowspeed resource.
@@ -133,18 +124,15 @@ extern "C" {
  * @param funcs Send functions to use.
  * @return Instance, or NULL on failure.
  */
-	extern struct en50221_app_lowspeed
-	*en50221_app_lowspeed_create(struct en50221_app_send_functions
-				     *funcs);
+extern struct en50221_app_lowspeed *
+	en50221_app_lowspeed_create(struct en50221_app_send_functions *funcs);
 
 /**
  * Destroy an instance of the lowspeed resource.
  *
  * @param lowspeed Instance to destroy.
  */
-	extern void en50221_app_lowspeed_destroy(struct
-						 en50221_app_lowspeed
-						 *lowspeed);
+extern void en50221_app_lowspeed_destroy(struct en50221_app_lowspeed *lowspeed);
 
 /**
  * Informs the lowspeed object that a session to it has been closed - cleans up internal state.
@@ -152,11 +140,8 @@ extern "C" {
  * @param lowspeed lowspeed resource instance.
  * @param session_number The session concerned.
  */
-	extern void en50221_app_lowspeed_clear_session(struct
-						       en50221_app_lowspeed
-						       *lowspeed,
-						       uint16_t
-						       session_number);
+extern void en50221_app_lowspeed_clear_session(struct en50221_app_lowspeed *lowspeed,
+					       uint16_t session_number);
 
 /**
  * Register the callback for when we receive a comms command.
@@ -165,13 +150,9 @@ extern "C" {
  * @param callback The callback. Set to NULL to remove the callback completely.
  * @param arg Private data passed as arg0 of the callback.
  */
-	extern void en50221_app_lowspeed_register_command_callback(struct
-								   en50221_app_lowspeed
-								   *lowspeed,
-								   en50221_app_lowspeed_command_callback
-								   callback,
-								   void
-								   *arg);
+extern void en50221_app_lowspeed_register_command_callback(struct en50221_app_lowspeed *lowspeed,
+							   en50221_app_lowspeed_command_callback callback,
+							   void *arg);
 
 /**
  * Register the callback for when we receive data to send.
@@ -180,12 +161,9 @@ extern "C" {
  * @param callback The callback. Set to NULL to remove the callback completely.
  * @param arg Private data passed as arg0 of the callback.
  */
-	extern void en50221_app_lowspeed_register_send_callback(struct
-								en50221_app_lowspeed
-								*lowspeed,
-								en50221_app_lowspeed_send_callback
-								callback,
-								void *arg);
+extern void en50221_app_lowspeed_register_send_callback(struct en50221_app_lowspeed *lowspeed,
+							en50221_app_lowspeed_send_callback callback,
+							void *arg);
 
 /**
  * Send a comms reply to the CAM.
@@ -196,15 +174,10 @@ extern "C" {
  * @param return_value Comms reply specific value.
  * @return 0 on success, -1 on failure.
  */
-	extern int en50221_app_lowspeed_send_comms_reply(struct
-							 en50221_app_lowspeed
-							 *lowspeed,
-							 uint16_t
-							 session_number,
-							 uint8_t
-							 comms_reply_id,
-							 uint8_t
-							 return_value);
+extern int en50221_app_lowspeed_send_comms_reply(struct en50221_app_lowspeed *lowspeed,
+						 uint16_t session_number,
+						 uint8_t comms_reply_id,
+						 uint8_t return_value);
 
 /**
  * Send received data to the CAM.
@@ -216,15 +189,11 @@ extern "C" {
  * @param tx_data Data.
  * @return 0 on success, -1 on failure.
  */
-	extern int en50221_app_lowspeed_send_comms_data(struct
-							en50221_app_lowspeed
-							*lowspeed,
-							uint16_t
-							session_number,
-							uint8_t phase_id,
-							uint32_t
-							tx_data_length,
-							uint8_t * tx_data);
+extern int en50221_app_lowspeed_send_comms_data(struct en50221_app_lowspeed *lowspeed,
+						uint16_t session_number,
+						uint8_t phase_id,
+						uint32_t tx_data_length,
+						uint8_t * tx_data);
 
 /**
  * Pass data received for this resource into it for parsing.
@@ -237,12 +206,12 @@ extern "C" {
  * @param data_length Length of data in bytes.
  * @return 0 on success, -1 on failure.
  */
-	extern int en50221_app_lowspeed_message(struct en50221_app_lowspeed
-						*lowspeed, uint8_t slot_id,
-						uint16_t session_number,
-						uint32_t resource_id,
-						uint8_t * data,
-						uint32_t data_length);
+extern int en50221_app_lowspeed_message(struct en50221_app_lowspeed *lowspeed,
+					uint8_t slot_id,
+					uint16_t session_number,
+					uint32_t resource_id,
+					uint8_t * data,
+					uint32_t data_length);
 
 #ifdef __cplusplus
 }

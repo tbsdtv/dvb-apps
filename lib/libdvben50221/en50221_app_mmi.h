@@ -86,51 +86,50 @@ extern "C" {
 /**
  * A pixel depth as supplied with display_reply details
  */
-	struct en50221_app_mmi_pixel_depth {
-		uint8_t display_depth;
-		uint8_t pixels_per_byte;
-		uint8_t region_overhead;
-	};
+struct en50221_app_mmi_pixel_depth {
+	uint8_t display_depth;
+	uint8_t pixels_per_byte;
+	uint8_t region_overhead;
+};
 
 /**
  * Details returned with a display_reply
  */
-	struct en502221_app_mmi_display_reply_details {
-		union {
-			struct {
-				uint16_t width;
-				uint16_t height;
-				uint8_t aspect_ratio;
-				uint8_t gfx_relation_to_video;	/* one of MMI_GFX_VIDEO_RELATION_* */
-				uint8_t multiple_depths;
-				uint16_t display_bytes;
-				uint8_t composition_buffer_bytes;
-				uint8_t object_cache_bytes;
-				uint8_t num_pixel_depths;
-				struct en50221_app_mmi_pixel_depth
-				*pixel_depths;
-			} gfx;	/* MMI_DISPLAY_REPLY_ID_LIST_OVERLAY_GFX_CHARACTERISTICS or
-				   MMI_DISPLAY_REPLY_ID_LIST_FULLSCREEN_GFX_CHARACTERISTICS */
+struct en502221_app_mmi_display_reply_details {
+	union {
+		struct {
+			uint16_t width;
+			uint16_t height;
+			uint8_t aspect_ratio;
+			uint8_t gfx_relation_to_video;	/* one of MMI_GFX_VIDEO_RELATION_* */
+			uint8_t multiple_depths;
+			uint16_t display_bytes;
+			uint8_t composition_buffer_bytes;
+			uint8_t object_cache_bytes;
+			uint8_t num_pixel_depths;
+			struct en50221_app_mmi_pixel_depth *pixel_depths;
+		} gfx;	/* MMI_DISPLAY_REPLY_ID_LIST_OVERLAY_GFX_CHARACTERISTICS or
+				MMI_DISPLAY_REPLY_ID_LIST_FULLSCREEN_GFX_CHARACTERISTICS */
 
-			struct {
-				uint32_t table_length;
-				uint8_t *table;
-			} char_table;	/* MMI_DISPLAY_REPLY_ID_LIST_DISPLAY_CHAR_TABLES or
-					   MMI_DISPLAY_REPLY_ID_LIST_INPUT_CHAR_TABLES */
+		struct {
+			uint32_t table_length;
+			uint8_t *table;
+		} char_table;	/* MMI_DISPLAY_REPLY_ID_LIST_DISPLAY_CHAR_TABLES or
+					MMI_DISPLAY_REPLY_ID_LIST_INPUT_CHAR_TABLES */
 
-			struct {
-				uint8_t mmi_mode;	/* one of the MMI_MODE_* values */
-			} mode_ack;	/* for MMI_DISPLAY_REPLY_ID_MMI_MODE_ACK */
-		} u;
-	};
+		struct {
+			uint8_t mmi_mode;	/* one of the MMI_MODE_* values */
+		} mode_ack;	/* for MMI_DISPLAY_REPLY_ID_MMI_MODE_ACK */
+	} u;
+};
 
 /**
  * Pointer to a text string.
  */
-	struct en50221_app_mmi_text {
-		uint8_t *text;
-		uint32_t text_length;
-	};
+struct en50221_app_mmi_text {
+	uint8_t *text;
+	uint32_t text_length;
+};
 
 /**
  * Type definition for close - called when we receive an mmi_close from a CAM.
@@ -142,12 +141,11 @@ extern "C" {
  * @param delay Delay supplied with MMI_CLOSE_MMI_CMD_ID_DELAY.
  * @return 0 on success, -1 on failure.
  */
-	typedef int (*en50221_app_mmi_close_callback) (void *arg,
-						       uint8_t slot_id,
-						       uint16_t
-						       session_number,
-						       uint8_t cmd_id,
-						       uint8_t delay);
+typedef int (*en50221_app_mmi_close_callback) (void *arg,
+					       uint8_t slot_id,
+					       uint16_t session_number,
+					       uint8_t cmd_id,
+					       uint8_t delay);
 
 /**
  * Type definition for display_control callback.
@@ -159,15 +157,11 @@ extern "C" {
  * @param delay One of the MMI_MODE_* values.
  * @return 0 on success, -1 on failure.
  */
-	typedef int (*en50221_app_mmi_display_control_callback) (void *arg,
-								 uint8_t
-								 slot_id,
-								 uint16_t
-								 session_number,
-								 uint8_t
-								 cmd_id,
-								 uint8_t
-								 mmi_mode);
+typedef int (*en50221_app_mmi_display_control_callback) (void *arg,
+							 uint8_t slot_id,
+							 uint16_t session_number,
+							 uint8_t cmd_id,
+							 uint8_t mmi_mode);
 
 /**
  * Type definition for keypad_control callback.
@@ -180,17 +174,12 @@ extern "C" {
  * @param key_codes_count Number of key codes.
  * @return 0 on success, -1 on failure.
  */
-	typedef int (*en50221_app_mmi_keypad_control_callback) (void *arg,
-								uint8_t
-								slot_id,
-								uint16_t
-								session_number,
-								uint8_t
-								cmd_id,
-								uint8_t *
-								key_codes,
-								uint32_t
-								key_codes_count);
+typedef int (*en50221_app_mmi_keypad_control_callback) (void *arg,
+							uint8_t slot_id,
+							uint16_t session_number,
+							uint8_t cmd_id,
+							uint8_t *key_codes,
+							uint32_t key_codes_count);
 
 /**
  * Type definition for subtitle_segment callback.
@@ -202,16 +191,11 @@ extern "C" {
  * @param segment_size Size of segment data.
  * @return 0 on success, -1 on failure.
  */
-	typedef int (*en50221_app_mmi_subtitle_segment_callback) (void
-								  *arg,
-								  uint8_t
-								  slot_id,
-								  uint16_t
-								  session_number,
-								  uint8_t *
-								  segment,
-								  uint32_t
-								  segment_size);
+typedef int (*en50221_app_mmi_subtitle_segment_callback) (void *arg,
+							  uint8_t slot_id,
+							  uint16_t session_number,
+							  uint8_t *segment,
+							  uint32_t segment_size);
 
 /**
  * Type definition for scene_end_mark callback.
@@ -225,19 +209,13 @@ extern "C" {
  * @param scene_tag
  * @return 0 on success, -1 on failure.
  */
-	typedef int (*en50221_app_mmi_scene_end_mark_callback) (void *arg,
-								uint8_t
-								slot_id,
-								uint16_t
-								session_number,
-								uint8_t
-								decoder_continue_flag,
-								uint8_t
-								scene_reveal_flag,
-								uint8_t
-								send_scene_done,
-								uint8_t
-								scene_tag);
+typedef int (*en50221_app_mmi_scene_end_mark_callback) (void *arg,
+							uint8_t slot_id,
+							uint16_t session_number,
+							uint8_t decoder_continue_flag,
+							uint8_t scene_reveal_flag,
+							uint8_t send_scene_done,
+							uint8_t scene_tag);
 
 /**
  * Type definition for scene_control callback.
@@ -250,17 +228,12 @@ extern "C" {
  * @param scene_tag
  * @return 0 on success, -1 on failure.
  */
-	typedef int (*en50221_app_mmi_scene_control_callback) (void *arg,
-							       uint8_t
-							       slot_id,
-							       uint16_t
-							       session_number,
-							       uint8_t
-							       decoder_continue_flag,
-							       uint8_t
-							       scene_reveal_flag,
-							       uint8_t
-							       scene_tag);
+typedef int (*en50221_app_mmi_scene_control_callback) (void *arg,
+						       uint8_t slot_id,
+						       uint16_t session_number,
+						       uint8_t decoder_continue_flag,
+						       uint8_t scene_reveal_flag,
+						       uint8_t scene_tag);
 
 /**
  * Type definition for subtitle_download callback.
@@ -272,17 +245,11 @@ extern "C" {
  * @param segment_size Size of segment data.
  * @return 0 on success, -1 on failure.
  */
-	typedef int (*en50221_app_mmi_subtitle_download_callback) (void
-								   *arg,
-								   uint8_t
-								   slot_id,
-								   uint16_t
-								   session_number,
-								   uint8_t
-								   *
-								   segment,
-								   uint32_t
-								   segment_size);
+typedef int (*en50221_app_mmi_subtitle_download_callback) (void *arg,
+							   uint8_t slot_id,
+							   uint16_t session_number,
+							   uint8_t *segment,
+							   uint32_t segment_size);
 
 /**
  * Type definition for flush_download callback.
@@ -292,11 +259,9 @@ extern "C" {
  * @param session_number Session number concerned.
  * @return 0 on success, -1 on failure.
  */
-	typedef int (*en50221_app_mmi_flush_download_callback) (void *arg,
-								uint8_t
-								slot_id,
-								uint16_t
-								session_number);
+typedef int (*en50221_app_mmi_flush_download_callback) (void *arg,
+							uint8_t slot_id,
+							uint16_t session_number);
 
 /**
  * Type definition for enq callback.
@@ -310,15 +275,13 @@ extern "C" {
  * @param text_size Size of text data.
  * @return 0 on success, -1 on failure.
  */
-	typedef int (*en50221_app_mmi_enq_callback) (void *arg,
-						     uint8_t slot_id,
-						     uint16_t
-						     session_number,
-						     uint8_t blind_answer,
-						     uint8_t
-						     expected_answer_length,
-						     uint8_t * text,
-						     uint32_t text_size);
+typedef int (*en50221_app_mmi_enq_callback) (void *arg,
+					     uint8_t slot_id,
+					     uint16_t session_number,
+					     uint8_t blind_answer,
+					     uint8_t expected_answer_length,
+					     uint8_t * text,
+					     uint32_t text_size);
 
 /**
  * Type definition for menu callback.
@@ -335,26 +298,16 @@ extern "C" {
  * @param items_raw If nonstandard items were supplied, pointer to their data.
  * @return 0 on success, -1 on failure.
  */
-	typedef int (*en50221_app_mmi_menu_callback) (void *arg,
-						      uint8_t slot_id,
-						      uint16_t
-						      session_number,
-						      struct
-						      en50221_app_mmi_text
-						      * title,
-						      struct
-						      en50221_app_mmi_text
-						      * sub_title,
-						      struct
-						      en50221_app_mmi_text
-						      * bottom,
-						      uint32_t item_count,
-						      struct
-						      en50221_app_mmi_text
-						      * items,
-						      uint32_t
-						      item_raw_length,
-						      uint8_t * items_raw);
+typedef int (*en50221_app_mmi_menu_callback) (void *arg,
+					      uint8_t slot_id,
+					      uint16_t session_number,
+					      struct en50221_app_mmi_text *title,
+					      struct en50221_app_mmi_text *sub_title,
+					      struct en50221_app_mmi_text *bottom,
+					      uint32_t item_count,
+					      struct en50221_app_mmi_text *items,
+					      uint32_t item_raw_length,
+					      uint8_t *items_raw);
 
 /**
  * Type definition for list callback.
@@ -371,31 +324,21 @@ extern "C" {
  * @param items_raw If nonstandard items were supplied, pointer to their data.
  * @return 0 on success, -1 on failure.
  */
-	typedef int (*en50221_app_mmi_list_callback) (void *arg,
-						      uint8_t slot_id,
-						      uint16_t
-						      session_number,
-						      struct
-						      en50221_app_mmi_text
-						      * title,
-						      struct
-						      en50221_app_mmi_text
-						      * sub_title,
-						      struct
-						      en50221_app_mmi_text
-						      * bottom,
-						      uint32_t item_count,
-						      struct
-						      en50221_app_mmi_text
-						      * items,
-						      uint32_t
-						      item_raw_length,
-						      uint8_t * items_raw);
+typedef int (*en50221_app_mmi_list_callback) (void *arg,
+					      uint8_t slot_id,
+					      uint16_t session_number,
+					      struct en50221_app_mmi_text *title,
+					      struct en50221_app_mmi_text *sub_title,
+					      struct en50221_app_mmi_text *bottom,
+					      uint32_t item_count,
+					      struct en50221_app_mmi_text *items,
+					      uint32_t item_raw_length,
+					      uint8_t *items_raw);
 
 /**
  * Opaque type representing a mmi resource.
  */
-	struct en50221_app_mmi;
+struct en50221_app_mmi;
 
 /**
  * Create an instance of the mmi resource.
@@ -403,16 +346,14 @@ extern "C" {
  * @param funcs Send functions to use.
  * @return Instance, or NULL on failure.
  */
-	extern struct en50221_app_mmi *en50221_app_mmi_create(struct
-							      en50221_app_send_functions
-							      *funcs);
+extern struct en50221_app_mmi *en50221_app_mmi_create(struct en50221_app_send_functions *funcs);
 
 /**
  * Destroy an instance of the mmi resource.
  *
  * @param mmi Instance to destroy.
  */
-	extern void en50221_app_mmi_destroy(struct en50221_app_mmi *mmi);
+extern void en50221_app_mmi_destroy(struct en50221_app_mmi *mmi);
 
 /**
  * Informs the mmi object that a session to it has been closed - cleans up internal state.
@@ -420,9 +361,8 @@ extern "C" {
  * @param mmi mmi resource instance.
  * @param session_number The session concerned.
  */
-	extern void en50221_app_mmi_clear_session(struct en50221_app_mmi
-						  *mmi,
-						  uint16_t session_number);
+extern void en50221_app_mmi_clear_session(struct en50221_app_mmi *mmi,
+					  uint16_t session_number);
 
 /**
  * Register the callback for when we receive an mmi_close request.
@@ -431,12 +371,9 @@ extern "C" {
  * @param callback The callback. Set to NULL to remove the callback completely.
  * @param arg Private data passed as arg0 of the callback.
  */
-	extern void en50221_app_mmi_register_close_callback(struct
-							    en50221_app_mmi
-							    *mmi,
-							    en50221_app_mmi_close_callback
-							    callback,
-							    void *arg);
+extern void en50221_app_mmi_register_close_callback(struct en50221_app_mmi *mmi,
+						    en50221_app_mmi_close_callback callback,
+						    void *arg);
 
 /**
  * Register the callback for when we receive a display control request.
@@ -445,13 +382,9 @@ extern "C" {
  * @param callback The callback. Set to NULL to remove the callback completely.
  * @param arg Private data passed as arg0 of the callback.
  */
-	extern void
-	 en50221_app_mmi_register_display_control_callback(struct
-							   en50221_app_mmi
-							   *mmi,
-							   en50221_app_mmi_display_control_callback
-							   callback,
-							   void *arg);
+extern void en50221_app_mmi_register_display_control_callback(struct en50221_app_mmi *mmi,
+							      en50221_app_mmi_display_control_callback callback,
+							      void *arg);
 
 /**
  * Register the callback for when we receive a keypad control request.
@@ -460,13 +393,9 @@ extern "C" {
  * @param callback The callback. Set to NULL to remove the callback completely.
  * @param arg Private data passed as arg0 of the callback.
  */
-	extern void en50221_app_mmi_register_keypad_control_callback(struct
-								     en50221_app_mmi
-								     *mmi,
-								     en50221_app_mmi_keypad_control_callback
-								     callback,
-								     void
-								     *arg);
+extern void en50221_app_mmi_register_keypad_control_callback(struct en50221_app_mmi *mmi,
+							     en50221_app_mmi_keypad_control_callback callback,
+							     void *arg);
 
 /**
  * Register the callback for when we receive a subtitle segment request.
@@ -475,13 +404,9 @@ extern "C" {
  * @param callback The callback. Set to NULL to remove the callback completely.
  * @param arg Private data passed as arg0 of the callback.
  */
-	extern void
-	 en50221_app_mmi_register_subtitle_segment_callback(struct
-							    en50221_app_mmi
-							    *mmi,
-							    en50221_app_mmi_subtitle_segment_callback
-							    callback,
-							    void *arg);
+extern void en50221_app_mmi_register_subtitle_segment_callback(struct en50221_app_mmi *mmi,
+							       en50221_app_mmi_subtitle_segment_callback callback,
+							       void *arg);
 
 /**
  * Register the callback for when we receive a scene end mark request.
@@ -490,13 +415,9 @@ extern "C" {
  * @param callback The callback. Set to NULL to remove the callback completely.
  * @param arg Private data passed as arg0 of the callback.
  */
-	extern void en50221_app_mmi_register_scene_end_mark_callback(struct
-								     en50221_app_mmi
-								     *mmi,
-								     en50221_app_mmi_scene_end_mark_callback
-								     callback,
-								     void
-								     *arg);
+extern void en50221_app_mmi_register_scene_end_mark_callback(struct en50221_app_mmi *mmi,
+							     en50221_app_mmi_scene_end_mark_callback callback,
+							     void *arg);
 
 /**
  * Register the callback for when we receive a scene control request.
@@ -505,13 +426,9 @@ extern "C" {
  * @param callback The callback. Set to NULL to remove the callback completely.
  * @param arg Private data passed as arg0 of the callback.
  */
-	extern void en50221_app_mmi_register_scene_control_callback(struct
-								    en50221_app_mmi
-								    *mmi,
-								    en50221_app_mmi_scene_control_callback
-								    callback,
-								    void
-								    *arg);
+extern void en50221_app_mmi_register_scene_control_callback(struct en50221_app_mmi *mmi,
+							    en50221_app_mmi_scene_control_callback callback,
+							    void *arg);
 
 /**
  * Register the callback for when we receive a subtitle download request.
@@ -520,13 +437,9 @@ extern "C" {
  * @param callback The callback. Set to NULL to remove the callback completely.
  * @param arg Private data passed as arg0 of the callback.
  */
-	extern void
-	 en50221_app_mmi_register_subtitle_download_callback(struct
-							     en50221_app_mmi
-							     *mmi,
-							     en50221_app_mmi_subtitle_download_callback
-							     callback,
-							     void *arg);
+extern void en50221_app_mmi_register_subtitle_download_callback(struct en50221_app_mmi *mmi,
+							        en50221_app_mmi_subtitle_download_callback callback,
+							        void *arg);
 
 /**
  * Register the callback for when we receive a flush download request.
@@ -535,13 +448,9 @@ extern "C" {
  * @param callback The callback. Set to NULL to remove the callback completely.
  * @param arg Private data passed as arg0 of the callback.
  */
-	extern void en50221_app_mmi_register_flush_download_callback(struct
-								     en50221_app_mmi
-								     *mmi,
-								     en50221_app_mmi_flush_download_callback
-								     callback,
-								     void
-								     *arg);
+extern void en50221_app_mmi_register_flush_download_callback(struct en50221_app_mmi *mmi,
+							     en50221_app_mmi_flush_download_callback callback,
+							     void *arg);
 
 /**
  * Register the callback for when we receive an enq request.
@@ -550,12 +459,9 @@ extern "C" {
  * @param callback The callback. Set to NULL to remove the callback completely.
  * @param arg Private data passed as arg0 of the callback.
  */
-	extern void en50221_app_mmi_register_enq_callback(struct
-							  en50221_app_mmi
-							  *mmi,
-							  en50221_app_mmi_enq_callback
-							  callback,
-							  void *arg);
+extern void en50221_app_mmi_register_enq_callback(struct en50221_app_mmi *mmi,
+						  en50221_app_mmi_enq_callback callback,
+						  void *arg);
 
 /**
  * Register the callback for when we receive a menu request.
@@ -564,12 +470,9 @@ extern "C" {
  * @param callback The callback. Set to NULL to remove the callback completely.
  * @param arg Private data passed as arg0 of the callback.
  */
-	extern void en50221_app_mmi_register_menu_callback(struct
-							   en50221_app_mmi
-							   *mmi,
-							   en50221_app_mmi_menu_callback
-							   callback,
-							   void *arg);
+extern void en50221_app_mmi_register_menu_callback(struct en50221_app_mmi *mmi,
+						   en50221_app_mmi_menu_callback callback,
+						   void *arg);
 
 /**
  * Register the callback for when we receive a list request.
@@ -578,12 +481,9 @@ extern "C" {
  * @param callback The callback. Set to NULL to remove the callback completely.
  * @param arg Private data passed as arg0 of the callback.
  */
-	extern void en50221_app_mmi_register_list_callback(struct
-							   en50221_app_mmi
-							   *mmi,
-							   en50221_app_mmi_list_callback
-							   callback,
-							   void *arg);
+extern void en50221_app_mmi_register_list_callback(struct en50221_app_mmi *mmi,
+						   en50221_app_mmi_list_callback callback,
+						   void *arg);
 
 /**
  * Send an mmi_close to the cam.
@@ -594,9 +494,9 @@ extern "C" {
  * @param delay Delay to use if MMI_CLOSE_MMI_CMD_ID_DELAY specified.
  * @return 0 on success, -1 on failure.
  */
-	extern int en50221_app_mmi_close(struct en50221_app_mmi *mmi,
-					 uint16_t session_number,
-					 uint8_t cmd_id, uint8_t delay);
+extern int en50221_app_mmi_close(struct en50221_app_mmi *mmi,
+				 uint16_t session_number,
+				 uint8_t cmd_id, uint8_t delay);
 
 /**
  * Send a display_reply to the cam.
@@ -607,12 +507,10 @@ extern "C" {
  * @param details The details of the reply - can be NULL if the chosen reply_id does not need it.
  * @return 0 on success, -1 on failure.
  */
-	extern int en50221_app_mmi_display_reply(struct en50221_app_mmi
-						 *mmi,
-						 uint16_t session_number,
-						 uint8_t reply_id, struct
-						 en502221_app_mmi_display_reply_details
-						 *details);
+extern int en50221_app_mmi_display_reply(struct en50221_app_mmi *mmi,
+					 uint16_t session_number,
+					 uint8_t reply_id,
+					 struct en502221_app_mmi_display_reply_details *details);
 
 /**
  * Send a keypress to the cam.
@@ -622,9 +520,9 @@ extern "C" {
  * @param keycode The keycode.
  * @return 0 on success, -1 on failure.
  */
-	extern int en50221_app_mmi_keypress(struct en50221_app_mmi *mmi,
-					    uint16_t session_number,
-					    uint8_t keycode);
+extern int en50221_app_mmi_keypress(struct en50221_app_mmi *mmi,
+				    uint16_t session_number,
+				    uint8_t keycode);
 
 /**
  * Send a display message to the cam.
@@ -634,11 +532,9 @@ extern "C" {
  * @param display_message_id One of the MMI_DISPLAY_MESSAGE_ID_* values.
  * @return 0 on success, -1 on failure.
  */
-	extern int en50221_app_mmi_display_message(struct en50221_app_mmi
-						   *mmi,
-						   uint16_t session_number,
-						   uint8_t
-						   display_message_id);
+extern int en50221_app_mmi_display_message(struct en50221_app_mmi *mmi,
+					   uint16_t session_number,
+					   uint8_t display_message_id);
 
 /**
  * Send a scene done message to the cam.
@@ -650,11 +546,11 @@ extern "C" {
  * @param scene_tag Scene tag this responds to.
  * @return 0 on success, -1 on failure.
  */
-	extern int en50221_app_mmi_scene_done(struct en50221_app_mmi *mmi,
-					      uint16_t session_number,
-					      uint8_t decoder_continue,
-					      uint8_t scene_reveal,
-					      uint8_t scene_tag);
+extern int en50221_app_mmi_scene_done(struct en50221_app_mmi *mmi,
+				      uint16_t session_number,
+				      uint8_t decoder_continue,
+				      uint8_t scene_reveal,
+				      uint8_t scene_tag);
 
 /**
  * Send a download reply to the cam.
@@ -665,12 +561,10 @@ extern "C" {
  * @param download_reply_id One of the MMI_DOWNLOAD_REPLY_ID_* values.
  * @return 0 on success, -1 on failure.
  */
-	extern int en50221_app_mmi_download_reply(struct en50221_app_mmi
-						  *mmi,
-						  uint16_t session_number,
-						  uint16_t object_id,
-						  uint8_t
-						  download_reply_id);
+extern int en50221_app_mmi_download_reply(struct en50221_app_mmi *mmi,
+					  uint16_t session_number,
+					  uint16_t object_id,
+					  uint8_t download_reply_id);
 
 /**
  * Send an answ to the cam.
@@ -682,11 +576,11 @@ extern "C" {
  * @param text_count Length of text.
  * @return 0 on success, -1 on failure.
  */
-	extern int en50221_app_mmi_answ(struct en50221_app_mmi *mmi,
-					uint16_t session_number,
-					uint8_t answ_id,
-					uint8_t * text,
-					uint32_t text_count);
+extern int en50221_app_mmi_answ(struct en50221_app_mmi *mmi,
+				uint16_t session_number,
+				uint8_t answ_id,
+				uint8_t * text,
+				uint32_t text_count);
 
 /**
  * Send a menu answ to the cam.
@@ -696,9 +590,9 @@ extern "C" {
  * @param choice_ref Option chosen by user (0=>canceled).
  * @return 0 on success, -1 on failure.
  */
-	extern int en50221_app_mmi_menu_answ(struct en50221_app_mmi *mmi,
-					     uint16_t session_number,
-					     uint8_t choice_ref);
+extern int en50221_app_mmi_menu_answ(struct en50221_app_mmi *mmi,
+				     uint16_t session_number,
+				     uint8_t choice_ref);
 
 /**
  * Pass data received for this resource into it for parsing.
@@ -711,12 +605,12 @@ extern "C" {
  * @param data_length Length of data in bytes.
  * @return 0 on success, -1 on failure.
  */
-	extern int en50221_app_mmi_message(struct en50221_app_mmi *mmi,
-					   uint8_t slot_id,
-					   uint16_t session_number,
-					   uint32_t resource_id,
-					   uint8_t * data,
-					   uint32_t data_length);
+extern int en50221_app_mmi_message(struct en50221_app_mmi *mmi,
+				   uint8_t slot_id,
+				   uint16_t session_number,
+				   uint32_t resource_id,
+				   uint8_t *data,
+				   uint32_t data_length);
 
 #ifdef __cplusplus
 }

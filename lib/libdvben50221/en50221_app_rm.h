@@ -43,10 +43,9 @@ extern "C" {
  * @param session_number Session number concerned.
  * @return 0 on success, -1 on failure.
  */
-	typedef int (*en50221_app_rm_enq_callback) (void *arg,
-						    uint8_t slot_id,
-						    uint16_t
-						    session_number);
+typedef int (*en50221_app_rm_enq_callback) (void *arg,
+					    uint8_t slot_id,
+					    uint16_t session_number);
 
 /**
  * Type definition for profile_reply callback function - called when we receive
@@ -59,14 +58,11 @@ extern "C" {
  * @param resource_ids The resource ids themselves.
  * @return 0 on success, -1 on failure.
  */
-	typedef int (*en50221_app_rm_reply_callback) (void *arg,
-						      uint8_t slot_id,
-						      uint16_t
-						      session_number,
-						      uint32_t
-						      resource_id_count,
-						      uint32_t *
-						      resource_ids);
+typedef int (*en50221_app_rm_reply_callback) (void *arg,
+					      uint8_t slot_id,
+					      uint16_t session_number,
+					      uint32_t resource_id_count,
+					      uint32_t *resource_ids);
 /**
  * Type definition for profile_changed callback function - called when we receive
  * a profile_changed from a CAM.
@@ -76,17 +72,16 @@ extern "C" {
  * @param session_number Session number concerned.
  * @return 0 on success, -1 on failure.
  */
-	typedef int (*en50221_app_rm_changed_callback) (void *arg,
-							uint8_t slot_id,
-							uint16_t
-							session_number);
+typedef int (*en50221_app_rm_changed_callback) (void *arg,
+						uint8_t slot_id,
+						uint16_t session_number);
 
 
 
 /**
  * Opaque type representing a resource manager.
  */
-	struct en50221_app_rm;
+struct en50221_app_rm;
 
 /**
  * Create an instance of the resource manager.
@@ -94,16 +89,14 @@ extern "C" {
  * @param funcs Send functions to use.
  * @return Instance, or NULL on failure.
  */
-	extern struct en50221_app_rm *en50221_app_rm_create(struct
-							    en50221_app_send_functions
-							    *funcs);
+extern struct en50221_app_rm *en50221_app_rm_create(struct en50221_app_send_functions *funcs);
 
 /**
  * Destroy an instance of the resource manager.
  *
  * @param rm Instance to destroy.
  */
-	extern void en50221_app_rm_destroy(struct en50221_app_rm *rm);
+extern void en50221_app_rm_destroy(struct en50221_app_rm *rm);
 
 /**
  * Register the callback for when we receive a profile_enq from a CAM.
@@ -112,12 +105,9 @@ extern "C" {
  * @param callback The callback. Set to NULL to remove the callback completely.
  * @param arg Private data passed as arg0 of the callback.
  */
-	extern void en50221_app_rm_register_enq_callback(struct
-							 en50221_app_rm
-							 *rm,
-							 en50221_app_rm_enq_callback
-							 callback,
-							 void *arg);
+extern void en50221_app_rm_register_enq_callback(struct en50221_app_rm *rm,
+						 en50221_app_rm_enq_callback callback,
+						 void *arg);
 
 /**
  * Register the callback for when we receive a profile_reply from a CAM.
@@ -126,12 +116,9 @@ extern "C" {
  * @param callback The callback. Set to NULL to remove the callback completely.
  * @param arg Private data passed as arg0 of the callback.
  */
-	extern void en50221_app_rm_register_reply_callback(struct
-							   en50221_app_rm
-							   *rm,
-							   en50221_app_rm_reply_callback
-							   callback,
-							   void *arg);
+extern void en50221_app_rm_register_reply_callback(struct en50221_app_rm *rm,
+						   en50221_app_rm_reply_callback callback,
+						   void *arg);
 
 /**
  * Register the callback for when we receive a profile_changed from a CAM.
@@ -140,12 +127,9 @@ extern "C" {
  * @param callback The callback. Set to NULL to remove the callback completely.
  * @param arg Private data passed as arg0 of the callback.
  */
-	extern void en50221_app_rm_register_changed_callback(struct
-							     en50221_app_rm
-							     *rm,
-							     en50221_app_rm_changed_callback
-							     callback,
-							     void *arg);
+extern void en50221_app_rm_register_changed_callback(struct en50221_app_rm *rm,
+						     en50221_app_rm_changed_callback callback,
+						     void *arg);
 
 /**
  * Send a profile_enq to a CAM.
@@ -154,8 +138,7 @@ extern "C" {
  * @param session_number Session number to send it on.
  * @return 0 on success, -1 on failure.
  */
-	extern int en50221_app_rm_enq(struct en50221_app_rm *rm,
-				      uint16_t session_number);
+extern int en50221_app_rm_enq(struct en50221_app_rm *rm, uint16_t session_number);
 
 /**
  * Send a profile_reply to a CAM.
@@ -166,10 +149,10 @@ extern "C" {
  * @param resource_ids The resource IDs themselves
  * @return 0 on success, -1 on failure.
  */
-	extern int en50221_app_rm_reply(struct en50221_app_rm *rm,
-					uint16_t session_number,
-					uint32_t resource_id_count,
-					uint32_t * resource_ids);
+extern int en50221_app_rm_reply(struct en50221_app_rm *rm,
+				uint16_t session_number,
+				uint32_t resource_id_count,
+				uint32_t * resource_ids);
 
 /**
  * Send a profile_changed to a CAM.
@@ -178,8 +161,7 @@ extern "C" {
  * @param session_number Session number to send it on.
  * @return 0 on success, -1 on failure.
  */
-	extern int en50221_app_rm_changed(struct en50221_app_rm *rm,
-					  uint16_t session_number);
+extern int en50221_app_rm_changed(struct en50221_app_rm *rm, uint16_t session_number);
 
 /**
  * Pass data received for this resource into it for parsing.
@@ -192,12 +174,12 @@ extern "C" {
  * @param data_length Length of data in bytes.
  * @return 0 on success, -1 on failure.
  */
-	extern int en50221_app_rm_message(struct en50221_app_rm *rm,
-					  uint8_t slot_id,
-					  uint16_t session_number,
-					  uint32_t resource_id,
-					  uint8_t * data,
-					  uint32_t data_length);
+extern int en50221_app_rm_message(struct en50221_app_rm *rm,
+				  uint8_t slot_id,
+				  uint16_t session_number,
+				  uint32_t resource_id,
+				  uint8_t *data,
+				  uint32_t data_length);
 
 #ifdef __cplusplus
 }

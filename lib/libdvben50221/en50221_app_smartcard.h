@@ -67,13 +67,10 @@ extern "C" {
  * @param command_id One of the SMARTCARD_COMMAND_ID_* values
  * @return 0 on success, -1 on failure.
  */
-	typedef int (*en50221_app_smartcard_command_callback) (void *arg,
-							       uint8_t
-							       slot_id,
-							       uint16_t
-							       session_number,
-							       uint8_t
-							       command_id);
+typedef int (*en50221_app_smartcard_command_callback) (void *arg,
+						       uint8_t slot_id,
+						       uint16_t session_number,
+						       uint8_t command_id);
 
 /**
  * Type definition for command - called when we receive a send command.
@@ -90,25 +87,21 @@ extern "C" {
  * @param out_length Number of bytes expected.
  * @return 0 on success, -1 on failure.
  */
-	typedef int (*en50221_app_smartcard_send_callback) (void *arg,
-							    uint8_t
-							    slot_id,
-							    uint16_t
-							    session_number,
-							    uint8_t CLA,
-							    uint8_t INS,
-							    uint8_t P1,
-							    uint8_t P2,
-							    uint8_t * in,
-							    uint32_t
-							    in_length,
-							    uint32_t
-							    out_length);
+typedef int (*en50221_app_smartcard_send_callback) (void *arg,
+						    uint8_t slot_id,
+						    uint16_t session_number,
+						    uint8_t CLA,
+						    uint8_t INS,
+						    uint8_t P1,
+						    uint8_t P2,
+						    uint8_t *in,
+						    uint32_t in_length,
+						    uint32_t out_length);
 
 /**
  * Opaque type representing a smartcard resource.
  */
-	struct en50221_app_smartcard;
+struct en50221_app_smartcard;
 
 /**
  * Create an instance of the smartcard resource.
@@ -116,18 +109,15 @@ extern "C" {
  * @param funcs Send functions to use.
  * @return Instance, or NULL on failure.
  */
-	extern struct en50221_app_smartcard
-	*en50221_app_smartcard_create(struct en50221_app_send_functions
-				      *funcs);
+extern struct en50221_app_smartcard *
+	en50221_app_smartcard_create(struct en50221_app_send_functions *funcs);
 
 /**
  * Destroy an instance of the smartcard resource.
  *
  * @param smartcard Instance to destroy.
  */
-	extern void en50221_app_smartcard_destroy(struct
-						  en50221_app_smartcard
-						  *smartcard);
+extern void en50221_app_smartcard_destroy(struct en50221_app_smartcard *smartcard);
 
 /**
  * Register the callback for when we receive a comms command.
@@ -136,13 +126,9 @@ extern "C" {
  * @param callback The callback. Set to NULL to remove the callback completely.
  * @param arg Private data passed as arg0 of the callback.
  */
-	extern void en50221_app_smartcard_register_command_callback(struct
-								    en50221_app_smartcard
-								    *smartcard,
-								    en50221_app_smartcard_command_callback
-								    callback,
-								    void
-								    *arg);
+extern void en50221_app_smartcard_register_command_callback(struct en50221_app_smartcard *smartcard,
+							    en50221_app_smartcard_command_callback callback,
+							    void *arg);
 
 /**
  * Register the callback for when we receive data to send.
@@ -151,13 +137,9 @@ extern "C" {
  * @param callback The callback. Set to NULL to remove the callback completely.
  * @param arg Private data passed as arg0 of the callback.
  */
-	extern void en50221_app_smartcard_register_send_callback(struct
-								 en50221_app_smartcard
-								 *smartcard,
-								 en50221_app_smartcard_send_callback
-								 callback,
-								 void
-								 *arg);
+extern void en50221_app_smartcard_register_send_callback(struct en50221_app_smartcard *smartcard,
+							 en50221_app_smartcard_send_callback callback,
+							 void *arg);
 
 /**
  * Send a command response to the CAM.
@@ -170,16 +152,12 @@ extern "C" {
  * @param data_length Length of data to send.
  * @return 0 on success, -1 on failure.
  */
-	extern int en50221_app_smartcard_command_reply(struct
-						       en50221_app_smartcard
-						       *smartcard,
-						       uint16_t
-						       session_number,
-						       uint8_t reply_id,
-						       uint8_t status,
-						       uint8_t * data,
-						       uint32_t
-						       data_length);
+extern int en50221_app_smartcard_command_reply(struct en50221_app_smartcard *smartcard,
+					       uint16_t session_number,
+					       uint8_t reply_id,
+					       uint8_t status,
+					       uint8_t * data,
+					       uint32_t data_length);
 
 /**
  * Send data received from a smartcart to the CAM.
@@ -192,13 +170,11 @@ extern "C" {
  * @param SW2 SW2 value.
  * @return 0 on success, -1 on failure.
  */
-	extern int en50221_app_smartcard_receive(struct
-						 en50221_app_smartcard
-						 *smartcard,
-						 uint16_t session_number,
-						 uint8_t * data,
-						 uint32_t data_length,
-						 uint8_t SW1, uint8_t SW2);
+extern int en50221_app_smartcard_receive(struct en50221_app_smartcard *smartcard,
+					 uint16_t session_number,
+					 uint8_t * data,
+					 uint32_t data_length,
+					 uint8_t SW1, uint8_t SW2);
 
 /**
  * Pass data received for this resource into it for parsing.
@@ -211,14 +187,12 @@ extern "C" {
  * @param data_length Length of data in bytes.
  * @return 0 on success, -1 on failure.
  */
-	extern int en50221_app_smartcard_message(struct
-						 en50221_app_smartcard
-						 *smartcard,
-						 uint8_t slot_id,
-						 uint16_t session_number,
-						 uint32_t resource_id,
-						 uint8_t * data,
-						 uint32_t data_length);
+extern int en50221_app_smartcard_message(struct en50221_app_smartcard *smartcard,
+					 uint8_t slot_id,
+					 uint16_t session_number,
+					 uint32_t resource_id,
+					 uint8_t * data,
+					 uint32_t data_length);
 
 #ifdef __cplusplus
 }

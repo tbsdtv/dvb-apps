@@ -104,9 +104,8 @@ static int en50221_sl_alloc_new_session(struct en50221_session_layer *sl,
 
 
 
-struct en50221_session_layer *en50221_sl_create(struct
-						en50221_transport_layer
-						*tl, uint32_t max_sessions)
+struct en50221_session_layer *en50221_sl_create(struct en50221_transport_layer *tl,
+						uint32_t max_sessions)
 {
 	struct en50221_session_layer *sl = NULL;
 	uint32_t i;
@@ -127,8 +126,7 @@ struct en50221_session_layer *en50221_sl_create(struct
 	pthread_mutex_init(&sl->setcallback_lock, NULL);
 
 	// create the slots
-	sl->sessions =
-	    malloc(sizeof(struct en50221_session) * max_sessions);
+	sl->sessions = malloc(sizeof(struct en50221_session) * max_sessions);
 	if (sl->sessions == NULL)
 		goto error_exit;
 
@@ -141,12 +139,11 @@ struct en50221_session_layer *en50221_sl_create(struct
 	}
 
 	// register ourselves with the transport layer
-	en50221_tl_register_callback(tl, en50221_sl_transport_callback,
-				     sl);
+	en50221_tl_register_callback(tl, en50221_sl_transport_callback, sl);
 
 	return sl;
 
-      error_exit:
+error_exit:
 	en50221_sl_destroy(sl);
 	return NULL;
 }
@@ -158,8 +155,7 @@ void en50221_sl_destroy(struct en50221_session_layer *sl)
 	if (sl) {
 		if (sl->sessions) {
 			for (i = 0; i < sl->max_sessions; i++) {
-				pthread_mutex_destroy(&sl->sessions[i].
-						      session_lock);
+				pthread_mutex_destroy(&sl->sessions[i].session_lock);
 			}
 			free(sl->sessions);
 		}
@@ -226,14 +222,11 @@ int en50221_sl_create_session(struct en50221_session_layer *sl,
 
 	// send this command
 	if (en50221_tl_send_data(sl->tl, slot_id, connection_id, hdr, 8)) {
-		pthread_mutex_lock(&sl->sessions[session_number].
-				   session_lock);
-		if (sl->sessions[session_number].state ==
-		    S_STATE_IN_CREATION) {
+		pthread_mutex_lock(&sl->sessions[session_number].session_lock);
+		if (sl->sessions[session_number].state == S_STATE_IN_CREATION) {
 			sl->sessions[session_number].state = S_STATE_IDLE;
 		}
-		pthread_mutex_unlock(&sl->sessions[session_number].
-				     session_lock);
+		pthread_mutex_unlock(&sl->sessions[session_number].session_lock);
 
 		sl->error = en50221_tl_get_error(sl->tl);
 		return -1;
@@ -251,12 +244,9 @@ int en50221_sl_destroy_session(struct en50221_session_layer *sl,
 	}
 
 	pthread_mutex_lock(&sl->sessions[session_number].session_lock);
-	if (!
-	    (sl->sessions[session_number].
-	     state & (S_STATE_ACTIVE | S_STATE_IN_DELETION))) {
+	if (!(sl->sessions[session_number].state & (S_STATE_ACTIVE | S_STATE_IN_DELETION))) {
 		sl->error = EN50221ERR_BADSESSIONNUMBER;
-		pthread_mutex_unlock(&sl->sessions[session_number].
-				     session_lock);
+		pthread_mutex_unlock(&sl->sessions[session_number].session_lock);
 		return -1;
 	}
 	// set the state
@@ -274,14 +264,11 @@ int en50221_sl_destroy_session(struct en50221_session_layer *sl,
 	hdr[2] = session_number >> 8;
 	hdr[3] = session_number;
 	if (en50221_tl_send_data(sl->tl, slot_id, connection_id, hdr, 4)) {
-		pthread_mutex_lock(&sl->sessions[session_number].
-				   session_lock);
-		if (sl->sessions[session_number].state ==
-		    S_STATE_IN_DELETION) {
+		pthread_mutex_lock(&sl->sessions[session_number].session_lock);
+		if (sl->sessions[session_number].state == S_STATE_IN_DELETION) {
 			sl->sessions[session_number].state = S_STATE_IDLE;
 		}
-		pthread_mutex_unlock(&sl->sessions[session_number].
-				     session_lock);
+		pthread_mutex_unlock(&sl->sessions[session_number].session_lock);
 
 		sl->error = en50221_tl_get_error(sl->tl);
 		return -1;
@@ -291,7 +278,8 @@ int en50221_sl_destroy_session(struct en50221_session_layer *sl,
 }
 
 int en50221_sl_send_data(struct en50221_session_layer *sl,
-			 uint16_t session_number, uint8_t * data,
+			 uint16_t session_number,
+			 uint8_t *data,
 			 uint16_t data_length)
 {
 	if (session_number >= sl->max_sessions) {
@@ -302,8 +290,7 @@ int en50221_sl_send_data(struct en50221_session_layer *sl,
 	pthread_mutex_lock(&sl->sessions[session_number].session_lock);
 	if (sl->sessions[session_number].state != S_STATE_ACTIVE) {
 		sl->error = EN50221ERR_BADSESSIONNUMBER;
-		pthread_mutex_unlock(&sl->sessions[session_number].
-				     session_lock);
+		pthread_mutex_unlock(&sl->sessions[session_number].session_lock);
 		return -1;
 	}
 	// get essential details
@@ -331,7 +318,8 @@ int en50221_sl_send_data(struct en50221_session_layer *sl,
 }
 
 int en50221_sl_send_datav(struct en50221_session_layer *sl,
-			  uint16_t session_number, struct iovec *vector,
+			  uint16_t session_number,
+			  struct iovec *vector,
 			  int iov_count)
 {
 	if (session_number >= sl->max_sessions) {
@@ -342,14 +330,12 @@ int en50221_sl_send_datav(struct en50221_session_layer *sl,
 	pthread_mutex_lock(&sl->sessions[session_number].session_lock);
 	if (sl->sessions[session_number].state != S_STATE_ACTIVE) {
 		sl->error = EN50221ERR_BADSESSIONNUMBER;
-		pthread_mutex_unlock(&sl->sessions[session_number].
-				     session_lock);
+		pthread_mutex_unlock(&sl->sessions[session_number].session_lock);
 		return -1;
 	}
 	if (iov_count > 9) {
 		sl->error = EN50221ERR_IOVLIMIT;
-		pthread_mutex_unlock(&sl->sessions[session_number].
-				     session_lock);
+		pthread_mutex_unlock(&sl->sessions[session_number].session_lock);
 		return -1;
 	}
 	uint8_t slot_id = sl->sessions[session_number].slot_id;
@@ -370,8 +356,7 @@ int en50221_sl_send_datav(struct en50221_session_layer *sl,
 	memcpy(&out_iov[1], vector, iov_count * sizeof(struct iovec));
 
 	// send this command
-	if (en50221_tl_send_datav
-	    (sl->tl, slot_id, connection_id, out_iov, iov_count + 1)) {
+	if (en50221_tl_send_datav(sl->tl, slot_id, connection_id, out_iov, iov_count + 1)) {
 		sl->error = en50221_tl_get_error(sl->tl);
 		return -1;
 	}
@@ -380,7 +365,7 @@ int en50221_sl_send_datav(struct en50221_session_layer *sl,
 
 int en50221_sl_broadcast_data(struct en50221_session_layer *sl,
 			      int slot_id, uint32_t resource_id,
-			      uint8_t * data, uint16_t data_length)
+			      uint8_t *data, uint16_t data_length)
 {
 	uint32_t i;
 
@@ -388,24 +373,20 @@ int en50221_sl_broadcast_data(struct en50221_session_layer *sl,
 		pthread_mutex_lock(&sl->sessions[i].session_lock);
 
 		if (sl->sessions[i].state != S_STATE_ACTIVE) {
-			pthread_mutex_unlock(&sl->sessions[i].
-					     session_lock);
+			pthread_mutex_unlock(&sl->sessions[i].session_lock);
 			continue;
 		}
 		if ((slot_id != -1)
 		    && (slot_id != sl->sessions[i].slot_id)) {
-			pthread_mutex_unlock(&sl->sessions[i].
-					     session_lock);
+			pthread_mutex_unlock(&sl->sessions[i].session_lock);
 			continue;
 		}
 
 		if (sl->sessions[i].resource_id == resource_id) {
-			pthread_mutex_unlock(&sl->sessions[i].
-					     session_lock);
+			pthread_mutex_unlock(&sl->sessions[i].session_lock);
 			en50221_sl_send_data(sl, i, data, data_length);
 		} else {
-			pthread_mutex_unlock(&sl->sessions[i].
-					     session_lock);
+			pthread_mutex_unlock(&sl->sessions[i].session_lock);
 		}
 	}
 
@@ -414,9 +395,8 @@ int en50221_sl_broadcast_data(struct en50221_session_layer *sl,
 
 
 
-static void en50221_sl_handle_open_session_request(struct
-						   en50221_session_layer
-						   *sl, uint8_t * data,
+static void en50221_sl_handle_open_session_request(struct en50221_session_layer *sl,
+						   uint8_t *data,
 						   uint32_t data_length,
 						   uint8_t slot_id,
 						   uint8_t connection_id)
@@ -493,11 +473,9 @@ static void en50221_sl_handle_open_session_request(struct
 			void *cb_arg = sl->session_arg;
 			pthread_mutex_unlock(&sl->setcallback_lock);
 			if (cb) {
-				if (cb
-				    (cb_arg,
-				     S_SCALLBACK_REASON_CAMCONNECTING,
-				     slot_id, session_number,
-				     connected_resource_id)) {
+				if (cb(cb_arg, S_SCALLBACK_REASON_CAMCONNECTING,
+				       slot_id, session_number,
+				       connected_resource_id)) {
 					status = S_STATUS_CLOSE_RES_BUSY;
 				}
 			} else {
@@ -526,16 +504,13 @@ static void en50221_sl_handle_open_session_request(struct
 	// inform upper layers what happened
 	if (session_number != -1) {
 		// setup session state apppropriately from upper layer response
-		pthread_mutex_lock(&sl->sessions[session_number].
-				   session_lock);
+		pthread_mutex_lock(&sl->sessions[session_number].session_lock);
 		if (status != S_STATUS_OPEN) {
 			sl->sessions[session_number].state = S_STATE_IDLE;
 		} else {
-			sl->sessions[session_number].state =
-			    S_STATE_ACTIVE;
+			sl->sessions[session_number].state = S_STATE_ACTIVE;
 		}
-		pthread_mutex_unlock(&sl->sessions[session_number].
-				     session_lock);
+		pthread_mutex_unlock(&sl->sessions[session_number].session_lock);
 
 		// tell upper layers
 		if (sl->sessions[session_number].state == S_STATE_ACTIVE) {
@@ -563,9 +538,8 @@ static void en50221_sl_handle_open_session_request(struct
 	}
 }
 
-static void en50221_sl_handle_close_session_request(struct
-						    en50221_session_layer
-						    *sl, uint8_t * data,
+static void en50221_sl_handle_close_session_request(struct en50221_session_layer *sl,
+						    uint8_t * data,
 						    uint32_t data_length,
 						    uint8_t slot_id,
 						    uint8_t connection_id)
@@ -602,16 +576,13 @@ static void en50221_sl_handle_close_session_request(struct
 			      slot_id);
 			code = 0xF0;	// session close error
 		}
-		if (connection_id !=
-		    sl->sessions[session_number].connection_id) {
+		if (connection_id != sl->sessions[session_number].connection_id) {
 			print(LOG_LEVEL, ERROR, 1,
 			      "Received unexpected session on invalid slot %i\n",
 			      slot_id);
 			code = 0xF0;	// session close error
 		}
-		if (!
-		    (sl->sessions[session_number].
-		     state & (S_STATE_ACTIVE | S_STATE_IN_DELETION))) {
+		if (!(sl->sessions[session_number].state & (S_STATE_ACTIVE | S_STATE_IN_DELETION))) {
 			print(LOG_LEVEL, ERROR, 1,
 			      "Received unexpected session on invalid slot %i\n",
 			      slot_id);
@@ -623,8 +594,7 @@ static void en50221_sl_handle_close_session_request(struct
 			code = 0x00;	// close ok
 		}
 		resource_id = sl->sessions[session_number].resource_id;
-		pthread_mutex_unlock(&sl->sessions[session_number].
-				     session_lock);
+		pthread_mutex_unlock(&sl->sessions[session_number].session_lock);
 	}
 
 	// make up the response
@@ -654,13 +624,11 @@ static void en50221_sl_handle_close_session_request(struct
 	}
 }
 
-static void en50221_sl_handle_create_session_response(struct
-						      en50221_session_layer
-						      *sl, uint8_t * data,
+static void en50221_sl_handle_create_session_response(struct en50221_session_layer *sl,
+						      uint8_t * data,
 						      uint32_t data_length,
 						      uint8_t slot_id,
-						      uint8_t
-						      connection_id)
+						      uint8_t connection_id)
 {
 	// check
 	if (data_length < 8) {
@@ -690,24 +658,21 @@ static void en50221_sl_handle_create_session_response(struct
 		print(LOG_LEVEL, ERROR, 1,
 		      "Received unexpected session on invalid slot %i\n",
 		      slot_id);
-		pthread_mutex_unlock(&sl->sessions[session_number].
-				     session_lock);
+		pthread_mutex_unlock(&sl->sessions[session_number].session_lock);
 		return;
 	}
 	if (connection_id != sl->sessions[session_number].connection_id) {
 		print(LOG_LEVEL, ERROR, 1,
 		      "Received unexpected session on invalid slot %i\n",
 		      slot_id);
-		pthread_mutex_unlock(&sl->sessions[session_number].
-				     session_lock);
+		pthread_mutex_unlock(&sl->sessions[session_number].session_lock);
 		return;
 	}
 	if (sl->sessions[session_number].state != S_STATE_IN_CREATION) {
 		print(LOG_LEVEL, ERROR, 1,
 		      "Received unexpected session on invalid slot %i\n",
 		      slot_id);
-		pthread_mutex_unlock(&sl->sessions[session_number].
-				     session_lock);
+		pthread_mutex_unlock(&sl->sessions[session_number].session_lock);
 		return;
 	}
 	// extract status
@@ -715,8 +680,7 @@ static void en50221_sl_handle_create_session_response(struct
 		print(LOG_LEVEL, ERROR, 1,
 		      "Session creation failed 0x%02x\n", data[1]);
 		sl->sessions[session_number].state = S_STATE_IDLE;
-		pthread_mutex_unlock(&sl->sessions[session_number].
-				     session_lock);
+		pthread_mutex_unlock(&sl->sessions[session_number].session_lock);
 
 		// inform upper layers
 		pthread_mutex_lock(&sl->setcallback_lock);
@@ -744,9 +708,8 @@ static void en50221_sl_handle_create_session_response(struct
 		   sl->sessions[session_number].resource_id);
 }
 
-static void en50221_sl_handle_close_session_response(struct
-						     en50221_session_layer
-						     *sl, uint8_t * data,
+static void en50221_sl_handle_close_session_response(struct en50221_session_layer *sl,
+						     uint8_t *data,
 						     uint32_t data_length,
 						     uint8_t slot_id,
 						     uint8_t connection_id)
@@ -769,8 +732,7 @@ static void en50221_sl_handle_close_session_response(struct
 
 	// check session number is ok
 	if (session_number >= sl->max_sessions) {
-		print(LOG_LEVEL, ERROR, 1, "Received bad session id %i\n",
-		      slot_id);
+		print(LOG_LEVEL, ERROR, 1, "Received bad session id %i\n", slot_id);
 		return;
 	}
 
@@ -779,30 +741,26 @@ static void en50221_sl_handle_close_session_response(struct
 		print(LOG_LEVEL, ERROR, 1,
 		      "Received unexpected session on invalid slot %i\n",
 		      slot_id);
-		pthread_mutex_unlock(&sl->sessions[session_number].
-				     session_lock);
+		pthread_mutex_unlock(&sl->sessions[session_number].session_lock);
 		return;
 	}
 	if (connection_id != sl->sessions[session_number].connection_id) {
 		print(LOG_LEVEL, ERROR, 1,
 		      "Received unexpected session on invalid slot %i\n",
 		      slot_id);
-		pthread_mutex_unlock(&sl->sessions[session_number].
-				     session_lock);
+		pthread_mutex_unlock(&sl->sessions[session_number].session_lock);
 		return;
 	}
 	if (sl->sessions[session_number].state != S_STATE_IN_DELETION) {
 		print(LOG_LEVEL, ERROR, 1,
 		      "Received unexpected session on invalid slot %i\n",
 		      slot_id);
-		pthread_mutex_unlock(&sl->sessions[session_number].
-				     session_lock);
+		pthread_mutex_unlock(&sl->sessions[session_number].session_lock);
 		return;
 	}
 	// extract status
 	if (data[1] != 0x00) {
-		print(LOG_LEVEL, ERROR, 1, "Session close failed 0x%02x\n",
-		      data[1]);
+		print(LOG_LEVEL, ERROR, 1, "Session close failed 0x%02x\n", data[1]);
 		// just fallthrough anyway
 	}
 	// completed
@@ -810,8 +768,8 @@ static void en50221_sl_handle_close_session_response(struct
 	pthread_mutex_unlock(&sl->sessions[session_number].session_lock);
 }
 
-static void en50221_sl_handle_session_package(struct en50221_session_layer
-					      *sl, uint8_t * data,
+static void en50221_sl_handle_session_package(struct en50221_session_layer *sl,
+					      uint8_t *data,
 					      uint32_t data_length,
 					      uint8_t slot_id,
 					      uint8_t connection_id)
@@ -845,29 +803,25 @@ static void en50221_sl_handle_session_package(struct en50221_session_layer
 		print(LOG_LEVEL, ERROR, 1,
 		      "Received unexpected session on invalid slot %i\n",
 		      slot_id);
-		pthread_mutex_unlock(&sl->sessions[session_number].
-				     session_lock);
+		pthread_mutex_unlock(&sl->sessions[session_number].session_lock);
 		return;
 	}
 	if (connection_id != sl->sessions[session_number].connection_id) {
 		print(LOG_LEVEL, ERROR, 1,
 		      "Received unexpected session on invalid slot %i\n",
 		      slot_id);
-		pthread_mutex_unlock(&sl->sessions[session_number].
-				     session_lock);
+		pthread_mutex_unlock(&sl->sessions[session_number].session_lock);
 		return;
 	}
 	if (sl->sessions[session_number].state != S_STATE_ACTIVE) {
 		print(LOG_LEVEL, ERROR, 1,
 		      "Received data with bad session_number from module on slot %i\n",
 		      slot_id);
-		pthread_mutex_unlock(&sl->sessions[session_number].
-				     session_lock);
+		pthread_mutex_unlock(&sl->sessions[session_number].session_lock);
 		return;
 	}
 
-	en50221_sl_resource_callback cb =
-	    sl->sessions[session_number].callback;
+	en50221_sl_resource_callback cb = sl->sessions[session_number].callback;
 	void *cb_arg = sl->sessions[session_number].callback_arg;
 	uint32_t resource_id = sl->sessions[session_number].resource_id;
 	pthread_mutex_unlock(&sl->sessions[session_number].session_lock);
@@ -886,16 +840,13 @@ static void en50221_sl_handle_session_package(struct en50221_session_layer
 		// parse the APDU's length field
 		int length_field_len;
 		uint16_t asn_data_length;
-		if ((length_field_len =
-		     asn_1_decode(&asn_data_length, data + 3,
-				  data_length - 3)) < 0) {
+		if ((length_field_len = asn_1_decode(&asn_data_length, data + 3, data_length - 3)) < 0) {
 			print(LOG_LEVEL, ERROR, 1,
 			      "Received invalid sized session package from slot %i\n",
 			      slot_id);
 			return;
 		}
-		uint32_t apdu_length =
-		    3 + length_field_len + asn_data_length;
+		uint32_t apdu_length = 3 + length_field_len + asn_data_length;
 
 		// check there is enough data
 		if (apdu_length > data_length) {
@@ -906,8 +857,7 @@ static void en50221_sl_handle_session_package(struct en50221_session_layer
 		}
 		// pass the APDU up to the higher layers
 		if (cb)
-			cb(cb_arg, slot_id, session_number, resource_id,
-			   data, apdu_length);
+			cb(cb_arg, slot_id, session_number, resource_id, data, apdu_length);
 
 		// next!
 		data += apdu_length;
@@ -917,7 +867,7 @@ static void en50221_sl_handle_session_package(struct en50221_session_layer
 }
 
 static void en50221_sl_transport_callback(void *arg, int reason,
-					  uint8_t * data,
+					  uint8_t *data,
 					  uint32_t data_length,
 					  uint8_t slot_id,
 					  uint8_t connection_id)
@@ -933,111 +883,92 @@ static void en50221_sl_transport_callback(void *arg, int reason,
 		break;
 
 	case T_CALLBACK_REASON_CONNECTIONOPEN:
-		{
-			pthread_mutex_lock(&sl->setcallback_lock);
-			en50221_sl_session_callback cb = sl->session;
-			void *cb_arg = sl->session_arg;
-			pthread_mutex_unlock(&sl->setcallback_lock);
+	{
+		pthread_mutex_lock(&sl->setcallback_lock);
+		en50221_sl_session_callback cb = sl->session;
+		void *cb_arg = sl->session_arg;
+		pthread_mutex_unlock(&sl->setcallback_lock);
 
-			if (cb)
-				cb(cb_arg, S_SCALLBACK_REASON_TC_CONNECT,
-				   slot_id, connection_id, 0);
-			return;
-		}
+		if (cb)
+			cb(cb_arg, S_SCALLBACK_REASON_TC_CONNECT,
+				slot_id, connection_id, 0);
+		return;
+	}
 
 	case T_CALLBACK_REASON_CAMCONNECTIONOPEN:
-		{
-			pthread_mutex_lock(&sl->setcallback_lock);
-			en50221_sl_session_callback cb = sl->session;
-			void *cb_arg = sl->session_arg;
-			pthread_mutex_unlock(&sl->setcallback_lock);
+	{
+		pthread_mutex_lock(&sl->setcallback_lock);
+		en50221_sl_session_callback cb = sl->session;
+		void *cb_arg = sl->session_arg;
+		pthread_mutex_unlock(&sl->setcallback_lock);
 
-			if (cb)
-				cb(cb_arg,
-				   S_SCALLBACK_REASON_TC_CAMCONNECT,
-				   slot_id, connection_id, 0);
-			return;
-		}
+		if (cb)
+			cb(cb_arg,
+				S_SCALLBACK_REASON_TC_CAMCONNECT,
+				slot_id, connection_id, 0);
+		return;
+	}
 
 	case T_CALLBACK_REASON_CONNECTIONCLOSE:
-		{
-			pthread_mutex_lock(&sl->setcallback_lock);
-			en50221_sl_session_callback cb = sl->session;
-			void *cb_arg = sl->session_arg;
-			pthread_mutex_unlock(&sl->setcallback_lock);
+	{
+		pthread_mutex_lock(&sl->setcallback_lock);
+		en50221_sl_session_callback cb = sl->session;
+		void *cb_arg = sl->session_arg;
+		pthread_mutex_unlock(&sl->setcallback_lock);
 
-			for (i = 0; i < sl->max_sessions; i++) {
-				pthread_mutex_lock(&sl->sessions[i].
-						   session_lock);
+		for (i = 0; i < sl->max_sessions; i++) {
+			pthread_mutex_lock(&sl->sessions[i].session_lock);
 
-				if (sl->sessions[i].state == S_STATE_IDLE) {
-					pthread_mutex_unlock(&sl->
-							     sessions[i].
-							     session_lock);
-					continue;
-				}
-				if (sl->sessions[i].connection_id !=
-				    connection_id) {
-					pthread_mutex_unlock(&sl->
-							     sessions[i].
-							     session_lock);
-					continue;
-				}
-
-				sl->sessions[i].state = S_STATE_IDLE;
-
-				uint8_t _slot_id = sl->sessions[i].slot_id;
-				uint32_t resource_id =
-				    sl->sessions[i].resource_id;
-				pthread_mutex_unlock(&sl->sessions[i].
-						     session_lock);
-
-				if (cb)
-					cb(cb_arg,
-					   S_SCALLBACK_REASON_CLOSE,
-					   _slot_id, i, resource_id);
+			if (sl->sessions[i].state == S_STATE_IDLE) {
+				pthread_mutex_unlock(&sl->sessions[i].session_lock);
+				continue;
 			}
-			return;
+			if (sl->sessions[i].connection_id != connection_id) {
+				pthread_mutex_unlock(&sl->sessions[i].session_lock);
+				continue;
+			}
+
+			sl->sessions[i].state = S_STATE_IDLE;
+
+			uint8_t _slot_id = sl->sessions[i].slot_id;
+			uint32_t resource_id = sl->sessions[i].resource_id;
+			pthread_mutex_unlock(&sl->sessions[i].session_lock);
+
+			if (cb)
+				cb(cb_arg, S_SCALLBACK_REASON_CLOSE, _slot_id, i, resource_id);
 		}
+		return;
+	}
 
 	case T_CALLBACK_REASON_SLOTCLOSE:
-		{
-			pthread_mutex_lock(&sl->setcallback_lock);
-			en50221_sl_session_callback cb = sl->session;
-			void *cb_arg = sl->session_arg;
-			pthread_mutex_unlock(&sl->setcallback_lock);
+	{
+		pthread_mutex_lock(&sl->setcallback_lock);
+		en50221_sl_session_callback cb = sl->session;
+		void *cb_arg = sl->session_arg;
+		pthread_mutex_unlock(&sl->setcallback_lock);
 
-			for (i = 0; i < sl->max_sessions; i++) {
-				pthread_mutex_lock(&sl->sessions[i].
-						   session_lock);
+		for (i = 0; i < sl->max_sessions; i++) {
+			pthread_mutex_lock(&sl->sessions[i].session_lock);
 
-				if (sl->sessions[i].state == S_STATE_IDLE) {
-					pthread_mutex_unlock(&sl->
-							     sessions[i].
-							     session_lock);
-					continue;
-				}
-				if (sl->sessions[i].slot_id != slot_id) {
-					pthread_mutex_unlock(&sl->
-							     sessions[i].
-							     session_lock);
-					continue;
-				}
-				sl->sessions[i].state = S_STATE_IDLE;
-
-				uint32_t resource_id =
-				    sl->sessions[i].resource_id;
-				pthread_mutex_unlock(&sl->sessions[i].
-						     session_lock);
-
-				if (cb)
-					cb(cb_arg,
-					   S_SCALLBACK_REASON_CLOSE,
-					   slot_id, i, resource_id);
-
+			if (sl->sessions[i].state == S_STATE_IDLE) {
+				pthread_mutex_unlock(&sl->sessions[i].session_lock);
+				continue;
 			}
-			return;
+			if (sl->sessions[i].slot_id != slot_id) {
+				pthread_mutex_unlock(&sl->sessions[i].session_lock);
+				continue;
+			}
+			sl->sessions[i].state = S_STATE_IDLE;
+
+			uint32_t resource_id = sl->sessions[i].resource_id;
+			pthread_mutex_unlock(&sl->sessions[i].session_lock);
+
+			if (cb)
+				cb(cb_arg, S_SCALLBACK_REASON_CLOSE, slot_id, i, resource_id);
+
 		}
+		return;
+	}
 	}
 
 	// sanity check data length

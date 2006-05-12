@@ -50,27 +50,24 @@ struct en50221_app_lowspeed {
 	pthread_mutex_t lock;
 };
 
-static int en50221_app_lowspeed_parse_connect_on_channel(struct
-							 en50221_app_lowspeed_command
-							 *command,
-							 uint8_t * data,
+static int en50221_app_lowspeed_parse_connect_on_channel(struct en50221_app_lowspeed_command *command,
+							 uint8_t *data,
 							 int data_length);
-static int en50221_app_lowspeed_parse_command(struct en50221_app_lowspeed
-					      *lowspeed, uint8_t slot_id,
+static int en50221_app_lowspeed_parse_command(struct en50221_app_lowspeed *lowspeed,
+					      uint8_t slot_id,
 					      uint16_t session_number,
-					      uint8_t * data,
+					      uint8_t *data,
 					      uint32_t data_length);
-static int en50221_app_lowspeed_parse_send(struct en50221_app_lowspeed
-					   *lowspeed, uint8_t slot_id,
+static int en50221_app_lowspeed_parse_send(struct en50221_app_lowspeed *lowspeed,
+					   uint8_t slot_id,
 					   uint16_t session_number,
-					   int more_last, uint8_t * data,
+					   int more_last,
+					   uint8_t *data,
 					   uint32_t data_length);
 
 
 
-struct en50221_app_lowspeed *en50221_app_lowspeed_create(struct
-							 en50221_app_send_functions
-							 *funcs)
+struct en50221_app_lowspeed *en50221_app_lowspeed_create(struct en50221_app_send_functions *funcs)
 {
 	struct en50221_app_lowspeed *lowspeed = NULL;
 
@@ -105,8 +102,8 @@ void en50221_app_lowspeed_destroy(struct en50221_app_lowspeed *lowspeed)
 	free(lowspeed);
 }
 
-void en50221_app_lowspeed_clear_session(struct en50221_app_lowspeed
-					*lowspeed, uint16_t session_number)
+void en50221_app_lowspeed_clear_session(struct en50221_app_lowspeed *lowspeed,
+					uint16_t session_number)
 {
 	pthread_mutex_lock(&lowspeed->lock);
 	struct en50221_app_lowspeed_session *cur_s = lowspeed->sessions;
@@ -130,11 +127,9 @@ void en50221_app_lowspeed_clear_session(struct en50221_app_lowspeed
 	pthread_mutex_unlock(&lowspeed->lock);
 }
 
-void en50221_app_lowspeed_register_command_callback(struct
-						    en50221_app_lowspeed
-						    *lowspeed,
-						    en50221_app_lowspeed_command_callback
-						    callback, void *arg)
+void en50221_app_lowspeed_register_command_callback(struct en50221_app_lowspeed *lowspeed,
+						    en50221_app_lowspeed_command_callback callback,
+						    void *arg)
 {
 	pthread_mutex_lock(&lowspeed->lock);
 	lowspeed->command_callback = callback;
@@ -142,11 +137,9 @@ void en50221_app_lowspeed_register_command_callback(struct
 	pthread_mutex_unlock(&lowspeed->lock);
 }
 
-void en50221_app_lowspeed_register_send_callback(struct
-						 en50221_app_lowspeed
-						 *lowspeed,
-						 en50221_app_lowspeed_send_callback
-						 callback, void *arg)
+void en50221_app_lowspeed_register_send_callback(struct en50221_app_lowspeed *lowspeed,
+						 en50221_app_lowspeed_send_callback callback,
+						 void *arg)
 {
 	pthread_mutex_lock(&lowspeed->lock);
 	lowspeed->send_callback = callback;
@@ -154,8 +147,7 @@ void en50221_app_lowspeed_register_send_callback(struct
 	pthread_mutex_unlock(&lowspeed->lock);
 }
 
-int en50221_app_lowspeed_send_comms_reply(struct en50221_app_lowspeed
-					  *lowspeed,
+int en50221_app_lowspeed_send_comms_reply(struct en50221_app_lowspeed *lowspeed,
 					  uint16_t session_number,
 					  uint8_t comms_reply_id,
 					  uint8_t return_value)
@@ -172,8 +164,7 @@ int en50221_app_lowspeed_send_comms_reply(struct en50221_app_lowspeed
 					  session_number, data, 6);
 }
 
-int en50221_app_lowspeed_send_comms_data(struct en50221_app_lowspeed
-					 *lowspeed,
+int en50221_app_lowspeed_send_comms_data(struct en50221_app_lowspeed *lowspeed,
 					 uint16_t session_number,
 					 uint8_t phase_id,
 					 uint32_t tx_data_length,
@@ -192,8 +183,7 @@ int en50221_app_lowspeed_send_comms_data(struct en50221_app_lowspeed
 
 	// encode the length field
 	int length_field_len;
-	if ((length_field_len =
-	     asn_1_encode(tx_data_length + 1, buf + 3, 3)) < 0) {
+	if ((length_field_len = asn_1_encode(tx_data_length + 1, buf + 3, 3)) < 0) {
 		return -1;
 	}
 	// the phase_id
@@ -251,10 +241,8 @@ int en50221_app_lowspeed_message(struct en50221_app_lowspeed *lowspeed,
 
 
 
-static int en50221_app_lowspeed_parse_connect_on_channel(struct
-							 en50221_app_lowspeed_command
-							 *command,
-							 uint8_t * data,
+static int en50221_app_lowspeed_parse_connect_on_channel(struct en50221_app_lowspeed_command *command,
+							 uint8_t *data,
 							 int data_length)
 {
 	if (data_length < 3) {
@@ -274,8 +262,7 @@ static int en50221_app_lowspeed_parse_connect_on_channel(struct
 	// parse the descriptor-length-field
 	uint16_t asn_data_length;
 	int length_field_len;
-	if ((length_field_len =
-	     asn_1_decode(&asn_data_length, data, data_length)) < 0) {
+	if ((length_field_len = asn_1_decode(&asn_data_length, data, data_length)) < 0) {
 		print(LOG_LEVEL, ERROR, 1, "ASN.1 decode error\n");
 		return -1;
 	}
@@ -300,45 +287,43 @@ static int en50221_app_lowspeed_parse_connect_on_channel(struct
 	// deal with the descriptor itself
 	switch (command->u.connect_on_channel.descriptor_type) {
 	case CONNECTION_DESCRIPTOR_TYPE_TELEPHONE:
-		{
-			// get the raw descriptor and validate length
-			struct descriptor *d = (struct descriptor *) data;
-			if (asn_data_length < 2) {
-				print(LOG_LEVEL, ERROR, 1,
-				      "Received short data\n");
-				return -1;
-			}
-			if (asn_data_length != (2 + d->len)) {
-				print(LOG_LEVEL, ERROR, 1,
-				      "Received short data\n");
-				return -1;
-			}
-			if (d->tag != dtag_dvb_telephone) {
-				print(LOG_LEVEL, ERROR, 1,
-				      "Received invalid telephone descriptor\n");
-				return -1;
-			}
-			// parse the telephone descriptor
-			command->u.connect_on_channel.descriptor.
-			    telephone = dvb_telephone_descriptor_codec(d);
-			if (command->u.connect_on_channel.descriptor.
-			    telephone == NULL) {
-				print(LOG_LEVEL, ERROR, 1,
-				      "Received invalid telephone descriptor\n");
-				return -1;
-			}
-			data += 2 + d->len;
-			data_length -= 2 + d->len;
-			break;
+	{
+		// get the raw descriptor and validate length
+		struct descriptor *d = (struct descriptor *) data;
+		if (asn_data_length < 2) {
+			print(LOG_LEVEL, ERROR, 1,
+				"Received short data\n");
+			return -1;
 		}
+		if (asn_data_length != (2 + d->len)) {
+			print(LOG_LEVEL, ERROR, 1,
+				"Received short data\n");
+			return -1;
+		}
+		if (d->tag != dtag_dvb_telephone) {
+			print(LOG_LEVEL, ERROR, 1,
+				"Received invalid telephone descriptor\n");
+			return -1;
+		}
+		// parse the telephone descriptor
+		command->u.connect_on_channel.descriptor.telephone = dvb_telephone_descriptor_codec(d);
+		if (command->u.connect_on_channel.descriptor.telephone == NULL) {
+			print(LOG_LEVEL, ERROR, 1,
+				"Received invalid telephone descriptor\n");
+			return -1;
+		}
+		data += 2 + d->len;
+		data_length -= 2 + d->len;
+		break;
+	}
+
 	case CONNECTION_DESCRIPTOR_TYPE_CABLE:
 		if (asn_data_length != 1) {
 			print(LOG_LEVEL, ERROR, 1,
 			      "Received short data\n");
 			return -1;
 		}
-		command->u.connect_on_channel.descriptor.cable_channel_id =
-		    data[0];
+		command->u.connect_on_channel.descriptor.cable_channel_id = data[0];
 		data++;
 		data_length--;
 		break;
@@ -361,8 +346,8 @@ static int en50221_app_lowspeed_parse_connect_on_channel(struct
 	return 0;
 }
 
-static int en50221_app_lowspeed_parse_command(struct en50221_app_lowspeed
-					      *lowspeed, uint8_t slot_id,
+static int en50221_app_lowspeed_parse_command(struct en50221_app_lowspeed *lowspeed,
+					      uint8_t slot_id,
 					      uint16_t session_number,
 					      uint8_t * data,
 					      uint32_t data_length)
@@ -370,8 +355,7 @@ static int en50221_app_lowspeed_parse_command(struct en50221_app_lowspeed
 	// first of all, decode the length field
 	uint16_t asn_data_length;
 	int length_field_len;
-	if ((length_field_len =
-	     asn_1_decode(&asn_data_length, data, data_length)) < 0) {
+	if ((length_field_len = asn_1_decode(&asn_data_length, data, data_length)) < 0) {
 		print(LOG_LEVEL, ERROR, 1, "ASN.1 decode error\n");
 		return -1;
 	}
@@ -430,8 +414,7 @@ static int en50221_app_lowspeed_parse_command(struct en50221_app_lowspeed
 
 	// tell the app
 	pthread_mutex_lock(&lowspeed->lock);
-	en50221_app_lowspeed_command_callback cb =
-	    lowspeed->command_callback;
+	en50221_app_lowspeed_command_callback cb = lowspeed->command_callback;
 	void *cb_arg = lowspeed->command_callback_arg;
 	pthread_mutex_unlock(&lowspeed->lock);
 	if (cb) {
@@ -441,17 +424,17 @@ static int en50221_app_lowspeed_parse_command(struct en50221_app_lowspeed
 	return 0;
 }
 
-static int en50221_app_lowspeed_parse_send(struct en50221_app_lowspeed
-					   *lowspeed, uint8_t slot_id,
+static int en50221_app_lowspeed_parse_send(struct en50221_app_lowspeed *lowspeed,
+					   uint8_t slot_id,
 					   uint16_t session_number,
-					   int more_last, uint8_t * data,
+					   int more_last,
+					   uint8_t *data,
 					   uint32_t data_length)
 {
 	// first of all, decode the length field
 	uint16_t asn_data_length;
 	int length_field_len;
-	if ((length_field_len =
-	     asn_1_decode(&asn_data_length, data, data_length)) < 0) {
+	if ((length_field_len = asn_1_decode(&asn_data_length, data, data_length)) < 0) {
 		print(LOG_LEVEL, ERROR, 1, "ASN.1 decode error\n");
 		return -1;
 	}
@@ -476,9 +459,7 @@ static int en50221_app_lowspeed_parse_send(struct en50221_app_lowspeed
 	if (!more_last) {
 		// if there was no previous session, create one
 		if (cur_s == NULL) {
-			cur_s =
-			    malloc(sizeof
-				   (struct en50221_app_lowspeed_session));
+			cur_s = malloc(sizeof(struct en50221_app_lowspeed_session));
 			if (cur_s == NULL) {
 				print(LOG_LEVEL, ERROR, 1,
 				      "Ran out of memory\n");
@@ -493,15 +474,13 @@ static int en50221_app_lowspeed_parse_send(struct en50221_app_lowspeed
 		}
 		// append the data
 		uint8_t *new_data = realloc(cur_s->block_chain,
-					    cur_s->block_length +
-					    asn_data_length);
+					    cur_s->block_length + asn_data_length);
 		if (new_data == NULL) {
 			print(LOG_LEVEL, ERROR, 1, "Ran out of memory\n");
 			pthread_mutex_unlock(&lowspeed->lock);
 			return -1;
 		}
-		memcpy(new_data + cur_s->block_length, data,
-		       asn_data_length);
+		memcpy(new_data + cur_s->block_length, data, asn_data_length);
 		cur_s->block_chain = new_data;
 		cur_s->block_length += asn_data_length;
 
@@ -514,15 +493,13 @@ static int en50221_app_lowspeed_parse_send(struct en50221_app_lowspeed
 	if (cur_s != NULL) {
 		// we have a preceding fragment - need to append
 		uint8_t *new_data = realloc(cur_s->block_chain,
-					    cur_s->block_length +
-					    asn_data_length);
+					    cur_s->block_length + asn_data_length);
 		if (new_data == NULL) {
 			print(LOG_LEVEL, ERROR, 1, "Ran out of memory\n");
 			pthread_mutex_unlock(&lowspeed->lock);
 			return -1;
 		}
-		memcpy(new_data + cur_s->block_length, data,
-		       asn_data_length);
+		memcpy(new_data + cur_s->block_length, data, asn_data_length);
 		asn_data_length = cur_s->block_length + asn_data_length;
 		data = new_data;
 		cur_s->block_chain = NULL;
@@ -547,8 +524,7 @@ static int en50221_app_lowspeed_parse_send(struct en50221_app_lowspeed
 	int cbstatus = 0;
 	if (cb) {
 		cbstatus =
-		    cb(cb_arg, slot_id, session_number, phase_id, data + 1,
-		       asn_data_length - 1);
+		    cb(cb_arg, slot_id, session_number, phase_id, data + 1, asn_data_length - 1);
 	}
 	// done
 	if (do_free)

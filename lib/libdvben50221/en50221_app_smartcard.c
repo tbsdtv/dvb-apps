@@ -40,22 +40,20 @@ struct en50221_app_smartcard {
 	pthread_mutex_t lock;
 };
 
-static int en50221_app_smartcard_parse_command(struct en50221_app_smartcard
-					       *smartcard, uint8_t slot_id,
+static int en50221_app_smartcard_parse_command(struct en50221_app_smartcard *smartcard,
+					       uint8_t slot_id,
 					       uint16_t session_number,
 					       uint8_t * data,
 					       uint32_t data_length);
 
-static int en50221_app_smartcard_parse_send(struct en50221_app_smartcard
-					    *smartcard, uint8_t slot_id,
+static int en50221_app_smartcard_parse_send(struct en50221_app_smartcard *smartcard,
+					    uint8_t slot_id,
 					    uint16_t session_number,
 					    uint8_t * data,
 					    uint32_t data_length);
 
 
-struct en50221_app_smartcard *en50221_app_smartcard_create(struct
-							   en50221_app_send_functions
-							   *funcs)
+struct en50221_app_smartcard *en50221_app_smartcard_create(struct en50221_app_send_functions *funcs)
 {
 	struct en50221_app_smartcard *smartcard = NULL;
 
@@ -80,11 +78,8 @@ void en50221_app_smartcard_destroy(struct en50221_app_smartcard *smartcard)
 	free(smartcard);
 }
 
-void en50221_app_smartcard_register_command_callback(struct
-						     en50221_app_smartcard
-						     *smartcard,
-						     en50221_app_smartcard_command_callback
-						     callback, void *arg)
+void en50221_app_smartcard_register_command_callback(struct en50221_app_smartcard *smartcard,
+						     en50221_app_smartcard_command_callback callback, void *arg)
 {
 	pthread_mutex_lock(&smartcard->lock);
 	smartcard->command_callback = callback;
@@ -92,11 +87,8 @@ void en50221_app_smartcard_register_command_callback(struct
 	pthread_mutex_unlock(&smartcard->lock);
 }
 
-void en50221_app_smartcard_register_send_callback(struct
-						  en50221_app_smartcard
-						  *smartcard,
-						  en50221_app_smartcard_send_callback
-						  callback, void *arg)
+void en50221_app_smartcard_register_send_callback(struct en50221_app_smartcard *smartcard,
+						  en50221_app_smartcard_send_callback callback, void *arg)
 {
 	pthread_mutex_lock(&smartcard->lock);
 	smartcard->send_callback = callback;
@@ -104,11 +96,10 @@ void en50221_app_smartcard_register_send_callback(struct
 	pthread_mutex_unlock(&smartcard->lock);
 }
 
-int en50221_app_smartcard_command_reply(struct en50221_app_smartcard
-					*smartcard,
+int en50221_app_smartcard_command_reply(struct en50221_app_smartcard *smartcard,
 					uint16_t session_number,
 					uint8_t reply_id, uint8_t status,
-					uint8_t * data,
+					uint8_t *data,
 					uint32_t data_length)
 {
 	uint8_t hdr[10];
@@ -124,8 +115,7 @@ int en50221_app_smartcard_command_reply(struct en50221_app_smartcard
 	if (reply_id == SMARTCARD_REPLY_ID_ANSW_TO_RESET) {
 		// encode the length field
 		int length_field_len;
-		if ((length_field_len =
-		     asn_1_encode(data_length + 2, data + 3, 3)) < 0) {
+		if ((length_field_len = asn_1_encode(data_length + 2, data + 3, 3)) < 0) {
 			return -1;
 		}
 		// the rest of the header
@@ -147,14 +137,12 @@ int en50221_app_smartcard_command_reply(struct en50221_app_smartcard
 		iov_count = 1;
 	}
 
-	return smartcard->funcs->send_datav(smartcard->funcs->arg,
-					    session_number, iovec,
-					    iov_count);
+	return smartcard->funcs->send_datav(smartcard->funcs->arg, session_number, iovec, iov_count);
 }
 
 int en50221_app_smartcard_receive(struct en50221_app_smartcard *smartcard,
 				  uint16_t session_number,
-				  uint8_t * data,
+				  uint8_t *data,
 				  uint32_t data_length,
 				  uint8_t SW1, uint8_t SW2)
 {
@@ -168,8 +156,7 @@ int en50221_app_smartcard_receive(struct en50221_app_smartcard *smartcard,
 
 	// encode the length field
 	int length_field_len;
-	if ((length_field_len =
-	     asn_1_encode(data_length + 2, buf + 3, 3)) < 0) {
+	if ((length_field_len = asn_1_encode(data_length + 2, buf + 3, 3)) < 0) {
 		return -1;
 	}
 	// set up the trailer
@@ -194,7 +181,7 @@ int en50221_app_smartcard_message(struct en50221_app_smartcard *smartcard,
 				  uint8_t slot_id,
 				  uint16_t session_number,
 				  uint32_t resource_id,
-				  uint8_t * data, uint32_t data_length)
+				  uint8_t *data, uint32_t data_length)
 {
 	(void) resource_id;
 
@@ -211,8 +198,7 @@ int en50221_app_smartcard_message(struct en50221_app_smartcard *smartcard,
 							   slot_id,
 							   session_number,
 							   data + 3,
-							   data_length -
-							   3);
+							   data_length - 3);
 	case TAG_SMARTCARD_SEND:
 		return en50221_app_smartcard_parse_send(smartcard, slot_id,
 							session_number,
@@ -230,8 +216,8 @@ int en50221_app_smartcard_message(struct en50221_app_smartcard *smartcard,
 
 
 
-static int en50221_app_smartcard_parse_command(struct en50221_app_smartcard
-					       *smartcard, uint8_t slot_id,
+static int en50221_app_smartcard_parse_command(struct en50221_app_smartcard *smartcard,
+					       uint8_t slot_id,
 					       uint16_t session_number,
 					       uint8_t * data,
 					       uint32_t data_length)
@@ -248,8 +234,7 @@ static int en50221_app_smartcard_parse_command(struct en50221_app_smartcard
 
 	// tell the app
 	pthread_mutex_lock(&smartcard->lock);
-	en50221_app_smartcard_command_callback cb =
-	    smartcard->command_callback;
+	en50221_app_smartcard_command_callback cb = smartcard->command_callback;
 	void *cb_arg = smartcard->command_callback_arg;
 	pthread_mutex_unlock(&smartcard->lock);
 	if (cb) {
@@ -258,8 +243,8 @@ static int en50221_app_smartcard_parse_command(struct en50221_app_smartcard
 	return 0;
 }
 
-static int en50221_app_smartcard_parse_send(struct en50221_app_smartcard
-					    *smartcard, uint8_t slot_id,
+static int en50221_app_smartcard_parse_send(struct en50221_app_smartcard *smartcard,
+					    uint8_t slot_id,
 					    uint16_t session_number,
 					    uint8_t * data,
 					    uint32_t data_length)
@@ -267,8 +252,7 @@ static int en50221_app_smartcard_parse_send(struct en50221_app_smartcard
 	// first of all, decode the length field
 	uint16_t asn_data_length;
 	int length_field_len;
-	if ((length_field_len =
-	     asn_1_decode(&asn_data_length, data, data_length)) < 0) {
+	if ((length_field_len = asn_1_decode(&asn_data_length, data, data_length)) < 0) {
 		print(LOG_LEVEL, ERROR, 1, "ASN.1 decode error\n");
 		return -1;
 	}

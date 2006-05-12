@@ -30,10 +30,10 @@ extern "C" {
 #include <stdlib.h>
 #include <stdint.h>
 
-	int asn_1_decode(uint16_t * length, uint8_t * asn_1_array,
-			 uint32_t asn_1_array_len);
-	int asn_1_encode(uint16_t length, uint8_t * asn_1_array,
-			 uint32_t asn_1_array_len);
+int asn_1_decode(uint16_t * length, uint8_t * asn_1_array,
+		 uint32_t asn_1_array_len);
+int asn_1_encode(uint16_t length, uint8_t * asn_1_array,
+		 uint32_t asn_1_array_len);
 
 #ifdef __cplusplus
 }

@@ -24,9 +24,8 @@
 #include "en50221_app_utils.h"
 
 struct en50221_app_public_resource_id
-*en50221_app_decode_public_resource_id(struct
-				       en50221_app_public_resource_id
-				       *idf, uint32_t resource_id)
+	*en50221_app_decode_public_resource_id(struct en50221_app_public_resource_id *idf,
+					       uint32_t resource_id)
 {
 	// reject private resources
 	if ((resource_id & 0xc0000000) == 0xc0000000)

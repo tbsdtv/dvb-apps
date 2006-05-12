@@ -47,16 +47,13 @@ extern "C" {
  * @param service_id Service id requested by CAM.
  * @return 0 on success, -1 on failure.
  */
-	typedef int (*en50221_app_dvb_tune_callback) (void *arg,
-						      uint8_t slot_id,
-						      uint16_t
-						      session_number,
-						      uint16_t network_id,
-						      uint32_t
-						      original_network_id,
-						      uint16_t
-						      transport_stream_id,
-						      uint16_t service_id);
+typedef int (*en50221_app_dvb_tune_callback) (void *arg,
+					      uint8_t slot_id,
+					      uint16_t session_number,
+					      uint16_t network_id,
+					      uint32_t original_network_id,
+					      uint16_t transport_stream_id,
+					      uint16_t service_id);
 
 /**
  * Type definition for replace - called when we receive a replace request from a CAM.
@@ -69,16 +66,12 @@ extern "C" {
  * @param replacement_pid PID to replace it with.
  * @return 0 on success, -1 on failure.
  */
-	typedef int (*en50221_app_dvb_replace_callback) (void *arg,
-							 uint8_t slot_id,
-							 uint16_t
-							 session_number,
-							 uint8_t
-							 replacement_ref,
-							 uint16_t
-							 replaced_pid,
-							 uint16_t
-							 replacement_pid);
+typedef int (*en50221_app_dvb_replace_callback) (void *arg,
+						 uint8_t slot_id,
+						 uint16_t session_number,
+						 uint8_t replacement_ref,
+						 uint16_t replaced_pid,
+						 uint16_t replacement_pid);
 
 
 /**
@@ -90,19 +83,16 @@ extern "C" {
  * @param replacement_ref Replacement ref.
  * @return 0 on success, -1 on failure.
  */
-	typedef int (*en50221_app_dvb_clear_replace_callback) (void *arg,
-							       uint8_t
-							       slot_id,
-							       uint16_t
-							       session_number,
-							       uint8_t
-							       replacement_ref);
+typedef int (*en50221_app_dvb_clear_replace_callback) (void *arg,
+						       uint8_t slot_id,
+						       uint16_t session_number,
+						       uint8_t replacement_ref);
 
 
 /**
  * Opaque type representing a dvb resource.
  */
-	struct en50221_app_dvb;
+struct en50221_app_dvb;
 
 /**
  * Create an instance of the dvb resource.
@@ -110,16 +100,14 @@ extern "C" {
  * @param funcs Send functions to use.
  * @return Instance, or NULL on failure.
  */
-	extern struct en50221_app_dvb *en50221_app_dvb_create(struct
-							      en50221_app_send_functions
-							      *funcs);
+extern struct en50221_app_dvb *en50221_app_dvb_create(struct en50221_app_send_functions *funcs);
 
 /**
  * Destroy an instance of the dvb resource.
  *
  * @param dvb Instance to destroy.
  */
-	extern void en50221_app_dvb_destroy(struct en50221_app_dvb *dvb);
+extern void en50221_app_dvb_destroy(struct en50221_app_dvb *dvb);
 
 /**
  * Register the callback for when we receive a tune request.
@@ -128,12 +116,9 @@ extern "C" {
  * @param callback The callback. Set to NULL to remove the callback completely.
  * @param arg Private data passed as arg0 of the callback.
  */
-	extern void en50221_app_dvb_register_tune_callback(struct
-							   en50221_app_dvb
-							   *dvb,
-							   en50221_app_dvb_tune_callback
-							   callback,
-							   void *arg);
+extern void en50221_app_dvb_register_tune_callback(struct en50221_app_dvb *dvb,
+						   en50221_app_dvb_tune_callback callback,
+						   void *arg);
 
 /**
  * Register the callback for when we receive a replace request.
@@ -142,12 +127,9 @@ extern "C" {
  * @param callback The callback. Set to NULL to remove the callback completely.
  * @param arg Private data passed as arg0 of the callback.
  */
-	extern void en50221_app_dvb_register_replace_callback(struct
-							      en50221_app_dvb
-							      *dvb,
-							      en50221_app_dvb_replace_callback
-							      callback,
-							      void *arg);
+extern void en50221_app_dvb_register_replace_callback(struct en50221_app_dvb *dvb,
+						      en50221_app_dvb_replace_callback callback,
+						      void *arg);
 
 /**
  * Register the callback for when we receive a clear replace request.
@@ -156,13 +138,9 @@ extern "C" {
  * @param callback The callback. Set to NULL to remove the callback completely.
  * @param arg Private data passed as arg0 of the callback.
  */
-	extern void en50221_app_dvb_register_clear_replace_callback(struct
-								    en50221_app_dvb
-								    *dvb,
-								    en50221_app_dvb_clear_replace_callback
-								    callback,
-								    void
-								    *arg);
+extern void en50221_app_dvb_register_clear_replace_callback(struct en50221_app_dvb *dvb,
+							    en50221_app_dvb_clear_replace_callback callback,
+							    void *arg);
 
 /**
  * Send an ask release request to the CAM.
@@ -171,8 +149,8 @@ extern "C" {
  * @param session_number Session number to send it on.
  * @return 0 on success, -1 on failure.
  */
-	extern int en50221_app_dvb_ask_release(struct en50221_app_dvb *dvb,
-					       uint16_t session_number);
+extern int en50221_app_dvb_ask_release(struct en50221_app_dvb *dvb,
+				       uint16_t session_number);
 
 /**
  * Pass data received for this resource into it for parsing.
@@ -185,12 +163,12 @@ extern "C" {
  * @param data_length Length of data in bytes.
  * @return 0 on success, -1 on failure.
  */
-	extern int en50221_app_dvb_message(struct en50221_app_dvb *dvb,
-					   uint8_t slot_id,
-					   uint16_t session_number,
-					   uint32_t resource_id,
-					   uint8_t * data,
-					   uint32_t data_length);
+extern int en50221_app_dvb_message(struct en50221_app_dvb *dvb,
+				   uint8_t slot_id,
+				   uint16_t session_number,
+				   uint32_t resource_id,
+				   uint8_t *data,
+				   uint32_t data_length);
 
 #ifdef __cplusplus
 }

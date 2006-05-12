@@ -44,9 +44,7 @@ static int en50221_app_auth_parse_request(struct en50221_app_auth *private,
 					  uint32_t data_length);
 
 
-struct en50221_app_auth *en50221_app_auth_create(struct
-						 en50221_app_send_functions
-						 *funcs)
+struct en50221_app_auth *en50221_app_auth_create(struct en50221_app_send_functions *funcs)
 {
 	struct en50221_app_auth *auth = NULL;
 
@@ -66,17 +64,12 @@ struct en50221_app_auth *en50221_app_auth_create(struct
 
 void en50221_app_auth_destroy(struct en50221_app_auth *auth)
 {
-	struct en50221_app_auth *private =
-	    (struct en50221_app_auth *) auth;
-
 	pthread_mutex_destroy(&auth->lock);
-	free(private);
+	free(auth);
 }
 
-void en50221_app_auth_register_request_callback(struct en50221_app_auth
-						*auth,
-						en50221_app_auth_request_callback
-						callback, void *arg)
+void en50221_app_auth_register_request_callback(struct en50221_app_auth *auth,
+						en50221_app_auth_request_callback callback, void *arg)
 {
 	pthread_mutex_lock(&auth->lock);
 	auth->callback = callback;
@@ -98,8 +91,7 @@ int en50221_app_auth_send(struct en50221_app_auth *auth,
 
 	// encode the length field
 	int length_field_len;
-	if ((length_field_len =
-	     asn_1_encode(auth_data_length + 2, buf + 3, 3)) < 0) {
+	if ((length_field_len = asn_1_encode(auth_data_length + 2, buf + 3, 3)) < 0) {
 		return -1;
 	}
 	// the phase_id
@@ -156,8 +148,7 @@ static int en50221_app_auth_parse_request(struct en50221_app_auth *auth,
 	// first of all, decode the length field
 	uint16_t asn_data_length;
 	int length_field_len;
-	if ((length_field_len =
-	     asn_1_decode(&asn_data_length, data, data_length)) < 0) {
+	if ((length_field_len = asn_1_decode(&asn_data_length, data, data_length)) < 0) {
 		print(LOG_LEVEL, ERROR, 1, "ASN.1 decode error\n");
 		return -1;
 	}

@@ -69,8 +69,7 @@ struct en50221_app_mmi {
 	en50221_app_mmi_scene_control_callback scenecontrolcallback;
 	void *scenecontrolcallback_arg;
 
-	 en50221_app_mmi_subtitle_download_callback
-	    subtitledownloadcallback;
+	en50221_app_mmi_subtitle_download_callback subtitledownloadcallback;
 	void *subtitledownloadcallback_arg;
 
 	en50221_app_mmi_flush_download_callback flushdownloadcallback;
@@ -119,8 +118,8 @@ static int en50221_app_mmi_parse_subtitle(struct en50221_app_mmi *mmi,
 					  uint32_t tag_id, int more_last,
 					  uint8_t * data,
 					  uint32_t data_length);
-static int en50221_app_mmi_parse_scene_end_mark(struct en50221_app_mmi
-						*mmi, uint8_t slot_id,
+static int en50221_app_mmi_parse_scene_end_mark(struct en50221_app_mmi *mmi,
+						uint8_t slot_id,
 						uint16_t session_number,
 						uint8_t * data,
 						uint32_t data_length);
@@ -135,8 +134,8 @@ static int en50221_app_mmi_parse_subtitle(struct en50221_app_mmi *mmi,
 					  uint32_t tag_id, int more_last,
 					  uint8_t * data,
 					  uint32_t data_length);
-static int en50221_app_mmi_parse_flush_download(struct en50221_app_mmi
-						*mmi, uint8_t slot_id,
+static int en50221_app_mmi_parse_flush_download(struct en50221_app_mmi *mmi,
+						uint8_t slot_id,
 						uint16_t session_number,
 						uint8_t * data,
 						uint32_t data_length);
@@ -155,9 +154,7 @@ static int en50221_app_mmi_defragment_text(uint8_t * data,
 
 
 
-struct en50221_app_mmi *en50221_app_mmi_create(struct
-					       en50221_app_send_functions
-					       *funcs)
+struct en50221_app_mmi *en50221_app_mmi_create(struct en50221_app_send_functions *funcs)
 {
 	struct en50221_app_mmi *mmi = NULL;
 
@@ -239,8 +236,8 @@ void en50221_app_mmi_clear_session(struct en50221_app_mmi *mmi,
 }
 
 void en50221_app_mmi_register_close_callback(struct en50221_app_mmi *mmi,
-					     en50221_app_mmi_close_callback
-					     callback, void *arg)
+					     en50221_app_mmi_close_callback callback,
+					     void *arg)
 {
 	pthread_mutex_lock(&mmi->lock);
 	mmi->closecallback = callback;
@@ -248,11 +245,9 @@ void en50221_app_mmi_register_close_callback(struct en50221_app_mmi *mmi,
 	pthread_mutex_unlock(&mmi->lock);
 }
 
-void en50221_app_mmi_register_display_control_callback(struct
-						       en50221_app_mmi
-						       *mmi,
-						       en50221_app_mmi_display_control_callback
-						       callback, void *arg)
+void en50221_app_mmi_register_display_control_callback(struct en50221_app_mmi *mmi,
+						       en50221_app_mmi_display_control_callback callback,
+						       void *arg)
 {
 	pthread_mutex_lock(&mmi->lock);
 	mmi->displaycontrolcallback = callback;
@@ -260,10 +255,9 @@ void en50221_app_mmi_register_display_control_callback(struct
 	pthread_mutex_unlock(&mmi->lock);
 }
 
-void en50221_app_mmi_register_keypad_control_callback(struct
-						      en50221_app_mmi *mmi,
-						      en50221_app_mmi_keypad_control_callback
-						      callback, void *arg)
+void en50221_app_mmi_register_keypad_control_callback(struct en50221_app_mmi *mmi,
+						      en50221_app_mmi_keypad_control_callback callback,
+						      void *arg)
 {
 	pthread_mutex_lock(&mmi->lock);
 	mmi->keypadcontrolcallback = callback;
@@ -271,11 +265,8 @@ void en50221_app_mmi_register_keypad_control_callback(struct
 	pthread_mutex_unlock(&mmi->lock);
 }
 
-void en50221_app_mmi_register_subtitle_segment_callback(struct
-							en50221_app_mmi
-							*mmi,
-							en50221_app_mmi_subtitle_segment_callback
-							callback,
+void en50221_app_mmi_register_subtitle_segment_callback(struct en50221_app_mmi *mmi,
+							en50221_app_mmi_subtitle_segment_callback callback,
 							void *arg)
 {
 	pthread_mutex_lock(&mmi->lock);
@@ -284,10 +275,8 @@ void en50221_app_mmi_register_subtitle_segment_callback(struct
 	pthread_mutex_unlock(&mmi->lock);
 }
 
-void en50221_app_mmi_register_scene_end_mark_callback(struct
-						      en50221_app_mmi *mmi,
-						      en50221_app_mmi_scene_end_mark_callback
-						      callback, void *arg)
+void en50221_app_mmi_register_scene_end_mark_callback(struct en50221_app_mmi *mmi,
+						      en50221_app_mmi_scene_end_mark_callback callback, void *arg)
 {
 	pthread_mutex_lock(&mmi->lock);
 	mmi->sceneendmarkcallback = callback;
@@ -295,10 +284,8 @@ void en50221_app_mmi_register_scene_end_mark_callback(struct
 	pthread_mutex_unlock(&mmi->lock);
 }
 
-void en50221_app_mmi_register_scene_control_callback(struct en50221_app_mmi
-						     *mmi,
-						     en50221_app_mmi_scene_control_callback
-						     callback, void *arg)
+void en50221_app_mmi_register_scene_control_callback(struct en50221_app_mmi *mmi,
+						     en50221_app_mmi_scene_control_callback callback, void *arg)
 {
 	pthread_mutex_lock(&mmi->lock);
 	mmi->scenecontrolcallback = callback;
@@ -306,11 +293,8 @@ void en50221_app_mmi_register_scene_control_callback(struct en50221_app_mmi
 	pthread_mutex_unlock(&mmi->lock);
 }
 
-void en50221_app_mmi_register_subtitle_download_callback(struct
-							 en50221_app_mmi
-							 *mmi,
-							 en50221_app_mmi_subtitle_download_callback
-							 callback,
+void en50221_app_mmi_register_subtitle_download_callback(struct en50221_app_mmi *mmi,
+							 en50221_app_mmi_subtitle_download_callback callback,
 							 void *arg)
 {
 	pthread_mutex_lock(&mmi->lock);
@@ -319,10 +303,9 @@ void en50221_app_mmi_register_subtitle_download_callback(struct
 	pthread_mutex_unlock(&mmi->lock);
 }
 
-void en50221_app_mmi_register_flush_download_callback(struct
-						      en50221_app_mmi *mmi,
-						      en50221_app_mmi_flush_download_callback
-						      callback, void *arg)
+void en50221_app_mmi_register_flush_download_callback(struct en50221_app_mmi *mmi,
+						      en50221_app_mmi_flush_download_callback callback,
+						      void *arg)
 {
 	pthread_mutex_lock(&mmi->lock);
 	mmi->flushdownloadcallback = callback;
@@ -331,8 +314,8 @@ void en50221_app_mmi_register_flush_download_callback(struct
 }
 
 void en50221_app_mmi_register_enq_callback(struct en50221_app_mmi *mmi,
-					   en50221_app_mmi_enq_callback
-					   callback, void *arg)
+					   en50221_app_mmi_enq_callback callback,
+					   void *arg)
 {
 	pthread_mutex_lock(&mmi->lock);
 	mmi->enqcallback = callback;
@@ -341,8 +324,8 @@ void en50221_app_mmi_register_enq_callback(struct en50221_app_mmi *mmi,
 }
 
 void en50221_app_mmi_register_menu_callback(struct en50221_app_mmi *mmi,
-					    en50221_app_mmi_menu_callback
-					    callback, void *arg)
+					    en50221_app_mmi_menu_callback callback,
+					    void *arg)
 {
 	pthread_mutex_lock(&mmi->lock);
 	mmi->menucallback = callback;
@@ -351,8 +334,8 @@ void en50221_app_mmi_register_menu_callback(struct en50221_app_mmi *mmi,
 }
 
 void en50221_app_mmi_register_list_callback(struct en50221_app_mmi *mmi,
-					    en50221_app_mmi_list_callback
-					    callback, void *arg)
+					    en50221_app_mmi_list_callback callback,
+					    void *arg)
 {
 	pthread_mutex_lock(&mmi->lock);
 	mmi->listcallback = callback;
@@ -383,9 +366,8 @@ int en50221_app_mmi_close(struct en50221_app_mmi *mmi,
 
 int en50221_app_mmi_display_reply(struct en50221_app_mmi *mmi,
 				  uint16_t session_number,
-				  uint8_t reply_id, struct
-				  en502221_app_mmi_display_reply_details
-				  *details)
+				  uint8_t reply_id,
+				  struct en502221_app_mmi_display_reply_details *details)
 {
 	uint8_t data[32];
 	struct iovec iov[2];
@@ -410,8 +392,7 @@ int en50221_app_mmi_display_reply(struct en50221_app_mmi *mmi,
 	case MMI_DISPLAY_REPLY_ID_LIST_DISPLAY_CHAR_TABLES:
 	case MMI_DISPLAY_REPLY_ID_LIST_INPUT_CHAR_TABLES:
 		if ((length_field_len =
-		     asn_1_encode(details->u.char_table.table_length + 1,
-				  data + 3, 3)) < 0) {
+			asn_1_encode(details->u.char_table.table_length + 1, data + 3, 3)) < 0) {
 			return -1;
 		}
 		data[3 + length_field_len] = reply_id;
@@ -426,48 +407,28 @@ int en50221_app_mmi_display_reply(struct en50221_app_mmi *mmi,
 	case MMI_DISPLAY_REPLY_ID_LIST_FULLSCREEN_GFX_CHARACTERISTICS:
 		{
 			if ((length_field_len =
-			     asn_1_encode(1 + 9 +
-					  (details->u.gfx.
-					   num_pixel_depths * 2), data + 3,
-					  3)) < 0) {
+				asn_1_encode(1 + 9 + (details->u.gfx.num_pixel_depths * 2), data + 3, 3)) < 0) {
 				return -1;
 			}
 			data[3 + length_field_len] = reply_id;
-			data[3 + length_field_len + 1] =
-			    details->u.gfx.width >> 8;
-			data[3 + length_field_len + 2] =
-			    details->u.gfx.width;
-			data[3 + length_field_len + 3] =
-			    details->u.gfx.height >> 8;
-			data[3 + length_field_len + 4] =
-			    details->u.gfx.height;
+			data[3 + length_field_len + 1] = details->u.gfx.width >> 8;
+			data[3 + length_field_len + 2] = details->u.gfx.width;
+			data[3 + length_field_len + 3] = details->u.gfx.height >> 8;
+			data[3 + length_field_len + 4] = details->u.gfx.height;
 			data[3 + length_field_len + 5] =
-			    ((details->u.gfx.
-			      aspect_ratio & 0x0f) << 4) | ((details->u.
-							     gfx.
-							     gfx_relation_to_video
-							     & 0x07) << 1)
-			    | (details->u.gfx.multiple_depths & 1);
-			data[3 + length_field_len + 6] =
-			    details->u.gfx.display_bytes >> 4;
+				((details->u.gfx.aspect_ratio & 0x0f) << 4) |
+				((details->u.gfx.gfx_relation_to_video & 0x07) << 1) |
+				(details->u.gfx.multiple_depths & 1);
+			data[3 + length_field_len + 6] = details->u.gfx.display_bytes >> 4;
 			data[3 + length_field_len + 7] =
-			    ((details->u.gfx.
-			      display_bytes & 0x0f) << 4) | ((details->u.
-							      gfx.
-							      composition_buffer_bytes
-							      & 0xf0) >>
-							     4);
+				((details->u.gfx.display_bytes & 0x0f) << 4) |
+				((details->u.gfx.composition_buffer_bytes & 0xf0) >> 4);
 			data[3 + length_field_len + 8] =
-			    ((details->u.gfx.
-			      composition_buffer_bytes & 0x0f) << 4) |
-			    ((details->u.gfx.
-			      object_cache_bytes & 0xf0) >> 4);
+			    	((details->u.gfx.composition_buffer_bytes & 0x0f) << 4) |
+				((details->u.gfx.object_cache_bytes & 0xf0) >> 4);
 			data[3 + length_field_len + 9] =
-			    ((details->u.gfx.
-			      object_cache_bytes & 0x0f) << 4) | (details->
-								  u.gfx.
-								  num_pixel_depths
-								  & 0x0f);
+			    	((details->u.gfx.object_cache_bytes & 0x0f) << 4) |
+				 (details->u.gfx.num_pixel_depths & 0x0f);
 
 			// render the pixel depths themselves
 			uint8_t *pixdepths =
@@ -476,16 +437,12 @@ int en50221_app_mmi_display_reply(struct en50221_app_mmi *mmi,
 				return -1;
 			}
 			uint32_t i;
-			for (i = 0; i < details->u.gfx.num_pixel_depths;
-			     i++) {
+			for (i = 0; i < details->u.gfx.num_pixel_depths; i++) {
 				pixdepths[0] =
-				    ((details->u.gfx.pixel_depths[i].
-				      display_depth & 0x07) << 5) |
-				    ((details->u.gfx.pixel_depths[i].
-				      pixels_per_byte & 0x07) << 2);
+				    ((details->u.gfx.pixel_depths[i].display_depth & 0x07) << 5) |
+				    ((details->u.gfx.pixel_depths[i].pixels_per_byte & 0x07) << 2);
 				pixdepths[1] =
-				    details->u.gfx.pixel_depths[i].
-				    region_overhead;
+				    details->u.gfx.pixel_depths[i].region_overhead;
 				pixdepths += 2;
 			}
 
@@ -509,8 +466,7 @@ int en50221_app_mmi_display_reply(struct en50221_app_mmi *mmi,
 	}
 
 	// sendit
-	return mmi->funcs->send_datav(mmi->funcs->arg, session_number, iov,
-				      iov_count);
+	return mmi->funcs->send_datav(mmi->funcs->arg, session_number, iov, iov_count);
 }
 
 int en50221_app_mmi_keypress(struct en50221_app_mmi *mmi,
@@ -523,8 +479,7 @@ int en50221_app_mmi_keypress(struct en50221_app_mmi *mmi,
 	data[2] = TAG_KEYPRESS & 0xFF;
 	data[3] = 1;
 	data[4] = keycode;
-	return mmi->funcs->send_data(mmi->funcs->arg, session_number, data,
-				     5);
+	return mmi->funcs->send_data(mmi->funcs->arg, session_number, data, 5);
 }
 
 int en50221_app_mmi_display_message(struct en50221_app_mmi *mmi,
@@ -538,8 +493,7 @@ int en50221_app_mmi_display_message(struct en50221_app_mmi *mmi,
 	data[2] = TAG_DISPLAY_MESSAGE & 0xFF;
 	data[3] = 1;
 	data[4] = display_message_id;
-	return mmi->funcs->send_data(mmi->funcs->arg, session_number, data,
-				     5);
+	return mmi->funcs->send_data(mmi->funcs->arg, session_number, data, 5);
 }
 
 int en50221_app_mmi_scene_done(struct en50221_app_mmi *mmi,
@@ -553,10 +507,11 @@ int en50221_app_mmi_scene_done(struct en50221_app_mmi *mmi,
 	data[1] = (TAG_SCENE_DONE >> 8) & 0xFF;
 	data[2] = TAG_SCENE_DONE & 0xFF;
 	data[3] = 1;
-	data[4] = (decoder_continue ? 0x80 : 0x00) |
-	    (scene_reveal ? 0x40 : 0x00) | (scene_tag & 0x0f);
-	return mmi->funcs->send_data(mmi->funcs->arg, session_number, data,
-				     5);
+	data[4] =
+		(decoder_continue ? 0x80 : 0x00) |
+	    	(scene_reveal ? 0x40 : 0x00) |
+		(scene_tag & 0x0f);
+	return mmi->funcs->send_data(mmi->funcs->arg, session_number, data, 5);
 }
 
 int en50221_app_mmi_download_reply(struct en50221_app_mmi *mmi,
@@ -573,8 +528,7 @@ int en50221_app_mmi_download_reply(struct en50221_app_mmi *mmi,
 	data[4] = object_id >> 8;
 	data[5] = object_id;
 	data[6] = download_reply_id;
-	return mmi->funcs->send_data(mmi->funcs->arg, session_number, data,
-				     7);
+	return mmi->funcs->send_data(mmi->funcs->arg, session_number, data, 7);
 }
 
 int en50221_app_mmi_answ(struct en50221_app_mmi *mmi,
@@ -594,8 +548,7 @@ int en50221_app_mmi_answ(struct en50221_app_mmi *mmi,
 	int length_field_len = 0;
 	int iov_count = 1;
 	if (answ_id == MMI_ANSW_ID_ANSWER) {
-		if ((length_field_len =
-		     asn_1_encode(text_count + 1, buf + 3, 3)) < 0) {
+		if ((length_field_len = asn_1_encode(text_count + 1, buf + 3, 3)) < 0) {
 			return -1;
 		}
 		buf[3 + length_field_len] = answ_id;
@@ -628,8 +581,7 @@ int en50221_app_mmi_menu_answ(struct en50221_app_mmi *mmi,
 	data[2] = TAG_MENU_ANSWER & 0xFF;
 	data[3] = 1;
 	data[4] = choice_ref;
-	return mmi->funcs->send_data(mmi->funcs->arg, session_number, data,
-				     5);
+	return mmi->funcs->send_data(mmi->funcs->arg, session_number, data, 5);
 }
 
 int en50221_app_mmi_message(struct en50221_app_mmi *mmi,
@@ -657,14 +609,12 @@ int en50221_app_mmi_message(struct en50221_app_mmi *mmi,
 		return en50221_app_mmi_parse_display_control(mmi, slot_id,
 							     session_number,
 							     data + 3,
-							     data_length -
-							     3);
+							     data_length - 3);
 	case TAG_KEYPAD_CONTROL:
 		return en50221_app_mmi_parse_keypad_control(mmi, slot_id,
 							    session_number,
 							    data + 3,
-							    data_length -
-							    3);
+							    data_length - 3);
 	case TAG_ENQUIRY:
 		return en50221_app_mmi_parse_enq(mmi, slot_id,
 						 session_number, data + 3,
@@ -703,14 +653,12 @@ int en50221_app_mmi_message(struct en50221_app_mmi *mmi,
 		return en50221_app_mmi_parse_scene_end_mark(mmi, slot_id,
 							    session_number,
 							    data + 3,
-							    data_length -
-							    3);
+							    data_length - 3);
 	case TAG_SCENE_CONTROL:
 		return en50221_app_mmi_parse_scene_control(mmi, slot_id,
 							   session_number,
 							   data + 3,
-							   data_length -
-							   3);
+							   data_length - 3);
 	case TAG_SUBTITLE_DOWNLOAD_LAST:
 		return en50221_app_mmi_parse_subtitle(mmi, slot_id,
 						      session_number, tag,
@@ -725,8 +673,7 @@ int en50221_app_mmi_message(struct en50221_app_mmi *mmi,
 		return en50221_app_mmi_parse_flush_download(mmi, slot_id,
 							    session_number,
 							    data + 3,
-							    data_length -
-							    3);
+							    data_length - 3);
 	}
 
 	print(LOG_LEVEL, ERROR, 1, "Received unexpected tag %x\n", tag);
@@ -773,10 +720,10 @@ static int en50221_app_mmi_parse_close(struct en50221_app_mmi *mmi,
 	return 0;
 }
 
-static int en50221_app_mmi_parse_display_control(struct en50221_app_mmi
-						 *mmi, uint8_t slot_id,
+static int en50221_app_mmi_parse_display_control(struct en50221_app_mmi *mmi,
+						 uint8_t slot_id,
 						 uint16_t session_number,
-						 uint8_t * data,
+						 uint8_t *data,
 						 uint32_t data_length)
 {
 	// validate data
@@ -800,28 +747,25 @@ static int en50221_app_mmi_parse_display_control(struct en50221_app_mmi
 	}
 	// tell the app
 	pthread_mutex_lock(&mmi->lock);
-	en50221_app_mmi_display_control_callback cb =
-	    mmi->displaycontrolcallback;
+	en50221_app_mmi_display_control_callback cb = mmi->displaycontrolcallback;
 	void *cb_arg = mmi->displaycontrolcallback_arg;
 	pthread_mutex_unlock(&mmi->lock);
 	if (cb) {
-		return cb(cb_arg, slot_id, session_number, cmd_id,
-			  mmi_mode);
+		return cb(cb_arg, slot_id, session_number, cmd_id, mmi_mode);
 	}
 	return 0;
 }
 
-static int en50221_app_mmi_parse_keypad_control(struct en50221_app_mmi
-						*mmi, uint8_t slot_id,
+static int en50221_app_mmi_parse_keypad_control(struct en50221_app_mmi *mmi,
+						uint8_t slot_id,
 						uint16_t session_number,
-						uint8_t * data,
+						uint8_t *data,
 						uint32_t data_length)
 {
 	// first of all, decode the length field
 	uint16_t asn_data_length;
 	int length_field_len;
-	if ((length_field_len =
-	     asn_1_decode(&asn_data_length, data, data_length)) < 0) {
+	if ((length_field_len = asn_1_decode(&asn_data_length, data, data_length)) < 0) {
 		print(LOG_LEVEL, ERROR, 1, "ASN.1 decode error\n");
 		return -1;
 	}
@@ -843,8 +787,7 @@ static int en50221_app_mmi_parse_keypad_control(struct en50221_app_mmi
 
 	// tell the app
 	pthread_mutex_lock(&mmi->lock);
-	en50221_app_mmi_keypad_control_callback cb =
-	    mmi->keypadcontrolcallback;
+	en50221_app_mmi_keypad_control_callback cb = mmi->keypadcontrolcallback;
 	void *cb_arg = mmi->keypadcontrolcallback_arg;
 	pthread_mutex_unlock(&mmi->lock);
 	if (cb) {
@@ -862,8 +805,7 @@ static int en50221_app_mmi_parse_enq(struct en50221_app_mmi *mmi,
 	// first of all, decode the length field
 	uint16_t asn_data_length;
 	int length_field_len;
-	if ((length_field_len =
-	     asn_1_decode(&asn_data_length, data, data_length)) < 0) {
+	if ((length_field_len = asn_1_decode(&asn_data_length, data, data_length)) < 0) {
 		print(LOG_LEVEL, ERROR, 1, "ASN.1 decode error\n");
 		return -1;
 	}
@@ -912,8 +854,7 @@ static int en50221_app_mmi_parse_list_menu(struct en50221_app_mmi *mmi,
 	// first of all, decode the length field
 	uint16_t asn_data_length;
 	int length_field_len;
-	if ((length_field_len =
-	     asn_1_decode(&asn_data_length, data, data_length)) < 0) {
+	if ((length_field_len = asn_1_decode(&asn_data_length, data, data_length)) < 0) {
 		print(LOG_LEVEL, ERROR, 1, "ASN.1 decode error\n");
 		return -1;
 	}
@@ -980,8 +921,7 @@ static int en50221_app_mmi_parse_list_menu(struct en50221_app_mmi *mmi,
 		int cur_status =
 		    en50221_app_mmi_defragment_text(data, data_length,
 						    &text_data[i].text,
-						    &text_data[i].
-						    text_length,
+						    &text_data[i].text_length,
 						    &consumed);
 		if (cur_status < 0) {
 			pthread_mutex_unlock(&mmi->lock);
@@ -995,8 +935,7 @@ static int en50221_app_mmi_parse_list_menu(struct en50221_app_mmi *mmi,
 	}
 
 	// work out what to pass to the user
-	struct en50221_app_mmi_text *text_data_for_user =
-	    (struct en50221_app_mmi_text *)
+	struct en50221_app_mmi_text *text_data_for_user = (struct en50221_app_mmi_text *)
 	    alloca(sizeof(struct en50221_app_mmi_text) * text_count);
 	if (text_data_for_user == NULL) {
 		result = -1;
@@ -1018,47 +957,45 @@ static int en50221_app_mmi_parse_list_menu(struct en50221_app_mmi *mmi,
 	result = 0;
 	switch (tag_id) {
 	case TAG_MENU_LAST:
-		{
-			en50221_app_mmi_menu_callback cb =
-			    mmi->menucallback;
-			void *cb_arg = mmi->menucallback_arg;
-			pthread_mutex_unlock(&mmi->lock);
-			if (cb) {
-				result =
-				    cb(cb_arg, slot_id, session_number,
-				       &text_data_for_user[0],
-				       &text_data_for_user[1],
-				       &text_data_for_user[2],
-				       text_count - 3, text_ptr,
-				       items_raw_length, items_raw);
-			}
-			break;
+	{
+		en50221_app_mmi_menu_callback cb = mmi->menucallback;
+		void *cb_arg = mmi->menucallback_arg;
+		pthread_mutex_unlock(&mmi->lock);
+		if (cb) {
+			result =
+				cb(cb_arg, slot_id, session_number,
+				&text_data_for_user[0],
+				&text_data_for_user[1],
+				&text_data_for_user[2],
+				text_count - 3, text_ptr,
+				items_raw_length, items_raw);
 		}
+		break;
+	}
 
 	case TAG_LIST_LAST:
-		{
-			en50221_app_mmi_list_callback cb =
-			    mmi->listcallback;
-			void *cb_arg = mmi->listcallback_arg;
-			pthread_mutex_unlock(&mmi->lock);
-			if (cb) {
-				result =
-				    cb(cb_arg, slot_id, session_number,
-				       &text_data_for_user[0],
-				       &text_data_for_user[1],
-				       &text_data_for_user[2],
-				       text_count - 3, text_ptr,
-				       items_raw_length, items_raw);
-			}
-			break;
+	{
+		en50221_app_mmi_list_callback cb = mmi->listcallback;
+		void *cb_arg = mmi->listcallback_arg;
+		pthread_mutex_unlock(&mmi->lock);
+		if (cb) {
+			result =
+				cb(cb_arg, slot_id, session_number,
+				&text_data_for_user[0],
+				&text_data_for_user[1],
+				&text_data_for_user[2],
+				text_count - 3, text_ptr,
+				items_raw_length, items_raw);
 		}
+		break;
+	}
 
 	default:
 		pthread_mutex_unlock(&mmi->lock);
 		break;
 	}
 
-      exit_cleanup:
+exit_cleanup:
 	if ((dfstatus == 2) && outdata)
 		free(outdata);
 	if (text_flags && text_data) {
@@ -1081,8 +1018,7 @@ static int en50221_app_mmi_parse_subtitle(struct en50221_app_mmi *mmi,
 	// first of all, decode the length field
 	uint16_t asn_data_length;
 	int length_field_len;
-	if ((length_field_len =
-	     asn_1_decode(&asn_data_length, data, data_length)) < 0) {
+	if ((length_field_len = asn_1_decode(&asn_data_length, data, data_length)) < 0) {
 		print(LOG_LEVEL, ERROR, 1, "ASN.1 decode error\n");
 		return -1;
 	}
@@ -1118,8 +1054,7 @@ static int en50221_app_mmi_parse_subtitle(struct en50221_app_mmi *mmi,
 			pthread_mutex_unlock(&mmi->lock);
 			if (cb) {
 				cbstatus =
-				    cb(cb_arg, slot_id, session_number,
-				       outdata, outdata_length);
+				    cb(cb_arg, slot_id, session_number, outdata, outdata_length);
 			}
 			break;
 		}
@@ -1132,8 +1067,7 @@ static int en50221_app_mmi_parse_subtitle(struct en50221_app_mmi *mmi,
 			pthread_mutex_unlock(&mmi->lock);
 			if (cb) {
 				cbstatus =
-				    cb(cb_arg, slot_id, session_number,
-				       outdata, outdata_length);
+				    cb(cb_arg, slot_id, session_number, outdata, outdata_length);
 			}
 			break;
 		}
@@ -1147,8 +1081,8 @@ static int en50221_app_mmi_parse_subtitle(struct en50221_app_mmi *mmi,
 	return cbstatus;
 }
 
-static int en50221_app_mmi_parse_scene_end_mark(struct en50221_app_mmi
-						*mmi, uint8_t slot_id,
+static int en50221_app_mmi_parse_scene_end_mark(struct en50221_app_mmi *mmi,
+						uint8_t slot_id,
 						uint16_t session_number,
 						uint8_t * data,
 						uint32_t data_length)
@@ -1198,8 +1132,7 @@ static int en50221_app_mmi_parse_scene_control(struct en50221_app_mmi *mmi,
 
 	// tell the app
 	pthread_mutex_lock(&mmi->lock);
-	en50221_app_mmi_scene_control_callback cb =
-	    mmi->scenecontrolcallback;
+	en50221_app_mmi_scene_control_callback cb = mmi->scenecontrolcallback;
 	void *cb_arg = mmi->scenecontrolcallback_arg;
 	pthread_mutex_unlock(&mmi->lock);
 	if (cb) {
@@ -1210,10 +1143,10 @@ static int en50221_app_mmi_parse_scene_control(struct en50221_app_mmi *mmi,
 	return 0;
 }
 
-static int en50221_app_mmi_parse_flush_download(struct en50221_app_mmi
-						*mmi, uint8_t slot_id,
+static int en50221_app_mmi_parse_flush_download(struct en50221_app_mmi *mmi,
+						uint8_t slot_id,
 						uint16_t session_number,
-						uint8_t * data,
+						uint8_t *data,
 						uint32_t data_length)
 {
 	// validate data
@@ -1227,8 +1160,7 @@ static int en50221_app_mmi_parse_flush_download(struct en50221_app_mmi
 	}
 	// tell the app
 	pthread_mutex_lock(&mmi->lock);
-	en50221_app_mmi_flush_download_callback cb =
-	    mmi->flushdownloadcallback;
+	en50221_app_mmi_flush_download_callback cb = mmi->flushdownloadcallback;
 	void *cb_arg = mmi->flushdownloadcallback_arg;
 	pthread_mutex_unlock(&mmi->lock);
 	if (cb) {
@@ -1257,11 +1189,9 @@ static int en50221_app_mmi_defragment(struct en50221_app_mmi *mmi,
 	if (!more_last) {
 		// if there was no previous session, create one
 		if (cur_s == NULL) {
-			cur_s =
-			    malloc(sizeof(struct en50221_app_mmi_session));
+			cur_s = malloc(sizeof(struct en50221_app_mmi_session));
 			if (cur_s == NULL) {
-				print(LOG_LEVEL, ERROR, 1,
-				      "Ran out of memory\n");
+				print(LOG_LEVEL, ERROR, 1, "Ran out of memory\n");
 				return -1;
 			}
 			cur_s->session_number = session_number;
@@ -1293,14 +1223,12 @@ static int en50221_app_mmi_defragment(struct en50221_app_mmi *mmi,
 		case TAG_SUBTITLE_SEGMENT_LAST:
 		case TAG_SUBTITLE_SEGMENT_MORE:
 			block_chain = &cur_s->subtitlesegment_block_chain;
-			block_length =
-			    &cur_s->subtitlesegment_block_length;
+			block_length = &cur_s->subtitlesegment_block_length;
 			break;
 		case TAG_SUBTITLE_DOWNLOAD_LAST:
 		case TAG_SUBTITLE_DOWNLOAD_MORE:
 			block_chain = &cur_s->subtitledownload_block_chain;
-			block_length =
-			    &cur_s->subtitledownload_block_length;
+			block_length = &cur_s->subtitledownload_block_length;
 			break;
 		default:
 			return -1;
@@ -1339,14 +1267,12 @@ static int en50221_app_mmi_defragment(struct en50221_app_mmi *mmi,
 		case TAG_SUBTITLE_SEGMENT_LAST:
 		case TAG_SUBTITLE_SEGMENT_MORE:
 			block_chain = &cur_s->subtitlesegment_block_chain;
-			block_length =
-			    &cur_s->subtitlesegment_block_length;
+			block_length = &cur_s->subtitlesegment_block_length;
 			break;
 		case TAG_SUBTITLE_DOWNLOAD_LAST:
 		case TAG_SUBTITLE_DOWNLOAD_MORE:
 			block_chain = &cur_s->subtitledownload_block_chain;
-			block_length =
-			    &cur_s->subtitledownload_block_length;
+			block_length = &cur_s->subtitledownload_block_length;
 			break;
 		default:
 			return -1;
@@ -1422,8 +1348,7 @@ static int en50221_app_mmi_defragment_text(uint8_t * data,
 			} else {
 				// append the data
 				uint8_t *new_text = realloc(text,
-							    text_length +
-							    asn_data_length);
+							    text_length + asn_data_length);
 				if (new_text == NULL) {
 					print(LOG_LEVEL, ERROR, 1,
 					      "Ran out of memory\n");

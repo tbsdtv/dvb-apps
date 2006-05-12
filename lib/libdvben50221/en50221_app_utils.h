@@ -39,41 +39,41 @@ extern "C" {
  * because they are not used by any modules at all and
  * would need special code for any private resource anyway.
  */
-	struct en50221_app_public_resource_id {
-		uint16_t resource_class;
-		uint16_t resource_type;
-		uint8_t resource_version;
-	};
+struct en50221_app_public_resource_id {
+	uint16_t resource_class;
+	uint16_t resource_type;
+	uint8_t resource_version;
+};
 
-	typedef int (*en50221_send_data) (void *arg,
-					  uint16_t session_number,
-					  uint8_t * data,
-					  uint16_t data_length);
-	typedef int (*en50221_send_datav) (void *arg,
-					   uint16_t session_number,
-					   struct iovec * vector,
-					   int iov_count);
+typedef int (*en50221_send_data) (void *arg,
+				  uint16_t session_number,
+				  uint8_t * data,
+				  uint16_t data_length);
+typedef int (*en50221_send_datav) (void *arg,
+				   uint16_t session_number,
+				   struct iovec * vector,
+				   int iov_count);
 
 /**
  * An abstraction away from hardcoded send functions so different layers may be
  * slotted in under the application layer.
  */
-	struct en50221_app_send_functions {
-    /**
-     * Argument to pass to these functions.
-     */
-		void *arg;
+struct en50221_app_send_functions {
+	/**
+	 * Argument to pass to these functions.
+	 */
+	void *arg;
 
-    /**
-     * Send data.
-     */
-		en50221_send_data send_data;
+	/**
+	 * Send data.
+	 */
+	en50221_send_data send_data;
 
-    /**
-     * Send vector data.
-     */
-		en50221_send_datav send_datav;
-	};
+	/**
+	 * Send vector data.
+	 */
+	en50221_send_datav send_datav;
+};
 
 /**
  * Make a host-endian uint32_t formatted resource id.
@@ -92,10 +92,9 @@ extern "C" {
  * @param resource_id ID to decode.
  * @return Pointer to idf on success, or NULL if this is not a public resource.
  */
-	struct en50221_app_public_resource_id
-	*en50221_app_decode_public_resource_id(struct
-					       en50221_app_public_resource_id
-					       *idf, uint32_t resource_id);
+struct en50221_app_public_resource_id *
+	en50221_app_decode_public_resource_id(struct en50221_app_public_resource_id *idf,
+					      uint32_t resource_id);
 
 /**
  * Encode an en50221_app_public_resource_id structure into a host-endian uint32_t.
@@ -103,12 +102,10 @@ extern "C" {
  * @param idf Structure to encode.
  * @return The encoded value
  */
-	static inline uint32_t en50221_app_encode_public_resource_id(struct
-								     en50221_app_public_resource_id
-								     *idf) {
-		return MKRID(idf->resource_class, idf->resource_type,
-			     idf->resource_version);
-	}
+static inline uint32_t en50221_app_encode_public_resource_id(struct en50221_app_public_resource_id *idf) {
+	return MKRID(idf->resource_class, idf->resource_type, idf->resource_version);
+}
+
 #ifdef __cplusplus
 }
 #endif

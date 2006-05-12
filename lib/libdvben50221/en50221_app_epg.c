@@ -46,9 +46,7 @@ static int en50221_app_epg_parse_reply(struct en50221_app_epg *private,
 
 
 
-struct en50221_app_epg *en50221_app_epg_create(struct
-					       en50221_app_send_functions
-					       *funcs)
+struct en50221_app_epg *en50221_app_epg_create(struct en50221_app_send_functions *funcs)
 {
 	struct en50221_app_epg *epg = NULL;
 
@@ -73,8 +71,8 @@ void en50221_app_epg_destroy(struct en50221_app_epg *epg)
 }
 
 void en50221_app_epg_register_enquiry_callback(struct en50221_app_epg *epg,
-					       en50221_app_epg_reply_callback
-					       callback, void *arg)
+					       en50221_app_epg_reply_callback callback,
+					       void *arg)
 {
 	pthread_mutex_lock(&epg->lock);
 	epg->callback = callback;
@@ -107,8 +105,7 @@ int en50221_app_epg_enquire(struct en50221_app_epg *epg,
 	data[12] = service_id;
 	data[13] = event_id >> 8;
 	data[14] = event_id;
-	return epg->funcs->send_data(epg->funcs->arg, session_number, data,
-				     15);
+	return epg->funcs->send_data(epg->funcs->arg, session_number, data, 15);
 }
 
 int en50221_app_epg_message(struct en50221_app_epg *epg,
