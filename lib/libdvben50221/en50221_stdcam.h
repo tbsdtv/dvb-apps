@@ -50,7 +50,7 @@ struct en50221_stdcam {
 	enum en50221_stdcam_status (*poll)(struct en50221_stdcam *stdcam);
 
 	/* destroy the stdcam instance */
-	void (*destroy)(struct en50221_stdcam *stdcam);
+	void (*destroy)(struct en50221_stdcam *stdcam, int closefd);
 };
 
 /**
@@ -62,7 +62,7 @@ struct en50221_stdcam {
  * @param sl Session layer instance to use.
  * @return en50221_stdcam instance, or NULL on error.
  */
-struct en50221_stdcam *en50221_stdcam_llci_create(int cafd, int slotnum,
+extern struct en50221_stdcam *en50221_stdcam_llci_create(int cafd, int slotnum,
 						  struct en50221_transport_layer *tl,
 						  struct en50221_session_layer *sl);
 

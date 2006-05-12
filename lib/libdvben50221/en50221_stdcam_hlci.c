@@ -39,7 +39,7 @@ struct en50221_stdcam_hlci {
 	struct en50221_app_send_functions sendfuncs;
 };
 
-static void en50221_stdcam_hlci_destroy(struct en50221_stdcam *stdcam);
+static void en50221_stdcam_hlci_destroy(struct en50221_stdcam *stdcam, int closefd);
 static enum en50221_stdcam_status en50221_stdcam_hlci_poll(struct en50221_stdcam *stdcam);
 static int hlci_cam_added(struct en50221_stdcam_hlci *hlci);
 static int hlci_send_data(void *arg, uint16_t session_number,
@@ -76,12 +76,12 @@ struct en50221_stdcam *en50221_stdcam_hlci_create(int cafd, int slotnum)
 	// done
 	hlci->stdcam.destroy = en50221_stdcam_hlci_destroy;
 	hlci->stdcam.poll = en50221_stdcam_hlci_poll;
-	hlci->cafd = cafd;
 	hlci->slotnum = slotnum;
+	hlci->cafd = cafd;
 	return &hlci->stdcam;
 }
 
-static void en50221_stdcam_hlci_destroy(struct en50221_stdcam *stdcam)
+static void en50221_stdcam_hlci_destroy(struct en50221_stdcam *stdcam, int closefd)
 {
 	struct en50221_stdcam_hlci *hlci = (struct en50221_stdcam_hlci *) stdcam;
 
@@ -92,7 +92,10 @@ static void en50221_stdcam_hlci_destroy(struct en50221_stdcam *stdcam)
 	if (hlci->stdcam.mmi_resource)
 		en50221_app_mmi_destroy(hlci->stdcam.mmi_resource);
 
-	free(stdcam);
+	if (closefd)
+		close(hlci->cafd);
+
+	free(hlci);
 }
 
 static enum en50221_stdcam_status en50221_stdcam_hlci_poll(struct en50221_stdcam *stdcam)

@@ -76,7 +76,7 @@ struct en50221_stdcam_llci {
 };
 
 static enum en50221_stdcam_status en50221_stdcam_llci_poll(struct en50221_stdcam *stdcam);
-static void en50221_stdcam_llci_destroy(struct en50221_stdcam *stdcam);
+static void en50221_stdcam_llci_destroy(struct en50221_stdcam *stdcam, int closefd);
 static void llci_cam_added(struct en50221_stdcam_llci *llci);
 static void llci_cam_in_reset(struct en50221_stdcam_llci *llci);
 static void llci_cam_removed(struct en50221_stdcam_llci *llci);
@@ -178,7 +178,7 @@ struct en50221_stdcam *en50221_stdcam_llci_create(int cafd, int slotnum,
 	return &llci->stdcam;
 }
 
-static void en50221_stdcam_llci_destroy(struct en50221_stdcam *stdcam)
+static void en50221_stdcam_llci_destroy(struct en50221_stdcam *stdcam, int closefd)
 {
 	struct en50221_stdcam_llci *llci = (struct en50221_stdcam_llci *) stdcam;
 
@@ -196,6 +196,10 @@ static void en50221_stdcam_llci_destroy(struct en50221_stdcam *stdcam)
 		en50221_app_ca_destroy(llci->stdcam.ca_resource);
 	if (llci->stdcam.mmi_resource)
 		en50221_app_mmi_destroy(llci->stdcam.mmi_resource);
+
+	if (closefd)
+		close(llci->cafd);
+
 	free(llci);
 }
 
