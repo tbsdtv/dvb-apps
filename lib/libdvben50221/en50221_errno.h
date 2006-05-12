@@ -25,28 +25,25 @@
 #define EN50221_ERRNO 1
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
-#define EN50221ERR_CAREAD -1 /* error during read from CA device. */
-#define EN50221ERR_CAWRITE -2 /* error during write to CA device. */
-#define EN50221ERR_TIMEOUT -3 /* timeout occured waiting for a response from a device. */
-#define EN50221ERR_BADSLOTID -4 /* bad slot ID supplied by user - the offending slot_id will not be set. */
-#define EN50221ERR_BADCONNECTIONID -5  /* bad connection ID supplied by user. */
-#define EN50221ERR_BADSTATE -6  /* slot/connection in the wrong state. */
-#define EN50221ERR_BADCAMDATA -7  /* CAM supplied an invalid request. */
-#define EN50221ERR_OUTOFMEMORY -8  /* memory allocation failed. */
-#define EN50221ERR_ASNENCODE -9  /* ASN.1 encode failure - indicates library bug. */
-#define EN50221ERR_OUTOFCONNECTIONS -10 /* no more connections available. */
-#define EN50221ERR_OUTOFSLOTS -11 /* no more slots available - the offending slot_id will not be set. */
-#define EN50221ERR_IOVLIMIT -12 /* Too many struct iovecs were used. */
-#define EN50221ERR_BADSESSIONNUMBER -13 /* Bad session number suppplied by user. */
-#define EN50221ERR_OUTOFSESSIONS -14 /* no more sessions available. */
+#define EN50221ERR_CAREAD -1	/* error during read from CA device. */
+#define EN50221ERR_CAWRITE -2	/* error during write to CA device. */
+#define EN50221ERR_TIMEOUT -3	/* timeout occured waiting for a response from a device. */
+#define EN50221ERR_BADSLOTID -4	/* bad slot ID supplied by user - the offending slot_id will not be set. */
+#define EN50221ERR_BADCONNECTIONID -5	/* bad connection ID supplied by user. */
+#define EN50221ERR_BADSTATE -6	/* slot/connection in the wrong state. */
+#define EN50221ERR_BADCAMDATA -7	/* CAM supplied an invalid request. */
+#define EN50221ERR_OUTOFMEMORY -8	/* memory allocation failed. */
+#define EN50221ERR_ASNENCODE -9	/* ASN.1 encode failure - indicates library bug. */
+#define EN50221ERR_OUTOFCONNECTIONS -10	/* no more connections available. */
+#define EN50221ERR_OUTOFSLOTS -11	/* no more slots available - the offending slot_id will not be set. */
+#define EN50221ERR_IOVLIMIT -12	/* Too many struct iovecs were used. */
+#define EN50221ERR_BADSESSIONNUMBER -13	/* Bad session number suppplied by user. */
+#define EN50221ERR_OUTOFSESSIONS -14	/* no more sessions available. */
 
 #ifdef __cplusplus
 }
 #endif
-
 #endif
-

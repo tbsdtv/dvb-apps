@@ -25,8 +25,7 @@
 #define __EN50221_APPLICATION_epg_H__
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
 #include <stdlib.h>
@@ -57,13 +56,17 @@ extern "C"
  * @param event_status One of the EPG_EVENTSTATUS_* values.
  * @return 0 on success, -1 on failure.
  */
-typedef int (*en50221_app_epg_reply_callback)(void *arg, uint8_t slot_id, uint16_t session_number,
-                                               uint8_t event_status);
+	typedef int (*en50221_app_epg_reply_callback) (void *arg,
+						       uint8_t slot_id,
+						       uint16_t
+						       session_number,
+						       uint8_t
+						       event_status);
 
 /**
  * Opaque type representing a epg resource.
  */
-struct en50221_app_epg;
+	struct en50221_app_epg;
 
 /**
  * Create an instance of the epg resource.
@@ -71,14 +74,16 @@ struct en50221_app_epg;
  * @param funcs Send functions to use.
  * @return Instance, or NULL on failure.
  */
-extern struct en50221_app_epg *en50221_app_epg_create(struct en50221_app_send_functions *funcs);
+	extern struct en50221_app_epg *en50221_app_epg_create(struct
+							      en50221_app_send_functions
+							      *funcs);
 
 /**
  * Destroy an instance of the epg resource.
  *
  * @param epg Instance to destroy.
  */
-extern void en50221_app_epg_destroy(struct en50221_app_epg *epg);
+	extern void en50221_app_epg_destroy(struct en50221_app_epg *epg);
 
 /**
  * Register the callback for when we receive a enquiry response.
@@ -87,8 +92,12 @@ extern void en50221_app_epg_destroy(struct en50221_app_epg *epg);
  * @param callback The callback. Set to NULL to remove the callback completely.
  * @param arg Private data passed as arg0 of the callback.
  */
-extern void en50221_app_epg_register_reply_callback(struct en50221_app_epg *epg,
-        en50221_app_epg_reply_callback callback, void *arg);
+	extern void en50221_app_epg_register_reply_callback(struct
+							    en50221_app_epg
+							    *epg,
+							    en50221_app_epg_reply_callback
+							    callback,
+							    void *arg);
 
 /**
  * Enquire about the entitlement status for an EPG entry.
@@ -103,14 +112,14 @@ extern void en50221_app_epg_register_reply_callback(struct en50221_app_epg *epg,
  * @param event_id Event ID concerned.
  * @return 0 on success, -1 on failure.
  */
-extern int en50221_app_epg_enquire(struct en50221_app_epg *epg,
-                                   uint16_t session_number,
-                                   uint8_t command_id,
-                                   uint16_t network_id,
-                                   uint16_t original_network_id,
-                                   uint16_t transport_stream_id,
-                                   uint16_t service_id,
-                                   uint16_t event_id);
+	extern int en50221_app_epg_enquire(struct en50221_app_epg *epg,
+					   uint16_t session_number,
+					   uint8_t command_id,
+					   uint16_t network_id,
+					   uint16_t original_network_id,
+					   uint16_t transport_stream_id,
+					   uint16_t service_id,
+					   uint16_t event_id);
 
 /**
  * Pass data received for this resource into it for parsing.
@@ -123,14 +132,14 @@ extern int en50221_app_epg_enquire(struct en50221_app_epg *epg,
  * @param data_length Length of data in bytes.
  * @return 0 on success, -1 on failure.
  */
-extern int en50221_app_epg_message(struct en50221_app_epg *epg,
-                                   uint8_t slot_id,
-                                   uint16_t session_number,
-                                   uint32_t resource_id,
-                                   uint8_t *data, uint32_t data_length);
+	extern int en50221_app_epg_message(struct en50221_app_epg *epg,
+					   uint8_t slot_id,
+					   uint16_t session_number,
+					   uint32_t resource_id,
+					   uint8_t * data,
+					   uint32_t data_length);
 
 #ifdef __cplusplus
 }
 #endif
-
 #endif

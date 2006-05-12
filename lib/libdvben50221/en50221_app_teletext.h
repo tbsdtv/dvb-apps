@@ -25,8 +25,7 @@
 #define __EN50221_APPLICATION_teletext_H__
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
 #include <stdlib.h>
@@ -46,14 +45,19 @@ extern "C"
  * @param teletext_data_lenghth Number of bytes.
  * @return 0 on success, -1 on failure.
  */
-typedef int (*en50221_app_teletext_callback)(void *arg, uint8_t slot_id, uint16_t session_number,
-                                              uint8_t *teletext_data,
-                                              uint32_t teletext_data_length);
+	typedef int (*en50221_app_teletext_callback) (void *arg,
+						      uint8_t slot_id,
+						      uint16_t
+						      session_number,
+						      uint8_t *
+						      teletext_data,
+						      uint32_t
+						      teletext_data_length);
 
 /**
  * Opaque type representing a teletext resource.
  */
-struct en50221_app_teletext;
+	struct en50221_app_teletext;
 
 /**
  * Create an instance of the teletext resource.
@@ -61,14 +65,18 @@ struct en50221_app_teletext;
  * @param funcs Send functions to use.
  * @return Instance, or NULL on failure.
  */
-extern struct en50221_app_teletext *en50221_app_teletext_create(struct en50221_app_send_functions *funcs);
+	extern struct en50221_app_teletext
+	*en50221_app_teletext_create(struct en50221_app_send_functions
+				     *funcs);
 
 /**
  * Destroy an instance of the teletext resource.
  *
  * @param teletext Instance to destroy.
  */
-extern void en50221_app_teletext_destroy(struct en50221_app_teletext *teletext);
+	extern void en50221_app_teletext_destroy(struct
+						 en50221_app_teletext
+						 *teletext);
 
 /**
  * Register the callback for when we receive a request.
@@ -77,8 +85,12 @@ extern void en50221_app_teletext_destroy(struct en50221_app_teletext *teletext);
  * @param callback The callback. Set to NULL to remove the callback completely.
  * @param arg Private data passed as arg0 of the callback.
  */
-extern void en50221_app_teletext_register_callback(struct en50221_app_teletext *teletext,
-                                                   en50221_app_teletext_callback callback, void *arg);
+	extern void en50221_app_teletext_register_callback(struct
+							   en50221_app_teletext
+							   *teletext,
+							   en50221_app_teletext_callback
+							   callback,
+							   void *arg);
 
 /**
  * Pass data received for this resource into it for parsing.
@@ -91,14 +103,14 @@ extern void en50221_app_teletext_register_callback(struct en50221_app_teletext *
  * @param data_length Length of data in bytes.
  * @return 0 on success, -1 on failure.
  */
-extern int en50221_app_teletext_message(struct en50221_app_teletext *teletext,
-                                         uint8_t slot_id,
-                                         uint16_t session_number,
-                                         uint32_t resource_id,
-                                         uint8_t *data, uint32_t data_length);
+	extern int en50221_app_teletext_message(struct en50221_app_teletext
+						*teletext, uint8_t slot_id,
+						uint16_t session_number,
+						uint32_t resource_id,
+						uint8_t * data,
+						uint32_t data_length);
 
 #ifdef __cplusplus
 }
 #endif
-
 #endif

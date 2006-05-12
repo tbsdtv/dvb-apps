@@ -25,8 +25,7 @@
 #define __EN50221_APPLICATION_DATETIME_H__
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
 #include <stdlib.h>
@@ -44,13 +43,18 @@ extern "C"
  * @param response_interval Response interval requested by CAM.
  * @return 0 on success, -1 on failure.
  */
-typedef int (*en50221_app_datetime_enquiry_callback)(void *arg, uint8_t slot_id, uint16_t session_number,
-                                                      uint8_t response_interval);
+	typedef int (*en50221_app_datetime_enquiry_callback) (void *arg,
+							      uint8_t
+							      slot_id,
+							      uint16_t
+							      session_number,
+							      uint8_t
+							      response_interval);
 
 /**
  * Opaque type representing a datetime resource.
  */
-struct en50221_app_datetime;
+	struct en50221_app_datetime;
 
 /**
  * Create an instance of the datetime resource.
@@ -58,14 +62,18 @@ struct en50221_app_datetime;
  * @param funcs Send functions to use.
  * @return Instance, or NULL on failure.
  */
-extern struct en50221_app_datetime *en50221_app_datetime_create(struct en50221_app_send_functions *funcs);
+	extern struct en50221_app_datetime
+	*en50221_app_datetime_create(struct en50221_app_send_functions
+				     *funcs);
 
 /**
  * Destroy an instance of the datetime resource.
  *
  * @param datetime Instance to destroy.
  */
-extern void en50221_app_datetime_destroy(struct en50221_app_datetime *datetime);
+	extern void en50221_app_datetime_destroy(struct
+						 en50221_app_datetime
+						 *datetime);
 
 /**
  * Register the callback for when we receive a enquiry request.
@@ -74,8 +82,13 @@ extern void en50221_app_datetime_destroy(struct en50221_app_datetime *datetime);
  * @param callback The callback. Set to NULL to remove the callback completely.
  * @param arg Private data passed as arg0 of the callback.
  */
-extern void en50221_app_datetime_register_enquiry_callback(struct en50221_app_datetime *datetime,
-        en50221_app_datetime_enquiry_callback callback, void *arg);
+	extern void en50221_app_datetime_register_enquiry_callback(struct
+								   en50221_app_datetime
+								   *datetime,
+								   en50221_app_datetime_enquiry_callback
+								   callback,
+								   void
+								   *arg);
 
 /**
  * Send the time to the CAM.
@@ -87,10 +100,11 @@ extern void en50221_app_datetime_register_enquiry_callback(struct en50221_app_da
  * UTC and local time in minutes.
  * @return 0 on success, -1 on failure.
  */
-extern int en50221_app_datetime_send(struct en50221_app_datetime *datetime,
-                                     uint16_t session_number,
-                                     time_t utc_time,
-                                     int time_offset);
+	extern int en50221_app_datetime_send(struct en50221_app_datetime
+					     *datetime,
+					     uint16_t session_number,
+					     time_t utc_time,
+					     int time_offset);
 
 /**
  * Pass data received for this resource into it for parsing.
@@ -103,14 +117,14 @@ extern int en50221_app_datetime_send(struct en50221_app_datetime *datetime,
  * @param data_length Length of data in bytes.
  * @return 0 on success, -1 on failure.
  */
-extern int en50221_app_datetime_message(struct en50221_app_datetime *datetime,
-                                        uint8_t slot_id,
-                                        uint16_t session_number,
-                                        uint32_t resource_id,
-                                        uint8_t *data, uint32_t data_length);
+	extern int en50221_app_datetime_message(struct en50221_app_datetime
+						*datetime, uint8_t slot_id,
+						uint16_t session_number,
+						uint32_t resource_id,
+						uint8_t * data,
+						uint32_t data_length);
 
 #ifdef __cplusplus
 }
 #endif
-
 #endif

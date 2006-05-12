@@ -25,8 +25,7 @@
 #define __EN50221_APPLICATION_ca_H__
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
 #include <stdlib.h>
@@ -59,25 +58,21 @@ extern "C"
 /**
  * PMT reply structure.
  */
-struct en50221_app_pmt_reply {
-        uint16_t program_number;
-  EBIT3(uint8_t reserved_1              : 2; ,
-        uint8_t version_number          : 5; ,
-        uint8_t current_next_indicator  : 1; );
-  EBIT2(uint8_t CA_enable_flag          : 1; ,
-        uint8_t CA_enable               : 7; );
-        /* struct en50221_app_pmt_stream streams[] */
-} __attribute__((packed));
+	struct en50221_app_pmt_reply {
+		uint16_t program_number;
+		 EBIT3(uint8_t reserved_1:2;, uint8_t version_number:5;,
+		       uint8_t current_next_indicator:1;);
+		 EBIT2(uint8_t CA_enable_flag:1;, uint8_t CA_enable:7;);
+		/* struct en50221_app_pmt_stream streams[] */
+	} __attribute__ ((packed));
 
 /**
  * A stream within a pmt reply structure.
  */
-struct en50221_app_pmt_stream {
-    EBIT2(uint16_t reserved_1             : 3; ,
-          uint16_t es_pid                 :13; );
-    EBIT2(uint8_t CA_enable_flag          : 1; ,
-          uint8_t CA_enable               : 7; );
-} __attribute__((packed));
+	struct en50221_app_pmt_stream {
+		EBIT2(uint16_t reserved_1:3;, uint16_t es_pid:13;);
+		EBIT2(uint8_t CA_enable_flag:1;, uint8_t CA_enable:7;);
+	} __attribute__ ((packed));
 
 /**
  * Convenience iterator for the streams field of the en50221_app_pmt_reply structure.
@@ -102,9 +97,12 @@ struct en50221_app_pmt_stream {
  * @param ca_ids Pointer to list of ca_system_ids.
  * @return 0 on success, -1 on failure.
  */
-typedef int (*en50221_app_ca_info_callback)(void *arg, uint8_t slot_id, uint16_t session_number,
-                                             uint32_t ca_id_count,
-                                             uint16_t *ca_ids);
+	typedef int (*en50221_app_ca_info_callback) (void *arg,
+						     uint8_t slot_id,
+						     uint16_t
+						     session_number,
+						     uint32_t ca_id_count,
+						     uint16_t * ca_ids);
 
 /**
  * Type definition for pmt_reply - called when we receive a pmt_reply.
@@ -116,14 +114,20 @@ typedef int (*en50221_app_ca_info_callback)(void *arg, uint8_t slot_id, uint16_t
  * @param reply_size Total size of the struct en50221_app_pmt_reply in bytes.
  * @return 0 on success, -1 on failure.
  */
-typedef int (*en50221_app_ca_pmt_reply_callback)(void *arg, uint8_t slot_id, uint16_t session_number,
-                                                  struct en50221_app_pmt_reply *reply,
-                                                  uint32_t reply_size);
+	typedef int (*en50221_app_ca_pmt_reply_callback) (void *arg,
+							  uint8_t slot_id,
+							  uint16_t
+							  session_number,
+							  struct
+							  en50221_app_pmt_reply
+							  * reply,
+							  uint32_t
+							  reply_size);
 
 /**
  * Opaque type representing a ca resource.
  */
-struct en50221_app_ca;
+	struct en50221_app_ca;
 
 /**
  * Create an instance of the ca resource.
@@ -131,14 +135,16 @@ struct en50221_app_ca;
  * @param funcs Send functions to use.
  * @return Instance, or NULL on failure.
  */
-extern struct en50221_app_ca *en50221_app_ca_create(struct en50221_app_send_functions *funcs);
+	extern struct en50221_app_ca *en50221_app_ca_create(struct
+							    en50221_app_send_functions
+							    *funcs);
 
 /**
  * Destroy an instance of the ca resource.
  *
  * @param ca Instance to destroy.
  */
-extern void en50221_app_ca_destroy(struct en50221_app_ca *ca);
+	extern void en50221_app_ca_destroy(struct en50221_app_ca *ca);
 
 /**
  * Register the callback for when we receive a ca info.
@@ -147,8 +153,12 @@ extern void en50221_app_ca_destroy(struct en50221_app_ca *ca);
  * @param callback The callback. Set to NULL to remove the callback completely.
  * @param arg Private data passed as arg0 of the callback.
  */
-extern void en50221_app_ca_register_info_callback(struct en50221_app_ca *ca,
-                                                  en50221_app_ca_info_callback callback, void *arg);
+	extern void en50221_app_ca_register_info_callback(struct
+							  en50221_app_ca
+							  *ca,
+							  en50221_app_ca_info_callback
+							  callback,
+							  void *arg);
 
 /**
  * Register the callback for when we receive a pmt_reply.
@@ -157,8 +167,12 @@ extern void en50221_app_ca_register_info_callback(struct en50221_app_ca *ca,
  * @param callback The callback. Set to NULL to remove the callback completely.
  * @param arg Private data passed as arg0 of the callback.
  */
-extern void en50221_app_ca_register_pmt_reply_callback(struct en50221_app_ca *ca,
-                                                       en50221_app_ca_pmt_reply_callback callback, void *arg);
+	extern void en50221_app_ca_register_pmt_reply_callback(struct
+							       en50221_app_ca
+							       *ca,
+							       en50221_app_ca_pmt_reply_callback
+							       callback,
+							       void *arg);
 
 /**
  * Send a ca_info_req to the CAM.
@@ -167,8 +181,8 @@ extern void en50221_app_ca_register_pmt_reply_callback(struct en50221_app_ca *ca
  * @param session_number Session number to send it on.
  * @return 0 on success, -1 on failure.
  */
-extern int en50221_app_ca_info_enq(struct en50221_app_ca *ca,
-                                   uint16_t session_number);
+	extern int en50221_app_ca_info_enq(struct en50221_app_ca *ca,
+					   uint16_t session_number);
 
 /**
  * Send a ca_pmt structure to the CAM.
@@ -179,10 +193,10 @@ extern int en50221_app_ca_info_enq(struct en50221_app_ca *ca,
  * @param ca_pmt_length Length of ca_pmt structure in bytes.
  * @return 0 on success, -1 on failure.
  */
-extern int en50221_app_ca_pmt(struct en50221_app_ca *ca,
-                              uint16_t session_number,
-                              uint8_t *ca_pmt,
-                              uint32_t ca_pmt_length);
+	extern int en50221_app_ca_pmt(struct en50221_app_ca *ca,
+				      uint16_t session_number,
+				      uint8_t * ca_pmt,
+				      uint32_t ca_pmt_length);
 
 /**
  * Transform a libucsi PMT into a binary structure for sending to a CAM.
@@ -196,11 +210,12 @@ extern int en50221_app_ca_pmt(struct en50221_app_ca *ca,
  * @param ca_pmt_cmd_id One of the CA_PMT_CMD_ID_*.
  * @return Number of bytes used, or -1 on error.
  */
-extern int en50221_ca_format_pmt(struct mpeg_pmt_section *pmt,
-                                 uint8_t *data,
-                                 uint32_t data_length,
-                                 int move_ca_descriptors,
-                                 uint8_t ca_pmt_list_management, uint8_t ca_pmt_cmd_id);
+	extern int en50221_ca_format_pmt(struct mpeg_pmt_section *pmt,
+					 uint8_t * data,
+					 uint32_t data_length,
+					 int move_ca_descriptors,
+					 uint8_t ca_pmt_list_management,
+					 uint8_t ca_pmt_cmd_id);
 
 /**
  * Pass data received for this resource into it for parsing.
@@ -213,39 +228,43 @@ extern int en50221_ca_format_pmt(struct mpeg_pmt_section *pmt,
  * @param data_length Length of data in bytes.
  * @return 0 on success, -1 on failure.
  */
-extern int en50221_app_ca_message(struct en50221_app_ca *ca,
-                                  uint8_t slot_id,
-                                  uint16_t session_number,
-                                  uint32_t resource_id,
-                                  uint8_t *data, uint32_t data_length);
+	extern int en50221_app_ca_message(struct en50221_app_ca *ca,
+					  uint8_t slot_id,
+					  uint16_t session_number,
+					  uint32_t resource_id,
+					  uint8_t * data,
+					  uint32_t data_length);
 
 
 
 
-static inline struct en50221_app_pmt_stream *
-    en50221_app_pmt_reply_streams_first(struct en50221_app_pmt_reply *reply, uint32_t reply_size)
-{
-    uint32_t pos = sizeof(struct en50221_app_pmt_reply);
+	static inline struct en50221_app_pmt_stream
+	*en50221_app_pmt_reply_streams_first(struct
+					     en50221_app_pmt_reply
+					     *reply, uint32_t reply_size) {
+		uint32_t pos = sizeof(struct en50221_app_pmt_reply);
 
-    if (pos >= reply_size)
-        return NULL;
+		if (pos >= reply_size)
+			 return NULL;
 
-    return (struct en50221_app_pmt_stream *)((uint8_t *)reply+ pos);
-}
+		 return (struct en50221_app_pmt_stream *) ((uint8_t *)
+							   reply + pos);
+	} static inline struct en50221_app_pmt_stream
+	*en50221_app_pmt_reply_streams_next(struct
+					    en50221_app_pmt_reply
+					    *reply, struct
+					    en50221_app_pmt_stream
+					    *pos, uint32_t reply_size) {
+		uint8_t *end = (uint8_t *) reply + reply_size;
+		uint8_t *next =
+		    (uint8_t *) pos +
+		    sizeof(struct en50221_app_pmt_stream);
 
-static inline struct en50221_app_pmt_stream *
-    en50221_app_pmt_reply_streams_next(struct en50221_app_pmt_reply * reply,
-                                       struct en50221_app_pmt_stream * pos,
-                                       uint32_t reply_size)
-{
-    uint8_t *end = (uint8_t*) reply + reply_size;
-    uint8_t *next = (uint8_t *) pos + sizeof(struct en50221_app_pmt_stream);
+		if (next >= end)
+			return NULL;
 
-    if (next >= end)
-        return NULL;
-
-    return (struct en50221_app_pmt_stream *) next;
-}
+		return (struct en50221_app_pmt_stream *) next;
+	}
 
 #ifdef __cplusplus
 }

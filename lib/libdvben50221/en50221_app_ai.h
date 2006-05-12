@@ -25,8 +25,7 @@
 #define __EN50221_APPLICATION_AI_H__
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
 #include <stdlib.h>
@@ -52,15 +51,19 @@ extern "C"
  * @param menu_string The menu string itself.
  * @return 0 on success, -1 on failure.
  */
-typedef int (*en50221_app_ai_callback)(void *arg, uint8_t slot_id, uint16_t session_number,
-                                       uint8_t application_type, uint16_t application_manufacturer,
-                                       uint16_t manufacturer_code, uint8_t menu_string_length,
-                                       uint8_t *menu_string);
+	typedef int (*en50221_app_ai_callback) (void *arg, uint8_t slot_id,
+						uint16_t session_number,
+						uint8_t application_type,
+						uint16_t
+						application_manufacturer,
+						uint16_t manufacturer_code,
+						uint8_t menu_string_length,
+						uint8_t * menu_string);
 
 /**
  * Opaque type representing an application information resource.
  */
-struct en50221_app_ai;
+	struct en50221_app_ai;
 
 /**
  * Create an instance of an application information resource.
@@ -68,14 +71,16 @@ struct en50221_app_ai;
  * @param funcs Send functions to use.
  * @return Instance, or NULL on failure.
  */
-extern struct en50221_app_ai *en50221_app_ai_create(struct en50221_app_send_functions *funcs);
+	extern struct en50221_app_ai *en50221_app_ai_create(struct
+							    en50221_app_send_functions
+							    *funcs);
 
 /**
  * Destroy an instance of an application information resource.
  *
  * @param ai Instance to destroy.
  */
-extern void en50221_app_ai_destroy(struct en50221_app_ai *ai);
+	extern void en50221_app_ai_destroy(struct en50221_app_ai *ai);
 
 /**
  * Register a callback for reception of application_info objects.
@@ -84,7 +89,10 @@ extern void en50221_app_ai_destroy(struct en50221_app_ai *ai);
  * @param callback Callback function.
  * @param arg Private argument passed during calls to the callback.
  */
-extern void en50221_app_ai_register_callback(struct en50221_app_ai *ai, en50221_app_ai_callback, void *arg);
+	extern void en50221_app_ai_register_callback(struct en50221_app_ai
+						     *ai,
+						     en50221_app_ai_callback,
+						     void *arg);
 
 /**
  * send a enquiry for the app_info provided by a module
@@ -93,7 +101,8 @@ extern void en50221_app_ai_register_callback(struct en50221_app_ai *ai, en50221_
  * @param session_number Session to send on.
  * @return 0 on success, -1 on failure.
  */
-extern int en50221_app_ai_enquiry(struct en50221_app_ai *ai, uint16_t session_number);
+	extern int en50221_app_ai_enquiry(struct en50221_app_ai *ai,
+					  uint16_t session_number);
 
 /**
  * send a enter_menu tag, this will make the application
@@ -103,7 +112,8 @@ extern int en50221_app_ai_enquiry(struct en50221_app_ai *ai, uint16_t session_nu
  * @param session_number Session to send on.
  * @return 0 on success, -1 on failure.
  */
-extern int en50221_app_ai_entermenu(struct en50221_app_ai *ai, uint16_t session_number);
+	extern int en50221_app_ai_entermenu(struct en50221_app_ai *ai,
+					    uint16_t session_number);
 
 /**
  * Pass data received for this resource into it for parsing.
@@ -116,14 +126,14 @@ extern int en50221_app_ai_entermenu(struct en50221_app_ai *ai, uint16_t session_
  * @param data_length Length of data in bytes.
  * @return 0 on success, -1 on failure.
  */
-extern int en50221_app_ai_message(struct en50221_app_ai *ai,
-                                  uint8_t slot_id,
-                                  uint16_t session_number,
-                                  uint32_t resource_id,
-                                  uint8_t *data, uint32_t data_length);
+	extern int en50221_app_ai_message(struct en50221_app_ai *ai,
+					  uint8_t slot_id,
+					  uint16_t session_number,
+					  uint32_t resource_id,
+					  uint8_t * data,
+					  uint32_t data_length);
 
 #ifdef __cplusplus
 }
 #endif
-
 #endif

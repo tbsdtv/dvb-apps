@@ -29,106 +29,116 @@
 #include "asn_1.h"
 
 struct en50221_app_teletext {
-        struct en50221_app_send_functions *funcs;
+	struct en50221_app_send_functions *funcs;
 
-        en50221_app_teletext_callback callback;
-        void *callback_arg;
+	en50221_app_teletext_callback callback;
+	void *callback_arg;
 
-        pthread_mutex_t lock;
+	pthread_mutex_t lock;
 };
 
-static int en50221_app_teletext_parse_ebu(struct en50221_app_teletext *teletext,
-                                           uint8_t slot_id, uint16_t session_number,
-                                           uint8_t *data, uint32_t data_length);
+static int en50221_app_teletext_parse_ebu(struct en50221_app_teletext
+					  *teletext, uint8_t slot_id,
+					  uint16_t session_number,
+					  uint8_t * data,
+					  uint32_t data_length);
 
 
 
-struct en50221_app_teletext *en50221_app_teletext_create(struct en50221_app_send_functions *funcs)
+struct en50221_app_teletext *en50221_app_teletext_create(struct
+							 en50221_app_send_functions
+							 *funcs)
 {
-    struct en50221_app_teletext *teletext = NULL;
+	struct en50221_app_teletext *teletext = NULL;
 
-    // create structure and set it up
-    teletext = malloc(sizeof(struct en50221_app_teletext));
-    if (teletext == NULL) {
-        return NULL;
-    }
-    teletext->funcs = funcs;
-    teletext->callback = NULL;
+	// create structure and set it up
+	teletext = malloc(sizeof(struct en50221_app_teletext));
+	if (teletext == NULL) {
+		return NULL;
+	}
+	teletext->funcs = funcs;
+	teletext->callback = NULL;
 
-    pthread_mutex_init(&teletext->lock, NULL);
+	pthread_mutex_init(&teletext->lock, NULL);
 
-    // done
-    return teletext;
+	// done
+	return teletext;
 }
 
 void en50221_app_teletext_destroy(struct en50221_app_teletext *teletext)
 {
-    pthread_mutex_destroy(&teletext->lock);
-    free(teletext);
+	pthread_mutex_destroy(&teletext->lock);
+	free(teletext);
 }
 
-void en50221_app_teletext_register_callback(struct en50221_app_teletext *teletext,
-                                            en50221_app_teletext_callback callback, void *arg)
+void en50221_app_teletext_register_callback(struct en50221_app_teletext
+					    *teletext,
+					    en50221_app_teletext_callback
+					    callback, void *arg)
 {
-    pthread_mutex_lock(&teletext->lock);
-    teletext->callback = callback;
-    teletext->callback_arg = arg;
-    pthread_mutex_unlock(&teletext->lock);
+	pthread_mutex_lock(&teletext->lock);
+	teletext->callback = callback;
+	teletext->callback_arg = arg;
+	pthread_mutex_unlock(&teletext->lock);
 }
 
 int en50221_app_teletext_message(struct en50221_app_teletext *teletext,
-                                 uint8_t slot_id,
-                                 uint16_t session_number,
-                                 uint32_t resource_id,
-                                 uint8_t *data, uint32_t data_length)
+				 uint8_t slot_id,
+				 uint16_t session_number,
+				 uint32_t resource_id,
+				 uint8_t * data, uint32_t data_length)
 {
-    (void) resource_id;
+	(void) resource_id;
 
-    // get the tag
-    if (data_length < 3) {
-        print(LOG_LEVEL, ERROR, 1, "Received short data\n");
-        return -1;
-    }
-    uint32_t tag = (data[0] << 16) | (data[1] << 8) | data[2];
+	// get the tag
+	if (data_length < 3) {
+		print(LOG_LEVEL, ERROR, 1, "Received short data\n");
+		return -1;
+	}
+	uint32_t tag = (data[0] << 16) | (data[1] << 8) | data[2];
 
-    switch(tag)
-    {
-        case TAG_TELETEXT_EBU:
-            return en50221_app_teletext_parse_ebu(teletext, slot_id, session_number, data+3, data_length-3);
-    }
+	switch (tag) {
+	case TAG_TELETEXT_EBU:
+		return en50221_app_teletext_parse_ebu(teletext, slot_id,
+						      session_number,
+						      data + 3,
+						      data_length - 3);
+	}
 
-    print(LOG_LEVEL, ERROR, 1, "Received unexpected tag %x\n", tag);
-    return -1;
+	print(LOG_LEVEL, ERROR, 1, "Received unexpected tag %x\n", tag);
+	return -1;
 }
 
 
-static int en50221_app_teletext_parse_ebu(struct en50221_app_teletext *teletext,
-                                           uint8_t slot_id, uint16_t session_number,
-                                           uint8_t *data, uint32_t data_length)
+static int en50221_app_teletext_parse_ebu(struct en50221_app_teletext
+					  *teletext, uint8_t slot_id,
+					  uint16_t session_number,
+					  uint8_t * data,
+					  uint32_t data_length)
 {
-    // first of all, decode the length field
-    uint16_t asn_data_length;
-    int length_field_len;
-    if ((length_field_len = asn_1_decode(&asn_data_length, data, data_length)) < 0) {
-        print(LOG_LEVEL, ERROR, 1, "ASN.1 decode error\n");
-        return -1;
-    }
+	// first of all, decode the length field
+	uint16_t asn_data_length;
+	int length_field_len;
+	if ((length_field_len =
+	     asn_1_decode(&asn_data_length, data, data_length)) < 0) {
+		print(LOG_LEVEL, ERROR, 1, "ASN.1 decode error\n");
+		return -1;
+	}
+	// check it
+	if (asn_data_length > (data_length - length_field_len)) {
+		print(LOG_LEVEL, ERROR, 1, "Received short data\n");
+		return -1;
+	}
+	uint8_t *teletext_data = data + length_field_len;
 
-    // check it
-    if (asn_data_length > (data_length-length_field_len)) {
-        print(LOG_LEVEL, ERROR, 1, "Received short data\n");
-        return -1;
-    }
-    uint8_t *teletext_data = data + length_field_len;
-
-    // tell the app
-    pthread_mutex_lock(&teletext->lock);
-    en50221_app_teletext_callback cb = teletext->callback;
-    void *cb_arg = teletext->callback_arg;
-    pthread_mutex_unlock(&teletext->lock);
-    if (cb) {
-        return cb(cb_arg, slot_id, session_number, teletext_data, asn_data_length);
-    }
-    return 0;
+	// tell the app
+	pthread_mutex_lock(&teletext->lock);
+	en50221_app_teletext_callback cb = teletext->callback;
+	void *cb_arg = teletext->callback_arg;
+	pthread_mutex_unlock(&teletext->lock);
+	if (cb) {
+		return cb(cb_arg, slot_id, session_number, teletext_data,
+			  asn_data_length);
+	}
+	return 0;
 }
-
