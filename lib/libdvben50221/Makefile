@@ -34,6 +34,7 @@ objects  = asn_1.o                 \
            en50221_app_smartcard.o \
            en50221_app_teletext.o  \
            en50221_app_utils.o     \
+           en50221_stdcam_llci.o   \
            en50221_stdcam_hlci.o   \
            en50221_session.o       \
            en50221_transport.o

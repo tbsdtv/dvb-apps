@@ -25,10 +25,14 @@
 #include <libdvben50221/en50221_app_ai.h>
 #include <libdvben50221/en50221_app_ca.h>
 #include <libdvben50221/en50221_app_mmi.h>
+#include <libdvben50221/en50221_session.h>
+#include <libdvben50221/en50221_transport.h>
 
 enum en50221_stdcam_status {
-	EN50221_STDCAM_CAM_MISSING,
+	EN50221_STDCAM_CAM_NONE,
+	EN50221_STDCAM_CAM_INRESET,
 	EN50221_STDCAM_CAM_OK,
+	EN50221_STDCAM_CAM_BAD,
 };
 
 struct en50221_stdcam {
@@ -37,13 +41,22 @@ struct en50221_stdcam {
 	struct en50221_app_ca *ca_resource;
 	struct en50221_app_mmi *mmi_resource;
 
-	/* destroy the stdcam instance */
-	void (*destroy)(struct en50221_stdcam *stdcam);
+	/* if any of these are -1, no connection is in place to this resource yet */
+	int ai_session_number;
+	int ca_session_number;
+	int mmi_session_number;
 
 	/* poll the stdcam instance */
 	enum en50221_stdcam_status (*poll)(struct en50221_stdcam *stdcam);
+
+	/* destroy the stdcam instance */
+	void (*destroy)(struct en50221_stdcam *stdcam);
 };
 
-extern struct en50221_stdcam *en50221_stdcam_hlci_create(int cafd, int slotid);
+struct en50221_stdcam *en50221_stdcam_llci_create(struct en50221_transport_layer *tl,
+						  struct en50221_session_layer *sl,
+						  int cafd, int slotnum);
+
+extern struct en50221_stdcam *en50221_stdcam_hlci_create(int cafd, int slotnum);
 
 #endif

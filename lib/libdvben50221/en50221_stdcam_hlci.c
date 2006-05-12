@@ -34,7 +34,7 @@ struct en50221_stdcam_hlci {
 	struct en50221_stdcam stdcam;
 
 	int cafd;
-	int slotid;
+	int slotnum;
 	int initialised;
 	struct en50221_app_send_functions sendfuncs;
 };
@@ -50,7 +50,7 @@ static int hlci_send_datav(void *arg, uint16_t session_number,
 
 
 
-struct en50221_stdcam *en50221_stdcam_hlci_create(int cafd, int slotid)
+struct en50221_stdcam *en50221_stdcam_hlci_create(int cafd, int slotnum)
 {
 	// try and allocate space for the HLCI stdcam
 	struct en50221_stdcam_hlci *hlci =
@@ -65,19 +65,19 @@ struct en50221_stdcam *en50221_stdcam_hlci_create(int cafd, int slotid)
 	hlci->sendfuncs.send_data = hlci_send_data;
 	hlci->sendfuncs.send_datav = hlci_send_datav;
 
-	// create the resources
+	// create the resources (NOTE: we just use fake session numbers here)
 	hlci->stdcam.ai_resource = en50221_app_ai_create(&hlci->sendfuncs);
+	hlci->stdcam.ai_session_number = 0;
 	hlci->stdcam.ca_resource = en50221_app_ca_create(&hlci->sendfuncs);
+	hlci->stdcam.ca_session_number = 1;
 //      hlci->stdcam.mmi_resource = en50221_app_mmi_create(&hlci->sendfuncs);
+	hlci->stdcam.mmi_session_number = -1;
 
-	// setup the function pointers
+	// done
 	hlci->stdcam.destroy = en50221_stdcam_hlci_destroy;
 	hlci->stdcam.poll = en50221_stdcam_hlci_poll;
-
-	// store the ca/slot for later
 	hlci->cafd = cafd;
-	hlci->slotid = slotid;
-
+	hlci->slotnum = slotnum;
 	return &hlci->stdcam;
 }
 
@@ -99,7 +99,7 @@ static enum en50221_stdcam_status en50221_stdcam_hlci_poll(struct en50221_stdcam
 {
 	struct en50221_stdcam_hlci *hlci = (struct en50221_stdcam_hlci *) stdcam;
 
-	switch(dvbca_get_cam_state(hlci->cafd, hlci->slotid)) {
+	switch(dvbca_get_cam_state(hlci->cafd, hlci->slotnum)) {
 	case DVBCA_CAMSTATE_MISSING:
 		hlci->initialised = 0;
 		break;
@@ -111,8 +111,11 @@ static enum en50221_stdcam_status en50221_stdcam_hlci_poll(struct en50221_stdcam
 		break;
 	}
 
+	// delay to prevent busy loop
+	usleep(10);
+
 	if (!hlci->initialised) {
-		return EN50221_STDCAM_CAM_MISSING;
+		return EN50221_STDCAM_CAM_NONE;
 	}
 	return EN50221_STDCAM_CAM_OK;
 }
