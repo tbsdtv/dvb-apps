@@ -192,6 +192,13 @@ int main(int argc, char *argv[])
 	// setup any signals
 	signal(SIGINT, signal_handler);
 
+	// start the CA stuff
+	zap_ca_params.adapter_id = adapter_id;
+	zap_ca_params.caslot_num = caslot_num;
+	zap_ca_params.cammenu = cammenu;
+	zap_ca_params.moveca = moveca;
+	zap_ca_start(&zap_ca_params);
+
 	// start the DVB stuff if a channel was defined
 	if (channel_name != NULL) {
 		zap_dvb_params.adapter_id = adapter_id;
@@ -201,24 +208,24 @@ int main(int argc, char *argv[])
 		zap_dvb_start(&zap_dvb_params);
 	}
 
-	// start the CA stuff
-	zap_ca_params.adapter_id = adapter_id;
-	zap_ca_params.caslot_num = caslot_num;
-	zap_ca_params.cammenu = cammenu;
-	zap_ca_params.moveca = moveca;
-	zap_ca_start(&zap_ca_params);
-
 	// FIXME: start the fileoutput thread if necessary
 
 	// the UI
+	time_t start = time(NULL);
 	while(1) {
-		// FIXME: timeout
+		// the timeout
+		if (timeout != -1) {
+			if ((time(NULL) - start) >= timeout)
+				break;
+		}
 
 		if (cammenu)
 			zap_ca_ui();
 		else
 			usleep(1);
 	}
+
+	// FIXME: shutdown fileoutput thread if necessary
 
 	// shutdown DVB stuff
 	if (channel_name != NULL)
