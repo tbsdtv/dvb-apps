@@ -77,14 +77,14 @@ static void process_pmt(int pmt_fd, int *pmt_version);
 #define MMI_STATE_ENQ 2
 #define MMI_STATE_MENU 3
 
-en50221_app_ai ai_resource = NULL;
+struct en50221_app_ai *ai_resource = NULL;
 int ai_session_number = -1;
 
-en50221_app_ca ca_resource = NULL;
+struct en50221_app_ca *ca_resource = NULL;
 int ca_session_number = -1;
 int ca_resource_connected = 0;
 
-en50221_app_mmi mmi_resource = NULL;
+struct en50221_app_mmi *mmi_resource = NULL;
 int mmi_session_number = -1;
 int mmi_state = MMI_STATE_CLOSED;
 int mmi_enq_blind;

@@ -46,6 +46,9 @@ struct en50221_app_public_resource_id {
     uint8_t resource_version;
 };
 
+typedef int (*en50221_send_data)(void *arg, uint16_t session_number, uint8_t *data, uint16_t data_length);
+typedef int (*en50221_send_datav)(void *arg, uint16_t session_number, struct iovec *vector, int iov_count);
+
 /**
  * An abstraction away from hardcoded send functions so different layers may be
  * slotted in under the application layer.
@@ -59,12 +62,12 @@ struct en50221_app_send_functions {
     /**
      * Send data.
      */
-    int (*send_data)(void *arg, uint16_t session_number, uint8_t *data, uint16_t data_length);
+    en50221_send_data send_data;
 
     /**
      * Send vector data.
      */
-    int (*send_datav)(void *arg, uint16_t session_number, struct iovec *vector, int iov_count);
+    en50221_send_datav send_datav;
 };
 
 /**

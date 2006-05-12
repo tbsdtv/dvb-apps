@@ -47,8 +47,8 @@ int hlci_init()
 {
 	// create the sendfuncs
 	sendfuncs.arg        = NULL;
-	sendfuncs.send_data  = hlci_send_data;
-	sendfuncs.send_datav = hlci_send_datav;
+	sendfuncs.send_data  = (en50221_send_data) hlci_send_data;
+	sendfuncs.send_datav = (en50221_send_datav) hlci_send_datav;
 
 	// create the application information resource
 	ai_resource = en50221_app_ai_create(&sendfuncs);

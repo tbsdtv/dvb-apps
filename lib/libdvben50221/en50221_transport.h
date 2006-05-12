@@ -53,7 +53,7 @@ extern "C"
 /**
  * Opaque type representing a transport layer.
  */
-typedef void *en50221_transport_layer;
+struct en50221_transport_layer;
 
 /**
  * Type definition for callback function - used when events are received from a module.
@@ -84,14 +84,14 @@ typedef void (*en50221_tl_callback)(void *arg, int reason,
  * @param max_connections_per_slot Maximum connections per slot.
  * @return The en50221_transport_layer instance, or NULL on error.
  */
-extern en50221_transport_layer en50221_tl_create(uint8_t max_slots, uint8_t max_connections_per_slot);
+extern struct en50221_transport_layer *en50221_tl_create(uint8_t max_slots, uint8_t max_connections_per_slot);
 
 /**
  * Destroy an instance of the transport layer.
  *
  * @param tl The en50221_transport_layer instance.
  */
-extern void en50221_tl_destroy(en50221_transport_layer tl);
+extern void en50221_tl_destroy(struct en50221_transport_layer *tl);
 
 /**
  * Register a new slot with the library.
@@ -103,7 +103,7 @@ extern void en50221_tl_destroy(en50221_transport_layer tl);
  * @param poll_delay Interval between polls in ms.
  * @return slot_id on sucess, or -1 on error.
  */
-extern int en50221_tl_register_slot(en50221_transport_layer tl, int ca_hndl,
+extern int en50221_tl_register_slot(struct en50221_transport_layer *tl, int ca_hndl,
                                     uint8_t slot, uint32_t response_timeout,
                                     uint32_t poll_delay);
 
@@ -114,7 +114,7 @@ extern int en50221_tl_register_slot(en50221_transport_layer tl, int ca_hndl,
  * @param tl The en50221_transport_layer instance.
  * @param slot_id Slot to destroy.
  */
-extern void en50221_tl_destroy_slot(en50221_transport_layer tl, uint8_t slot_id);
+extern void en50221_tl_destroy_slot(struct en50221_transport_layer *tl, uint8_t slot_id);
 
 /**
  * Performs one iteration of the transport layer poll -
@@ -126,7 +126,7 @@ extern void en50221_tl_destroy_slot(en50221_transport_layer tl, uint8_t slot_id)
  * @param tl The en50221_transport_layer instance.
  * @return 0 on succes, or -1 if there was an error of some sort.
  */
-extern int en50221_tl_poll(en50221_transport_layer tl);
+extern int en50221_tl_poll(struct en50221_transport_layer *tl);
 
 /**
  * Register the callback for data reception.
@@ -135,7 +135,7 @@ extern int en50221_tl_poll(en50221_transport_layer tl);
  * @param callback The callback. Set to NULL to remove the callback completely.
  * @param arg Private data passed as arg0 of the callback.
  */
-extern void en50221_tl_register_callback(en50221_transport_layer tl,
+extern void en50221_tl_register_callback(struct en50221_transport_layer *tl,
                                          en50221_tl_callback callback, void *arg);
 
 /**
@@ -144,7 +144,7 @@ extern void en50221_tl_register_callback(en50221_transport_layer tl,
  * @param tl The en50221_transport_layer instance.
  * @return The offending slot id.
  */
-extern int en50221_tl_get_error_slot(en50221_transport_layer tl);
+extern int en50221_tl_get_error_slot(struct en50221_transport_layer *tl);
 
 /**
  * Gets the last error.
@@ -152,7 +152,7 @@ extern int en50221_tl_get_error_slot(en50221_transport_layer tl);
  * @param tl The en50221_transport_layer instance.
  * @return One of the EN50221ERR_* values.
  */
-extern int en50221_tl_get_error(en50221_transport_layer tl);
+extern int en50221_tl_get_error(struct en50221_transport_layer *tl);
 
 /**
  * This function is used to take a data-block, pack into
@@ -165,7 +165,7 @@ extern int en50221_tl_get_error(en50221_transport_layer tl);
  * @param data_length Number of bytes to send.
  * @return 0 on success, or -1 on error.
  */
-extern int en50221_tl_send_data(en50221_transport_layer tl,
+extern int en50221_tl_send_data(struct en50221_transport_layer *tl,
                                 uint8_t slot_id, uint8_t connection_id,
                                 uint8_t *data, uint32_t data_length);
 
@@ -180,7 +180,7 @@ extern int en50221_tl_send_data(en50221_transport_layer tl,
  * @param io_count Number of elements in vector.
  * @return 0 on success, or -1 on error.
  */
-extern int en50221_tl_send_datav(en50221_transport_layer tl, uint8_t slot_id,
+extern int en50221_tl_send_datav(struct en50221_transport_layer *tl, uint8_t slot_id,
                                  uint8_t connection_id, struct iovec *vector,
                                  int iov_count);
 
@@ -196,7 +196,7 @@ extern int en50221_tl_send_datav(en50221_transport_layer tl, uint8_t slot_id,
  * @param slot_id ID of the slot.
  * @return The allocated connection id on success, or -1 on error.
  */
-extern int en50221_tl_new_tc(en50221_transport_layer tl, uint8_t slot_id);
+extern int en50221_tl_new_tc(struct en50221_transport_layer *tl, uint8_t slot_id);
 
 /**
  * Deallocates a transport connection.
@@ -210,7 +210,7 @@ extern int en50221_tl_new_tc(en50221_transport_layer tl, uint8_t slot_id);
  * @param connection_id Connection id to send the request _on_.
  * @return 0 on success, or -1 on error.
  */
-extern int en50221_tl_del_tc(en50221_transport_layer tl, uint8_t slot_id,
+extern int en50221_tl_del_tc(struct en50221_transport_layer *tl, uint8_t slot_id,
                              uint8_t connection_id);
 
 /**
@@ -221,7 +221,7 @@ extern int en50221_tl_del_tc(en50221_transport_layer tl, uint8_t slot_id,
  * @param connection_id Connection id to send the request _on_.
  * @return One of the T_STATE_* values.
  */
-extern int en50221_tl_get_connection_state(en50221_transport_layer tl,
+extern int en50221_tl_get_connection_state(struct en50221_transport_layer *tl,
                                            uint8_t slot_id, uint8_t connection_id);
 
 #ifdef __cplusplus

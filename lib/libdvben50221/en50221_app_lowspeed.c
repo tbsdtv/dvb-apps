@@ -36,7 +36,7 @@ struct en50221_app_lowspeed_session {
         struct en50221_app_lowspeed_session *next;
 };
 
-struct en50221_app_lowspeed_private {
+struct en50221_app_lowspeed {
         struct en50221_app_send_functions *funcs;
 
         en50221_app_lowspeed_command_callback command_callback;
@@ -53,40 +53,38 @@ struct en50221_app_lowspeed_private {
 static int en50221_app_lowspeed_parse_connect_on_channel(struct en50221_app_lowspeed_command *command,
         uint8_t *data,
         int data_length);
-static int en50221_app_lowspeed_parse_command(struct en50221_app_lowspeed_private *private,
+static int en50221_app_lowspeed_parse_command(struct en50221_app_lowspeed *lowspeed,
                                                uint8_t slot_id, uint16_t session_number,
                                                uint8_t *data, uint32_t data_length);
-static int en50221_app_lowspeed_parse_send(struct en50221_app_lowspeed_private *private,
+static int en50221_app_lowspeed_parse_send(struct en50221_app_lowspeed *lowspeed,
                                             uint8_t slot_id, uint16_t session_number, int more_last,
                                             uint8_t *data, uint32_t data_length);
 
 
 
-en50221_app_lowspeed en50221_app_lowspeed_create(struct en50221_app_send_functions *funcs)
+struct en50221_app_lowspeed *en50221_app_lowspeed_create(struct en50221_app_send_functions *funcs)
 {
-    struct en50221_app_lowspeed_private *private = NULL;
+    struct en50221_app_lowspeed *lowspeed = NULL;
 
     // create structure and set it up
-    private = malloc(sizeof(struct en50221_app_lowspeed_private));
-    if (private == NULL) {
+    lowspeed = malloc(sizeof(struct en50221_app_lowspeed));
+    if (lowspeed == NULL) {
         return NULL;
     }
-    private->funcs = funcs;
-    private->command_callback = NULL;
-    private->send_callback = NULL;
-    private->sessions = NULL;
+    lowspeed->funcs = funcs;
+    lowspeed->command_callback = NULL;
+    lowspeed->send_callback = NULL;
+    lowspeed->sessions = NULL;
 
-    pthread_mutex_init(&private->lock, NULL);
+    pthread_mutex_init(&lowspeed->lock, NULL);
 
     // done
-    return private;
+    return lowspeed;
 }
 
-void en50221_app_lowspeed_destroy(en50221_app_lowspeed lowspeed)
+void en50221_app_lowspeed_destroy(struct en50221_app_lowspeed *lowspeed)
 {
-    struct en50221_app_lowspeed_private *private = (struct en50221_app_lowspeed_private *) lowspeed;
-
-    struct en50221_app_lowspeed_session *cur_s = private->sessions;
+    struct en50221_app_lowspeed_session *cur_s = lowspeed->sessions;
     while(cur_s) {
         struct en50221_app_lowspeed_session *next = cur_s->next;
         if (cur_s->block_chain)
@@ -95,16 +93,14 @@ void en50221_app_lowspeed_destroy(en50221_app_lowspeed lowspeed)
         cur_s = next;
     }
 
-    pthread_mutex_destroy(&private->lock);
-    free(private);
+    pthread_mutex_destroy(&lowspeed->lock);
+    free(lowspeed);
 }
 
-void en50221_app_lowspeed_clear_session(en50221_app_lowspeed lowspeed, uint16_t session_number)
+void en50221_app_lowspeed_clear_session(struct en50221_app_lowspeed *lowspeed, uint16_t session_number)
 {
-    struct en50221_app_lowspeed_private *private = (struct en50221_app_lowspeed_private *) lowspeed;
-
-    pthread_mutex_lock(&private->lock);
-    struct en50221_app_lowspeed_session *cur_s = private->sessions;
+    pthread_mutex_lock(&lowspeed->lock);
+    struct en50221_app_lowspeed_session *cur_s = lowspeed->sessions;
     struct en50221_app_lowspeed_session *prev_s = NULL;
     while(cur_s) {
         if (cur_s->session_number == session_number) {
@@ -113,7 +109,7 @@ void en50221_app_lowspeed_clear_session(en50221_app_lowspeed lowspeed, uint16_t 
             if (prev_s) {
                 prev_s->next = cur_s->next;
             } else {
-                private->sessions = cur_s->next;
+                lowspeed->sessions = cur_s->next;
             }
             free(cur_s);
             return;
@@ -122,37 +118,32 @@ void en50221_app_lowspeed_clear_session(en50221_app_lowspeed lowspeed, uint16_t 
         prev_s = cur_s;
         cur_s=cur_s->next;
     }
-    pthread_mutex_unlock(&private->lock);
+    pthread_mutex_unlock(&lowspeed->lock);
 }
 
-void en50221_app_lowspeed_register_command_callback(en50221_app_lowspeed lowspeed,
+void en50221_app_lowspeed_register_command_callback(struct en50221_app_lowspeed *lowspeed,
                                                     en50221_app_lowspeed_command_callback callback, void *arg)
 {
-    struct en50221_app_lowspeed_private *private = (struct en50221_app_lowspeed_private *) lowspeed;
-
-    pthread_mutex_lock(&private->lock);
-    private->command_callback = callback;
-    private->command_callback_arg = arg;
-    pthread_mutex_unlock(&private->lock);
+    pthread_mutex_lock(&lowspeed->lock);
+    lowspeed->command_callback = callback;
+    lowspeed->command_callback_arg = arg;
+    pthread_mutex_unlock(&lowspeed->lock);
 }
 
-void en50221_app_lowspeed_register_send_callback(en50221_app_lowspeed lowspeed,
+void en50221_app_lowspeed_register_send_callback(struct en50221_app_lowspeed *lowspeed,
                                                  en50221_app_lowspeed_send_callback callback, void *arg)
 {
-    struct en50221_app_lowspeed_private *private = (struct en50221_app_lowspeed_private *) lowspeed;
-
-    pthread_mutex_lock(&private->lock);
-    private->send_callback = callback;
-    private->send_callback_arg = arg;
-    pthread_mutex_unlock(&private->lock);
+    pthread_mutex_lock(&lowspeed->lock);
+    lowspeed->send_callback = callback;
+    lowspeed->send_callback_arg = arg;
+    pthread_mutex_unlock(&lowspeed->lock);
 }
 
-int en50221_app_lowspeed_send_comms_reply(en50221_app_lowspeed lowspeed,
+int en50221_app_lowspeed_send_comms_reply(struct en50221_app_lowspeed *lowspeed,
                                           uint16_t session_number,
                                           uint8_t comms_reply_id,
                                           uint8_t return_value)
 {
-    struct en50221_app_lowspeed_private *private = (struct en50221_app_lowspeed_private *) lowspeed;
     uint8_t data[6];
 
     data[0] = (TAG_COMMS_REPLY >> 16) & 0xFF;
@@ -161,16 +152,15 @@ int en50221_app_lowspeed_send_comms_reply(en50221_app_lowspeed lowspeed,
     data[3] = 2;
     data[4] = comms_reply_id;
     data[5] = return_value;
-    return private->funcs->send_data(private->funcs->arg, session_number, data, 6);
+    return lowspeed->funcs->send_data(lowspeed->funcs->arg, session_number, data, 6);
 }
 
-int en50221_app_lowspeed_send_comms_data(en50221_app_lowspeed lowspeed,
+int en50221_app_lowspeed_send_comms_data(struct en50221_app_lowspeed *lowspeed,
                                          uint16_t session_number,
                                          uint8_t phase_id,
                                          uint32_t tx_data_length,
                                          uint8_t *tx_data)
 {
-    struct en50221_app_lowspeed_private *private = (struct en50221_app_lowspeed_private *) lowspeed;
     uint8_t buf[10];
 
     // the spec defines this limit
@@ -200,16 +190,15 @@ int en50221_app_lowspeed_send_comms_data(en50221_app_lowspeed lowspeed,
     iov[1].iov_len = tx_data_length;
 
     // create the data and send it
-    return private->funcs->send_datav(private->funcs->arg, session_number, iov, 2);
+    return lowspeed->funcs->send_datav(lowspeed->funcs->arg, session_number, iov, 2);
 }
 
-int en50221_app_lowspeed_message(en50221_app_lowspeed lowspeed,
+int en50221_app_lowspeed_message(struct en50221_app_lowspeed *lowspeed,
                                  uint8_t slot_id,
                                  uint16_t session_number,
                                  uint32_t resource_id,
                                  uint8_t *data, uint32_t data_length)
 {
-    struct en50221_app_lowspeed_private *private = (struct en50221_app_lowspeed_private *) lowspeed;
     (void)resource_id;
 
     // get the tag
@@ -222,11 +211,11 @@ int en50221_app_lowspeed_message(en50221_app_lowspeed lowspeed,
     switch(tag)
     {
         case TAG_COMMS_COMMAND:
-            return en50221_app_lowspeed_parse_command(private, slot_id, session_number, data+3, data_length-3);
+            return en50221_app_lowspeed_parse_command(lowspeed, slot_id, session_number, data+3, data_length-3);
         case TAG_COMMS_SEND_LAST:
-            return en50221_app_lowspeed_parse_send(private, slot_id, session_number, 1, data+3, data_length-3);
+            return en50221_app_lowspeed_parse_send(lowspeed, slot_id, session_number, 1, data+3, data_length-3);
         case TAG_COMMS_SEND_MORE:
-            return en50221_app_lowspeed_parse_send(private, slot_id, session_number, 0, data+3, data_length-3);
+		return en50221_app_lowspeed_parse_send(lowspeed, slot_id, session_number, 0, data+3, data_length-3);
     }
 
     print(LOG_LEVEL, ERROR, 1, "Received unexpected tag %x\n", tag);
@@ -335,7 +324,7 @@ static int en50221_app_lowspeed_parse_connect_on_channel(struct en50221_app_lows
     return 0;
 }
 
-static int en50221_app_lowspeed_parse_command(struct en50221_app_lowspeed_private *private,
+static int en50221_app_lowspeed_parse_command(struct en50221_app_lowspeed *lowspeed,
                                                uint8_t slot_id, uint16_t session_number,
                                                uint8_t *data, uint32_t data_length)
 {
@@ -397,17 +386,17 @@ static int en50221_app_lowspeed_parse_command(struct en50221_app_lowspeed_privat
     }
 
     // tell the app
-    pthread_mutex_lock(&private->lock);
-    en50221_app_lowspeed_command_callback cb = private->command_callback;
-    void *cb_arg = private->command_callback_arg;
-    pthread_mutex_unlock(&private->lock);
+    pthread_mutex_lock(&lowspeed->lock);
+    en50221_app_lowspeed_command_callback cb = lowspeed->command_callback;
+    void *cb_arg = lowspeed->command_callback_arg;
+    pthread_mutex_unlock(&lowspeed->lock);
     if (cb) {
         return cb(cb_arg, slot_id, session_number, command_id, &command);
     }
     return 0;
 }
 
-static int en50221_app_lowspeed_parse_send(struct en50221_app_lowspeed_private *private,
+static int en50221_app_lowspeed_parse_send(struct en50221_app_lowspeed *lowspeed,
                                             uint8_t slot_id, uint16_t session_number, int more_last,
                                             uint8_t *data, uint32_t data_length)
 {
@@ -429,8 +418,8 @@ static int en50221_app_lowspeed_parse_send(struct en50221_app_lowspeed_private *
     data += length_field_len;
 
     // find previous session
-    pthread_mutex_lock(&private->lock);
-    struct en50221_app_lowspeed_session *cur_s = private->sessions;
+    pthread_mutex_lock(&lowspeed->lock);
+    struct en50221_app_lowspeed_session *cur_s = lowspeed->sessions;
     while(cur_s) {
         if (cur_s->session_number == session_number)
             break;
@@ -444,21 +433,21 @@ static int en50221_app_lowspeed_parse_send(struct en50221_app_lowspeed_private *
             cur_s = malloc(sizeof(struct en50221_app_lowspeed_session));
             if (cur_s == NULL) {
                 print(LOG_LEVEL, ERROR, 1, "Ran out of memory\n");
-                pthread_mutex_unlock(&private->lock);
+                pthread_mutex_unlock(&lowspeed->lock);
                 return -1;
             }
             cur_s->session_number = session_number;
             cur_s->block_chain = NULL;
             cur_s->block_length = 0;
-            cur_s->next = private->sessions;
-            private->sessions = cur_s;
+            cur_s->next = lowspeed->sessions;
+            lowspeed->sessions = cur_s;
         }
 
         // append the data
         uint8_t *new_data = realloc(cur_s->block_chain, cur_s->block_length + asn_data_length);
         if (new_data == NULL) {
             print(LOG_LEVEL, ERROR, 1, "Ran out of memory\n");
-            pthread_mutex_unlock(&private->lock);
+            pthread_mutex_unlock(&lowspeed->lock);
             return -1;
         }
         memcpy(new_data + cur_s->block_length, data, asn_data_length);
@@ -466,7 +455,7 @@ static int en50221_app_lowspeed_parse_send(struct en50221_app_lowspeed_private *
         cur_s->block_length += asn_data_length;
 
         // done
-        pthread_mutex_unlock(&private->lock);
+        pthread_mutex_unlock(&lowspeed->lock);
         return 0;
     }
 
@@ -477,7 +466,7 @@ static int en50221_app_lowspeed_parse_send(struct en50221_app_lowspeed_private *
         uint8_t *new_data = realloc(cur_s->block_chain, cur_s->block_length + asn_data_length);
         if (new_data == NULL) {
             print(LOG_LEVEL, ERROR, 1, "Ran out of memory\n");
-            pthread_mutex_unlock(&private->lock);
+            pthread_mutex_unlock(&lowspeed->lock);
             return -1;
         }
         memcpy(new_data + cur_s->block_length, data, asn_data_length);
@@ -490,7 +479,7 @@ static int en50221_app_lowspeed_parse_send(struct en50221_app_lowspeed_private *
 
     // check the reassembled data length
     if (asn_data_length < 1) {
-        pthread_mutex_unlock(&private->lock);
+        pthread_mutex_unlock(&lowspeed->lock);
         print(LOG_LEVEL, ERROR, 1, "Received short data\n");
         if (do_free) free(data);
         return -1;
@@ -500,9 +489,9 @@ static int en50221_app_lowspeed_parse_send(struct en50221_app_lowspeed_private *
     uint8_t phase_id = data[0];
 
     // tell the app
-    en50221_app_lowspeed_send_callback cb = private->send_callback;
-    void *cb_arg = private->send_callback_arg;
-    pthread_mutex_unlock(&private->lock);
+    en50221_app_lowspeed_send_callback cb = lowspeed->send_callback;
+    void *cb_arg = lowspeed->send_callback_arg;
+    pthread_mutex_unlock(&lowspeed->lock);
     int cbstatus = 0;
     if (cb) {
         cbstatus = cb(cb_arg, slot_id, session_number, phase_id, data+1, asn_data_length-1);

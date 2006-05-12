@@ -29,7 +29,7 @@
 #include "en50221_app_tags.h"
 #include "asn_1.h"
 
-struct en50221_app_datetime_private {
+struct en50221_app_datetime {
         struct en50221_app_send_functions *funcs;
 
         en50221_app_datetime_enquiry_callback callback;
@@ -38,55 +38,50 @@ struct en50221_app_datetime_private {
         pthread_mutex_t lock;
 };
 
-static int en50221_app_datetime_parse_enquiry(struct en50221_app_datetime_private *private,
+static int en50221_app_datetime_parse_enquiry(struct en50221_app_datetime *datetime,
                                                uint8_t slot_id, uint16_t session_number,
                                                uint8_t *data, uint32_t data_length);
 
 
 
-en50221_app_datetime en50221_app_datetime_create(struct en50221_app_send_functions *funcs)
+struct en50221_app_datetime *en50221_app_datetime_create(struct en50221_app_send_functions *funcs)
 {
-    struct en50221_app_datetime_private *private = NULL;
+    struct en50221_app_datetime *datetime = NULL;
 
     // create structure and set it up
-    private = malloc(sizeof(struct en50221_app_datetime_private));
-    if (private == NULL) {
+    datetime = malloc(sizeof(struct en50221_app_datetime));
+    if (datetime == NULL) {
         return NULL;
     }
-    private->funcs = funcs;
-    private->callback = NULL;
+    datetime->funcs = funcs;
+    datetime->callback = NULL;
 
-    pthread_mutex_init(&private->lock, NULL);
+    pthread_mutex_init(&datetime->lock, NULL);
 
     // done
-    return private;
+    return datetime;
 }
 
-void en50221_app_datetime_destroy(en50221_app_datetime datetime)
+void en50221_app_datetime_destroy(struct en50221_app_datetime *datetime)
 {
-    struct en50221_app_datetime_private *private = (struct en50221_app_datetime_private *) datetime;
-
-    pthread_mutex_destroy(&private->lock);
-    free(private);
+    pthread_mutex_destroy(&datetime->lock);
+    free(datetime);
 }
 
-void en50221_app_datetime_register_enquiry_callback(en50221_app_datetime datetime,
+void en50221_app_datetime_register_enquiry_callback(struct en50221_app_datetime *datetime,
                                             en50221_app_datetime_enquiry_callback callback, void *arg)
 {
-    struct en50221_app_datetime_private *private = (struct en50221_app_datetime_private *) datetime;
-
-    pthread_mutex_lock(&private->lock);
-    private->callback = callback;
-    private->callback_arg = arg;
-    pthread_mutex_unlock(&private->lock);
+    pthread_mutex_lock(&datetime->lock);
+    datetime->callback = callback;
+    datetime->callback_arg = arg;
+    pthread_mutex_unlock(&datetime->lock);
 }
 
-int en50221_app_datetime_send(en50221_app_datetime datetime,
+int en50221_app_datetime_send(struct en50221_app_datetime *datetime,
                               uint16_t session_number,
                               time_t utc_time,
                               int time_offset)
 {
-    struct en50221_app_datetime_private *private = (struct en50221_app_datetime_private *) datetime;
     uint8_t data[11];
     int data_length;
 
@@ -104,16 +99,15 @@ int en50221_app_datetime_send(en50221_app_datetime datetime,
         unixtime_to_dvbdate(utc_time, data+4);
         data_length = 9;
     }
-    return private->funcs->send_data(private->funcs->arg, session_number, data, data_length);
+    return datetime->funcs->send_data(datetime->funcs->arg, session_number, data, data_length);
 }
 
-int en50221_app_datetime_message(en50221_app_datetime datetime,
+int en50221_app_datetime_message(struct en50221_app_datetime *datetime,
                                   uint8_t slot_id,
                                   uint16_t session_number,
                                   uint32_t resource_id,
                                   uint8_t *data, uint32_t data_length)
 {
-    struct en50221_app_datetime_private *private = (struct en50221_app_datetime_private *) datetime;
     (void) resource_id;
 
     // get the tag
@@ -126,7 +120,7 @@ int en50221_app_datetime_message(en50221_app_datetime datetime,
     switch(tag)
     {
         case TAG_DATE_TIME_ENQUIRY:
-            return en50221_app_datetime_parse_enquiry(private, slot_id, session_number, data+3, data_length-3);
+            return en50221_app_datetime_parse_enquiry(datetime, slot_id, session_number, data+3, data_length-3);
     }
 
     print(LOG_LEVEL, ERROR, 1, "Received unexpected tag %x\n", tag);
@@ -142,7 +136,7 @@ int en50221_app_datetime_message(en50221_app_datetime datetime,
 
 
 
-static int en50221_app_datetime_parse_enquiry(struct en50221_app_datetime_private *private,
+static int en50221_app_datetime_parse_enquiry(struct en50221_app_datetime *datetime,
                                                uint8_t slot_id, uint16_t session_number,
                                                uint8_t *data, uint32_t data_length)
 {
@@ -158,10 +152,10 @@ static int en50221_app_datetime_parse_enquiry(struct en50221_app_datetime_privat
     uint8_t response_interval = data[1];
 
     // tell the app
-    pthread_mutex_lock(&private->lock);
-    en50221_app_datetime_enquiry_callback cb = private->callback;
-    void *cb_arg = private->callback_arg;
-    pthread_mutex_unlock(&private->lock);
+    pthread_mutex_lock(&datetime->lock);
+    en50221_app_datetime_enquiry_callback cb = datetime->callback;
+    void *cb_arg = datetime->callback_arg;
+    pthread_mutex_unlock(&datetime->lock);
     if (cb) {
         return cb(cb_arg, slot_id, session_number, response_interval);
     }

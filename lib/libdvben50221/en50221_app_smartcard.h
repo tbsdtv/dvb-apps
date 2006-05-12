@@ -94,7 +94,7 @@ typedef int (*en50221_app_smartcard_send_callback)(void *arg, uint8_t slot_id, u
 /**
  * Opaque type representing a smartcard resource.
  */
-typedef void *en50221_app_smartcard;
+struct en50221_app_smartcard;
 
 /**
  * Create an instance of the smartcard resource.
@@ -102,14 +102,14 @@ typedef void *en50221_app_smartcard;
  * @param funcs Send functions to use.
  * @return Instance, or NULL on failure.
  */
-extern en50221_app_smartcard en50221_app_smartcard_create(struct en50221_app_send_functions *funcs);
+extern struct en50221_app_smartcard *en50221_app_smartcard_create(struct en50221_app_send_functions *funcs);
 
 /**
  * Destroy an instance of the smartcard resource.
  *
  * @param smartcard Instance to destroy.
  */
-extern void en50221_app_smartcard_destroy(en50221_app_smartcard smartcard);
+extern void en50221_app_smartcard_destroy(struct en50221_app_smartcard *smartcard);
 
 /**
  * Register the callback for when we receive a comms command.
@@ -118,7 +118,7 @@ extern void en50221_app_smartcard_destroy(en50221_app_smartcard smartcard);
  * @param callback The callback. Set to NULL to remove the callback completely.
  * @param arg Private data passed as arg0 of the callback.
  */
-extern void en50221_app_smartcard_register_command_callback(en50221_app_smartcard smartcard,
+extern void en50221_app_smartcard_register_command_callback(struct en50221_app_smartcard *smartcard,
         en50221_app_smartcard_command_callback callback, void *arg);
 
 /**
@@ -128,7 +128,7 @@ extern void en50221_app_smartcard_register_command_callback(en50221_app_smartcar
  * @param callback The callback. Set to NULL to remove the callback completely.
  * @param arg Private data passed as arg0 of the callback.
  */
-extern void en50221_app_smartcard_register_send_callback(en50221_app_smartcard smartcard,
+extern void en50221_app_smartcard_register_send_callback(struct en50221_app_smartcard *smartcard,
         en50221_app_smartcard_send_callback callback, void *arg);
 
 /**
@@ -142,7 +142,7 @@ extern void en50221_app_smartcard_register_send_callback(en50221_app_smartcard s
  * @param data_length Length of data to send.
  * @return 0 on success, -1 on failure.
  */
-extern int en50221_app_smartcard_command_reply(en50221_app_smartcard smartcard,
+extern int en50221_app_smartcard_command_reply(struct en50221_app_smartcard *smartcard,
                                                uint16_t session_number,
                                                uint8_t reply_id,
                                                uint8_t status,
@@ -160,7 +160,7 @@ extern int en50221_app_smartcard_command_reply(en50221_app_smartcard smartcard,
  * @param SW2 SW2 value.
  * @return 0 on success, -1 on failure.
  */
-extern int en50221_app_smartcard_receive(en50221_app_smartcard smartcard,
+extern int en50221_app_smartcard_receive(struct en50221_app_smartcard *smartcard,
                                          uint16_t session_number,
                                          uint8_t *data,
                                          uint32_t data_length,
@@ -178,7 +178,7 @@ extern int en50221_app_smartcard_receive(en50221_app_smartcard smartcard,
  * @param data_length Length of data in bytes.
  * @return 0 on success, -1 on failure.
  */
-extern int en50221_app_smartcard_message(en50221_app_smartcard smartcard,
+extern int en50221_app_smartcard_message(struct en50221_app_smartcard *smartcard,
                                          uint8_t slot_id,
                                          uint16_t session_number,
                                          uint32_t resource_id,

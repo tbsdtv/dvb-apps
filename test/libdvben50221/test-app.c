@@ -132,11 +132,11 @@ int ca_session_number = 0;
 
 
 // instances of resources we actually implement here
-en50221_app_rm rm_resource;
-en50221_app_datetime datetime_resource;
-en50221_app_ai ai_resource;
-en50221_app_ca ca_resource;
-en50221_app_mmi mmi_resource;
+struct en50221_app_rm *rm_resource;
+struct en50221_app_datetime *datetime_resource;
+struct en50221_app_ai *ai_resource;
+struct en50221_app_ca *ca_resource;
+struct en50221_app_mmi *mmi_resource;
 
 // lookup table used in resource manager implementation
 struct resource {
@@ -186,7 +186,7 @@ int main(int argc, char * argv[])
     }
 
     // create transport layer
-    en50221_transport_layer tl = en50221_tl_create(5, 32);
+    struct en50221_transport_layer *tl = en50221_tl_create(5, 32);
     if (tl == NULL) {
         fprintf(stderr, "Failed to create transport layer\n");
         exit(1);
@@ -215,7 +215,7 @@ int main(int argc, char * argv[])
     printf("slotid: %i\n", slot_id);
 
     // create session layer
-    en50221_session_layer sl = en50221_sl_create(tl, 256);
+    struct en50221_session_layer *sl = en50221_sl_create(tl, 256);
     if (sl == NULL) {
         fprintf(stderr, "Failed to create session layer\n");
         exit(1);
@@ -223,14 +223,14 @@ int main(int argc, char * argv[])
 
     // create the sendfuncs
     sendfuncs.arg        = sl;
-    sendfuncs.send_data  = en50221_sl_send_data;
-    sendfuncs.send_datav = en50221_sl_send_datav;
+    sendfuncs.send_data  = (en50221_send_data) en50221_sl_send_data;
+    sendfuncs.send_datav = (en50221_send_datav) en50221_sl_send_datav;
 
     // create the resource manager resource
     rm_resource = en50221_app_rm_create(&sendfuncs);
     en50221_app_decode_public_resource_id(&resources[resources_count].resid, EN50221_APP_RM_RESOURCEID);
     resources[resources_count].binary_resource_id = EN50221_APP_RM_RESOURCEID;
-    resources[resources_count].callback = en50221_app_rm_message;
+    resources[resources_count].callback = (en50221_sl_resource_callback) en50221_app_rm_message;
     resources[resources_count].arg = rm_resource;
     en50221_app_rm_register_enq_callback(rm_resource, test_rm_enq_callback, NULL);
     en50221_app_rm_register_reply_callback(rm_resource, test_rm_reply_callback, NULL);
@@ -241,7 +241,7 @@ int main(int argc, char * argv[])
     datetime_resource = en50221_app_datetime_create(&sendfuncs);
     en50221_app_decode_public_resource_id(&resources[resources_count].resid, EN50221_APP_DATETIME_RESOURCEID);
     resources[resources_count].binary_resource_id = EN50221_APP_DATETIME_RESOURCEID;
-    resources[resources_count].callback = en50221_app_datetime_message;
+    resources[resources_count].callback = (en50221_sl_resource_callback) en50221_app_datetime_message;
     resources[resources_count].arg = datetime_resource;
     en50221_app_datetime_register_enquiry_callback(datetime_resource, test_datetime_enquiry_callback, NULL);
     resources_count++;
@@ -250,7 +250,7 @@ int main(int argc, char * argv[])
     ai_resource = en50221_app_ai_create(&sendfuncs);
     en50221_app_decode_public_resource_id(&resources[resources_count].resid, EN50221_APP_AI_RESOURCEID);
     resources[resources_count].binary_resource_id = EN50221_APP_AI_RESOURCEID;
-    resources[resources_count].callback = en50221_app_ai_message;
+    resources[resources_count].callback = (en50221_sl_resource_callback) en50221_app_ai_message;
     resources[resources_count].arg = ai_resource;
     en50221_app_ai_register_callback(ai_resource, test_ai_callback, NULL);
     resources_count++;
@@ -259,7 +259,7 @@ int main(int argc, char * argv[])
     ca_resource = en50221_app_ca_create(&sendfuncs);
     en50221_app_decode_public_resource_id(&resources[resources_count].resid, EN50221_APP_CA_RESOURCEID);
     resources[resources_count].binary_resource_id = EN50221_APP_CA_RESOURCEID;
-    resources[resources_count].callback = en50221_app_ca_message;
+    resources[resources_count].callback = (en50221_sl_resource_callback) en50221_app_ca_message;
     resources[resources_count].arg = ca_resource;
     en50221_app_ca_register_info_callback(ca_resource, test_ca_info_callback, NULL);
     en50221_app_ca_register_pmt_reply_callback(ca_resource, test_ca_pmt_reply_callback, NULL);
@@ -269,7 +269,7 @@ int main(int argc, char * argv[])
     mmi_resource = en50221_app_mmi_create(&sendfuncs);
     en50221_app_decode_public_resource_id(&resources[resources_count].resid, EN50221_APP_MMI_RESOURCEID);
     resources[resources_count].binary_resource_id = EN50221_APP_MMI_RESOURCEID;
-    resources[resources_count].callback = en50221_app_mmi_message;
+    resources[resources_count].callback = (en50221_sl_resource_callback) en50221_app_mmi_message;
     resources[resources_count].arg = mmi_resource;
     en50221_app_mmi_register_close_callback(mmi_resource, test_mmi_close_callback, NULL);
     en50221_app_mmi_register_display_control_callback(mmi_resource, test_mmi_display_control_callback, NULL);
@@ -735,7 +735,7 @@ int test_app_mmi_list_callback(void *arg, uint8_t slot_id, uint16_t session_numb
 
 
 void *stackthread_func(void* arg) {
-    en50221_transport_layer tl = arg;
+    struct en50221_transport_layer *tl = arg;
     int lasterror = 0;
 
     while(!shutdown_stackthread) {

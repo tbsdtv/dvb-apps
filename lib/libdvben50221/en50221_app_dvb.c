@@ -28,7 +28,7 @@
 #include "en50221_app_tags.h"
 #include "asn_1.h"
 
-struct en50221_app_dvb_private {
+struct en50221_app_dvb {
         struct en50221_app_send_functions *funcs;
 
         en50221_app_dvb_tune_callback tune_callback;
@@ -43,84 +43,75 @@ struct en50221_app_dvb_private {
         pthread_mutex_t lock;
 };
 
-static int en50221_app_dvb_parse_tune(struct en50221_app_dvb_private *private,
+static int en50221_app_dvb_parse_tune(struct en50221_app_dvb *dvb,
                                        uint8_t slot_id, uint16_t session_number,
                                        uint8_t *data, uint32_t data_length);
 
-static int en50221_app_dvb_parse_replace(struct en50221_app_dvb_private *private,
+static int en50221_app_dvb_parse_replace(struct en50221_app_dvb *dvb,
                                           uint8_t slot_id, uint16_t session_number,
                                           uint8_t *data, uint32_t data_length);
 
-static int en50221_app_dvb_parse_clear_replace(struct en50221_app_dvb_private *private,
+static int en50221_app_dvb_parse_clear_replace(struct en50221_app_dvb *dvb,
                                                 uint8_t slot_id, uint16_t session_number,
                                                 uint8_t *data, uint32_t data_length);
 
 
 
-en50221_app_dvb en50221_app_dvb_create(struct en50221_app_send_functions *funcs)
+struct en50221_app_dvb *en50221_app_dvb_create(struct en50221_app_send_functions *funcs)
 {
-    struct en50221_app_dvb_private *private = NULL;
+    struct en50221_app_dvb *dvb = NULL;
 
     // create structure and set it up
-    private = malloc(sizeof(struct en50221_app_dvb_private));
-    if (private == NULL) {
+    dvb = malloc(sizeof(struct en50221_app_dvb));
+    if (dvb == NULL) {
         return NULL;
     }
-    private->funcs = funcs;
-    private->tune_callback = NULL;
-    private->replace_callback = NULL;
-    private->clear_replace_callback = NULL;
+    dvb->funcs = funcs;
+    dvb->tune_callback = NULL;
+    dvb->replace_callback = NULL;
+    dvb->clear_replace_callback = NULL;
 
-    pthread_mutex_init(&private->lock, NULL);
+    pthread_mutex_init(&dvb->lock, NULL);
 
     // done
-    return private;
+    return dvb;
 }
 
-void en50221_app_dvb_destroy(en50221_app_dvb dvb)
+void en50221_app_dvb_destroy(struct en50221_app_dvb *dvb)
 {
-    struct en50221_app_dvb_private *private = (struct en50221_app_dvb_private *) dvb;
-
-    pthread_mutex_destroy(&private->lock);
-    free(private);
+    pthread_mutex_destroy(&dvb->lock);
+    free(dvb);
 }
 
-void en50221_app_dvb_register_tune_callback(en50221_app_dvb dvb,
+void en50221_app_dvb_register_tune_callback(struct en50221_app_dvb *dvb,
                                             en50221_app_dvb_tune_callback callback, void *arg)
 {
-    struct en50221_app_dvb_private *private = (struct en50221_app_dvb_private *) dvb;
-
-    pthread_mutex_lock(&private->lock);
-    private->tune_callback = callback;
-    private->tune_callback_arg = arg;
-    pthread_mutex_unlock(&private->lock);
+    pthread_mutex_lock(&dvb->lock);
+    dvb->tune_callback = callback;
+    dvb->tune_callback_arg = arg;
+    pthread_mutex_unlock(&dvb->lock);
 }
 
-void en50221_app_dvb_register_replace_callback(en50221_app_dvb dvb,
+void en50221_app_dvb_register_replace_callback(struct en50221_app_dvb *dvb,
                                                en50221_app_dvb_replace_callback callback, void *arg)
 {
-    struct en50221_app_dvb_private *private = (struct en50221_app_dvb_private *) dvb;
-
-    pthread_mutex_lock(&private->lock);
-    private->replace_callback = callback;
-    private->replace_callback_arg = arg;
-    pthread_mutex_unlock(&private->lock);
+    pthread_mutex_lock(&dvb->lock);
+    dvb->replace_callback = callback;
+    dvb->replace_callback_arg = arg;
+    pthread_mutex_unlock(&dvb->lock);
 }
 
-void en50221_app_dvb_register_clear_replace_callback(en50221_app_dvb dvb,
+void en50221_app_dvb_register_clear_replace_callback(struct en50221_app_dvb *dvb,
                                                      en50221_app_dvb_clear_replace_callback callback, void *arg)
 {
-    struct en50221_app_dvb_private *private = (struct en50221_app_dvb_private *) dvb;
-
-    pthread_mutex_lock(&private->lock);
-    private->clear_replace_callback = callback;
-    private->clear_replace_callback_arg = arg;
-    pthread_mutex_unlock(&private->lock);
+    pthread_mutex_lock(&dvb->lock);
+    dvb->clear_replace_callback = callback;
+    dvb->clear_replace_callback_arg = arg;
+    pthread_mutex_unlock(&dvb->lock);
 }
 
-int en50221_app_dvb_ask_release(en50221_app_dvb dvb, uint16_t session_number)
+int en50221_app_dvb_ask_release(struct en50221_app_dvb *dvb, uint16_t session_number)
 {
-    struct en50221_app_dvb_private *private = (struct en50221_app_dvb_private *) dvb;
     uint8_t data[4];
 
     data[0] = (TAG_ASK_RELEASE >> 16) & 0xFF;
@@ -128,16 +119,15 @@ int en50221_app_dvb_ask_release(en50221_app_dvb dvb, uint16_t session_number)
     data[2] = TAG_ASK_RELEASE & 0xFF;
     data[3] = 0;
 
-    return private->funcs->send_data(private->funcs->arg, session_number, data, 4);
+    return dvb->funcs->send_data(dvb->funcs->arg, session_number, data, 4);
 }
 
-int en50221_app_dvb_message(en50221_app_dvb dvb,
+int en50221_app_dvb_message(struct en50221_app_dvb *dvb,
                             uint8_t slot_id,
                             uint16_t session_number,
                             uint32_t resource_id,
                             uint8_t *data, uint32_t data_length)
 {
-    struct en50221_app_dvb_private *private = (struct en50221_app_dvb_private *) dvb;
     (void) resource_id;
 
     // get the tag
@@ -150,11 +140,11 @@ int en50221_app_dvb_message(en50221_app_dvb dvb,
     switch(tag)
     {
         case TAG_TUNE:
-            return en50221_app_dvb_parse_tune(private, slot_id, session_number, data+3, data_length-3);
+            return en50221_app_dvb_parse_tune(dvb, slot_id, session_number, data+3, data_length-3);
         case TAG_REPLACE:
-            return en50221_app_dvb_parse_replace(private, slot_id, session_number, data+3, data_length-3);
+            return en50221_app_dvb_parse_replace(dvb, slot_id, session_number, data+3, data_length-3);
         case TAG_CLEAR_REPLACE:
-            return en50221_app_dvb_parse_clear_replace(private, slot_id, session_number, data+3, data_length-3);
+            return en50221_app_dvb_parse_clear_replace(dvb, slot_id, session_number, data+3, data_length-3);
     }
 
     print(LOG_LEVEL, ERROR, 1, "Received unexpected tag %x\n", tag);
@@ -170,7 +160,7 @@ int en50221_app_dvb_message(en50221_app_dvb dvb,
 
 
 
-static int en50221_app_dvb_parse_tune(struct en50221_app_dvb_private *private,
+static int en50221_app_dvb_parse_tune(struct en50221_app_dvb *dvb,
                                        uint8_t slot_id, uint16_t session_number,
                                        uint8_t *data, uint32_t data_length)
 {
@@ -192,17 +182,17 @@ static int en50221_app_dvb_parse_tune(struct en50221_app_dvb_private *private,
     uint16_t service_id = (tune_data[6] << 8) | tune_data[7];
 
     // tell the app
-    pthread_mutex_lock(&private->lock);
-    en50221_app_dvb_tune_callback cb = private->tune_callback;
-    void *cb_arg = private->tune_callback_arg;
-    pthread_mutex_unlock(&private->lock);
+    pthread_mutex_lock(&dvb->lock);
+    en50221_app_dvb_tune_callback cb = dvb->tune_callback;
+    void *cb_arg = dvb->tune_callback_arg;
+    pthread_mutex_unlock(&dvb->lock);
     if (cb) {
         return cb(cb_arg, slot_id, session_number, network_id, original_network_id, transport_stream_id, service_id);
     }
     return 0;
 }
 
-static int en50221_app_dvb_parse_replace(struct en50221_app_dvb_private *private,
+static int en50221_app_dvb_parse_replace(struct en50221_app_dvb *dvb,
                                        uint8_t slot_id, uint16_t session_number,
                                        uint8_t *data, uint32_t data_length)
 {
@@ -223,17 +213,17 @@ static int en50221_app_dvb_parse_replace(struct en50221_app_dvb_private *private
     uint16_t replacement_pid = ((replace_data[3] & 0x1f)<<8) | replace_data[4];
 
     // tell the app
-    pthread_mutex_lock(&private->lock);
-    en50221_app_dvb_replace_callback cb = private->replace_callback;
-    void *cb_arg = private->replace_callback_arg;
-    pthread_mutex_unlock(&private->lock);
+    pthread_mutex_lock(&dvb->lock);
+    en50221_app_dvb_replace_callback cb = dvb->replace_callback;
+    void *cb_arg = dvb->replace_callback_arg;
+    pthread_mutex_unlock(&dvb->lock);
     if (cb) {
         return cb(cb_arg, slot_id, session_number, replacement_ref, replace_pid, replacement_pid);
     }
     return 0;
 }
 
-static int en50221_app_dvb_parse_clear_replace(struct en50221_app_dvb_private *private,
+static int en50221_app_dvb_parse_clear_replace(struct en50221_app_dvb *dvb,
                                                 uint8_t slot_id, uint16_t session_number,
                                                 uint8_t *data, uint32_t data_length)
 {
@@ -252,10 +242,10 @@ static int en50221_app_dvb_parse_clear_replace(struct en50221_app_dvb_private *p
     uint8_t replacement_ref = replace_data[0];
 
     // tell the app
-    pthread_mutex_lock(&private->lock);
-    en50221_app_dvb_clear_replace_callback cb = private->clear_replace_callback;
-    void *cb_arg = private->clear_replace_callback_arg;
-    pthread_mutex_unlock(&private->lock);
+    pthread_mutex_lock(&dvb->lock);
+    en50221_app_dvb_clear_replace_callback cb = dvb->clear_replace_callback;
+    void *cb_arg = dvb->clear_replace_callback_arg;
+    pthread_mutex_unlock(&dvb->lock);
     if (cb) {
         return cb(cb_arg, slot_id, session_number, replacement_ref);
     }

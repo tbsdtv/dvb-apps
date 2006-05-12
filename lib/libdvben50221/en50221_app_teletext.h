@@ -53,7 +53,7 @@ typedef int (*en50221_app_teletext_callback)(void *arg, uint8_t slot_id, uint16_
 /**
  * Opaque type representing a teletext resource.
  */
-typedef void *en50221_app_teletext;
+struct en50221_app_teletext;
 
 /**
  * Create an instance of the teletext resource.
@@ -61,14 +61,14 @@ typedef void *en50221_app_teletext;
  * @param funcs Send functions to use.
  * @return Instance, or NULL on failure.
  */
-extern en50221_app_teletext en50221_app_teletext_create(struct en50221_app_send_functions *funcs);
+extern struct en50221_app_teletext *en50221_app_teletext_create(struct en50221_app_send_functions *funcs);
 
 /**
  * Destroy an instance of the teletext resource.
  *
  * @param teletext Instance to destroy.
  */
-extern void en50221_app_teletext_destroy(en50221_app_teletext teletext);
+extern void en50221_app_teletext_destroy(struct en50221_app_teletext *teletext);
 
 /**
  * Register the callback for when we receive a request.
@@ -77,7 +77,7 @@ extern void en50221_app_teletext_destroy(en50221_app_teletext teletext);
  * @param callback The callback. Set to NULL to remove the callback completely.
  * @param arg Private data passed as arg0 of the callback.
  */
-extern void en50221_app_teletext_register_callback(en50221_app_teletext teletext,
+extern void en50221_app_teletext_register_callback(struct en50221_app_teletext *teletext,
                                                    en50221_app_teletext_callback callback, void *arg);
 
 /**
@@ -91,7 +91,7 @@ extern void en50221_app_teletext_register_callback(en50221_app_teletext teletext
  * @param data_length Length of data in bytes.
  * @return 0 on success, -1 on failure.
  */
-extern int en50221_app_teletext_message(en50221_app_teletext teletext,
+extern int en50221_app_teletext_message(struct en50221_app_teletext *teletext,
                                          uint8_t slot_id,
                                          uint16_t session_number,
                                          uint32_t resource_id,

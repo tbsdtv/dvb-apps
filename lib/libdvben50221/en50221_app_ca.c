@@ -34,7 +34,7 @@
 #define TAG_CA_PMT              0x9f8032
 #define TAG_CA_PMT_REPLY        0x9f8033
 
-struct en50221_app_ca_private {
+struct en50221_app_ca {
     struct en50221_app_send_functions *funcs;
 
     en50221_app_ca_info_callback ca_info_callback;
@@ -70,83 +70,75 @@ static void en50221_ca_try_move_pmt_descriptors(struct ca_pmt_descriptor **pmt_d
 static uint32_t en50221_ca_calculate_length(struct ca_pmt_descriptor *pmt_descriptors,
                                             uint32_t *pmt_descriptors_length,
                                             struct ca_pmt_stream *pmt_streams);
-static int en50221_app_ca_parse_info(struct en50221_app_ca_private *private,
+static int en50221_app_ca_parse_info(struct en50221_app_ca *ca,
                                       uint8_t slot_id, uint16_t session_number,
                                       uint8_t *data, uint32_t data_length);
-static int en50221_app_ca_parse_reply(struct en50221_app_ca_private *private,
+static int en50221_app_ca_parse_reply(struct en50221_app_ca *ca,
                                        uint8_t slot_id, uint16_t session_number,
                                        uint8_t *data, uint32_t data_length);
 
 
 
-en50221_app_ca en50221_app_ca_create(struct en50221_app_send_functions *funcs)
+struct en50221_app_ca *en50221_app_ca_create(struct en50221_app_send_functions *funcs)
 {
-    struct en50221_app_ca_private *private = NULL;
+    struct en50221_app_ca *ca = NULL;
 
     // create structure and set it up
-    private = malloc(sizeof(struct en50221_app_ca_private));
-    if (private == NULL) {
+    ca = malloc(sizeof(struct en50221_app_ca));
+    if (ca == NULL) {
         return NULL;
     }
-    private->funcs = funcs;
-    private->ca_info_callback = NULL;
-    private->ca_pmt_reply_callback = NULL;
+    ca->funcs = funcs;
+    ca->ca_info_callback = NULL;
+    ca->ca_pmt_reply_callback = NULL;
 
-    pthread_mutex_init(&private->lock, NULL);
+    pthread_mutex_init(&ca->lock, NULL);
 
     // done
-    return private;
+    return ca;
 }
 
-void en50221_app_ca_destroy(en50221_app_ca ca)
+void en50221_app_ca_destroy(struct en50221_app_ca *ca)
 {
-    struct en50221_app_ca_private *private = (struct en50221_app_ca_private *) ca;
-
-    pthread_mutex_destroy(&private->lock);
-    free(private);
+    pthread_mutex_destroy(&ca->lock);
+    free(ca);
 }
 
-void en50221_app_ca_register_info_callback(en50221_app_ca ca,
+void en50221_app_ca_register_info_callback(struct en50221_app_ca *ca,
                                            en50221_app_ca_info_callback callback, void *arg)
 {
-    struct en50221_app_ca_private *private = (struct en50221_app_ca_private *) ca;
-
-    pthread_mutex_lock(&private->lock);
-    private->ca_info_callback = callback;
-    private->ca_info_callback_arg = arg;
-    pthread_mutex_unlock(&private->lock);
+    pthread_mutex_lock(&ca->lock);
+    ca->ca_info_callback = callback;
+    ca->ca_info_callback_arg = arg;
+    pthread_mutex_unlock(&ca->lock);
 }
 
-void en50221_app_ca_register_pmt_reply_callback(en50221_app_ca ca,
+void en50221_app_ca_register_pmt_reply_callback(struct en50221_app_ca *ca,
                                                 en50221_app_ca_pmt_reply_callback callback, void *arg)
 {
-    struct en50221_app_ca_private *private = (struct en50221_app_ca_private *) ca;
-
-    pthread_mutex_lock(&private->lock);
-    private->ca_pmt_reply_callback = callback;
-    private->ca_pmt_reply_callback_arg = arg;
-    pthread_mutex_unlock(&private->lock);
+    pthread_mutex_lock(&ca->lock);
+    ca->ca_pmt_reply_callback = callback;
+    ca->ca_pmt_reply_callback_arg = arg;
+    pthread_mutex_unlock(&ca->lock);
 }
 
-int en50221_app_ca_info_enq(en50221_app_ca ca,
+int en50221_app_ca_info_enq(struct en50221_app_ca *ca,
                             uint16_t session_number)
 {
-    struct en50221_app_ca_private *private = (struct en50221_app_ca_private *) ca;
     uint8_t data[4];
 
     data[0] = (TAG_CA_INFO_ENQUIRY >> 16) & 0xFF;
     data[1] = (TAG_CA_INFO_ENQUIRY >> 8) & 0xFF;
     data[2] = TAG_CA_INFO_ENQUIRY & 0xFF;
     data[3] = 0;
-    return private->funcs->send_data(private->funcs->arg, session_number, data, 4);
+    return ca->funcs->send_data(ca->funcs->arg, session_number, data, 4);
 }
 
-int en50221_app_ca_pmt(en50221_app_ca ca,
+int en50221_app_ca_pmt(struct en50221_app_ca *ca,
                        uint16_t session_number,
                        uint8_t *ca_pmt,
                        uint32_t ca_pmt_length)
 {
-    struct en50221_app_ca_private *private = (struct en50221_app_ca_private *) ca;
     uint8_t buf[10];
 
     // set up the tag
@@ -168,16 +160,15 @@ int en50221_app_ca_pmt(en50221_app_ca ca,
     iov[1].iov_len = ca_pmt_length;
 
     // create the data and send it
-    return private->funcs->send_datav(private->funcs->arg, session_number, iov, 2);
+    return ca->funcs->send_datav(ca->funcs->arg, session_number, iov, 2);
 }
 
-int en50221_app_ca_message(en50221_app_ca ca,
+int en50221_app_ca_message(struct en50221_app_ca *ca,
                            uint8_t slot_id,
                            uint16_t session_number,
                            uint32_t resource_id,
                            uint8_t *data, uint32_t data_length)
 {
-    struct en50221_app_ca_private *private = (struct en50221_app_ca_private *) ca;
     (void)resource_id;
 
     // get the tag
@@ -190,9 +181,9 @@ int en50221_app_ca_message(en50221_app_ca ca,
     switch(tag)
     {
         case TAG_CA_INFO:
-            return en50221_app_ca_parse_info(private, slot_id, session_number, data+3, data_length-3);
+            return en50221_app_ca_parse_info(ca, slot_id, session_number, data+3, data_length-3);
         case TAG_CA_PMT_REPLY:
-            return en50221_app_ca_parse_reply(private, slot_id, session_number, data+3, data_length-3);
+            return en50221_app_ca_parse_reply(ca, slot_id, session_number, data+3, data_length-3);
     }
 
     print(LOG_LEVEL, ERROR, 1, "Received unexpected tag %x\n", tag);
@@ -530,7 +521,7 @@ static uint32_t en50221_ca_calculate_length(struct ca_pmt_descriptor *pmt_descri
     return total_required_length;
 }
 
-static int en50221_app_ca_parse_info(struct en50221_app_ca_private *private,
+static int en50221_app_ca_parse_info(struct en50221_app_ca *ca,
                                       uint8_t slot_id, uint16_t session_number,
                                       uint8_t *data, uint32_t data_length)
 {
@@ -561,17 +552,17 @@ static int en50221_app_ca_parse_info(struct en50221_app_ca_private *private,
     }
 
     // tell the app
-    pthread_mutex_lock(&private->lock);
-    en50221_app_ca_info_callback cb = private->ca_info_callback;
-    void *cb_arg = private->ca_info_callback_arg;
-    pthread_mutex_unlock(&private->lock);
+    pthread_mutex_lock(&ca->lock);
+    en50221_app_ca_info_callback cb = ca->ca_info_callback;
+    void *cb_arg = ca->ca_info_callback_arg;
+    pthread_mutex_unlock(&ca->lock);
     if (cb) {
         return cb(cb_arg, slot_id, session_number, ca_id_count, ids);
     }
     return 0;
 }
 
-static int en50221_app_ca_parse_reply(struct en50221_app_ca_private *private,
+static int en50221_app_ca_parse_reply(struct en50221_app_ca *ca,
                                        uint8_t slot_id, uint16_t session_number,
                                        uint8_t *data, uint32_t data_length)
 {
@@ -604,10 +595,10 @@ static int en50221_app_ca_parse_reply(struct en50221_app_ca_private *private,
     }
 
     // tell the app
-    pthread_mutex_lock(&private->lock);
-    en50221_app_ca_pmt_reply_callback cb = private->ca_pmt_reply_callback;
-    void *cb_arg = private->ca_pmt_reply_callback_arg;
-    pthread_mutex_unlock(&private->lock);
+    pthread_mutex_lock(&ca->lock);
+    en50221_app_ca_pmt_reply_callback cb = ca->ca_pmt_reply_callback;
+    void *cb_arg = ca->ca_pmt_reply_callback_arg;
+    pthread_mutex_unlock(&ca->lock);
     if (cb) {
         return cb(cb_arg, slot_id, session_number, (struct en50221_app_pmt_reply*) data, asn_data_length);
     }

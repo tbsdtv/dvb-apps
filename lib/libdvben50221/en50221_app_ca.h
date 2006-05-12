@@ -123,7 +123,7 @@ typedef int (*en50221_app_ca_pmt_reply_callback)(void *arg, uint8_t slot_id, uin
 /**
  * Opaque type representing a ca resource.
  */
-typedef void *en50221_app_ca;
+struct en50221_app_ca;
 
 /**
  * Create an instance of the ca resource.
@@ -131,14 +131,14 @@ typedef void *en50221_app_ca;
  * @param funcs Send functions to use.
  * @return Instance, or NULL on failure.
  */
-extern en50221_app_ca en50221_app_ca_create(struct en50221_app_send_functions *funcs);
+extern struct en50221_app_ca *en50221_app_ca_create(struct en50221_app_send_functions *funcs);
 
 /**
  * Destroy an instance of the ca resource.
  *
  * @param ca Instance to destroy.
  */
-extern void en50221_app_ca_destroy(en50221_app_ca ca);
+extern void en50221_app_ca_destroy(struct en50221_app_ca *ca);
 
 /**
  * Register the callback for when we receive a ca info.
@@ -147,7 +147,7 @@ extern void en50221_app_ca_destroy(en50221_app_ca ca);
  * @param callback The callback. Set to NULL to remove the callback completely.
  * @param arg Private data passed as arg0 of the callback.
  */
-extern void en50221_app_ca_register_info_callback(en50221_app_ca ca,
+extern void en50221_app_ca_register_info_callback(struct en50221_app_ca *ca,
                                                   en50221_app_ca_info_callback callback, void *arg);
 
 /**
@@ -157,7 +157,7 @@ extern void en50221_app_ca_register_info_callback(en50221_app_ca ca,
  * @param callback The callback. Set to NULL to remove the callback completely.
  * @param arg Private data passed as arg0 of the callback.
  */
-extern void en50221_app_ca_register_pmt_reply_callback(en50221_app_ca ca,
+extern void en50221_app_ca_register_pmt_reply_callback(struct en50221_app_ca *ca,
                                                        en50221_app_ca_pmt_reply_callback callback, void *arg);
 
 /**
@@ -167,7 +167,7 @@ extern void en50221_app_ca_register_pmt_reply_callback(en50221_app_ca ca,
  * @param session_number Session number to send it on.
  * @return 0 on success, -1 on failure.
  */
-extern int en50221_app_ca_info_enq(en50221_app_ca ca,
+extern int en50221_app_ca_info_enq(struct en50221_app_ca *ca,
                                    uint16_t session_number);
 
 /**
@@ -179,7 +179,7 @@ extern int en50221_app_ca_info_enq(en50221_app_ca ca,
  * @param ca_pmt_length Length of ca_pmt structure in bytes.
  * @return 0 on success, -1 on failure.
  */
-extern int en50221_app_ca_pmt(en50221_app_ca ca,
+extern int en50221_app_ca_pmt(struct en50221_app_ca *ca,
                               uint16_t session_number,
                               uint8_t *ca_pmt,
                               uint32_t ca_pmt_length);
@@ -213,7 +213,7 @@ extern int en50221_ca_format_pmt(struct mpeg_pmt_section *pmt,
  * @param data_length Length of data in bytes.
  * @return 0 on success, -1 on failure.
  */
-extern int en50221_app_ca_message(en50221_app_ca ca,
+extern int en50221_app_ca_message(struct en50221_app_ca *ca,
                                   uint8_t slot_id,
                                   uint16_t session_number,
                                   uint32_t resource_id,

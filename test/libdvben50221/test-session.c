@@ -47,7 +47,7 @@ int main(int argc, char * argv[])
     pthread_t stackthread;
 
     // create transport layer
-    en50221_transport_layer tl = en50221_tl_create(5, 32);
+    struct en50221_transport_layer *tl = en50221_tl_create(5, 32);
     if (tl == NULL) {
         fprintf(stderr, "Failed to create transport layer\n");
         exit(1);
@@ -82,7 +82,7 @@ int main(int argc, char * argv[])
     }
 
     // create session layer
-    en50221_session_layer sl = en50221_sl_create(tl, 256);
+    struct en50221_session_layer *sl = en50221_sl_create(tl, 256);
     if (sl == NULL) {
         fprintf(stderr, "Failed to create session layer\n");
         exit(1);
@@ -151,7 +151,7 @@ int test_session_callback(void *arg, int reason, uint8_t slot_id, uint16_t sessi
 }
 
 void *stackthread_func(void* arg) {
-    en50221_transport_layer tl = arg;
+    struct en50221_transport_layer *tl = arg;
     int lasterror = 0;
 
     while(!shutdown_stackthread) {

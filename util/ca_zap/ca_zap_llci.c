@@ -58,16 +58,16 @@ struct resource resources[20];
 int resources_count = 0;
 
 // the resource manager resource
-en50221_app_rm rm_resource;
+struct en50221_app_rm *rm_resource;
 
 // the datetime resource
-en50221_app_datetime datetime_resource;
+struct en50221_app_datetime *datetime_resource;
 uint8_t datetime_response_intervals[MAX_SESSIONS];
 time_t datetime_next_send[MAX_SESSIONS];
 
 // misc stack related stuff
-en50221_transport_layer tl;
-en50221_session_layer sl;
+struct en50221_transport_layer *tl;
+struct en50221_session_layer *sl;
 struct en50221_app_send_functions sendfuncs;
 int slot_id = -1;
 int lasterror = 0;
@@ -102,14 +102,14 @@ int llci_init()
 
 	// create the sendfuncs
 	sendfuncs.arg        = sl;
-	sendfuncs.send_data  = en50221_sl_send_data;
-	sendfuncs.send_datav = en50221_sl_send_datav;
+	sendfuncs.send_data  = (en50221_send_data) en50221_sl_send_data;
+	sendfuncs.send_datav = (en50221_send_datav) en50221_sl_send_datav;
 
 	// create the resource manager resource
 	rm_resource = en50221_app_rm_create(&sendfuncs);
 	en50221_app_decode_public_resource_id(&resources[resources_count].resid, EN50221_APP_RM_RESOURCEID);
 	resources[resources_count].binary_resource_id = EN50221_APP_RM_RESOURCEID;
-	resources[resources_count].callback = en50221_app_rm_message;
+	resources[resources_count].callback = (en50221_sl_resource_callback) en50221_app_rm_message;
 	resources[resources_count].arg = rm_resource;
 	en50221_app_rm_register_enq_callback(rm_resource, llci_rm_enq_callback, NULL);
 	en50221_app_rm_register_reply_callback(rm_resource, llci_rm_reply_callback, NULL);
@@ -120,7 +120,7 @@ int llci_init()
 	ai_resource = en50221_app_ai_create(&sendfuncs);
 	en50221_app_decode_public_resource_id(&resources[resources_count].resid, EN50221_APP_AI_RESOURCEID);
 	resources[resources_count].binary_resource_id = EN50221_APP_AI_RESOURCEID;
-	resources[resources_count].callback = en50221_app_ai_message;
+	resources[resources_count].callback = (en50221_sl_resource_callback) en50221_app_ai_message;
 	resources[resources_count].arg = ai_resource;
 	resources_count++;
 
@@ -128,7 +128,7 @@ int llci_init()
 	ca_resource = en50221_app_ca_create(&sendfuncs);
 	en50221_app_decode_public_resource_id(&resources[resources_count].resid, EN50221_APP_CA_RESOURCEID);
 	resources[resources_count].binary_resource_id = EN50221_APP_CA_RESOURCEID;
-	resources[resources_count].callback = en50221_app_ca_message;
+	resources[resources_count].callback = (en50221_sl_resource_callback) en50221_app_ca_message;
 	resources[resources_count].arg = ca_resource;
 	resources_count++;
 
@@ -136,7 +136,7 @@ int llci_init()
 	mmi_resource = en50221_app_mmi_create(&sendfuncs);
 	en50221_app_decode_public_resource_id(&resources[resources_count].resid, EN50221_APP_MMI_RESOURCEID);
 	resources[resources_count].binary_resource_id = EN50221_APP_MMI_RESOURCEID;
-	resources[resources_count].callback = en50221_app_mmi_message;
+	resources[resources_count].callback = (en50221_sl_resource_callback) en50221_app_mmi_message;
 	resources[resources_count].arg = mmi_resource;
 	resources_count++;
 
@@ -144,7 +144,7 @@ int llci_init()
 	datetime_resource = en50221_app_datetime_create(&sendfuncs);
 	en50221_app_decode_public_resource_id(&resources[resources_count].resid, EN50221_APP_DATETIME_RESOURCEID);
 	resources[resources_count].binary_resource_id = EN50221_APP_DATETIME_RESOURCEID;
-	resources[resources_count].callback = en50221_app_datetime_message;
+	resources[resources_count].callback = (en50221_sl_resource_callback) en50221_app_datetime_message;
 	resources[resources_count].arg = datetime_resource;
 	en50221_app_datetime_register_enquiry_callback(datetime_resource, llci_datetime_enquiry_callback, NULL);
 	resources_count++;

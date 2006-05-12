@@ -29,7 +29,7 @@
 #include "en50221_app_tags.h"
 #include "asn_1.h"
 
-struct en50221_app_epg_private {
+struct en50221_app_epg {
         struct en50221_app_send_functions *funcs;
 
         en50221_app_epg_reply_callback callback;
@@ -38,50 +38,46 @@ struct en50221_app_epg_private {
         pthread_mutex_t lock;
 };
 
-static int en50221_app_epg_parse_reply(struct en50221_app_epg_private *private,
+static int en50221_app_epg_parse_reply(struct en50221_app_epg *private,
                                         uint8_t slot_id, uint16_t session_number,
                                         uint8_t *data, uint32_t data_length);
 
 
 
-en50221_app_epg en50221_app_epg_create(struct en50221_app_send_functions *funcs)
+struct en50221_app_epg *en50221_app_epg_create(struct en50221_app_send_functions *funcs)
 {
-    struct en50221_app_epg_private *private = NULL;
+    struct en50221_app_epg *epg = NULL;
 
     // create structure and set it up
-    private = malloc(sizeof(struct en50221_app_epg_private));
-    if (private == NULL) {
+    epg = malloc(sizeof(struct en50221_app_epg));
+    if (epg == NULL) {
         return NULL;
     }
-    private->funcs = funcs;
-    private->callback = NULL;
+    epg->funcs = funcs;
+    epg->callback = NULL;
 
-    pthread_mutex_init(&private->lock, NULL);
+    pthread_mutex_init(&epg->lock, NULL);
 
     // done
-    return private;
+    return epg;
 }
 
-void en50221_app_epg_destroy(en50221_app_epg epg)
+void en50221_app_epg_destroy(struct en50221_app_epg *epg)
 {
-    struct en50221_app_epg_private *private = (struct en50221_app_epg_private *) epg;
-
-    pthread_mutex_destroy(&private->lock);
-    free(private);
+    pthread_mutex_destroy(&epg->lock);
+    free(epg);
 }
 
-void en50221_app_epg_register_enquiry_callback(en50221_app_epg epg,
+void en50221_app_epg_register_enquiry_callback(struct en50221_app_epg *epg,
                                                en50221_app_epg_reply_callback callback, void *arg)
 {
-    struct en50221_app_epg_private *private = (struct en50221_app_epg_private *) epg;
-
-    pthread_mutex_lock(&private->lock);
-    private->callback = callback;
-    private->callback_arg = arg;
-    pthread_mutex_unlock(&private->lock);
+    pthread_mutex_lock(&epg->lock);
+    epg->callback = callback;
+    epg->callback_arg = arg;
+    pthread_mutex_unlock(&epg->lock);
 }
 
-int en50221_app_epg_enquire(en50221_app_epg epg,
+int en50221_app_epg_enquire(struct en50221_app_epg *epg,
                             uint16_t session_number,
                             uint8_t command_id,
                             uint16_t network_id,
@@ -90,7 +86,6 @@ int en50221_app_epg_enquire(en50221_app_epg epg,
                             uint16_t service_id,
                             uint16_t event_id)
 {
-    struct en50221_app_epg_private *private = (struct en50221_app_epg_private *) epg;
     uint8_t data[15];
 
     data[0] = (TAG_EPG_ENQUIRY >> 16) & 0xFF;
@@ -108,16 +103,16 @@ int en50221_app_epg_enquire(en50221_app_epg epg,
     data[12] = service_id;
     data[13] = event_id >> 8;
     data[14] = event_id;
-    return private->funcs->send_data(private->funcs->arg, session_number, data, 15);
+    return epg->funcs->send_data(epg->funcs->arg, session_number, data, 15);
 }
 
-int en50221_app_epg_message(en50221_app_epg epg,
+int en50221_app_epg_message(struct en50221_app_epg *epg,
                             uint8_t slot_id,
                             uint16_t session_number,
                             uint32_t resource_id,
                             uint8_t *data, uint32_t data_length)
 {
-    struct en50221_app_epg_private *private = (struct en50221_app_epg_private *) epg;
+    struct en50221_app_epg *private = (struct en50221_app_epg *) epg;
     (void) resource_id;
 
     // get the tag
@@ -139,7 +134,7 @@ int en50221_app_epg_message(en50221_app_epg epg,
 
 
 
-static int en50221_app_epg_parse_reply(struct en50221_app_epg_private *private,
+static int en50221_app_epg_parse_reply(struct en50221_app_epg *epg,
                                         uint8_t slot_id, uint16_t session_number,
                                         uint8_t *data, uint32_t data_length)
 {
@@ -155,10 +150,10 @@ static int en50221_app_epg_parse_reply(struct en50221_app_epg_private *private,
     uint8_t event_status = data[1];
 
     // tell the app
-    pthread_mutex_lock(&private->lock);
-    en50221_app_epg_reply_callback cb = private->callback;
-    void *cb_arg = private->callback_arg;
-    pthread_mutex_unlock(&private->lock);
+    pthread_mutex_lock(&epg->lock);
+    en50221_app_epg_reply_callback cb = epg->callback;
+    void *cb_arg = epg->callback_arg;
+    pthread_mutex_unlock(&epg->lock);
     if (cb) {
         return cb(cb_arg, slot_id, session_number, event_status);
     }

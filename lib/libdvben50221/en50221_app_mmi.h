@@ -302,7 +302,7 @@ typedef int (*en50221_app_mmi_list_callback)(void *arg, uint8_t slot_id, uint16_
 /**
  * Opaque type representing a mmi resource.
  */
-typedef void *en50221_app_mmi;
+struct en50221_app_mmi;
 
 /**
  * Create an instance of the mmi resource.
@@ -310,14 +310,14 @@ typedef void *en50221_app_mmi;
  * @param funcs Send functions to use.
  * @return Instance, or NULL on failure.
  */
-extern en50221_app_mmi en50221_app_mmi_create(struct en50221_app_send_functions *funcs);
+extern struct en50221_app_mmi *en50221_app_mmi_create(struct en50221_app_send_functions *funcs);
 
 /**
  * Destroy an instance of the mmi resource.
  *
  * @param mmi Instance to destroy.
  */
-extern void en50221_app_mmi_destroy(en50221_app_mmi mmi);
+extern void en50221_app_mmi_destroy(struct en50221_app_mmi *mmi);
 
 /**
  * Informs the mmi object that a session to it has been closed - cleans up internal state.
@@ -325,7 +325,7 @@ extern void en50221_app_mmi_destroy(en50221_app_mmi mmi);
  * @param mmi mmi resource instance.
  * @param session_number The session concerned.
  */
-extern void en50221_app_mmi_clear_session(en50221_app_mmi mmi, uint16_t session_number);
+extern void en50221_app_mmi_clear_session(struct en50221_app_mmi *mmi, uint16_t session_number);
 
 /**
  * Register the callback for when we receive an mmi_close request.
@@ -334,7 +334,7 @@ extern void en50221_app_mmi_clear_session(en50221_app_mmi mmi, uint16_t session_
  * @param callback The callback. Set to NULL to remove the callback completely.
  * @param arg Private data passed as arg0 of the callback.
  */
-extern void en50221_app_mmi_register_close_callback(en50221_app_mmi mmi,
+extern void en50221_app_mmi_register_close_callback(struct en50221_app_mmi *mmi,
         en50221_app_mmi_close_callback callback, void *arg);
 
 /**
@@ -344,7 +344,7 @@ extern void en50221_app_mmi_register_close_callback(en50221_app_mmi mmi,
  * @param callback The callback. Set to NULL to remove the callback completely.
  * @param arg Private data passed as arg0 of the callback.
  */
-extern void en50221_app_mmi_register_display_control_callback(en50221_app_mmi mmi,
+extern void en50221_app_mmi_register_display_control_callback(struct en50221_app_mmi *mmi,
         en50221_app_mmi_display_control_callback callback, void *arg);
 
 /**
@@ -354,7 +354,7 @@ extern void en50221_app_mmi_register_display_control_callback(en50221_app_mmi mm
  * @param callback The callback. Set to NULL to remove the callback completely.
  * @param arg Private data passed as arg0 of the callback.
  */
-extern void en50221_app_mmi_register_keypad_control_callback(en50221_app_mmi mmi,
+extern void en50221_app_mmi_register_keypad_control_callback(struct en50221_app_mmi *mmi,
         en50221_app_mmi_keypad_control_callback callback, void *arg);
 
 /**
@@ -364,7 +364,7 @@ extern void en50221_app_mmi_register_keypad_control_callback(en50221_app_mmi mmi
  * @param callback The callback. Set to NULL to remove the callback completely.
  * @param arg Private data passed as arg0 of the callback.
  */
-extern void en50221_app_mmi_register_subtitle_segment_callback(en50221_app_mmi mmi,
+extern void en50221_app_mmi_register_subtitle_segment_callback(struct en50221_app_mmi *mmi,
         en50221_app_mmi_subtitle_segment_callback callback, void *arg);
 
 /**
@@ -374,7 +374,7 @@ extern void en50221_app_mmi_register_subtitle_segment_callback(en50221_app_mmi m
  * @param callback The callback. Set to NULL to remove the callback completely.
  * @param arg Private data passed as arg0 of the callback.
  */
-extern void en50221_app_mmi_register_scene_end_mark_callback(en50221_app_mmi mmi,
+extern void en50221_app_mmi_register_scene_end_mark_callback(struct en50221_app_mmi *mmi,
         en50221_app_mmi_scene_end_mark_callback callback, void *arg);
 
 /**
@@ -384,7 +384,7 @@ extern void en50221_app_mmi_register_scene_end_mark_callback(en50221_app_mmi mmi
  * @param callback The callback. Set to NULL to remove the callback completely.
  * @param arg Private data passed as arg0 of the callback.
  */
-extern void en50221_app_mmi_register_scene_control_callback(en50221_app_mmi mmi,
+extern void en50221_app_mmi_register_scene_control_callback(struct en50221_app_mmi *mmi,
         en50221_app_mmi_scene_control_callback callback, void *arg);
 
 /**
@@ -394,7 +394,7 @@ extern void en50221_app_mmi_register_scene_control_callback(en50221_app_mmi mmi,
  * @param callback The callback. Set to NULL to remove the callback completely.
  * @param arg Private data passed as arg0 of the callback.
  */
-extern void en50221_app_mmi_register_subtitle_download_callback(en50221_app_mmi mmi,
+extern void en50221_app_mmi_register_subtitle_download_callback(struct en50221_app_mmi *mmi,
         en50221_app_mmi_subtitle_download_callback callback, void *arg);
 
 /**
@@ -404,7 +404,7 @@ extern void en50221_app_mmi_register_subtitle_download_callback(en50221_app_mmi 
  * @param callback The callback. Set to NULL to remove the callback completely.
  * @param arg Private data passed as arg0 of the callback.
  */
-extern void en50221_app_mmi_register_flush_download_callback(en50221_app_mmi mmi,
+extern void en50221_app_mmi_register_flush_download_callback(struct en50221_app_mmi *mmi,
         en50221_app_mmi_flush_download_callback callback, void *arg);
 
 /**
@@ -414,7 +414,7 @@ extern void en50221_app_mmi_register_flush_download_callback(en50221_app_mmi mmi
  * @param callback The callback. Set to NULL to remove the callback completely.
  * @param arg Private data passed as arg0 of the callback.
  */
-extern void en50221_app_mmi_register_enq_callback(en50221_app_mmi mmi,
+extern void en50221_app_mmi_register_enq_callback(struct en50221_app_mmi *mmi,
         en50221_app_mmi_enq_callback callback, void *arg);
 
 /**
@@ -424,7 +424,7 @@ extern void en50221_app_mmi_register_enq_callback(en50221_app_mmi mmi,
  * @param callback The callback. Set to NULL to remove the callback completely.
  * @param arg Private data passed as arg0 of the callback.
  */
-extern void en50221_app_mmi_register_menu_callback(en50221_app_mmi mmi,
+extern void en50221_app_mmi_register_menu_callback(struct en50221_app_mmi *mmi,
         en50221_app_mmi_menu_callback callback, void *arg);
 
 /**
@@ -434,7 +434,7 @@ extern void en50221_app_mmi_register_menu_callback(en50221_app_mmi mmi,
  * @param callback The callback. Set to NULL to remove the callback completely.
  * @param arg Private data passed as arg0 of the callback.
  */
-extern void en50221_app_mmi_register_list_callback(en50221_app_mmi mmi,
+extern void en50221_app_mmi_register_list_callback(struct en50221_app_mmi *mmi,
         en50221_app_mmi_list_callback callback, void *arg);
 
 /**
@@ -446,7 +446,7 @@ extern void en50221_app_mmi_register_list_callback(en50221_app_mmi mmi,
  * @param delay Delay to use if MMI_CLOSE_MMI_CMD_ID_DELAY specified.
  * @return 0 on success, -1 on failure.
  */
-extern int en50221_app_mmi_close(en50221_app_mmi mmi,
+extern int en50221_app_mmi_close(struct en50221_app_mmi *mmi,
                                  uint16_t session_number,
                                  uint8_t cmd_id,
                                  uint8_t delay);
@@ -460,7 +460,7 @@ extern int en50221_app_mmi_close(en50221_app_mmi mmi,
  * @param details The details of the reply - can be NULL if the chosen reply_id does not need it.
  * @return 0 on success, -1 on failure.
  */
-extern int en50221_app_mmi_display_reply(en50221_app_mmi mmi,
+extern int en50221_app_mmi_display_reply(struct en50221_app_mmi *mmi,
                                          uint16_t session_number,
                                          uint8_t reply_id,
                                          struct en502221_app_mmi_display_reply_details *details);
@@ -473,7 +473,7 @@ extern int en50221_app_mmi_display_reply(en50221_app_mmi mmi,
  * @param keycode The keycode.
  * @return 0 on success, -1 on failure.
  */
-extern int en50221_app_mmi_keypress(en50221_app_mmi mmi,
+extern int en50221_app_mmi_keypress(struct en50221_app_mmi *mmi,
                                     uint16_t session_number,
                                     uint8_t keycode);
 
@@ -485,7 +485,7 @@ extern int en50221_app_mmi_keypress(en50221_app_mmi mmi,
  * @param display_message_id One of the MMI_DISPLAY_MESSAGE_ID_* values.
  * @return 0 on success, -1 on failure.
  */
-extern int en50221_app_mmi_display_message(en50221_app_mmi mmi,
+extern int en50221_app_mmi_display_message(struct en50221_app_mmi *mmi,
                                            uint16_t session_number,
                                            uint8_t display_message_id);
 
@@ -499,7 +499,7 @@ extern int en50221_app_mmi_display_message(en50221_app_mmi mmi,
  * @param scene_tag Scene tag this responds to.
  * @return 0 on success, -1 on failure.
  */
-extern int en50221_app_mmi_scene_done(en50221_app_mmi mmi,
+extern int en50221_app_mmi_scene_done(struct en50221_app_mmi *mmi,
                                       uint16_t session_number,
                                       uint8_t decoder_continue,
                                       uint8_t scene_reveal,
@@ -514,7 +514,7 @@ extern int en50221_app_mmi_scene_done(en50221_app_mmi mmi,
  * @param download_reply_id One of the MMI_DOWNLOAD_REPLY_ID_* values.
  * @return 0 on success, -1 on failure.
  */
-extern int en50221_app_mmi_download_reply(en50221_app_mmi mmi,
+extern int en50221_app_mmi_download_reply(struct en50221_app_mmi *mmi,
                                           uint16_t session_number,
                                           uint16_t object_id,
                                           uint8_t download_reply_id);
@@ -529,7 +529,7 @@ extern int en50221_app_mmi_download_reply(en50221_app_mmi mmi,
  * @param text_count Length of text.
  * @return 0 on success, -1 on failure.
  */
-extern int en50221_app_mmi_answ(en50221_app_mmi mmi,
+extern int en50221_app_mmi_answ(struct en50221_app_mmi *mmi,
                                 uint16_t session_number,
                                 uint8_t answ_id,
                                 uint8_t *text,
@@ -543,7 +543,7 @@ extern int en50221_app_mmi_answ(en50221_app_mmi mmi,
  * @param choice_ref Option chosen by user (0=>canceled).
  * @return 0 on success, -1 on failure.
  */
-extern int en50221_app_mmi_menu_answ(en50221_app_mmi mmi,
+extern int en50221_app_mmi_menu_answ(struct en50221_app_mmi *mmi,
                                      uint16_t session_number,
                                      uint8_t choice_ref);
 
@@ -558,7 +558,7 @@ extern int en50221_app_mmi_menu_answ(en50221_app_mmi mmi,
  * @param data_length Length of data in bytes.
  * @return 0 on success, -1 on failure.
  */
-extern int en50221_app_mmi_message(en50221_app_mmi mmi,
+extern int en50221_app_mmi_message(struct en50221_app_mmi *mmi,
                                    uint8_t slot_id,
                                    uint16_t session_number,
                                    uint32_t resource_id,

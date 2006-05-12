@@ -29,7 +29,7 @@
 #include "en50221_app_tags.h"
 #include "asn_1.h"
 
-struct en50221_app_rm_private {
+struct en50221_app_rm {
         struct en50221_app_send_functions *funcs;
 
         en50221_app_rm_enq_callback enqcallback;
@@ -44,81 +44,72 @@ struct en50221_app_rm_private {
         pthread_mutex_t lock;
 };
 
-static int en50221_app_rm_parse_profile_enq(struct en50221_app_rm_private *private,
+static int en50221_app_rm_parse_profile_enq(struct en50221_app_rm *rm,
                                              uint8_t slot_id, uint16_t session_number,
                                              uint8_t *data, uint32_t data_length);
-static int en50221_app_rm_parse_profile_reply(struct en50221_app_rm_private *private,
+static int en50221_app_rm_parse_profile_reply(struct en50221_app_rm *rm,
                                                uint8_t slot_id, uint16_t session_number,
                                                uint8_t *data, uint32_t data_length);
-static int en50221_app_rm_parse_profile_change(struct en50221_app_rm_private *private,
+static int en50221_app_rm_parse_profile_change(struct en50221_app_rm *rm,
                                                 uint8_t slot_id, uint16_t session_number,
                                                 uint8_t *data, uint32_t data_length);
 
 
-en50221_app_rm en50221_app_rm_create(struct en50221_app_send_functions *funcs)
+struct en50221_app_rm *en50221_app_rm_create(struct en50221_app_send_functions *funcs)
 {
-    struct en50221_app_rm_private *private = NULL;
+    struct en50221_app_rm *rm = NULL;
 
     // create structure and set it up
-    private = malloc(sizeof(struct en50221_app_rm_private));
-    if (private == NULL) {
+    rm = malloc(sizeof(struct en50221_app_rm));
+    if (rm == NULL) {
         return NULL;
     }
-    private->funcs = funcs;
-    private->enqcallback = NULL;
-    private->replycallback = NULL;
-    private->changedcallback = NULL;
+    rm->funcs = funcs;
+    rm->enqcallback = NULL;
+    rm->replycallback = NULL;
+    rm->changedcallback = NULL;
 
-    pthread_mutex_init(&private->lock, NULL);
+    pthread_mutex_init(&rm->lock, NULL);
 
     // done
-    return private;
+    return rm;
 }
 
-void en50221_app_rm_destroy(en50221_app_rm rm)
+void en50221_app_rm_destroy(struct en50221_app_rm *rm)
 {
-    struct en50221_app_rm_private *private = (struct en50221_app_rm_private *) rm;
-
-    pthread_mutex_destroy(&private->lock);
-    free(private);
+    pthread_mutex_destroy(&rm->lock);
+    free(rm);
 }
 
-void en50221_app_rm_register_enq_callback(en50221_app_rm rm,
+void en50221_app_rm_register_enq_callback(struct en50221_app_rm *rm,
                                           en50221_app_rm_enq_callback callback, void *arg)
 {
-    struct en50221_app_rm_private *private = (struct en50221_app_rm_private *) rm;
-
-    pthread_mutex_lock(&private->lock);
-    private->enqcallback = callback;
-    private->enqcallback_arg = arg;
-    pthread_mutex_unlock(&private->lock);
+    pthread_mutex_lock(&rm->lock);
+    rm->enqcallback = callback;
+    rm->enqcallback_arg = arg;
+    pthread_mutex_unlock(&rm->lock);
 }
 
-void en50221_app_rm_register_reply_callback(en50221_app_rm rm,
+void en50221_app_rm_register_reply_callback(struct en50221_app_rm *rm,
                                            en50221_app_rm_reply_callback callback, void *arg)
 {
-    struct en50221_app_rm_private *private = (struct en50221_app_rm_private *) rm;
-
-    pthread_mutex_lock(&private->lock);
-    private->replycallback = callback;
-    private->replycallback_arg = arg;
-    pthread_mutex_unlock(&private->lock);
+    pthread_mutex_lock(&rm->lock);
+    rm->replycallback = callback;
+    rm->replycallback_arg = arg;
+    pthread_mutex_unlock(&rm->lock);
 }
 
-void en50221_app_rm_register_changed_callback(en50221_app_rm rm,
+void en50221_app_rm_register_changed_callback(struct en50221_app_rm *rm,
                                               en50221_app_rm_changed_callback callback, void *arg)
 {
-    struct en50221_app_rm_private *private = (struct en50221_app_rm_private *) rm;
-
-    pthread_mutex_lock(&private->lock);
-    private->changedcallback = callback;
-    private->changedcallback_arg = arg;
-    pthread_mutex_unlock(&private->lock);
+    pthread_mutex_lock(&rm->lock);
+    rm->changedcallback = callback;
+    rm->changedcallback_arg = arg;
+    pthread_mutex_unlock(&rm->lock);
 }
 
-int en50221_app_rm_enq(en50221_app_rm rm, uint16_t session_number)
+int en50221_app_rm_enq(struct en50221_app_rm *rm, uint16_t session_number)
 {
-    struct en50221_app_rm_private *private = (struct en50221_app_rm_private *) rm;
     uint8_t buf[4];
 
     // set up the tag
@@ -128,14 +119,13 @@ int en50221_app_rm_enq(en50221_app_rm rm, uint16_t session_number)
     buf[3] = 0;
 
     // create the data and send it
-    return private->funcs->send_data(private->funcs->arg, session_number, buf, 4);
+    return rm->funcs->send_data(rm->funcs->arg, session_number, buf, 4);
 }
 
-int en50221_app_rm_reply(en50221_app_rm rm, uint16_t session_number,
+int en50221_app_rm_reply(struct en50221_app_rm *rm, uint16_t session_number,
                          uint32_t resource_id_count,
                          uint32_t *resource_ids)
 {
-    struct en50221_app_rm_private *private = (struct en50221_app_rm_private *) rm;
     uint8_t buf[10];
 
     // set up the tag
@@ -170,12 +160,11 @@ int en50221_app_rm_reply(en50221_app_rm rm, uint16_t session_number,
     iov[1].iov_len = resource_id_count * 4;
 
     // create the data and send it
-    return private->funcs->send_datav(private->funcs->arg, session_number, iov, 2);
+    return rm->funcs->send_datav(rm->funcs->arg, session_number, iov, 2);
 }
 
-int en50221_app_rm_changed(en50221_app_rm rm, uint16_t session_number)
+int en50221_app_rm_changed(struct en50221_app_rm *rm, uint16_t session_number)
 {
-    struct en50221_app_rm_private *private = (struct en50221_app_rm_private *) rm;
     uint8_t buf[4];
 
     // set up the tag
@@ -185,16 +174,15 @@ int en50221_app_rm_changed(en50221_app_rm rm, uint16_t session_number)
     buf[3] = 0;
 
     // create the data and send it
-    return private->funcs->send_data(private->funcs->arg, session_number, buf, 4);
+    return rm->funcs->send_data(rm->funcs->arg, session_number, buf, 4);
 }
 
-int en50221_app_rm_message(en50221_app_rm rm,
+int en50221_app_rm_message(struct en50221_app_rm *rm,
                            uint8_t slot_id,
                            uint16_t session_number,
                            uint32_t resource_id,
                            uint8_t *data, uint32_t data_length)
 {
-    struct en50221_app_rm_private *private = (struct en50221_app_rm_private *) rm;
     (void) resource_id;
 
     // get the tag
@@ -208,11 +196,11 @@ int en50221_app_rm_message(en50221_app_rm rm,
     switch(tag)
     {
         case TAG_PROFILE_ENQUIRY:
-            return en50221_app_rm_parse_profile_enq(private, slot_id, session_number, data+3, data_length-3);
+            return en50221_app_rm_parse_profile_enq(rm, slot_id, session_number, data+3, data_length-3);
         case TAG_PROFILE:
-            return en50221_app_rm_parse_profile_reply(private, slot_id, session_number, data+3, data_length-3);
+            return en50221_app_rm_parse_profile_reply(rm, slot_id, session_number, data+3, data_length-3);
         case TAG_PROFILE_CHANGE:
-            return en50221_app_rm_parse_profile_change(private, slot_id, session_number, data+3, data_length-3);
+            return en50221_app_rm_parse_profile_change(rm, slot_id, session_number, data+3, data_length-3);
     }
 
     print(LOG_LEVEL, ERROR, 1, "Received unexpected tag %x\n", tag);
@@ -220,24 +208,24 @@ int en50221_app_rm_message(en50221_app_rm rm,
 }
 
 
-static int en50221_app_rm_parse_profile_enq(struct en50221_app_rm_private *private,
+static int en50221_app_rm_parse_profile_enq(struct en50221_app_rm *rm,
                                              uint8_t slot_id, uint16_t session_number,
                                              uint8_t *data, uint32_t data_length)
 {
     (void)data;
     (void)data_length;
 
-    pthread_mutex_lock(&private->lock);
-    en50221_app_rm_enq_callback cb = private->enqcallback;
-    void *cb_arg = private->enqcallback_arg;
-    pthread_mutex_unlock(&private->lock);
+    pthread_mutex_lock(&rm->lock);
+    en50221_app_rm_enq_callback cb = rm->enqcallback;
+    void *cb_arg = rm->enqcallback_arg;
+    pthread_mutex_unlock(&rm->lock);
     if (cb) {
         return cb(cb_arg, slot_id, session_number);
     }
     return 0;
 }
 
-static int en50221_app_rm_parse_profile_reply(struct en50221_app_rm_private *private,
+static int en50221_app_rm_parse_profile_reply(struct en50221_app_rm *rm,
                                                uint8_t slot_id, uint16_t session_number,
                                                uint8_t *data, uint32_t data_length)
 {
@@ -266,27 +254,27 @@ static int en50221_app_rm_parse_profile_reply(struct en50221_app_rm_private *pri
     }
 
     // inform observer
-    pthread_mutex_lock(&private->lock);
-    en50221_app_rm_reply_callback cb = private->replycallback;
-    void *cb_arg = private->replycallback_arg;
-    pthread_mutex_unlock(&private->lock);
+    pthread_mutex_lock(&rm->lock);
+    en50221_app_rm_reply_callback cb = rm->replycallback;
+    void *cb_arg = rm->replycallback_arg;
+    pthread_mutex_unlock(&rm->lock);
     if (cb) {
         return cb(cb_arg, slot_id, session_number, resources_count, resource_ids);
     }
     return 0;
 }
 
-static int en50221_app_rm_parse_profile_change(struct en50221_app_rm_private *private,
+static int en50221_app_rm_parse_profile_change(struct en50221_app_rm *rm,
                                                 uint8_t slot_id, uint16_t session_number,
                                                 uint8_t *data, uint32_t data_length)
 {
     (void)data;
     (void)data_length;
 
-    pthread_mutex_lock(&private->lock);
-    en50221_app_rm_changed_callback cb = private->changedcallback;
-    void *cb_arg = private->changedcallback_arg;
-    pthread_mutex_unlock(&private->lock);
+    pthread_mutex_lock(&rm->lock);
+    en50221_app_rm_changed_callback cb = rm->changedcallback;
+    void *cb_arg = rm->changedcallback_arg;
+    pthread_mutex_unlock(&rm->lock);
     if (cb) {
         return cb(cb_arg, slot_id, session_number);
     }

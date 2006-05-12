@@ -28,7 +28,7 @@
 #include "en50221_app_tags.h"
 #include "asn_1.h"
 
-struct en50221_app_smartcard_private {
+struct en50221_app_smartcard {
         struct en50221_app_send_functions *funcs;
 
         en50221_app_smartcard_command_callback command_callback;
@@ -40,72 +40,65 @@ struct en50221_app_smartcard_private {
         pthread_mutex_t lock;
 };
 
-static int en50221_app_smartcard_parse_command(struct en50221_app_smartcard_private *private,
+static int en50221_app_smartcard_parse_command(struct en50221_app_smartcard *smartcard,
                                                uint8_t slot_id, uint16_t session_number,
                                                uint8_t *data, uint32_t data_length);
 
-static int en50221_app_smartcard_parse_send(struct en50221_app_smartcard_private *private,
+static int en50221_app_smartcard_parse_send(struct en50221_app_smartcard *smartcard,
                                              uint8_t slot_id, uint16_t session_number,
                                              uint8_t *data, uint32_t data_length);
 
 
-en50221_app_smartcard en50221_app_smartcard_create(struct en50221_app_send_functions *funcs)
+struct en50221_app_smartcard *en50221_app_smartcard_create(struct en50221_app_send_functions *funcs)
 {
-    struct en50221_app_smartcard_private *private = NULL;
+    struct en50221_app_smartcard *smartcard = NULL;
 
     // create structure and set it up
-    private = malloc(sizeof(struct en50221_app_smartcard_private));
-    if (private == NULL) {
+    smartcard = malloc(sizeof(struct en50221_app_smartcard));
+    if (smartcard == NULL) {
         return NULL;
     }
-    private->funcs = funcs;
-    private->command_callback = NULL;
-    private->send_callback = NULL;
+    smartcard->funcs = funcs;
+    smartcard->command_callback = NULL;
+    smartcard->send_callback = NULL;
 
-    pthread_mutex_init(&private->lock, NULL);
+    pthread_mutex_init(&smartcard->lock, NULL);
 
     // done
-    return private;
+    return smartcard;
 }
 
-void en50221_app_smartcard_destroy(en50221_app_smartcard smartcard)
+void en50221_app_smartcard_destroy(struct en50221_app_smartcard *smartcard)
 {
-    struct en50221_app_smartcard_private *private = (struct en50221_app_smartcard_private *) smartcard;
-
-    pthread_mutex_destroy(&private->lock);
-    free(private);
+    pthread_mutex_destroy(&smartcard->lock);
+    free(smartcard);
 }
 
-void en50221_app_smartcard_register_command_callback(en50221_app_smartcard smartcard,
+void en50221_app_smartcard_register_command_callback(struct en50221_app_smartcard *smartcard,
                                                     en50221_app_smartcard_command_callback callback, void *arg)
 {
-    struct en50221_app_smartcard_private *private = (struct en50221_app_smartcard_private *) smartcard;
-
-    pthread_mutex_lock(&private->lock);
-    private->command_callback = callback;
-    private->command_callback_arg = arg;
-    pthread_mutex_unlock(&private->lock);
+    pthread_mutex_lock(&smartcard->lock);
+    smartcard->command_callback = callback;
+    smartcard->command_callback_arg = arg;
+    pthread_mutex_unlock(&smartcard->lock);
 }
 
-void en50221_app_smartcard_register_send_callback(en50221_app_smartcard smartcard,
+void en50221_app_smartcard_register_send_callback(struct en50221_app_smartcard *smartcard,
                                                  en50221_app_smartcard_send_callback callback, void *arg)
 {
-    struct en50221_app_smartcard_private *private = (struct en50221_app_smartcard_private *) smartcard;
-
-    pthread_mutex_lock(&private->lock);
-    private->send_callback = callback;
-    private->send_callback_arg = arg;
-    pthread_mutex_unlock(&private->lock);
+    pthread_mutex_lock(&smartcard->lock);
+    smartcard->send_callback = callback;
+    smartcard->send_callback_arg = arg;
+    pthread_mutex_unlock(&smartcard->lock);
 }
 
-int en50221_app_smartcard_command_reply(en50221_app_smartcard smartcard,
+int en50221_app_smartcard_command_reply(struct en50221_app_smartcard *smartcard,
                                            uint16_t session_number,
                                            uint8_t reply_id,
                                            uint8_t status,
                                            uint8_t *data,
                                            uint32_t data_length)
 {
-    struct en50221_app_smartcard_private *private = (struct en50221_app_smartcard_private *) smartcard;
     uint8_t hdr[10];
     struct iovec iovec[2];
     int iov_count = 0;
@@ -142,17 +135,16 @@ int en50221_app_smartcard_command_reply(en50221_app_smartcard smartcard,
         iov_count = 1;
     }
 
-    return private->funcs->send_datav(private->funcs->arg, session_number, iovec, iov_count);
+    return smartcard->funcs->send_datav(smartcard->funcs->arg, session_number, iovec, iov_count);
 }
 
-int en50221_app_smartcard_receive(en50221_app_smartcard smartcard,
+int en50221_app_smartcard_receive(struct en50221_app_smartcard *smartcard,
                                   uint16_t session_number,
                                   uint8_t *data,
                                   uint32_t data_length,
                                   uint8_t SW1,
                                   uint8_t SW2)
 {
-    struct en50221_app_smartcard_private *private = (struct en50221_app_smartcard_private *) smartcard;
     uint8_t buf[10];
     uint8_t trailer[10];
 
@@ -181,16 +173,15 @@ int en50221_app_smartcard_receive(en50221_app_smartcard smartcard,
     iov[2].iov_len = 2;
 
     // create the data and send it
-    return private->funcs->send_datav(private->funcs->arg, session_number, iov, 3);
+    return smartcard->funcs->send_datav(smartcard->funcs->arg, session_number, iov, 3);
 }
 
-int en50221_app_smartcard_message(en50221_app_smartcard smartcard,
+int en50221_app_smartcard_message(struct en50221_app_smartcard *smartcard,
                                   uint8_t slot_id,
                                   uint16_t session_number,
                                   uint32_t resource_id,
                                   uint8_t *data, uint32_t data_length)
 {
-    struct en50221_app_smartcard_private *private = (struct en50221_app_smartcard_private *) smartcard;
     (void)resource_id;
 
     // get the tag
@@ -203,9 +194,9 @@ int en50221_app_smartcard_message(en50221_app_smartcard smartcard,
     switch(tag)
     {
         case TAG_SMARTCARD_COMMAND:
-            return en50221_app_smartcard_parse_command(private, slot_id, session_number, data+3, data_length-3);
+            return en50221_app_smartcard_parse_command(smartcard, slot_id, session_number, data+3, data_length-3);
         case TAG_SMARTCARD_SEND:
-            return en50221_app_smartcard_parse_send(private, slot_id, session_number, data+3, data_length-3);
+            return en50221_app_smartcard_parse_send(smartcard, slot_id, session_number, data+3, data_length-3);
     }
 
     print(LOG_LEVEL, ERROR, 1, "Received unexpected tag %x\n", tag);
@@ -218,7 +209,7 @@ int en50221_app_smartcard_message(en50221_app_smartcard smartcard,
 
 
 
-static int en50221_app_smartcard_parse_command(struct en50221_app_smartcard_private *private,
+static int en50221_app_smartcard_parse_command(struct en50221_app_smartcard *smartcard,
                                                uint8_t slot_id, uint16_t session_number,
                                                uint8_t *data, uint32_t data_length)
 {
@@ -233,17 +224,17 @@ static int en50221_app_smartcard_parse_command(struct en50221_app_smartcard_priv
     uint8_t command_id = data[1];
 
     // tell the app
-    pthread_mutex_lock(&private->lock);
-    en50221_app_smartcard_command_callback cb = private->command_callback;
-    void *cb_arg = private->command_callback_arg;
-    pthread_mutex_unlock(&private->lock);
+    pthread_mutex_lock(&smartcard->lock);
+    en50221_app_smartcard_command_callback cb = smartcard->command_callback;
+    void *cb_arg = smartcard->command_callback_arg;
+    pthread_mutex_unlock(&smartcard->lock);
     if (cb) {
         return cb(cb_arg, slot_id, session_number, command_id);
     }
     return 0;
 }
 
-static int en50221_app_smartcard_parse_send(struct en50221_app_smartcard_private *private,
+static int en50221_app_smartcard_parse_send(struct en50221_app_smartcard *smartcard,
                                             uint8_t slot_id, uint16_t session_number,
                                             uint8_t *data, uint32_t data_length)
 {
@@ -282,10 +273,10 @@ static int en50221_app_smartcard_parse_send(struct en50221_app_smartcard_private
     uint16_t length_out = (data[6+length_in]<<8)|data[6+length_in+1];
 
     // tell the app
-    pthread_mutex_lock(&private->lock);
-    en50221_app_smartcard_send_callback cb = private->send_callback;
-    void *cb_arg = private->send_callback_arg;
-    pthread_mutex_unlock(&private->lock);
+    pthread_mutex_lock(&smartcard->lock);
+    en50221_app_smartcard_send_callback cb = smartcard->send_callback;
+    void *cb_arg = smartcard->send_callback_arg;
+    pthread_mutex_unlock(&smartcard->lock);
     if (cb) {
         return cb(cb_arg, slot_id, session_number, CLA, INS, P1, P2, data_in, length_in, length_out);
     }

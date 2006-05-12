@@ -31,13 +31,13 @@ extern int quit_app;
 
 extern time_t dvb_time;
 
-extern en50221_app_ai ai_resource;
+extern struct en50221_app_ai *ai_resource;
 extern int ai_session_number;
 
-extern en50221_app_ca ca_resource;
+extern struct en50221_app_ca *ca_resource;
 extern int ca_session_number;
 
-extern en50221_app_mmi mmi_resource;
+extern struct en50221_app_mmi *mmi_resource;
 extern int mmi_session_number;
 
 #endif

@@ -45,7 +45,7 @@ int main(int argc, char * argv[])
     pthread_t stackthread;
 
     // create transport layer
-    en50221_transport_layer tl = en50221_tl_create(5, 32);
+    struct en50221_transport_layer *tl = en50221_tl_create(5, 32);
     if (tl == NULL) {
         fprintf(stderr, "Failed to create transport layer\n");
         exit(1);
@@ -124,7 +124,7 @@ void test_callback(void *arg, int reason,
 }
 
 void *stackthread_func(void* arg) {
-    en50221_transport_layer tl = arg;
+    struct en50221_transport_layer *tl = arg;
     int lasterror = 0;
 
     while(!shutdown_stackthread) {

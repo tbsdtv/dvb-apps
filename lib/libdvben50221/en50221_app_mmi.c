@@ -47,7 +47,7 @@ struct en50221_app_mmi_session {
         struct en50221_app_mmi_session *next;
 };
 
-struct en50221_app_mmi_private {
+struct en50221_app_mmi {
         struct en50221_app_send_functions *funcs;
         struct en50221_app_mmi_session *sessions;
 
@@ -87,37 +87,37 @@ struct en50221_app_mmi_private {
         pthread_mutex_t lock;
 };
 
-static int en50221_app_mmi_parse_close(struct en50221_app_mmi_private *private,
+static int en50221_app_mmi_parse_close(struct en50221_app_mmi *mmi,
                                        uint8_t slot_id, uint16_t session_number,
                                        uint8_t *data, uint32_t data_length);
-static int en50221_app_mmi_parse_display_control(struct en50221_app_mmi_private *private,
+static int en50221_app_mmi_parse_display_control(struct en50221_app_mmi *mmi,
                                                  uint8_t slot_id, uint16_t session_number,
                                                  uint8_t *data, uint32_t data_length);
-static int en50221_app_mmi_parse_keypad_control(struct en50221_app_mmi_private *private,
+static int en50221_app_mmi_parse_keypad_control(struct en50221_app_mmi *mmi,
                                                 uint8_t slot_id, uint16_t session_number,
                                                 uint8_t *data, uint32_t data_length);
-static int en50221_app_mmi_parse_enq(struct en50221_app_mmi_private *private,
+static int en50221_app_mmi_parse_enq(struct en50221_app_mmi *mmi,
                                      uint8_t slot_id, uint16_t session_number,
                                      uint8_t *data, uint32_t data_length);
-static int en50221_app_mmi_parse_list_menu(struct en50221_app_mmi_private *private,
+static int en50221_app_mmi_parse_list_menu(struct en50221_app_mmi *mmi,
                                       uint8_t slot_id, uint16_t session_number, uint32_t tag_id,
                                       int more_last, uint8_t *data, uint32_t data_length);
-static int en50221_app_mmi_parse_subtitle(struct en50221_app_mmi_private *private,
+static int en50221_app_mmi_parse_subtitle(struct en50221_app_mmi *mmi,
                                           uint8_t slot_id, uint16_t session_number, uint32_t tag_id,
                                           int more_last, uint8_t *data, uint32_t data_length);
-static int en50221_app_mmi_parse_scene_end_mark(struct en50221_app_mmi_private *private,
+static int en50221_app_mmi_parse_scene_end_mark(struct en50221_app_mmi *mmi,
                                                 uint8_t slot_id, uint16_t session_number,
                                                 uint8_t *data, uint32_t data_length);
-static int en50221_app_mmi_parse_scene_control(struct en50221_app_mmi_private *private,
+static int en50221_app_mmi_parse_scene_control(struct en50221_app_mmi *mmi,
                                                uint8_t slot_id, uint16_t session_number,
                                                uint8_t *data, uint32_t data_length);
-static int en50221_app_mmi_parse_subtitle(struct en50221_app_mmi_private *private,
+static int en50221_app_mmi_parse_subtitle(struct en50221_app_mmi *mmi,
                                           uint8_t slot_id, uint16_t session_number, uint32_t tag_id,
                                           int more_last, uint8_t *data, uint32_t data_length);
-static int en50221_app_mmi_parse_flush_download(struct en50221_app_mmi_private *private,
+static int en50221_app_mmi_parse_flush_download(struct en50221_app_mmi *mmi,
                                                 uint8_t slot_id, uint16_t session_number,
                                                 uint8_t *data, uint32_t data_length);
-static int en50221_app_mmi_defragment(struct en50221_app_mmi_private *private,
+static int en50221_app_mmi_defragment(struct en50221_app_mmi *mmi,
                                       uint16_t session_number,
                                       uint32_t tag_id,
                                       int more_last,
@@ -133,40 +133,38 @@ static int en50221_app_mmi_defragment_text(uint8_t *data,
 
 
 
-en50221_app_mmi en50221_app_mmi_create(struct en50221_app_send_functions *funcs)
+struct en50221_app_mmi *en50221_app_mmi_create(struct en50221_app_send_functions *funcs)
 {
-    struct en50221_app_mmi_private *private = NULL;
+    struct en50221_app_mmi *mmi = NULL;
 
     // create structure and set it up
-    private = malloc(sizeof(struct en50221_app_mmi_private));
-    if (private == NULL) {
+    mmi = malloc(sizeof(struct en50221_app_mmi));
+    if (mmi == NULL) {
         return NULL;
     }
-    private->funcs = funcs;
-    private->closecallback = NULL;
-    private->displaycontrolcallback = NULL;
-    private->keypadcontrolcallback = NULL;
-    private->subtitlesegmentcallback = NULL;
-    private->sceneendmarkcallback = NULL;
-    private->scenecontrolcallback = NULL;
-    private->subtitledownloadcallback = NULL;
-    private->flushdownloadcallback = NULL;
-    private->enqcallback = NULL;
-    private->menucallback = NULL;
-    private->listcallback = NULL;
-    private->sessions = NULL;
+    mmi->funcs = funcs;
+    mmi->closecallback = NULL;
+    mmi->displaycontrolcallback = NULL;
+    mmi->keypadcontrolcallback = NULL;
+    mmi->subtitlesegmentcallback = NULL;
+    mmi->sceneendmarkcallback = NULL;
+    mmi->scenecontrolcallback = NULL;
+    mmi->subtitledownloadcallback = NULL;
+    mmi->flushdownloadcallback = NULL;
+    mmi->enqcallback = NULL;
+    mmi->menucallback = NULL;
+    mmi->listcallback = NULL;
+    mmi->sessions = NULL;
 
-    pthread_mutex_init(&private->lock, NULL);
+    pthread_mutex_init(&mmi->lock, NULL);
 
     // done
-    return private;
+    return mmi;
 }
 
-void en50221_app_mmi_destroy(en50221_app_mmi mmi)
+void en50221_app_mmi_destroy(struct en50221_app_mmi *mmi)
 {
-    struct en50221_app_mmi_private *private = (struct en50221_app_mmi_private *) mmi;
-
-    struct en50221_app_mmi_session *cur_s = private->sessions;
+    struct en50221_app_mmi_session *cur_s = mmi->sessions;
     while(cur_s) {
         struct en50221_app_mmi_session *next = cur_s->next;
         if (cur_s->menu_block_chain)
@@ -181,16 +179,14 @@ void en50221_app_mmi_destroy(en50221_app_mmi mmi)
         cur_s = next;
     }
 
-    pthread_mutex_destroy(&private->lock);
-    free(private);
+    pthread_mutex_destroy(&mmi->lock);
+    free(mmi);
 }
 
-void en50221_app_mmi_clear_session(en50221_app_mmi mmi, uint16_t session_number)
+void en50221_app_mmi_clear_session(struct en50221_app_mmi *mmi, uint16_t session_number)
 {
-    struct en50221_app_mmi_private *private = (struct en50221_app_mmi_private *) mmi;
-
-    pthread_mutex_lock(&private->lock);
-    struct en50221_app_mmi_session *cur_s = private->sessions;
+    pthread_mutex_lock(&mmi->lock);
+    struct en50221_app_mmi_session *cur_s = mmi->sessions;
     struct en50221_app_mmi_session *prev_s = NULL;
     while(cur_s) {
         if (cur_s->session_number == session_number) {
@@ -205,7 +201,7 @@ void en50221_app_mmi_clear_session(en50221_app_mmi mmi, uint16_t session_number)
             if (prev_s) {
                 prev_s->next = cur_s->next;
             } else {
-                private->sessions = cur_s->next;
+                mmi->sessions = cur_s->next;
             }
             free(cur_s);
             return;
@@ -214,136 +210,113 @@ void en50221_app_mmi_clear_session(en50221_app_mmi mmi, uint16_t session_number)
         prev_s = cur_s;
         cur_s=cur_s->next;
     }
-    pthread_mutex_unlock(&private->lock);
+    pthread_mutex_unlock(&mmi->lock);
 }
 
-void en50221_app_mmi_register_close_callback(en50221_app_mmi mmi,
+void en50221_app_mmi_register_close_callback(struct en50221_app_mmi *mmi,
                                              en50221_app_mmi_close_callback callback, void *arg)
 {
-    struct en50221_app_mmi_private *private = (struct en50221_app_mmi_private *) mmi;
-
-    pthread_mutex_lock(&private->lock);
-    private->closecallback = callback;
-    private->closecallback_arg = arg;
-    pthread_mutex_unlock(&private->lock);
+    pthread_mutex_lock(&mmi->lock);
+    mmi->closecallback = callback;
+    mmi->closecallback_arg = arg;
+    pthread_mutex_unlock(&mmi->lock);
 }
 
-void en50221_app_mmi_register_display_control_callback(en50221_app_mmi mmi,
+void en50221_app_mmi_register_display_control_callback(struct en50221_app_mmi *mmi,
                                                        en50221_app_mmi_display_control_callback callback, void *arg)
 {
-    struct en50221_app_mmi_private *private = (struct en50221_app_mmi_private *) mmi;
-
-    pthread_mutex_lock(&private->lock);
-    private->displaycontrolcallback = callback;
-    private->displaycontrolcallback_arg = arg;
-    pthread_mutex_unlock(&private->lock);
+    pthread_mutex_lock(&mmi->lock);
+    mmi->displaycontrolcallback = callback;
+    mmi->displaycontrolcallback_arg = arg;
+    pthread_mutex_unlock(&mmi->lock);
 }
 
-void en50221_app_mmi_register_keypad_control_callback(en50221_app_mmi mmi,
+void en50221_app_mmi_register_keypad_control_callback(struct en50221_app_mmi *mmi,
                                                en50221_app_mmi_keypad_control_callback callback, void *arg)
 {
-    struct en50221_app_mmi_private *private = (struct en50221_app_mmi_private *) mmi;
-
-    pthread_mutex_lock(&private->lock);
-    private->keypadcontrolcallback = callback;
-    private->keypadcontrolcallback_arg = arg;
-    pthread_mutex_unlock(&private->lock);
+    pthread_mutex_lock(&mmi->lock);
+    mmi->keypadcontrolcallback = callback;
+    mmi->keypadcontrolcallback_arg = arg;
+    pthread_mutex_unlock(&mmi->lock);
 }
 
-void en50221_app_mmi_register_subtitle_segment_callback(en50221_app_mmi mmi,
+void en50221_app_mmi_register_subtitle_segment_callback(struct en50221_app_mmi *mmi,
                                                en50221_app_mmi_subtitle_segment_callback callback, void *arg)
 {
-    struct en50221_app_mmi_private *private = (struct en50221_app_mmi_private *) mmi;
-
-    pthread_mutex_lock(&private->lock);
-    private->subtitlesegmentcallback = callback;
-    private->subtitlesegmentcallback_arg = arg;
-    pthread_mutex_unlock(&private->lock);
+    pthread_mutex_lock(&mmi->lock);
+    mmi->subtitlesegmentcallback = callback;
+    mmi->subtitlesegmentcallback_arg = arg;
+    pthread_mutex_unlock(&mmi->lock);
 }
 
-void en50221_app_mmi_register_scene_end_mark_callback(en50221_app_mmi mmi,
+void en50221_app_mmi_register_scene_end_mark_callback(struct en50221_app_mmi *mmi,
                                                       en50221_app_mmi_scene_end_mark_callback callback, void *arg)
 {
-    struct en50221_app_mmi_private *private = (struct en50221_app_mmi_private *) mmi;
-
-    pthread_mutex_lock(&private->lock);
-    private->sceneendmarkcallback = callback;
-    private->sceneendmarkcallback_arg = arg;
-    pthread_mutex_unlock(&private->lock);
+    pthread_mutex_lock(&mmi->lock);
+    mmi->sceneendmarkcallback = callback;
+    mmi->sceneendmarkcallback_arg = arg;
+    pthread_mutex_unlock(&mmi->lock);
 }
 
-void en50221_app_mmi_register_scene_control_callback(en50221_app_mmi mmi,
+void en50221_app_mmi_register_scene_control_callback(struct en50221_app_mmi *mmi,
                                                en50221_app_mmi_scene_control_callback callback, void *arg)
 {
-    struct en50221_app_mmi_private *private = (struct en50221_app_mmi_private *) mmi;
-
-    pthread_mutex_lock(&private->lock);
-    private->scenecontrolcallback = callback;
-    private->scenecontrolcallback_arg = arg;
-    pthread_mutex_unlock(&private->lock);
+    pthread_mutex_lock(&mmi->lock);
+    mmi->scenecontrolcallback = callback;
+    mmi->scenecontrolcallback_arg = arg;
+    pthread_mutex_unlock(&mmi->lock);
 }
 
-void en50221_app_mmi_register_subtitle_download_callback(en50221_app_mmi mmi,
+void en50221_app_mmi_register_subtitle_download_callback(struct en50221_app_mmi *mmi,
                                                en50221_app_mmi_subtitle_download_callback callback, void *arg)
 {
-    struct en50221_app_mmi_private *private = (struct en50221_app_mmi_private *) mmi;
-
-    pthread_mutex_lock(&private->lock);
-    private->subtitledownloadcallback = callback;
-    private->subtitledownloadcallback_arg = arg;
-    pthread_mutex_unlock(&private->lock);
+    pthread_mutex_lock(&mmi->lock);
+    mmi->subtitledownloadcallback = callback;
+    mmi->subtitledownloadcallback_arg = arg;
+    pthread_mutex_unlock(&mmi->lock);
 }
 
-void en50221_app_mmi_register_flush_download_callback(en50221_app_mmi mmi,
+void en50221_app_mmi_register_flush_download_callback(struct en50221_app_mmi *mmi,
                                                en50221_app_mmi_flush_download_callback callback, void *arg)
 {
-    struct en50221_app_mmi_private *private = (struct en50221_app_mmi_private *) mmi;
-
-    pthread_mutex_lock(&private->lock);
-    private->flushdownloadcallback = callback;
-    private->flushdownloadcallback_arg = arg;
-    pthread_mutex_unlock(&private->lock);
+    pthread_mutex_lock(&mmi->lock);
+    mmi->flushdownloadcallback = callback;
+    mmi->flushdownloadcallback_arg = arg;
+    pthread_mutex_unlock(&mmi->lock);
 }
 
-void en50221_app_mmi_register_enq_callback(en50221_app_mmi mmi,
+void en50221_app_mmi_register_enq_callback(struct en50221_app_mmi *mmi,
                                                en50221_app_mmi_enq_callback callback, void *arg)
 {
-    struct en50221_app_mmi_private *private = (struct en50221_app_mmi_private *) mmi;
-
-    pthread_mutex_lock(&private->lock);
-    private->enqcallback = callback;
-    private->enqcallback_arg = arg;
-    pthread_mutex_unlock(&private->lock);
+    pthread_mutex_lock(&mmi->lock);
+    mmi->enqcallback = callback;
+    mmi->enqcallback_arg = arg;
+    pthread_mutex_unlock(&mmi->lock);
 }
 
-void en50221_app_mmi_register_menu_callback(en50221_app_mmi mmi,
+void en50221_app_mmi_register_menu_callback(struct en50221_app_mmi *mmi,
                                             en50221_app_mmi_menu_callback callback, void *arg)
 {
-    struct en50221_app_mmi_private *private = (struct en50221_app_mmi_private *) mmi;
-
-    pthread_mutex_lock(&private->lock);
-    private->menucallback = callback;
-    private->menucallback_arg = arg;
-    pthread_mutex_unlock(&private->lock);
+    pthread_mutex_lock(&mmi->lock);
+    mmi->menucallback = callback;
+    mmi->menucallback_arg = arg;
+    pthread_mutex_unlock(&mmi->lock);
 }
 
-void en50221_app_mmi_register_list_callback(en50221_app_mmi mmi,
+void en50221_app_mmi_register_list_callback(struct en50221_app_mmi *mmi,
                                                en50221_app_mmi_list_callback callback, void *arg)
 {
-    struct en50221_app_mmi_private *private = (struct en50221_app_mmi_private *) mmi;
-
-    pthread_mutex_lock(&private->lock);
-    private->listcallback = callback;
-    private->listcallback_arg = arg;
-    pthread_mutex_unlock(&private->lock);
+    pthread_mutex_lock(&mmi->lock);
+    mmi->listcallback = callback;
+    mmi->listcallback_arg = arg;
+    pthread_mutex_unlock(&mmi->lock);
 }
 
-int en50221_app_mmi_close(en50221_app_mmi mmi,
+int en50221_app_mmi_close(struct en50221_app_mmi *mmi,
                                  uint16_t session_number,
                                  uint8_t cmd_id,
                                  uint8_t delay)
 {
-    struct en50221_app_mmi_private *private = (struct en50221_app_mmi_private *) mmi;
     uint8_t data[6];
     int data_length = 5;
 
@@ -357,15 +330,14 @@ int en50221_app_mmi_close(en50221_app_mmi mmi,
         data[5] = delay;
         data_length = 6;
     }
-    return private->funcs->send_data(private->funcs->arg, session_number, data, data_length);
+    return mmi->funcs->send_data(mmi->funcs->arg, session_number, data, data_length);
 }
 
-int en50221_app_mmi_display_reply(en50221_app_mmi mmi,
+int en50221_app_mmi_display_reply(struct en50221_app_mmi *mmi,
                                          uint16_t session_number,
                                          uint8_t reply_id,
                                          struct en502221_app_mmi_display_reply_details *details)
 {
-    struct en50221_app_mmi_private *private = (struct en50221_app_mmi_private *) mmi;
     uint8_t data[32];
     struct iovec iov[2];
     uint32_t iov_count;
@@ -453,14 +425,13 @@ int en50221_app_mmi_display_reply(en50221_app_mmi mmi,
     }
 
     // sendit
-    return private->funcs->send_datav(private->funcs->arg, session_number, iov, iov_count);
+    return mmi->funcs->send_datav(mmi->funcs->arg, session_number, iov, iov_count);
 }
 
-int en50221_app_mmi_keypress(en50221_app_mmi mmi,
+int en50221_app_mmi_keypress(struct en50221_app_mmi *mmi,
                                     uint16_t session_number,
                                     uint8_t keycode)
 {
-    struct en50221_app_mmi_private *private = (struct en50221_app_mmi_private *) mmi;
     uint8_t data[5];
 
     data[0] = (TAG_KEYPRESS >> 16) & 0xFF;
@@ -468,14 +439,13 @@ int en50221_app_mmi_keypress(en50221_app_mmi mmi,
     data[2] = TAG_KEYPRESS & 0xFF;
     data[3] = 1;
     data[4] = keycode;
-    return private->funcs->send_data(private->funcs->arg, session_number, data, 5);
+    return mmi->funcs->send_data(mmi->funcs->arg, session_number, data, 5);
 }
 
-int en50221_app_mmi_display_message(en50221_app_mmi mmi,
+int en50221_app_mmi_display_message(struct en50221_app_mmi *mmi,
                                            uint16_t session_number,
                                            uint8_t display_message_id)
 {
-    struct en50221_app_mmi_private *private = (struct en50221_app_mmi_private *) mmi;
     uint8_t data[5];
 
     data[0] = (TAG_DISPLAY_MESSAGE >> 16) & 0xFF;
@@ -483,16 +453,15 @@ int en50221_app_mmi_display_message(en50221_app_mmi mmi,
     data[2] = TAG_DISPLAY_MESSAGE & 0xFF;
     data[3] = 1;
     data[4] = display_message_id;
-    return private->funcs->send_data(private->funcs->arg, session_number, data, 5);
+    return mmi->funcs->send_data(mmi->funcs->arg, session_number, data, 5);
 }
 
-int en50221_app_mmi_scene_done(en50221_app_mmi mmi,
+int en50221_app_mmi_scene_done(struct en50221_app_mmi *mmi,
                                       uint16_t session_number,
                                       uint8_t decoder_continue,
                                       uint8_t scene_reveal,
                                       uint8_t scene_tag)
 {
-    struct en50221_app_mmi_private *private = (struct en50221_app_mmi_private *) mmi;
     uint8_t data[5];
 
     data[0] = (TAG_SCENE_DONE >> 16) & 0xFF;
@@ -502,15 +471,14 @@ int en50221_app_mmi_scene_done(en50221_app_mmi mmi,
     data[4] = (decoder_continue ? 0x80 : 0x00) |
               (scene_reveal ? 0x40 : 0x00) |
               (scene_tag & 0x0f);
-    return private->funcs->send_data(private->funcs->arg, session_number, data, 5);
+    return mmi->funcs->send_data(mmi->funcs->arg, session_number, data, 5);
 }
 
-int en50221_app_mmi_download_reply(en50221_app_mmi mmi,
+int en50221_app_mmi_download_reply(struct en50221_app_mmi *mmi,
                                           uint16_t session_number,
                                           uint16_t object_id,
                                           uint8_t download_reply_id)
 {
-    struct en50221_app_mmi_private *private = (struct en50221_app_mmi_private *) mmi;
     uint8_t data[7];
 
     data[0] = (TAG_DOWNLOAD_REPLY >> 16) & 0xFF;
@@ -520,16 +488,15 @@ int en50221_app_mmi_download_reply(en50221_app_mmi mmi,
     data[4] = object_id >> 8;
     data[5] = object_id;
     data[6] = download_reply_id;
-    return private->funcs->send_data(private->funcs->arg, session_number, data, 7);
+    return mmi->funcs->send_data(mmi->funcs->arg, session_number, data, 7);
 }
 
-int en50221_app_mmi_answ(en50221_app_mmi mmi,
+int en50221_app_mmi_answ(struct en50221_app_mmi *mmi,
                                 uint16_t session_number,
                                 uint8_t answ_id,
                                 uint8_t *text,
                                 uint32_t text_count)
 {
-    struct en50221_app_mmi_private *private = (struct en50221_app_mmi_private *) mmi;
     uint8_t buf[10];
 
     // set up the tag
@@ -561,14 +528,13 @@ int en50221_app_mmi_answ(en50221_app_mmi mmi,
     }
 
     // create the data and send it
-    return private->funcs->send_datav(private->funcs->arg, session_number, iov, iov_count);
+    return mmi->funcs->send_datav(mmi->funcs->arg, session_number, iov, iov_count);
 }
 
-int en50221_app_mmi_menu_answ(en50221_app_mmi mmi,
+int en50221_app_mmi_menu_answ(struct en50221_app_mmi *mmi,
                                      uint16_t session_number,
                                      uint8_t choice_ref)
 {
-    struct en50221_app_mmi_private *private = (struct en50221_app_mmi_private *) mmi;
     uint8_t data[5];
 
     data[0] = (TAG_MENU_ANSWER >> 16) & 0xFF;
@@ -576,16 +542,15 @@ int en50221_app_mmi_menu_answ(en50221_app_mmi mmi,
     data[2] = TAG_MENU_ANSWER & 0xFF;
     data[3] = 1;
     data[4] = choice_ref;
-    return private->funcs->send_data(private->funcs->arg, session_number, data, 5);
+    return mmi->funcs->send_data(mmi->funcs->arg, session_number, data, 5);
 }
 
-int en50221_app_mmi_message(en50221_app_mmi mmi,
+int en50221_app_mmi_message(struct en50221_app_mmi *mmi,
                                   uint8_t slot_id,
                                   uint16_t session_number,
                                   uint32_t resource_id,
                                   uint8_t *data, uint32_t data_length)
 {
-    struct en50221_app_mmi_private *private = (struct en50221_app_mmi_private *) mmi;
     (void) resource_id;
 
     // get the tag
@@ -598,35 +563,35 @@ int en50221_app_mmi_message(en50221_app_mmi mmi,
     switch(tag)
     {
         case TAG_CLOSE_MMI:
-            return en50221_app_mmi_parse_close(private, slot_id, session_number, data+3, data_length-3);
+            return en50221_app_mmi_parse_close(mmi, slot_id, session_number, data+3, data_length-3);
         case TAG_DISPLAY_CONTROL:
-            return en50221_app_mmi_parse_display_control(private, slot_id, session_number, data+3, data_length-3);
+            return en50221_app_mmi_parse_display_control(mmi, slot_id, session_number, data+3, data_length-3);
         case TAG_KEYPAD_CONTROL:
-            return en50221_app_mmi_parse_keypad_control(private, slot_id, session_number, data+3, data_length-3);
+            return en50221_app_mmi_parse_keypad_control(mmi, slot_id, session_number, data+3, data_length-3);
         case TAG_ENQUIRY:
-            return en50221_app_mmi_parse_enq(private, slot_id, session_number, data+3, data_length-3);
+            return en50221_app_mmi_parse_enq(mmi, slot_id, session_number, data+3, data_length-3);
         case TAG_MENU_LAST:
-            return en50221_app_mmi_parse_list_menu(private, slot_id, session_number, tag, 1, data+3, data_length-3);
+            return en50221_app_mmi_parse_list_menu(mmi, slot_id, session_number, tag, 1, data+3, data_length-3);
         case TAG_MENU_MORE:
-            return en50221_app_mmi_parse_list_menu(private, slot_id, session_number, tag, 0, data+3, data_length-3);
+            return en50221_app_mmi_parse_list_menu(mmi, slot_id, session_number, tag, 0, data+3, data_length-3);
         case TAG_LIST_LAST:
-            return en50221_app_mmi_parse_list_menu(private, slot_id, session_number, tag, 1, data+3, data_length-3);
+            return en50221_app_mmi_parse_list_menu(mmi, slot_id, session_number, tag, 1, data+3, data_length-3);
         case TAG_LIST_MORE:
-            return en50221_app_mmi_parse_list_menu(private, slot_id, session_number, tag, 0, data+3, data_length-3);
+            return en50221_app_mmi_parse_list_menu(mmi, slot_id, session_number, tag, 0, data+3, data_length-3);
         case TAG_SUBTITLE_SEGMENT_LAST:
-            return en50221_app_mmi_parse_subtitle(private, slot_id, session_number, tag, 1, data+3, data_length-3);
+            return en50221_app_mmi_parse_subtitle(mmi, slot_id, session_number, tag, 1, data+3, data_length-3);
         case TAG_SUBTITLE_SEGMENT_MORE:
-            return en50221_app_mmi_parse_subtitle(private, slot_id, session_number, tag, 0, data+3, data_length-3);
+            return en50221_app_mmi_parse_subtitle(mmi, slot_id, session_number, tag, 0, data+3, data_length-3);
         case TAG_SCENE_END_MARK:
-            return en50221_app_mmi_parse_scene_end_mark(private, slot_id, session_number, data+3, data_length-3);
+            return en50221_app_mmi_parse_scene_end_mark(mmi, slot_id, session_number, data+3, data_length-3);
         case TAG_SCENE_CONTROL:
-            return en50221_app_mmi_parse_scene_control(private, slot_id, session_number, data+3, data_length-3);
+            return en50221_app_mmi_parse_scene_control(mmi, slot_id, session_number, data+3, data_length-3);
         case TAG_SUBTITLE_DOWNLOAD_LAST:
-            return en50221_app_mmi_parse_subtitle(private, slot_id, session_number, tag, 1, data+3, data_length-3);
+            return en50221_app_mmi_parse_subtitle(mmi, slot_id, session_number, tag, 1, data+3, data_length-3);
         case TAG_SUBTITLE_DOWNLOAD_MORE:
-            return en50221_app_mmi_parse_subtitle(private, slot_id, session_number, tag, 0, data+3, data_length-3);
+            return en50221_app_mmi_parse_subtitle(mmi, slot_id, session_number, tag, 0, data+3, data_length-3);
         case TAG_FLUSH_DOWNLOAD:
-            return en50221_app_mmi_parse_flush_download(private, slot_id, session_number, data+3, data_length-3);
+            return en50221_app_mmi_parse_flush_download(mmi, slot_id, session_number, data+3, data_length-3);
     }
 
     print(LOG_LEVEL, ERROR, 1, "Received unexpected tag %x\n", tag);
@@ -637,7 +602,7 @@ int en50221_app_mmi_message(en50221_app_mmi mmi,
 
 
 
-static int en50221_app_mmi_parse_close(struct en50221_app_mmi_private *private,
+static int en50221_app_mmi_parse_close(struct en50221_app_mmi *mmi,
                                        uint8_t slot_id, uint16_t session_number,
                                        uint8_t *data, uint32_t data_length)
 {
@@ -661,17 +626,17 @@ static int en50221_app_mmi_parse_close(struct en50221_app_mmi_private *private,
     }
 
     // tell the app
-    pthread_mutex_lock(&private->lock);
-    en50221_app_mmi_close_callback cb = private->closecallback;
-    void *cb_arg = private->closecallback_arg;
-    pthread_mutex_unlock(&private->lock);
+    pthread_mutex_lock(&mmi->lock);
+    en50221_app_mmi_close_callback cb = mmi->closecallback;
+    void *cb_arg = mmi->closecallback_arg;
+    pthread_mutex_unlock(&mmi->lock);
     if (cb) {
         return cb(cb_arg, slot_id, session_number, cmd_id, delay);
     }
     return 0;
 }
 
-static int en50221_app_mmi_parse_display_control(struct en50221_app_mmi_private *private,
+static int en50221_app_mmi_parse_display_control(struct en50221_app_mmi *mmi,
                                        uint8_t slot_id, uint16_t session_number,
                                        uint8_t *data, uint32_t data_length)
 {
@@ -695,17 +660,17 @@ static int en50221_app_mmi_parse_display_control(struct en50221_app_mmi_private 
     }
 
     // tell the app
-    pthread_mutex_lock(&private->lock);
-    en50221_app_mmi_display_control_callback cb = private->displaycontrolcallback;
-    void *cb_arg = private->displaycontrolcallback_arg;
-    pthread_mutex_unlock(&private->lock);
+    pthread_mutex_lock(&mmi->lock);
+    en50221_app_mmi_display_control_callback cb = mmi->displaycontrolcallback;
+    void *cb_arg = mmi->displaycontrolcallback_arg;
+    pthread_mutex_unlock(&mmi->lock);
     if (cb) {
         return cb(cb_arg, slot_id, session_number, cmd_id, mmi_mode);
     }
     return 0;
 }
 
-static int en50221_app_mmi_parse_keypad_control(struct en50221_app_mmi_private *private,
+static int en50221_app_mmi_parse_keypad_control(struct en50221_app_mmi *mmi,
                                        uint8_t slot_id, uint16_t session_number,
                                        uint8_t *data, uint32_t data_length)
 {
@@ -735,17 +700,17 @@ static int en50221_app_mmi_parse_keypad_control(struct en50221_app_mmi_private *
     uint8_t *keycodes = data+1;
 
     // tell the app
-    pthread_mutex_lock(&private->lock);
-    en50221_app_mmi_keypad_control_callback cb = private->keypadcontrolcallback;
-    void *cb_arg = private->keypadcontrolcallback_arg;
-    pthread_mutex_unlock(&private->lock);
+    pthread_mutex_lock(&mmi->lock);
+    en50221_app_mmi_keypad_control_callback cb = mmi->keypadcontrolcallback;
+    void *cb_arg = mmi->keypadcontrolcallback_arg;
+    pthread_mutex_unlock(&mmi->lock);
     if (cb) {
         return cb(cb_arg, slot_id, session_number, cmd_id, keycodes, asn_data_length-1);
     }
     return 0;
 }
 
-static int en50221_app_mmi_parse_enq(struct en50221_app_mmi_private *private,
+static int en50221_app_mmi_parse_enq(struct en50221_app_mmi *mmi,
                                      uint8_t slot_id, uint16_t session_number,
                                      uint8_t *data, uint32_t data_length)
 {
@@ -776,17 +741,17 @@ static int en50221_app_mmi_parse_enq(struct en50221_app_mmi_private *private,
     uint8_t *text = data+2;
 
     // tell the app
-    pthread_mutex_lock(&private->lock);
-    en50221_app_mmi_enq_callback cb = private->enqcallback;
-    void *cb_arg = private->enqcallback_arg;
-    pthread_mutex_unlock(&private->lock);
+    pthread_mutex_lock(&mmi->lock);
+    en50221_app_mmi_enq_callback cb = mmi->enqcallback;
+    void *cb_arg = mmi->enqcallback_arg;
+    pthread_mutex_unlock(&mmi->lock);
     if (cb) {
         return cb(cb_arg, slot_id, session_number, blind_answer, answer_length, text, asn_data_length - 2);
     }
     return 0;
 }
 
-static int en50221_app_mmi_parse_list_menu(struct en50221_app_mmi_private *private,
+static int en50221_app_mmi_parse_list_menu(struct en50221_app_mmi *mmi,
                                            uint8_t slot_id, uint16_t session_number, uint32_t tag_id,
                                            int more_last, uint8_t *data, uint32_t data_length)
 {
@@ -814,14 +779,14 @@ static int en50221_app_mmi_parse_list_menu(struct en50221_app_mmi_private *priva
     data += length_field_len;
 
     // defragment
-    pthread_mutex_lock(&private->lock);
+    pthread_mutex_lock(&mmi->lock);
     uint8_t *outdata;
     uint32_t outdata_length;
-    int dfstatus = en50221_app_mmi_defragment(private, session_number, tag_id, more_last,
+    int dfstatus = en50221_app_mmi_defragment(mmi, session_number, tag_id, more_last,
                                               data, asn_data_length,
                                               &outdata, &outdata_length);
     if (dfstatus <= 0) {
-        pthread_mutex_unlock(&private->lock);
+        pthread_mutex_unlock(&mmi->lock);
         return dfstatus;
     }
     data = outdata;
@@ -830,7 +795,7 @@ static int en50221_app_mmi_parse_list_menu(struct en50221_app_mmi_private *priva
     // check the reassembled data length
     if (data_length < 1) {
         print(LOG_LEVEL, ERROR, 1, "Received short data\n");
-        pthread_mutex_unlock(&private->lock);
+        pthread_mutex_unlock(&mmi->lock);
         result = -1;
         goto exit_cleanup;
     }
@@ -845,14 +810,14 @@ static int en50221_app_mmi_parse_list_menu(struct en50221_app_mmi_private *priva
     // variables for extracted text state
     text_flags = alloca(text_count);
     if (text_flags == NULL) {
-        pthread_mutex_unlock(&private->lock);
+        pthread_mutex_unlock(&mmi->lock);
         result = -1;
         goto exit_cleanup;
     }
     memset(text_flags, 0, text_count);
     text_data = (struct en50221_app_mmi_text*) alloca(sizeof(struct en50221_app_mmi_text) * text_count);
     if (text_data == NULL) {
-        pthread_mutex_unlock(&private->lock);
+        pthread_mutex_unlock(&mmi->lock);
         result = -1;
         goto exit_cleanup;
     }
@@ -865,7 +830,7 @@ static int en50221_app_mmi_parse_list_menu(struct en50221_app_mmi_private *priva
                                                          &text_data[i].text, &text_data[i].text_length,
                                                          &consumed);
         if (cur_status < 0) {
-            pthread_mutex_unlock(&private->lock);
+            pthread_mutex_unlock(&mmi->lock);
             result = -1;
             goto exit_cleanup;
         }
@@ -899,9 +864,9 @@ static int en50221_app_mmi_parse_list_menu(struct en50221_app_mmi_private *priva
     switch(tag_id) {
         case TAG_MENU_LAST:
         {
-            en50221_app_mmi_menu_callback cb = private->menucallback;
-            void *cb_arg = private->menucallback_arg;
-            pthread_mutex_unlock(&private->lock);
+            en50221_app_mmi_menu_callback cb = mmi->menucallback;
+            void *cb_arg = mmi->menucallback_arg;
+            pthread_mutex_unlock(&mmi->lock);
             if (cb) {
                 result = cb(cb_arg, slot_id, session_number,
                             &text_data_for_user[0],
@@ -917,9 +882,9 @@ static int en50221_app_mmi_parse_list_menu(struct en50221_app_mmi_private *priva
 
         case TAG_LIST_LAST:
         {
-            en50221_app_mmi_list_callback cb = private->listcallback;
-            void *cb_arg = private->listcallback_arg;
-            pthread_mutex_unlock(&private->lock);
+            en50221_app_mmi_list_callback cb = mmi->listcallback;
+            void *cb_arg = mmi->listcallback_arg;
+            pthread_mutex_unlock(&mmi->lock);
             if (cb) {
                 result = cb(cb_arg, slot_id, session_number,
                             &text_data_for_user[0],
@@ -934,7 +899,7 @@ static int en50221_app_mmi_parse_list_menu(struct en50221_app_mmi_private *priva
         }
 
         default:
-            pthread_mutex_unlock(&private->lock);
+            pthread_mutex_unlock(&mmi->lock);
             break;
     }
 
@@ -950,7 +915,7 @@ exit_cleanup:
     return result;
 }
 
-static int en50221_app_mmi_parse_subtitle(struct en50221_app_mmi_private *private,
+static int en50221_app_mmi_parse_subtitle(struct en50221_app_mmi *mmi,
                                           uint8_t slot_id, uint16_t session_number, uint32_t tag_id,
                                           int more_last, uint8_t *data, uint32_t data_length)
 {
@@ -972,14 +937,14 @@ static int en50221_app_mmi_parse_subtitle(struct en50221_app_mmi_private *privat
     data += length_field_len;
 
     // defragment
-    pthread_mutex_lock(&private->lock);
+    pthread_mutex_lock(&mmi->lock);
     uint8_t *outdata;
     uint32_t outdata_length;
-    int dfstatus = en50221_app_mmi_defragment(private, session_number, tag_id, more_last,
+    int dfstatus = en50221_app_mmi_defragment(mmi, session_number, tag_id, more_last,
                                             data, asn_data_length,
                                             &outdata, &outdata_length);
     if (dfstatus <= 0) {
-        pthread_mutex_unlock(&private->lock);
+        pthread_mutex_unlock(&mmi->lock);
         return dfstatus;
     }
 
@@ -988,9 +953,9 @@ static int en50221_app_mmi_parse_subtitle(struct en50221_app_mmi_private *privat
     switch(tag_id) {
         case TAG_SUBTITLE_SEGMENT_LAST:
         {
-            en50221_app_mmi_subtitle_segment_callback cb = private->subtitlesegmentcallback;
-            void *cb_arg = private->subtitlesegmentcallback_arg;
-            pthread_mutex_unlock(&private->lock);
+            en50221_app_mmi_subtitle_segment_callback cb = mmi->subtitlesegmentcallback;
+            void *cb_arg = mmi->subtitlesegmentcallback_arg;
+            pthread_mutex_unlock(&mmi->lock);
             if (cb) {
                 cbstatus = cb(cb_arg, slot_id, session_number, outdata, outdata_length);
             }
@@ -999,9 +964,9 @@ static int en50221_app_mmi_parse_subtitle(struct en50221_app_mmi_private *privat
 
         case TAG_SUBTITLE_DOWNLOAD_LAST:
         {
-            en50221_app_mmi_subtitle_download_callback cb = private->subtitledownloadcallback;
-            void *cb_arg = private->subtitledownloadcallback_arg;
-            pthread_mutex_unlock(&private->lock);
+            en50221_app_mmi_subtitle_download_callback cb = mmi->subtitledownloadcallback;
+            void *cb_arg = mmi->subtitledownloadcallback_arg;
+            pthread_mutex_unlock(&mmi->lock);
             if (cb) {
                 cbstatus = cb(cb_arg, slot_id, session_number, outdata, outdata_length);
             }
@@ -1018,7 +983,7 @@ static int en50221_app_mmi_parse_subtitle(struct en50221_app_mmi_private *privat
     return cbstatus;
 }
 
-static int en50221_app_mmi_parse_scene_end_mark(struct en50221_app_mmi_private *private,
+static int en50221_app_mmi_parse_scene_end_mark(struct en50221_app_mmi *mmi,
                                        uint8_t slot_id, uint16_t session_number,
                                        uint8_t *data, uint32_t data_length)
 {
@@ -1034,10 +999,10 @@ static int en50221_app_mmi_parse_scene_end_mark(struct en50221_app_mmi_private *
     uint8_t flags = data[1];
 
     // tell the app
-    pthread_mutex_lock(&private->lock);
-    en50221_app_mmi_scene_end_mark_callback cb = private->sceneendmarkcallback;
-    void *cb_arg = private->sceneendmarkcallback_arg;
-    pthread_mutex_unlock(&private->lock);
+    pthread_mutex_lock(&mmi->lock);
+    en50221_app_mmi_scene_end_mark_callback cb = mmi->sceneendmarkcallback;
+    void *cb_arg = mmi->sceneendmarkcallback_arg;
+    pthread_mutex_unlock(&mmi->lock);
     if (cb) {
         return cb(cb_arg, slot_id, session_number,
                   (flags & 0x80) ? 1 : 0,
@@ -1048,7 +1013,7 @@ static int en50221_app_mmi_parse_scene_end_mark(struct en50221_app_mmi_private *
     return 0;
 }
 
-static int en50221_app_mmi_parse_scene_control(struct en50221_app_mmi_private *private,
+static int en50221_app_mmi_parse_scene_control(struct en50221_app_mmi *mmi,
                                        uint8_t slot_id, uint16_t session_number,
                                        uint8_t *data, uint32_t data_length)
 {
@@ -1064,10 +1029,10 @@ static int en50221_app_mmi_parse_scene_control(struct en50221_app_mmi_private *p
     uint8_t flags = data[1];
 
     // tell the app
-    pthread_mutex_lock(&private->lock);
-    en50221_app_mmi_scene_control_callback cb = private->scenecontrolcallback;
-    void *cb_arg = private->scenecontrolcallback_arg;
-    pthread_mutex_unlock(&private->lock);
+    pthread_mutex_lock(&mmi->lock);
+    en50221_app_mmi_scene_control_callback cb = mmi->scenecontrolcallback;
+    void *cb_arg = mmi->scenecontrolcallback_arg;
+    pthread_mutex_unlock(&mmi->lock);
     if (cb) {
         return cb(cb_arg, slot_id, session_number,
                   (flags & 0x80) ? 1 : 0,
@@ -1077,7 +1042,7 @@ static int en50221_app_mmi_parse_scene_control(struct en50221_app_mmi_private *p
     return 0;
 }
 
-static int en50221_app_mmi_parse_flush_download(struct en50221_app_mmi_private *private,
+static int en50221_app_mmi_parse_flush_download(struct en50221_app_mmi *mmi,
                                        uint8_t slot_id, uint16_t session_number,
                                        uint8_t *data, uint32_t data_length)
 {
@@ -1092,17 +1057,17 @@ static int en50221_app_mmi_parse_flush_download(struct en50221_app_mmi_private *
     }
 
     // tell the app
-    pthread_mutex_lock(&private->lock);
-    en50221_app_mmi_flush_download_callback cb = private->flushdownloadcallback;
-    void *cb_arg = private->flushdownloadcallback_arg;
-    pthread_mutex_unlock(&private->lock);
+    pthread_mutex_lock(&mmi->lock);
+    en50221_app_mmi_flush_download_callback cb = mmi->flushdownloadcallback;
+    void *cb_arg = mmi->flushdownloadcallback_arg;
+    pthread_mutex_unlock(&mmi->lock);
     if (cb) {
         return cb(cb_arg, slot_id, session_number);
     }
     return 0;
 }
 
-static int en50221_app_mmi_defragment(struct en50221_app_mmi_private *private,
+static int en50221_app_mmi_defragment(struct en50221_app_mmi *mmi,
                                       uint16_t session_number,
                                       uint32_t tag_id,
                                       int more_last,
@@ -1111,7 +1076,7 @@ static int en50221_app_mmi_defragment(struct en50221_app_mmi_private *private,
                                       uint8_t **outdata,
                                       uint32_t *outdata_length)
 {
-    struct en50221_app_mmi_session *cur_s = private->sessions;
+    struct en50221_app_mmi_session *cur_s = mmi->sessions;
     while(cur_s) {
         if (cur_s->session_number == session_number)
             break;
@@ -1136,8 +1101,8 @@ static int en50221_app_mmi_defragment(struct en50221_app_mmi_private *private,
             cur_s->subtitlesegment_block_length = 0;
             cur_s->subtitledownload_block_chain = NULL;
             cur_s->subtitledownload_block_length = 0;
-            cur_s->next = private->sessions;
-            private->sessions = cur_s;
+            cur_s->next = mmi->sessions;
+            mmi->sessions = cur_s;
         }
 
         // find the block/block_length to use
