@@ -19,13 +19,19 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 */
 
+#define _FILE_OFFSET_BITS 64
+#define _LARGEFILE_SOURCE 1
+#define _LARGEFILE64_SOURCE 1
+
 #include <stdio.h>
 #include <unistd.h>
 #include <limits.h>
 #include <string.h>
+#include <fcntl.h>
 #include <signal.h>
 #include <pthread.h>
 #include <sys/poll.h>
+#include <libdvbapi/dvbdemux.h>
 #include <libdvbcfg/dvbcfg_zapchannel.h>
 #include <libdvbcfg/dvbcfg_sec.h>
 #include <libucsi/mpeg/section.h>
@@ -35,7 +41,13 @@
 
 
 static void signal_handler(int _signal);
+static void *fileoutputthread_func(void* arg);
+
 static int quit_app = 0;
+static int fileoutputthread_shutdown = 0;
+static pthread_t fileoutputthread;
+static int dvrfd = -1;
+static int outfd = -1;
 
 void usage(void)
 {
@@ -208,11 +220,34 @@ int main(int argc, char *argv[])
 		zap_dvb_start(&zap_dvb_params);
 	}
 
-	// FIXME: start the fileoutput thread if necessary
+	// setup output
+	switch(output_type) {
+	case OUTPUT_TYPE_DECODER_ABYPASS:
+		// FIXME
+		break;
+
+	case OUTPUT_TYPE_FILE:
+		// open output file
+		outfd = open(outfile, O_WRONLY|O_CREAT|O_LARGEFILE, 0644);
+		if (outfd < 0) {
+			fprintf(stderr, "Failed to open output file\n");
+			exit(1);
+		}
+
+		// open dvr device
+		dvrfd = dvbdemux_open_dvr(adapter_id, 0, 1, 0);
+		if (dvrfd < 0) {
+			fprintf(stderr, "Failed to open DVR device\n");
+			exit(1);
+		}
+
+		pthread_create(&fileoutputthread, NULL, fileoutputthread_func, NULL);
+		break;
+	}
 
 	// the UI
 	time_t start = time(NULL);
-	while(1) {
+	while(!quit_app) {
 		// the timeout
 		if (timeout != -1) {
 			if ((time(NULL) - start) >= timeout)
@@ -225,7 +260,11 @@ int main(int argc, char *argv[])
 			usleep(1);
 	}
 
-	// FIXME: shutdown fileoutput thread if necessary
+	// shutdown fileoutput thread if necessary
+	if (dvrfd != -1) {
+		fileoutputthread_shutdown = 1;
+		pthread_join(fileoutputthread, NULL);
+	}
 
 	// shutdown DVB stuff
 	if (channel_name != NULL)
@@ -246,4 +285,22 @@ static void signal_handler(int _signal)
 		printf("Shutting down..\n");
 		quit_app = 1;
 	}
+}
+
+static void *fileoutputthread_func(void* arg)
+{
+	(void)arg;
+	uint8_t buf[4096];
+
+	while(!fileoutputthread_shutdown) {
+		int size = read(dvrfd, buf, sizeof(buf));
+		if (size < 0) {
+			fprintf(stderr, "DVR device read failure\n");
+			return 0;
+		}
+
+		write(outfd, buf, size);
+	}
+
+	return 0;
 }
