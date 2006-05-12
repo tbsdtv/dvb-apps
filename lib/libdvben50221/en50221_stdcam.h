@@ -53,10 +53,39 @@ struct en50221_stdcam {
 	void (*destroy)(struct en50221_stdcam *stdcam);
 };
 
-struct en50221_stdcam *en50221_stdcam_llci_create(struct en50221_transport_layer *tl,
-						  struct en50221_session_layer *sl,
-						  int cafd, int slotnum);
+/**
+ * Create an instance of the STDCAM for an LLCI interface.
+ *
+ * @param cafd FD of the CA device.
+ * @param slotnum Slotnum on that CA device.
+ * @param tl Transport layer instance to use.
+ * @param sl Session layer instance to use.
+ * @return en50221_stdcam instance, or NULL on error.
+ */
+struct en50221_stdcam *en50221_stdcam_llci_create(int cafd, int slotnum,
+						  struct en50221_transport_layer *tl,
+						  struct en50221_session_layer *sl);
 
+/**
+ * Create an instance of the STDCAM for an HLCI interface.
+ *
+ * @param cafd FD of the CA device.
+ * @param slotnum Slotnum on that CA device.
+ * @return en50221_stdcam instance, or NULL on error.
+ */
 extern struct en50221_stdcam *en50221_stdcam_hlci_create(int cafd, int slotnum);
+
+/**
+ * Convenience method to create a STDCAM interface for a ca device on a particular adapter.
+ *
+ * @param adapter The DVB adapter concerned.
+ * @param slotnum The ca slot number on that adapter.
+ * @param tl Transport layer instance to use (unused for HLCI cams).
+ * @param sl Session layer instance to use (unused for HLCI cams).
+ * @return en50221_stdcam instance, or NULL on error.
+ */
+extern struct en50221_stdcam *en50221_stdcam_create(int adapter, int slotnum,
+						    struct en50221_transport_layer *tl,
+						    struct en50221_session_layer *sl);
 
 #endif

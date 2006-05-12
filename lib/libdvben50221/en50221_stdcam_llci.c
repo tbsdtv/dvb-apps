@@ -93,9 +93,9 @@ static int llci_rm_changed_callback(void *arg, uint8_t _slot_id, uint16_t sessio
 static int llci_datetime_enquiry_callback(void *arg, uint8_t _slot_id, uint16_t session_number, uint8_t response_interval);
 
 
-struct en50221_stdcam *en50221_stdcam_llci_create(struct en50221_transport_layer *tl,
-						  struct en50221_session_layer *sl,
-						  int cafd, int slotnum)
+struct en50221_stdcam *en50221_stdcam_llci_create(int cafd, int slotnum,
+						  struct en50221_transport_layer *tl,
+						  struct en50221_session_layer *sl)
 {
 	// try and allocate space for the LLCI stdcam
 	struct en50221_stdcam_llci *llci =
