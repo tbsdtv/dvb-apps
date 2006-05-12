@@ -1,8 +1,8 @@
 /*
-	CA-ZAP utility
-	an implementation for the High Level Common Interface
+	ZAP utility CA functions
 
 	Copyright (C) 2004, 2005 Manu Abraham (manu@kromtek.com)
+	Copyright (C) 2006 Andrew de Quincey (adq_dvb@lidskialf.net)
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU Lesser General Public License as
@@ -19,25 +19,18 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 */
 
-#ifndef __CA_ZAP_H__
-#define __CA_ZAP_H__
+#ifndef ZAP_CA_H
+#define ZAP_CA_H 1
 
-#include <stdlib.h>
-#include <stdint.h>
+struct zap_ca_params {
+	int adapter_id;
+	int caslot_num;
+	int cammenu;
+	int moveca;
+};
 
-#define MAX_BUFFER	243
-
-extern int quit_app;
-
-extern time_t dvb_time;
-
-extern struct en50221_app_ai *ai_resource;
-extern int ai_session_number;
-
-extern struct en50221_app_ca *ca_resource;
-extern int ca_session_number;
-
-extern struct en50221_app_mmi *mmi_resource;
-extern int mmi_session_number;
+extern void zap_ca_start(struct zap_ca_params *params);
+extern void zap_ca_ui(void);
+extern void zap_ca_stop(void);
 
 #endif

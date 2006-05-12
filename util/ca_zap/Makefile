@@ -4,10 +4,10 @@ CPPFLAGS += -I../../lib
 LDFLAGS  += -L../../lib/libdvbapi -L../../lib/libdvbcfg -L../../lib/libdvben50221 -L../../lib/libucsi
 LDLIBS   += -ldvbapi -ldvbcfg -ldvben50221 -lucsi -lpthread
 
-objects  = ca_zap_hlci.o \
-           ca_zap_llci.o
+objects  = zap_dvb.o \
+           zap_ca.o
 
-binaries = ca_zap
+binaries = zap
 
 ifeq ($(prefix),)
 prefix = /usr
