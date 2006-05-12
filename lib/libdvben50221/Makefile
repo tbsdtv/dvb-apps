@@ -17,6 +17,7 @@ includes = asn_1.h                 \
            en50221_app_teletext.h  \
            en50221_app_utils.h     \
            en50221_errno.h         \
+           en50221_stdcam.h        \
            en50221_session.h       \
            en50221_transport.h
 
@@ -33,6 +34,7 @@ objects  = asn_1.o                 \
            en50221_app_smartcard.o \
            en50221_app_teletext.o  \
            en50221_app_utils.o     \
+           en50221_stdcam_hlci.o   \
            en50221_session.o       \
            en50221_transport.o
 
