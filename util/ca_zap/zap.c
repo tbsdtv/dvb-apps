@@ -291,8 +291,19 @@ static void *fileoutputthread_func(void* arg)
 {
 	(void)arg;
 	uint8_t buf[4096];
+	struct pollfd pollfd;
+
+	pollfd.fd = dvrfd;
+	pollfd.events = POLLIN|POLLPRI|POLLERR;
 
 	while(!fileoutputthread_shutdown) {
+		if (poll(&pollfd, 1, 1000) != 1)
+			continue;
+		if (pollfd.revents & POLLERR) {
+			fprintf(stderr, "DVR device read failure\n");
+			return 0;
+		}
+
 		int size = read(dvrfd, buf, sizeof(buf));
 		if (size < 0) {
 			fprintf(stderr, "DVR device read failure\n");
