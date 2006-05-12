@@ -76,6 +76,7 @@ struct en50221_stdcam_llci {
 };
 
 static enum en50221_stdcam_status en50221_stdcam_llci_poll(struct en50221_stdcam *stdcam);
+static void en50221_stdcam_llci_dvbtime(struct en50221_stdcam *stdcam, time_t dvbtime);
 static void en50221_stdcam_llci_destroy(struct en50221_stdcam *stdcam, int closefd);
 static void llci_cam_added(struct en50221_stdcam_llci *llci);
 static void llci_cam_in_reset(struct en50221_stdcam_llci *llci);
@@ -169,6 +170,7 @@ struct en50221_stdcam *en50221_stdcam_llci_create(int cafd, int slotnum,
 	// done
 	llci->stdcam.destroy = en50221_stdcam_llci_destroy;
 	llci->stdcam.poll = en50221_stdcam_llci_poll;
+	llci->stdcam.dvbtime = en50221_stdcam_llci_dvbtime;
 	llci->cafd = cafd;
 	llci->slotnum = slotnum;
 	llci->tl = tl;
@@ -176,6 +178,13 @@ struct en50221_stdcam *en50221_stdcam_llci_create(int cafd, int slotnum,
 	llci->tl_slot_id = -1;
 	llci->state = EN50221_STDCAM_CAM_NONE;
 	return &llci->stdcam;
+}
+
+static void en50221_stdcam_llci_dvbtime(struct en50221_stdcam *stdcam, time_t dvbtime)
+{
+	struct en50221_stdcam_llci *llci = (struct en50221_stdcam_llci *) stdcam;
+
+	llci->datetime_dvbtime = dvbtime;
 }
 
 static void en50221_stdcam_llci_destroy(struct en50221_stdcam *stdcam, int closefd)

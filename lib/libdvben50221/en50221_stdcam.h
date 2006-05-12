@@ -49,6 +49,9 @@ struct en50221_stdcam {
 	/* poll the stdcam instance */
 	enum en50221_stdcam_status (*poll)(struct en50221_stdcam *stdcam);
 
+	/* inform the stdcam of the current DVB time */
+	void (*dvbtime)(struct en50221_stdcam *stdcam, time_t dvbtime);
+
 	/* destroy the stdcam instance */
 	void (*destroy)(struct en50221_stdcam *stdcam, int closefd);
 };
