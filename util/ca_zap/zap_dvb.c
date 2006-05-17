@@ -106,7 +106,7 @@ static void *dvbthread_func(void* arg)
 			memset(&result, 0, sizeof(result));
 			dvbfe_get_info(params->fe, 0, &result);
 
-			// do diseqc for DVBS
+			// do sec for DVBS
 			if (result.type == DVBFE_TYPE_DVBS) {
 				if (dvbfe_sec_command(params->fe, params->sec.command)) {
 					fprintf(stderr, "Failed to execute SEC command %s\n", params->sec.command);
