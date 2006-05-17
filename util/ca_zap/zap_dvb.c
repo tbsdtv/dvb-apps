@@ -108,8 +108,8 @@ static void *dvbthread_func(void* arg)
 
 			// do diseqc for DVBS
 			if (result.type == DVBFE_TYPE_DVBS) {
-				if (dvbfe_diseqc_command(params->fe, params->sec.command)) {
-					fprintf(stderr, "Failed to execute DISEQC command %s\n", params->sec.command);
+				if (dvbfe_sec_command(params->fe, params->sec.command)) {
+					fprintf(stderr, "Failed to execute SEC command %s\n", params->sec.command);
 					exit(1);
 				}
 				params->channel.fe_params.frequency -= params->sec.lof;
@@ -256,15 +256,15 @@ static void process_pat(int pat_fd, struct zap_dvb_params *params,
 
 			// create PMT filter
 			if ((*pmt_fd = create_section_filter(params->adapter_id, params->demux_id,
-			      cur_program->pid, stag_mpeg_program_map)) < 0) {
-				      return;
-			      }
-			      pollfd->fd = *pmt_fd;
-			      pollfd->events = POLLIN|POLLPRI|POLLERR;
+							     cur_program->pid, stag_mpeg_program_map)) < 0) {
+				return;
+			}
+			pollfd->fd = *pmt_fd;
+			pollfd->events = POLLIN|POLLPRI|POLLERR;
 
 			// we have a new PMT pid
-			      *pmt_version = -1;
-			      break;
+			*pmt_version = -1;
+			break;
 		}
 	}
 
