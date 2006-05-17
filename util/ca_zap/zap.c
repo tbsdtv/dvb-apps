@@ -201,6 +201,13 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	// open the frontend
+	zap_dvb_params.fe = dvbfe_open(adapter_id, frontend_id, 0);
+	if (zap_dvb_params.fe == NULL) {
+		fprintf(stderr, "Failed to open frontend\n");
+		exit(1);
+	}
+
 	// setup any signals
 	signal(SIGINT, signal_handler);
 
@@ -211,38 +218,38 @@ int main(int argc, char *argv[])
 	zap_ca_params.moveca = moveca;
 	zap_ca_start(&zap_ca_params);
 
-	// start the DVB stuff if a channel was defined
 	if (channel_name != NULL) {
+		// start the DVB stuff
 		zap_dvb_params.adapter_id = adapter_id;
 		zap_dvb_params.frontend_id = frontend_id;
 		zap_dvb_params.demux_id = demux_id;
 		zap_dvb_params.output_type = output_type;
 		zap_dvb_start(&zap_dvb_params);
-	}
 
-	// setup output
-	switch(output_type) {
-	case OUTPUT_TYPE_DECODER_ABYPASS:
-		// FIXME
-		break;
+		// setup output
+		switch(output_type) {
+		case OUTPUT_TYPE_DECODER_ABYPASS:
+			// FIXME
+			break;
 
-	case OUTPUT_TYPE_FILE:
-		// open output file
-		outfd = open(outfile, O_WRONLY|O_CREAT|O_LARGEFILE, 0644);
-		if (outfd < 0) {
-			fprintf(stderr, "Failed to open output file\n");
-			exit(1);
+		case OUTPUT_TYPE_FILE:
+			// open output file
+			outfd = open(outfile, O_WRONLY|O_CREAT|O_LARGEFILE, 0644);
+			if (outfd < 0) {
+				fprintf(stderr, "Failed to open output file\n");
+				exit(1);
+			}
+
+			// open dvr device
+			dvrfd = dvbdemux_open_dvr(adapter_id, 0, 1, 0);
+			if (dvrfd < 0) {
+				fprintf(stderr, "Failed to open DVR device\n");
+				exit(1);
+			}
+
+			pthread_create(&fileoutputthread, NULL, fileoutputthread_func, NULL);
+			break;
 		}
-
-		// open dvr device
-		dvrfd = dvbdemux_open_dvr(adapter_id, 0, 1, 0);
-		if (dvrfd < 0) {
-			fprintf(stderr, "Failed to open DVR device\n");
-			exit(1);
-		}
-
-		pthread_create(&fileoutputthread, NULL, fileoutputthread_func, NULL);
-		break;
 	}
 
 	// the UI

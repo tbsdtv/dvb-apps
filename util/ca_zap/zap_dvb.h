@@ -32,6 +32,7 @@ struct zap_dvb_params {
 	struct dvbcfg_zapchannel channel;
 	struct dvbcfg_sec sec;
 	int output_type;
+	struct dvbfe_handle *fe;
 };
 
 extern int zap_dvb_start(struct zap_dvb_params *params);

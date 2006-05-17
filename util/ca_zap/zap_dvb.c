@@ -34,6 +34,8 @@
 #include "zap.h"
 #include "zap_dvb.h"
 
+#define FE_STATUS_PARAMS (DVBFE_INFO_LOCKSTATUS|DVBFE_INFO_SIGNAL_STRENGTH|DVBFE_INFO_BER|DVBFE_INFO_SNR|DVBFE_INFO_UNCORRECTED_BLOCKS)
+
 static int dvbthread_shutdown = 0;
 static pthread_t dvbthread;
 
@@ -59,6 +61,8 @@ void zap_dvb_stop(void)
 
 static void *dvbthread_func(void* arg)
 {
+	int tune_state = 0;
+
 	int pat_fd = -1;
 	int pat_version = -1;
 
@@ -70,6 +74,7 @@ static void *dvbthread_func(void* arg)
 	struct pollfd pollfds[3];
 
 	struct zap_dvb_params *params = (struct zap_dvb_params *) arg;
+
 
 	// create PAT filter
 	if ((pat_fd = create_section_filter(params->adapter_id, params->demux_id,
@@ -94,7 +99,56 @@ static void *dvbthread_func(void* arg)
 
 	// the DVB loop
 	while(!dvbthread_shutdown) {
-		// FIXME: tune frontend and monitor lock status
+		// tune frontend + monitor lock status
+		if (tune_state == 0) {
+			// get the type of frontend
+			struct dvbfe_info result;
+			memset(&result, 0, sizeof(result));
+			dvbfe_get_info(params->fe, 0, &result);
+
+			// do diseqc for DVBS
+			if (result.type == DVBFE_TYPE_DVBS) {
+				if (dvbfe_diseqc_command(params->fe, params->sec.command)) {
+					fprintf(stderr, "Failed to execute DISEQC command %s\n", params->sec.command);
+					exit(1);
+				}
+				params->channel.fe_params.frequency -= params->sec.lof;
+			}
+
+			// set the frontend params
+			if (dvbfe_set(params->fe, &params->channel.fe_params, 0)) {
+				fprintf(stderr, "Failed to set frontend\n");
+				exit(1);
+			}
+
+			// restore the frequency in the channel in case we need it later
+			if (result.type == DVBFE_TYPE_DVBS) {
+				params->channel.fe_params.frequency += params->sec.lof;
+			}
+
+			tune_state++;
+		} else if (tune_state == 1) {
+			struct dvbfe_info result;
+			memset(&result, 0, sizeof(result));
+			dvbfe_get_info(params->fe, FE_STATUS_PARAMS, &result);
+
+			printf ("status %c%c%c%c%c | signal %04x | snr %04x | ber %08x | unc %08x | ",
+				result.signal ? 'S' : ' ',
+				result.carrier ? 'C' : ' ',
+				result.viterbi ? 'V' : ' ',
+				result.sync ? 'Y' : ' ',
+				result.lock ? 'L' : ' ',
+				result.signal_strength,
+				result.snr,
+				result.ber,
+				result.ucblocks);
+
+			if (result.lock) {
+				tune_state++;
+			} else {
+				usleep(500000);
+			}
+		}
 
 		// is there SI data?
 		int count = poll(pollfds, 3, 100);
