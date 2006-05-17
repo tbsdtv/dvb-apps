@@ -1,11 +1,8 @@
-# Makefile for linuxtv.org dvb-apps/util/szap
+# Makefile for linuxtv.org dvb-apps/util/femon
 
 CPPFLAGS += -I../../include
 
-binaries = azap  \
-           czap  \
-           szap  \
-           tzap
+binaries = femon
 
 ifeq ($(prefix),)
 prefix = /usr
@@ -15,10 +12,10 @@ endif
 
 all: $(binaries)
 
-$(binaries): lnb.o
+$(binaries):
 
 clean::
-	rm -f lnb.o $(binaries)
+	rm -f $(binaries)
 
 install:
 	mkdir -p $(prefix)/bin

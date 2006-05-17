@@ -12,4 +12,5 @@ all clean install:
 	$(MAKE) -C dvbtraffic $@
 	$(MAKE) -C scan $@
 	$(MAKE) -C szap $@
+	$(MAKE) -C femon $@
 	$(MAKE) -C ttusb_dec_reset $@
