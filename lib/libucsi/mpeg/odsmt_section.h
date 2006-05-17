@@ -118,7 +118,7 @@ static inline uint16_t mpeg_odsmt_section_pid(struct mpeg_odsmt_section *odsmt)
  */
 static inline uint8_t*
 	mpeg_odsmt_section_object_descriptors(struct mpeg_odsmt_section * odsmt,
-					      uint32_t* len);
+					      size_t* len);
 
 
 
