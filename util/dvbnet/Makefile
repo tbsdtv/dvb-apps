@@ -1,6 +1,8 @@
 # Makefile for linuxtv.org dvb-apps/util/dvbnet
 
-CPPFLAGS += -I../../include
+CPPFLAGS += -I../../lib
+LDFLAGS  += -L../../lib/libdvbapi
+LDLIBS   += -ldvbapi -lpthread
 
 binaries = dvbnet
 

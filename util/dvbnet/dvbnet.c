@@ -4,6 +4,9 @@
  * Copyright (C) 2003 TV Files S.p.A
  *                    L.Y.Mesentsev <lymes@tiscalinet.it>
  *
+ * Ported to use new DVB libraries:
+ * Copyright (C) 2006 Andrew de Quincey <adq_dvb@lidskialf.net>
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
@@ -33,18 +36,10 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
-
-#include <linux/dvb/net.h>
-
-#ifndef VERSION_INFO
-#define VERSION_INFO "1.1.0"
-#endif
+#include <libdvbapi/dvbnet.h>
 
 #define OK    0
 #define FAIL -1
-#define DVB_NET_DEVICE "/dev/dvb/adapter%d/net%d"
-#define DVB_NET_DEVICES_MAX 10
-#define IFNAME_DVB "dvb"
 
 
 enum Mode {
@@ -56,14 +51,15 @@ enum Mode {
 
 static int adapter = 0;
 static int netdev = 0;
-static struct dvb_net_if net_data;
 
 static void hello(void);
 static void usage(char *);
 static void parse_args(int, char **);
 static int queryInterface(int, int);
 
-static char dvb_net_device[40];
+int ifnum;
+int pid;
+int encapsulation;
 
 int main(int argc, char **argv)
 {
@@ -73,36 +69,32 @@ int main(int argc, char **argv)
 
 	parse_args(argc, argv);
 
-	sprintf(dvb_net_device, DVB_NET_DEVICE, adapter, netdev);
-
-	printf("Device: %s\n", dvb_net_device);
-
-	if ((fd_net = open(dvb_net_device, O_RDWR | O_NONBLOCK)) < 0) {
-		fprintf(stderr, "Error: couldn't open device %s: %d %m\n",
-			dvb_net_device, errno);
+	if ((fd_net = dvbnet_open(adapter, netdev)) < 0) {
+		fprintf(stderr, "Error: couldn't open device %d: %d %m\n",
+			netdev, errno);
 		return FAIL;
 	}
 
 	switch (op_mode) {
 	case DEL_INTERFACE:
-		if (ioctl(fd_net, NET_REMOVE_IF, net_data.if_num))
+		if (dvbnet_remove_interface(fd_net, ifnum))
 			fprintf(stderr,
 				"Error: couldn't remove interface %d: %d %m.\n",
-				net_data.if_num, errno);
+				ifnum, errno);
 		else
 			printf("Status: device %d removed successfully.\n",
-			       net_data.if_num);
+			       ifnum);
 		break;
 
 	case ADD_INTERFACE:
-		if (ioctl(fd_net, NET_ADD_IF, &net_data))
+		if (dvbnet_add_interface(fd_net, pid, encapsulation))
 			fprintf(stderr,
 				"Error: couldn't add interface for pid %d: %d %m.\n",
-				net_data.pid, errno);
+				pid, errno);
 		else
 			printf
 			    ("Status: device dvb%d_%d for pid %d created successfully.\n",
-			     adapter, net_data.if_num, net_data.pid);
+			     adapter, ifnum, pid);
 		break;
 
 	case LST_INTERFACE:
@@ -121,22 +113,22 @@ int main(int argc, char **argv)
 
 int queryInterface(int fd_net, int dev)
 {
-	struct dvb_net_if data;
 	int IF, nIFaces = 0, ret = FAIL;
 
 	printf("Query DVB network interfaces:\n");
 	printf("-----------------------------\n");
-	for (IF = 0; IF < DVB_NET_DEVICES_MAX; IF++) {
-		data.if_num = IF;
-		if (ioctl(fd_net, NET_GET_IF, &data))
+	for (IF = 0; IF < DVBNET_MAX_INTERFACES; IF++) {
+		uint16_t _pid;
+		enum dvbnet_encap _encapsulation;
+		if (dvbnet_get_interface(fd_net, IF, &_pid, &_encapsulation))
 			continue;
 
-		if (dev == data.if_num)
+		if (dev == ifnum)
 			ret = OK;
 
 		printf("Found device %d: interface dvb%d_%d, "
 		       "listening on PID %d\n",
-		       IF, adapter, data.if_num, data.pid);
+		       IF, adapter, ifnum, _pid);
 
 		nIFaces++;
 	}
@@ -152,7 +144,7 @@ void parse_args(int argc, char **argv)
 	int c;
 	char *s;
 	op_mode = UNKNOWN;
-	net_data.feedtype = DVB_NET_FEEDTYPE_MPE;
+	encapsulation = DVBNET_ENCAP_MPE;
 	while ((c = getopt(argc, argv, "a:n:p:d:lUvh")) != EOF) {
 		switch (c) {
 		case 'a':
@@ -162,18 +154,18 @@ void parse_args(int argc, char **argv)
 			netdev = strtol(optarg, NULL, 0);
 			break;
 		case 'p':
-			net_data.pid = strtol(optarg, NULL, 0);
+			pid = strtol(optarg, NULL, 0);
 			op_mode = ADD_INTERFACE;
 			break;
 		case 'd':
-			net_data.if_num = strtol(optarg, NULL, 0);
+			ifnum = strtol(optarg, NULL, 0);
 			op_mode = DEL_INTERFACE;
 			break;
 		case 'l':
 			op_mode = LST_INTERFACE;
 			break;
 		case 'U':
-			net_data.feedtype = DVB_NET_FEEDTYPE_ULE;
+			encapsulation = DVBNET_ENCAP_ULE;
 			break;
 		case 'v':
 			exit(OK);
@@ -205,6 +197,5 @@ void usage(char *prog_name)
 void hello(void)
 {
 	printf("\nDVB Network Interface Manager\n");
-	printf("Version %s\n", VERSION_INFO);
 	printf("Copyright (C) 2003, TV Files S.p.A\n\n");
 }
