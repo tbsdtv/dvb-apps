@@ -82,7 +82,7 @@ next_pic:
 		return -1;
 	}
 
-	printf ("read: %d bytes\n", read(filefd, sp.iFrame, sp.size));
+	printf ("read: %d bytes\n", (int) read(filefd, sp.iFrame, sp.size));
 	close(filefd);
 
 	if ((ioctl(fd, VIDEO_STILLPICTURE, &sp) < 0)) {

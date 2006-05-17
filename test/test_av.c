@@ -429,7 +429,7 @@ int videoStillPicture(int fd, char *arg)
 		return 0;
 	}
 
-	printf("read: %d bytes\n",read(sifd,sp.iFrame,sp.size));
+	printf("read: %d bytes\n", (int) read(sifd,sp.iFrame,sp.size));
 	if (ioctl(fd, VIDEO_STILLPICTURE, &sp) == -1)
 		perror("VIDEO_STILLPICTURE");
 	return 0;
