@@ -238,9 +238,9 @@ extern void dvbfe_poll(struct dvbfe_handle *fehandle);
 extern int dvbfe_get_info(struct dvbfe_handle *fehandle, enum dvbfe_info_mask querymask, struct dvbfe_info *result);
 
 /**
- * Execute a DISEQC command string.
+ * Execute an SEC command string.
  *
- * A diseqc command consists of a sequence of the following codes, separated by
+ * An sec command consists of a sequence of the following codes, separated by
  * whitespace:
  * Simple commands:
  * t         - turn 22kHz tone off.
@@ -286,7 +286,7 @@ extern int dvbfe_get_info(struct dvbfe_handle *fehandle, enum dvbfe_info_mask qu
  * @param command Command to execute.
  * @return 0 on success, nonzero on failure.
  */
-extern int dvbfe_diseqc_command(struct dvbfe_handle *fehandle, char *command);
+extern int dvbfe_sec_command(struct dvbfe_handle *fehandle, char *command);
 
 /**
  * Read a DISEQC response from the frontend.

@@ -436,7 +436,7 @@ void dvbfe_poll(struct dvbfe_handle *fehandle)
 
 
 
-int dvbfe_diseqc_command(struct dvbfe_handle *fehandle, char *command)
+int dvbfe_sec_command(struct dvbfe_handle *fehandle, char *command)
 {
 	int i = 0;
 	int waittime;
