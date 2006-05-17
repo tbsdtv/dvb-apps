@@ -1,6 +1,8 @@
 # Makefile for linuxtv.org dvb-apps/util/dvbdate
 
-CPPFLAGS += -I../../include
+CPPFLAGS += -I../../lib
+LDFLAGS  += -L../../lib/libdvbapi -L../../lib/libucsi
+LDLIBS   += -ldvbapi -lucsi -lpthread
 
 binaries = dvbdate
 

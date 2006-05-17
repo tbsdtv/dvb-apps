@@ -9,6 +9,8 @@
    Revamped by Johannes Stezenbach <js@convergence.de>
    and Michael Hunold <hunold@convergence.de>
 
+   Ported to use the standard dvb libraries Andrew de Quincey <adq_dvb@lidskialf.net>
+
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License
    as published by the Free Software Foundation; either version 2
@@ -40,10 +42,8 @@
 #include <errno.h>
 #include <getopt.h>
 #include <stdarg.h>
-
-#include <linux/dvb/dmx.h>
-
-#define bcdtoint(i) ((((i & 0xf0) >> 4) * 10) + (i & 0x0f))
+#include <libdvbapi/dvbdemux.h>
+#include <libucsi/dvb/section.h>
 
 /* How many seconds can the system clock be out before we get warned? */
 #define ALLOWABLE_DELTA 30*60
@@ -54,6 +54,7 @@ int do_set;
 int do_force;
 int do_quiet;
 int timeout = 25;
+int adapter = 0;
 
 void errmsg(char *message, ...)
 {
@@ -67,13 +68,22 @@ void errmsg(char *message, ...)
 
 void usage(void)
 {
-	fprintf(stderr, "usage: %s [-p] [-s] [-f] [-q] [-h]\n", ProgName);
+	fprintf(stderr, "usage: %s [-a] [-p] [-s] [-f] [-q] [-h]\n", ProgName);
 	_exit(1);
 }
 
 void help(void)
 {
-	fprintf(stderr, "\nhelp:\n" "%s [-p] [-s] [-f] [-q] [-h] [-t n]\n" "  --print	(print current time, TDT time and delta)\n" "  --set	(set the system clock to TDT time)\n" "  --force	(force the setting of the clock)\n" "  --quiet	(be silent)\n" "  --help	(display this message)\n""  --timout n	(max seconds to wait, default: 25)\n", ProgName);
+	fprintf(stderr,
+		"\nhelp:\n"
+		"%s [-a] [-p] [-s] [-f] [-q] [-h] [-t n]\n"
+		"  --adapter	(adapter to use, default: 0)\n"
+		"  --print	(print current time, TDT time and delta)\n"
+		"  --set	(set the system clock to TDT time)\n"
+		"  --force	(force the setting of the clock)\n"
+		"  --quiet	(be silent)\n"
+		"  --help	(display this message)\n"
+		"  --timeout n	(max seconds to wait, default: 25)\n", ProgName);
 	_exit(1);
 }
 
@@ -86,13 +96,14 @@ int do_options(int arg_count, char **arg_strings)
 		{"quiet", 0, 0, 'q'},
 		{"help", 0, 0, 'h'},
 		{"timeout", 1, 0, 't'},
+		{"adapter", 1, 0, 'a'},
 		{0, 0, 0, 0}
 	};
 	int c;
 	int Option_Index = 0;
 
 	while (1) {
-		c = getopt_long(arg_count, arg_strings, "psfqht:", Long_Options, &Option_Index);
+		c = getopt_long(arg_count, arg_strings, "a:psfqht:", Long_Options, &Option_Index);
 		if (c == EOF)
 			break;
 		switch (c) {
@@ -102,6 +113,9 @@ int do_options(int arg_count, char **arg_strings)
 				fprintf(stderr, "%s: invalid timeout value\n", ProgName);
 				usage();
 			}
+			break;
+		case 'a':
+			adapter = atoi(optarg);
 			break;
 		case 'p':
 			do_print = 1;
@@ -134,7 +148,8 @@ int do_options(int arg_count, char **arg_strings)
 			case 2:	/* Force */
 			case 3:	/* Quiet */
 			case 4:	/* Help */
-			case 5:	/* timout */
+			case 5:	/* timeout */
+			case 6:	/* adapter */
 				break;
 			default:
 				fprintf(stderr, "%s: unknown long option %d\n", ProgName, Option_Index);
@@ -153,125 +168,64 @@ int do_options(int arg_count, char **arg_strings)
 }
 
 /*
- * return the TDT time in UNIX time_t format
- */
-
-time_t convert_date(unsigned char *dvb_buf)
-{
-	int i;
-	int year, month, day, hour, min, sec;
-	long int mjd;
-	struct tm dvb_time;
-
-	mjd = (dvb_buf[0] & 0xff) << 8;
-	mjd += (dvb_buf[1] & 0xff);
-	hour = bcdtoint(dvb_buf[2] & 0xff);
-	min = bcdtoint(dvb_buf[3] & 0xff);
-	sec = bcdtoint(dvb_buf[4] & 0xff);
-/*
- * Use the routine specified in ETSI EN 300 468 V1.4.1,
- * "Specification for Service Information in Digital Video Broadcasting"
- * to convert from Modified Julian Date to Year, Month, Day.
- */
-	year = (int) ((mjd - 15078.2) / 365.25);
-	month = (int) ((mjd - 14956.1 - (int) (year * 365.25)) / 30.6001);
-	day = mjd - 14956 - (int) (year * 365.25) - (int) (month * 30.6001);
-	if (month == 14 || month == 15)
-		i = 1;
-	else
-		i = 0;
-	year += i;
-	month = month - 1 - i * 12;
-
-	dvb_time.tm_sec = sec;
-	dvb_time.tm_min = min;
-	dvb_time.tm_hour = hour;
-	dvb_time.tm_mday = day;
-	dvb_time.tm_mon = month - 1;
-	dvb_time.tm_year = year;
-	dvb_time.tm_isdst = -1;
-	dvb_time.tm_wday = 0;
-	dvb_time.tm_yday = 0;
-	return (timegm(&dvb_time));
-}
-
-
-/*
  * Get the next UTC date packet from the TDT multiplex
  */
 
 int scan_date(time_t *dvb_time, unsigned int to)
 {
-	int fd_date;
-	int n, seclen;
-	time_t t;
-	unsigned char buf[4096];
-	struct dmx_sct_filter_params sctFilterParams;
-	struct pollfd ufd;
-	int found = 0;
+	int tdt_fd;
+	char filter[18];
+	char mask[18];
+	unsigned char sibuf[4096];
+	int size;
 
-	t = 0;
-	if ((fd_date = open("/dev/dvb/adapter0/demux0", O_RDWR | O_NONBLOCK)) < 0) {
-		perror("fd_date DEVICE: ");
+	// open the demuxer
+	if ((tdt_fd = dvbdemux_open_demux(adapter, 0, 0)) < 0) {
 		return -1;
 	}
 
-	memset(&sctFilterParams, 0, sizeof(sctFilterParams));
-	sctFilterParams.pid = 0x14;
-	sctFilterParams.timeout = 0;
-	sctFilterParams.flags = DMX_IMMEDIATE_START;
-	sctFilterParams.filter.filter[0] = 0x70;
-	sctFilterParams.filter.mask[0] = 0xff;
-
-	if (ioctl(fd_date, DMX_SET_FILTER, &sctFilterParams) < 0) {
-		perror("DATE - DMX_SET_FILTER:");
-		close(fd_date);
+	// create a section filter for the TDT
+	memset(filter, 0, sizeof(filter));
+	memset(mask, 0, sizeof(mask));
+	filter[0] = stag_dvb_time_date;
+	mask[0] = 0xFF;
+	if (dvbdemux_set_section_filter(tdt_fd, TRANSPORT_TDT_PID, filter, mask, 1, 1)) {
+		close(tdt_fd);
 		return -1;
 	}
 
-	while (to > 0) {
-		int res;
-
-		memset(&ufd,0,sizeof(ufd));
-		ufd.fd=fd_date;
-		ufd.events=POLLIN;
-
-		res = poll(&ufd,1,1000);
-		if (0 == res) {
-			fprintf(stdout, ".");
-			fflush(stdout);
-			to--;
-			continue;
-  		}
-		if (1 == res) {
-			found = 1;
-			break;
-		}
-		errmsg("error polling for data");
-		close(fd_date);
-		return -1;
-	}
-	fprintf(stdout, "\n");
-	if (0 == found) {
-		errmsg("timeout - try tuning to a multiplex?\n");
-		close(fd_date);
+	// poll for data
+	struct pollfd pollfd;
+	pollfd.fd = tdt_fd;
+	pollfd.events = POLLIN|POLLERR|POLLPRI;
+	if (poll(&pollfd, 1, to * 1000) != 1) {
+		close(tdt_fd);
 		return -1;
 	}
 
-	if ((n = read(fd_date, buf, 4096)) >= 3) {
-		seclen = ((buf[1] & 0x0f) << 8) | (buf[2] & 0xff);
-		if (n == seclen + 3) {
-			t = convert_date(&(buf[3]));
-		} else {
-			errmsg("Under-read bytes for DATE - wanted %d, got %d\n", seclen, n);
-			return 0;
-		}
-	} else {
-		errmsg("Nothing to read from fd_date - try tuning to a multiplex?\n");
-		return 0;
+	// read it
+	if ((size = read(tdt_fd, sibuf, sizeof(sibuf))) < 0) {
+		close(tdt_fd);
+		return -1;
 	}
-	close(fd_date);
-	*dvb_time = t;
+
+	// parse section
+	struct section *section = section_codec(sibuf, size);
+	if (section == NULL) {
+		close(tdt_fd);
+		return -1;
+	}
+
+	// parse TDT
+	struct dvb_tdt_section *tdt = dvb_tdt_section_codec(section);
+	if (tdt == NULL) {
+		close(tdt_fd);
+		return -1;
+	}
+
+	// done
+	*dvb_time = dvbdate_to_unixtime(tdt->utc_time);
+	close(tdt_fd);
 	return 0;
 }
 
