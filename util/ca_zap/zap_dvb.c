@@ -132,7 +132,7 @@ static void *dvbthread_func(void* arg)
 			memset(&result, 0, sizeof(result));
 			dvbfe_get_info(params->fe, FE_STATUS_PARAMS, &result);
 
-			printf ("status %c%c%c%c%c | signal %04x | snr %04x | ber %08x | unc %08x | ",
+			printf ("status %c%c%c%c%c | signal %04x | snr %04x | ber %08x | unc %08x |\r",
 				result.signal ? 'S' : ' ',
 				result.carrier ? 'C' : ' ',
 				result.viterbi ? 'V' : ' ',
@@ -142,9 +142,11 @@ static void *dvbthread_func(void* arg)
 				result.snr,
 				result.ber,
 				result.ucblocks);
+			fflush(stdout);
 
 			if (result.lock) {
 				tune_state++;
+				printf("\n");
 			} else {
 				usleep(500000);
 			}
