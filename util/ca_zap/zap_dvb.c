@@ -42,9 +42,13 @@ static pthread_t dvbthread;
 static void *dvbthread_func(void* arg);
 static int create_section_filter(int adapter, int demux, uint16_t pid, uint8_t table_id);
 static void process_pat(int pat_fd, struct zap_dvb_params *params,
-			int *pat_version, int *pmt_fd, int *pmt_version, struct pollfd *pollfd);
+			int *pat_version, int *pmt_fd, int *pmt_fd_dvrout, int *pmt_version, struct pollfd *pollfd);
 static void process_tdt(int tdt_fd);
-static void process_pmt(int pmt_fd, int *pmt_version);
+static void process_pmt(int pmt_fd, struct zap_dvb_params *params, int *pmt_version);
+static void decoder_pmt(struct mpeg_pmt_section *pmt);
+static void dvr_pmt(struct mpeg_pmt_section *pmt);
+static void dvr_pmt_full(struct mpeg_pmt_section *pmt);
+static int create_dvr_filter(int adapter, int demux, uint16_t pid);
 
 
 int zap_dvb_start(struct zap_dvb_params *params)
@@ -64,9 +68,11 @@ static void *dvbthread_func(void* arg)
 	int tune_state = 0;
 
 	int pat_fd = -1;
+	int pat_fd_dvrout = -1;
 	int pat_version = -1;
 
 	int pmt_fd = -1;
+	int pmt_fd_dvrout = -1;
 	int pmt_version = -1;
 
 	int tdt_fd = -1;
@@ -84,6 +90,13 @@ static void *dvbthread_func(void* arg)
 	}
 	pollfds[0].fd = pat_fd;
 	pollfds[0].events = POLLIN|POLLPRI|POLLERR;
+
+	// output PAT to DVR if requested
+	switch(params->output_type) {
+	case OUTPUT_TYPE_DVR_FULL:
+	case OUTPUT_TYPE_FILE_FULL:
+		pat_fd_dvrout = create_dvr_filter(params->adapter_id, params->demux_id, TRANSPORT_PAT_PID);
+	}
 
 	// create TDT filter
 	if ((tdt_fd = create_section_filter(params->adapter_id, params->demux_id, TRANSPORT_TDT_PID, stag_dvb_time_date)) < 0) {
@@ -164,7 +177,7 @@ static void *dvbthread_func(void* arg)
 
 		// PAT
 		if (pollfds[0].revents & (POLLIN|POLLPRI)) {
-			process_pat(pat_fd, params, &pat_version, &pmt_fd, &pmt_version, &pollfds[2]);
+			process_pat(pat_fd, params, &pat_version, &pmt_fd, &pmt_fd_dvrout, &pmt_version, &pollfds[2]);
 		}
 
 		// TDT
@@ -174,15 +187,19 @@ static void *dvbthread_func(void* arg)
 
 		//  PMT
 		if (pollfds[2].revents & (POLLIN|POLLPRI)) {
-			process_pmt(pmt_fd, &pmt_version);
+			process_pmt(pmt_fd, params, &pmt_version);
 		}
 	}
 
 	// close demuxers
 	if (pat_fd != -1)
 		close(pat_fd);
+	if (pat_fd_dvrout != -1)
+		close(pat_fd_dvrout);
 	if (pmt_fd != -1)
 		close(pmt_fd);
+	if (pmt_fd_dvrout != -1)
+		close(pmt_fd_dvrout);
 	if (tdt_fd != -1)
 		close(tdt_fd);
 
@@ -214,8 +231,26 @@ static int create_section_filter(int adapter, int demux, uint16_t pid, uint8_t t
 	return demux_fd;
 }
 
+static int create_dvr_filter(int adapter, int demux, uint16_t pid)
+{
+	int demux_fd = -1;
+
+	// open the demuxer
+	if ((demux_fd = dvbdemux_open_demux(adapter, demux, 0)) < 0) {
+		return -1;
+	}
+
+	// create a section filter
+	if (dvbdemux_set_pid_filter(demux_fd, pid, DVBDEMUX_INPUT_FRONTEND, DVBDEMUX_OUTPUT_DVR, 1)) {
+		close(demux_fd);
+		return -1;
+	}
+
+	// done
+	return demux_fd;
+}
 static void process_pat(int pat_fd, struct zap_dvb_params *params,
-			int *pat_version, int *pmt_fd, int *pmt_version, struct pollfd *pollfd)
+			int *pat_version, int *pmt_fd, int *pmt_fd_dvrout, int *pmt_version, struct pollfd *pollfd)
 {
 	int size;
 	char sibuf[4096];
@@ -262,6 +297,15 @@ static void process_pat(int pat_fd, struct zap_dvb_params *params,
 			pollfd->fd = *pmt_fd;
 			pollfd->events = POLLIN|POLLPRI|POLLERR;
 
+			// output PMT to DVR if requested
+			switch(params->output_type) {
+			case OUTPUT_TYPE_DVR_FULL:
+			case OUTPUT_TYPE_FILE_FULL:
+				if (*pmt_fd_dvrout != -1)
+					close(*pmt_fd_dvrout);
+				*pmt_fd_dvrout = create_dvr_filter(params->adapter_id, params->demux_id, cur_program->pid);
+			}
+
 			// we have a new PMT pid
 			*pmt_version = -1;
 			break;
@@ -298,7 +342,7 @@ static void process_tdt(int tdt_fd)
 	new_dvb_time(dvbdate_to_unixtime(tdt->utc_time));
 }
 
-static void process_pmt(int pmt_fd, int *pmt_version)
+static void process_pmt(int pmt_fd, struct zap_dvb_params *params, int *pmt_version)
 {
 	int size;
 	char sibuf[4096];
@@ -329,8 +373,87 @@ static void process_pmt(int pmt_fd, int *pmt_version)
 		return;
 	}
 
-	// FIXME: update PID filters on PMT change
+	// deal with the PMT appropriately
+	switch(params->output_type) {
+	case OUTPUT_TYPE_DECODER:
+	case OUTPUT_TYPE_DECODER_ABYPASS:
+		decoder_pmt(pmt);
+		break;
+
+	case OUTPUT_TYPE_DVR:
+	case OUTPUT_TYPE_FILE:
+		dvr_pmt(pmt);
+		break;
+
+	case OUTPUT_TYPE_DVR_FULL:
+	case OUTPUT_TYPE_FILE_FULL:
+		dvr_pmt_full(pmt);
+		break;
+	}
+
 
 	// inform the main app of the new PMT
 	new_dvb_pmt(pmt);
+}
+
+static void decoder_pmt(struct mpeg_pmt_section *pmt)
+{
+	int audio_pid = -1;
+	int video_pid = -1;
+	struct mpeg_pmt_stream *cur_stream;
+	mpeg_pmt_section_streams_for_each(pmt, cur_stream) {
+		switch(cur_stream->stream_type) {
+		case 1:
+		case 2: // video
+			video_pid = cur_stream->pid;
+			break;
+
+		case 3:
+		case 4: // audio
+			audio_pid = cur_stream->pid;
+			break;
+		}
+	}
+
+	if (audio_pid != -1) {
+		// FIXME
+	}
+	if (video_pid != -1) {
+		// FIXME
+	}
+}
+
+static void dvr_pmt(struct mpeg_pmt_section *pmt)
+{
+	int audio_pid = -1;
+	int video_pid = -1;
+	struct mpeg_pmt_stream *cur_stream;
+	mpeg_pmt_section_streams_for_each(pmt, cur_stream) {
+		switch(cur_stream->stream_type) {
+		case 1:
+		case 2: // video
+			video_pid = cur_stream->pid;
+			break;
+
+		case 3:
+		case 4: // audio
+			audio_pid = cur_stream->pid;
+			break;
+		}
+	}
+
+	if (audio_pid != -1) {
+		// FIXME
+	}
+	if (video_pid != -1) {
+		// FIXME
+	}
+}
+
+static void dvr_pmt_full(struct mpeg_pmt_section *pmt)
+{
+	struct mpeg_pmt_stream *cur_stream;
+	mpeg_pmt_section_streams_for_each(pmt, cur_stream) {
+		// FIXME
+	}
 }

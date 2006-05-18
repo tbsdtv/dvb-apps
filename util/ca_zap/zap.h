@@ -28,9 +28,10 @@
 #define OUTPUT_TYPE_DECODER 0
 #define OUTPUT_TYPE_DECODER_ABYPASS 1
 #define OUTPUT_TYPE_DVR 2
-#define OUTPUT_TYPE_DVR_SI 3
+#define OUTPUT_TYPE_DVR_FULL 3
 #define OUTPUT_TYPE_NULL 4
 #define OUTPUT_TYPE_FILE 5
+#define OUTPUT_TYPE_FILE_FULL 6
 
 extern void new_dvb_pmt(struct mpeg_pmt_section *pmt);
 extern void new_dvb_time(time_t dvb_time);
