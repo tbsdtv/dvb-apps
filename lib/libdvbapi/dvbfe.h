@@ -157,21 +157,21 @@ struct dvbfe_parameters {
 	} u;
 };
 
-typedef enum dvbfe_sec_voltage {
+enum dvbfe_sec_voltage {
 	DVBFE_SEC_VOLTAGE_13,
 	DVBFE_SEC_VOLTAGE_18,
 	DVBFE_SEC_VOLTAGE_OFF
-} dvbfe_sec_voltage_t;
+};
 
-typedef enum dvbfe_sec_tone_mode {
+enum dvbfe_sec_tone_mode {
 	DVBFE_SEC_TONE_ON,
 	DVBFE_SEC_TONE_OFF
-} dvbfe_sec_tone_mode_t;
+};
 
-typedef enum dvbfe_sec_mini_cmd {
+enum dvbfe_sec_mini_cmd {
 	DVBFE_SEC_MINI_A,
 	DVBFE_SEC_MINI_B
-} dvbfe_sec_mini_cmd_t;
+};
 
 /**
  * Mask of values used in the dvbfe_get_info() call.
@@ -252,21 +252,21 @@ extern int dvbfe_get_info(struct dvbfe_handle *fehandle, enum dvbfe_info_mask qu
  * 	@param fehandle Handle opened with dvbfe_open().
  *	@param tone, SEC_TONE_ON/SEC_TONE_OFF
  */
-extern int dvbfe_set_22k_tone(struct dvbfe_handle *handle, dvbfe_sec_tone_mode_t tone);
+extern int dvbfe_set_22k_tone(struct dvbfe_handle *handle, enum dvbfe_sec_tone_mode tone);
 
 /**
  *	22khz Tone control
  * 	@param fehandle Handle opened with dvbfe_open().
  *	@param adapter, minicmd, SEC_MINI_A/SEC_MINI_B
  */
-extern int dvbfe_set_tone_data_burst(struct dvbfe_handle *handle, dvbfe_sec_mini_cmd_t minicmd);
+extern int dvbfe_set_tone_data_burst(struct dvbfe_handle *handle, enum dvbfe_sec_mini_cmd minicmd);
 
 /**
  *	Voltage control
  * 	@param fehandle Handle opened with dvbfe_open().
  *	@param polarization, SEC_VOLTAGE_13/SEC_VOLTAGE_18/SEC_VOLTAGE_OFF
  */
-extern int dvbfe_set_voltage(struct dvbfe_handle *handle, dvbfe_sec_voltage_t voltage);
+extern int dvbfe_set_voltage(struct dvbfe_handle *handle, enum dvbfe_sec_voltage voltage);
 
 /**
  *	High LNB voltage control (increases voltage by 1v to compensate for long cables)

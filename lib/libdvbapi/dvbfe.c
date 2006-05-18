@@ -429,7 +429,7 @@ int dvbfe_set(struct dvbfe_handle *fehandle, struct dvbfe_parameters *params, in
 	return -ETIMEDOUT;
 }
 
-int dvbfe_set_22k_tone(struct dvbfe_handle *fehandle, dvbfe_sec_tone_mode_t tone)
+int dvbfe_set_22k_tone(struct dvbfe_handle *fehandle, enum dvbfe_sec_tone_mode tone)
 {
 	int ret = 0;
 
@@ -450,7 +450,7 @@ int dvbfe_set_22k_tone(struct dvbfe_handle *fehandle, dvbfe_sec_tone_mode_t tone
 	return ret;
 }
 
-int dvbfe_set_tone_data_burst(struct dvbfe_handle *fehandle, dvbfe_sec_mini_cmd_t minicmd)
+int dvbfe_set_tone_data_burst(struct dvbfe_handle *fehandle, enum dvbfe_sec_mini_cmd minicmd)
 {
 	int ret = 0;
 
@@ -471,7 +471,7 @@ int dvbfe_set_tone_data_burst(struct dvbfe_handle *fehandle, dvbfe_sec_mini_cmd_
 	return ret;
 }
 
-int dvbfe_set_voltage(struct dvbfe_handle *fehandle, dvbfe_sec_voltage_t voltage)
+int dvbfe_set_voltage(struct dvbfe_handle *fehandle, enum dvbfe_sec_voltage voltage)
 {
 	int ret = 0;
 
