@@ -35,17 +35,9 @@
 #include <stdint.h>
 #include <sys/time.h>
 
-#include <linux/dvb/frontend.h>
+#include <libdvbapi/dvbfe.h>
 
-#ifndef TRUE
-#define TRUE (1==1)
-#endif
-#ifndef FALSE
-#define FALSE (1==0)
-#endif
-
-
-#define FRONTENDDEVICE "/dev/dvb/adapter%d/frontend%d"
+#define FE_STATUS_PARAMS (DVBFE_INFO_LOCKSTATUS|DVBFE_INFO_SIGNAL_STRENGTH|DVBFE_INFO_BER|DVBFE_INFO_SNR|DVBFE_INFO_UNCORRECTED_BLOCKS)
 
 static char *usage_str =
     "\nusage: femon [options]\n"
@@ -56,103 +48,124 @@ static char *usage_str =
 
 static void usage(void)
 {
-   fprintf(stderr, usage_str);
-   exit(1);
+	fprintf(stderr, usage_str);
+	exit(1);
 }
 
 
 static
-int check_frontend (int fe_fd, int human_readable)
+int check_frontend (struct dvbfe_handle *fe, int human_readable)
 {
-   fe_status_t status;
-   uint16_t snr, signal;
-   uint32_t ber, uncorrected_blocks;
+	struct dvbfe_info fe_info;
 
-   do {
-      ioctl(fe_fd, FE_READ_STATUS, &status);
-      ioctl(fe_fd, FE_READ_SIGNAL_STRENGTH, &signal);
-      ioctl(fe_fd, FE_READ_SNR, &snr);
-      ioctl(fe_fd, FE_READ_BER, &ber);
-      ioctl(fe_fd, FE_READ_UNCORRECTED_BLOCKS, &uncorrected_blocks);
+	do {
+		dvbfe_get_info(fe, FE_STATUS_PARAMS, &fe_info);
 
-	  if (human_readable) {
-	      printf ("status %02x | signal %02d | snr %02d | ber %08x | unc %08x | ",
-		      status, (signal * 100) / 0xffff, (snr * 100) / 0xffff, ber, uncorrected_blocks);
-	  } else {
-	      printf ("status %02x | signal %04x | snr %04x | ber %08x | unc %08x | ",
-		      status, signal, snr, ber, uncorrected_blocks);
-	  }
+		if (human_readable) {
+			printf ("status %c%c%c%c%c | signal %04x | snr %04x | ber %08x | unc %08x | ",
+				fe_info.signal ? 'S' : ' ',
+				fe_info.carrier ? 'C' : ' ',
+				fe_info.viterbi ? 'V' : ' ',
+				fe_info.sync ? 'Y' : ' ',
+				fe_info.lock ? 'L' : ' ',
+				(fe_info.signal_strength * 100) / 0xffff,
+				(fe_info.snr * 100) / 0xffff,
+				fe_info.ber,
+				fe_info.ucblocks);
+		} else {
+			printf ("status %c%c%c%c%c | signal %04x | snr %04x | ber %08x | unc %08x | ",
+				fe_info.signal ? 'S' : ' ',
+				fe_info.carrier ? 'C' : ' ',
+				fe_info.viterbi ? 'V' : ' ',
+				fe_info.sync ? 'Y' : ' ',
+				fe_info.lock ? 'L' : ' ',
+				fe_info.signal_strength,
+				fe_info.snr,
+				fe_info.ber,
+				fe_info.ucblocks);
+		}
 
-      if (status & FE_HAS_LOCK)
-	 printf("FE_HAS_LOCK");
+		if (fe_info.lock)
+			printf("FE_HAS_LOCK");
 
-      printf("\n");
-      usleep(1000000);
-   } while (1);
+		printf("\n");
+		usleep(1000000);
+	} while (1);
 
-   return 0;
+	return 0;
 }
 
 
 static
 int do_mon(unsigned int adapter, unsigned int frontend, int human_readable)
 {
-   char fedev[128];
-   int fefd;
-   int result;
-   struct dvb_frontend_info fe_info;
+	int result;
+	struct dvbfe_handle *fe;
+	struct dvbfe_info fe_info;
+	char *fe_type = "UNKNOWN";
 
-   snprintf(fedev, sizeof(fedev), FRONTENDDEVICE, adapter, frontend);
-   printf("using '%s'\n", fedev);
+	fe = dvbfe_open(adapter, frontend, 1);
+	if (fe == NULL) {
+		perror("opening frontend failed");
+		return 0;
+	}
 
-   if ((fefd = open(fedev, O_RDONLY | O_NONBLOCK)) < 0) {
-      perror("opening frontend failed");
-      return FALSE;
-   }
+	if (dvbfe_get_info(fe, 0, &fe_info)) {
+		perror("ioctl FE_GET_INFO failed");
+		dvbfe_close(fe);
+		return 0;
+	}
+	switch(fe_info.type) {
+	case DVBFE_TYPE_DVBS:
+		fe_type = "DVBS";
+		break;
+	case DVBFE_TYPE_DVBC:
+		fe_type = "DVBC";
+		break;
+	case DVBFE_TYPE_DVBT:
+		fe_type = "DVBT";
+		break;
+	case DVBFE_TYPE_ATSC:
+		fe_type = "ATSC";
+		break;
+	}
+	printf("FE: %s (%s)\n", fe_info.name, fe_type);
 
-   result = ioctl(fefd, FE_GET_INFO, &fe_info);
+	result = check_frontend (fe, human_readable);
 
-   if (result < 0) {
-      perror("ioctl FE_GET_INFO failed");
-      close(fefd);
-      return FALSE;
-   }
+	dvbfe_close(fe);
 
-   printf("FE: %s (%s)\n", fe_info.name, fe_info.type == FE_QPSK ? "SAT" :
-		   fe_info.type == FE_QAM ? "CABLE": "TERRESTRIAL");
-
-   check_frontend (fefd, human_readable);
-
-   close(fefd);
-
-   return result;
+	return result;
 }
 
 int main(int argc, char *argv[])
 {
-   unsigned int adapter = 0, frontend = 0;
-   int human_readable = 0;
-   int opt;
+	unsigned int adapter = 0, frontend = 0;
+	int human_readable = 0;
+	int opt;
 
-   while ((opt = getopt(argc, argv, "hra:f:")) != -1) {
-      switch (opt)
-      {
-	 case '?':
-	 case 'h':
-	 default:
-	    usage();
-	 case 'a':
-	    adapter = strtoul(optarg, NULL, 0);
-	    break;
-	 case 'f':
-	    frontend = strtoul(optarg, NULL, 0);
-	 case 'r':
-		human_readable = 1;
-      }
-   }
+	while ((opt = getopt(argc, argv, "hra:f:")) != -1) {
+		switch (opt)
+		{
+		case '?':
+		case 'h':
+		default:
+			usage();
+			break;
+		case 'a':
+			adapter = strtoul(optarg, NULL, 0);
+			break;
+		case 'f':
+			frontend = strtoul(optarg, NULL, 0);
+			break;
+		case 'r':
+			human_readable = 1;
+			break;
+		}
+	}
 
-   do_mon(adapter, frontend, human_readable);
+	do_mon(adapter, frontend, human_readable);
 
-   return FALSE;
+	return 0;
 }
 
