@@ -32,6 +32,7 @@
 #include <pthread.h>
 #include <sys/poll.h>
 #include <libdvbapi/dvbdemux.h>
+#include <libdvbapi/dvbaudio.h>
 #include <libdvbcfg/dvbcfg_zapchannel.h>
 #include <libdvbcfg/dvbcfg_sec.h>
 #include <libucsi/mpeg/section.h>
@@ -98,6 +99,7 @@ int main(int argc, char *argv[])
 	int argpos = 1;
 	struct zap_dvb_params zap_dvb_params;
 	struct zap_ca_params zap_ca_params;
+	int ffaudiofd;
 
 	while(argpos != argc) {
 		if (!strcmp(argv[argpos], "-h")) {
@@ -228,8 +230,15 @@ int main(int argc, char *argv[])
 
 		// setup output
 		switch(output_type) {
+		case OUTPUT_TYPE_DECODER:
 		case OUTPUT_TYPE_DECODER_ABYPASS:
-			// FIXME
+			ffaudiofd = dvbaudio_open(adapter_id, 0);
+			if (ffaudiofd < 0) {
+				fprintf(stderr, "Failed to open audio device\n");
+				exit(1);
+			}
+			dvbaudio_set_bypass(ffaudiofd, (output_type == OUTPUT_TYPE_DECODER_ABYPASS) ? 1 : 0);
+			close(ffaudiofd);
 			break;
 
 		case OUTPUT_TYPE_FILE:
