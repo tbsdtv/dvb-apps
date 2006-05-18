@@ -16,10 +16,9 @@
 	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 
-#ifndef DISEQC_H
-#define DISEQC_H
+#ifndef DVBFE_DISEQC_H
+#define DVBFE_DISEQC_H 1
 
-#include <stdlib.h>
 #include <stdint.h>
 
 /*		Addresses		*/
@@ -80,23 +79,6 @@ struct cmd_types {
 	char *cmd_descr;
 };
 
-typedef enum dvbfe_sec_voltage {
-	DVBFE_SEC_VOLTAGE_13,
-	DVBFE_SEC_VOLTAGE_18,
-	DVBFE_SEC_VOLTAGE_OFF
-} dvbfe_sec_voltage_t;
-
-typedef enum dvbfe_sec_tone_mode {
-	DVBFE_SEC_TONE_ON,
-	DVBFE_SEC_TONE_OFF
-} dvbfe_sec_tone_mode_t;
-
-typedef enum dvbfe_sec_mini_cmd {
-	DVBFE_SEC_MINI_A,
-	DVBFE_SEC_MINI_B
-} dvbfe_sec_mini_cmd_t;
-
-
 struct cmd_types msgtbl[] = {
 
 	{ { 0x03, 0xe0, 0x00, 0x20, 0x00, 0x00, 0x00 }, "DISEQC_SET_LOW_LO" },
@@ -136,36 +118,5 @@ struct cmd_types msgtbl[] = {
 	{ {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }, NULL }
 };
 
-
-/*
- *	Tone/Data Burst control
- *	@param fd, FD opened with libdvbfe_open().
- *	@param tone, SEC_TONE_ON/SEC_TONE_OFF
- */
-extern int set_22k_tone(int fd, dvbfe_sec_tone_mode_t tone);
-
-/*
- *	22khz Tone control
- *	@param fd, FD opened with libdvbfe_open().
- *	@param adapter, minicmd, SEC_MINI_A/SEC_MINI_B
- */
-extern int set_tone_data_burst(int fd, dvbfe_sec_mini_cmd_t minicmd);
-
-/*
- *	H/V polarization control
- *	@param fd, FD opened with libdvbfe_open().
- *	@param polarization, SEC_VOLTAGE_13/SEC_VOLTAGE_18/SEC_VOLTAGE_OFF
- */
-extern int set_polarization(int fd, dvbfe_sec_voltage_t polarization);
-
-/*
- *	Send a DiSEqC Command
- *	@param fd, FD opened with libdvbfe_open().
- *	@param cmd, the defined diseqc commands
- *	@param address, the address of the DiSEqC device to be controlled
- *	@param data, a pointer to am array containing the data to be sent
- *	max. length of data, that can be sent is 3 bytes
- */
-extern int do_diseqc_command(int fd, uint8_t cmd, uint8_t address, uint8_t *data);
 
 #endif

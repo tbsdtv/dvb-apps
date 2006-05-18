@@ -2,6 +2,7 @@
  * libdvbfe - a DVB frontend library
  *
  * Copyright (C) 2005 Andrew de Quincey (adq_dvb@lidskialf.net)
+ * Copyright (C) 2005 Manu Abraham <manu@kromtek.com>
  * Copyright (C) 2005 Kenneth Aafloy (kenneth@linuxtv.org)
  *
  * This library is free software; you can redistribute it and/or
@@ -31,9 +32,13 @@
 #include <ctype.h>
 #include <errno.h>
 #include <linux/dvb/frontend.h>
+#include <libdvbmisc/dvbmisc.h>
 #include "dvbfe.h"
+#include "diseqc.h"
 
 #define GET_INFO_MIN_DELAY_US 100000
+
+int verbose = 0;
 
 static int dvbfe_spectral_inversion_to_kapi[][2] =
 {
@@ -430,10 +435,150 @@ void dvbfe_poll(struct dvbfe_handle *fehandle)
 	// no implementation required yet
 }
 
+int dvbfe_set_22k_tone(struct dvbfe_handle *fehandle, dvbfe_sec_tone_mode_t tone)
+{
+	int ret = 0;
 
+	switch (tone) {
+	case DVBFE_SEC_TONE_OFF:
+		ret = ioctl(fehandle->fd, FE_SET_TONE, DVBFE_SEC_TONE_OFF);
+		break;
+	case DVBFE_SEC_TONE_ON:
+		ret = ioctl(fehandle->fd, FE_SET_TONE, DVBFE_SEC_TONE_ON);
+		break;
+	default:
+		print(verbose, ERROR, 1, "Invalid command !");
+		break;
+	}
+	if (ret == -1)
+		print(verbose, ERROR, 1, "IOCTL failed !");
 
+	return ret;
+}
 
+int dvbfe_set_tone_data_burst(struct dvbfe_handle *fehandle, dvbfe_sec_mini_cmd_t minicmd)
+{
+	int ret = 0;
 
+	switch (minicmd) {
+	case DVBFE_SEC_MINI_A:
+		ret = ioctl(fehandle->fd, FE_DISEQC_SEND_BURST, DVBFE_SEC_MINI_A);
+		break;
+	case DVBFE_SEC_MINI_B:
+		ret = ioctl(fehandle->fd, FE_DISEQC_SEND_BURST, DVBFE_SEC_MINI_B);
+		break;
+	default:
+		print(verbose, ERROR, 1, "Invalid command");
+		break;
+	}
+	if (ret == -1)
+		print(verbose, ERROR, 1, "IOCTL failed");
+
+	return ret;
+}
+
+int dvbfe_set_voltage(struct dvbfe_handle *fehandle, dvbfe_sec_voltage_t voltage)
+{
+	int ret = 0;
+
+	switch (voltage) {
+	case DVBFE_SEC_VOLTAGE_13:
+		ret = ioctl(fehandle->fd, FE_SET_VOLTAGE, DVBFE_SEC_VOLTAGE_13);
+		break;
+	case DVBFE_SEC_VOLTAGE_18:
+		ret = ioctl(fehandle->fd, FE_SET_VOLTAGE, DVBFE_SEC_VOLTAGE_18);
+		break;
+	default:
+		print(verbose, ERROR, 1, "Invalid command");
+		break;
+	}
+	if (ret == -1)
+		print(verbose, ERROR, 1, "IOCTL failed");
+
+	return ret;
+}
+
+int dvbfe_set_high_lnb_voltage(struct dvbfe_handle *fehandle, int on)
+{
+	switch (on) {
+	case 0:
+		ioctl(fehandle->fd, FE_ENABLE_HIGH_LNB_VOLTAGE, 0);
+		break;
+	default:
+		ioctl(fehandle->fd, FE_ENABLE_HIGH_LNB_VOLTAGE, 1);
+		break;
+	}
+	return 0;
+}
+
+int dvbfe_do_dishnetworks_legacy_cmd(struct dvbfe_handle *fehandle, unsigned int cmd)
+{
+	int ret = 0;
+
+	ret = ioctl(fehandle->fd, FE_DISHNETWORK_SEND_LEGACY_CMD, cmd);
+	if (ret == -1)
+		print(verbose, ERROR, 1, "IOCTL failed");
+
+	return ret;
+}
+
+int dvbfe_do_diseqc_cmd(struct dvbfe_handle *fehandle, uint8_t cmd, uint8_t  address, uint8_t *data)
+{
+	int ret = 0;
+	uint8_t length;
+	struct diseqc_cmd diseqc_message;
+
+	memcpy(&diseqc_message.message[0], &msgtbl->command[1], 6);
+	length = msgtbl->command[0];
+	diseqc_message.length = length;
+
+	/*	Set Address	*/
+	diseqc_message.message[2] = address;
+	switch (length) {
+	case 6:
+		/*	Set Data		*/
+		diseqc_message.message[6] = data[2];
+	case 5:
+		/*	Set Data		*/
+		diseqc_message.message[5] = data[1];
+	case 4:
+		/*	Set Data		*/
+		diseqc_message.message[4] = data[0];
+	case 3:
+		/*	Only cmd	*/
+		break;
+	default:
+		return -EINVAL;
+	}
+
+	ret = ioctl(fehandle->fd, cmd, &diseqc_message);
+	if (ret == -1)
+		print(verbose, ERROR, 1, "IOCTL failed");
+
+	return ret;
+}
+
+int dvbfe_diseqc_read(struct dvbfe_handle *_fehandle, int timeout, unsigned char *buf, unsigned int len)
+{
+	struct dvb_diseqc_slave_reply reply;
+	int result;
+	struct dvbfe_handle *fehandle = (struct dvbfe_handle*) _fehandle;
+
+	if (len > 4)
+		len = 4;
+
+	reply.timeout = timeout;
+	reply.msg_len = len;
+
+	if ((result = ioctl(fehandle->fd, FE_DISEQC_RECV_SLAVE_REPLY, reply)) != 0)
+		return result;
+
+	if (reply.msg_len < len)
+		len = reply.msg_len;
+	memcpy(buf, reply.msg, len);
+
+	return len;
+}
 
 
 int dvbfe_sec_command(struct dvbfe_handle *fehandle, char *command)
@@ -723,26 +868,4 @@ int dvbfe_sec_command(struct dvbfe_handle *fehandle, char *command)
 	}
 
 	return 0;
-}
-
-int dvbfe_diseqc_read(struct dvbfe_handle *_fehandle, int timeout, unsigned char *buf, unsigned int len)
-{
-	struct dvb_diseqc_slave_reply reply;
-	int result;
-	struct dvbfe_handle *fehandle = (struct dvbfe_handle*) _fehandle;
-
-	if (len > 4)
-		len = 4;
-
-	reply.timeout = timeout;
-	reply.msg_len = len;
-
-	if ((result = ioctl(fehandle->fd, FE_DISEQC_RECV_SLAVE_REPLY, reply)) != 0)
-		return result;
-
-	if (reply.msg_len < len)
-		len = reply.msg_len;
-	memcpy(buf, reply.msg, len);
-
-	return len;
 }

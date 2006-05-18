@@ -2,6 +2,7 @@
  * libdvbfe - a DVB frontend library
  *
  * Copyright (C) 2005 Andrew de Quincey (adq_dvb@lidskialf.net)
+ * Copyright (C) 2005 Manu Abraham <manu@kromtek.com>
  * Copyright (C) 2005 Kenneth Aafloy (kenneth@linuxtv.org)
  *
  * This library is free software; you can redistribute it and/or
@@ -156,6 +157,22 @@ struct dvbfe_parameters {
 	} u;
 };
 
+typedef enum dvbfe_sec_voltage {
+	DVBFE_SEC_VOLTAGE_13,
+	DVBFE_SEC_VOLTAGE_18,
+	DVBFE_SEC_VOLTAGE_OFF
+} dvbfe_sec_voltage_t;
+
+typedef enum dvbfe_sec_tone_mode {
+	DVBFE_SEC_TONE_ON,
+	DVBFE_SEC_TONE_OFF
+} dvbfe_sec_tone_mode_t;
+
+typedef enum dvbfe_sec_mini_cmd {
+	DVBFE_SEC_MINI_A,
+	DVBFE_SEC_MINI_B
+} dvbfe_sec_mini_cmd_t;
+
 /**
  * Mask of values used in the dvbfe_get_info() call.
  */
@@ -238,6 +255,62 @@ extern void dvbfe_poll(struct dvbfe_handle *fehandle);
 extern int dvbfe_get_info(struct dvbfe_handle *fehandle, enum dvbfe_info_mask querymask, struct dvbfe_info *result);
 
 /**
+ *	Tone/Data Burst control
+ * 	@param fehandle Handle opened with dvbfe_open().
+ *	@param tone, SEC_TONE_ON/SEC_TONE_OFF
+ */
+extern int dvbfe_set_22k_tone(struct dvbfe_handle *handle, dvbfe_sec_tone_mode_t tone);
+
+/**
+ *	22khz Tone control
+ * 	@param fehandle Handle opened with dvbfe_open().
+ *	@param adapter, minicmd, SEC_MINI_A/SEC_MINI_B
+ */
+extern int dvbfe_set_tone_data_burst(struct dvbfe_handle *handle, dvbfe_sec_mini_cmd_t minicmd);
+
+/**
+ *	Voltage control
+ * 	@param fehandle Handle opened with dvbfe_open().
+ *	@param polarization, SEC_VOLTAGE_13/SEC_VOLTAGE_18/SEC_VOLTAGE_OFF
+ */
+extern int dvbfe_set_voltage(struct dvbfe_handle *handle, dvbfe_sec_voltage_t voltage);
+
+/**
+ *	High LNB voltage control (increases voltage by 1v to compensate for long cables)
+ * 	@param fehandle Handle opened with dvbfe_open().
+ *	@param on 1 to enable, 0 to disable.
+ */
+extern int dvbfe_set_high_lnb_voltage(struct dvbfe_handle *fehandle, int on);
+
+/**
+ *	Send a legacy Dish Networks command
+ * 	@param fehandle Handle opened with dvbfe_open().
+ *	@param cmd, the command to send
+ */
+extern int dvbfe_do_dishnetworks_legacy_command(struct dvbfe_handle *handle, unsigned int cmd);
+
+/**
+ *	Send a DiSEqC Command
+ * 	@param fehandle Handle opened with dvbfe_open().
+ *	@param cmd, the defined diseqc commands
+ *	@param address, the address of the DiSEqC device to be controlled
+ *	@param data, a pointer to am array containing the data to be sent
+ *	max. length of data, that can be sent is 3 bytes
+ */
+extern int dvbfe_do_diseqc_command(struct dvbfe_handle *handle, uint8_t cmd, uint8_t address, uint8_t *data);
+
+/**
+ * Read a DISEQC response from the frontend.
+ *
+ * @param fehandle Handle opened with dvbfe_open().
+ * @param timeout Timeout for DISEQC response.
+ * @param buf Buffer to store response in.
+ * @param len Number of bytes in buffer.
+ * @return >= 0 on success (number of received bytes), <0 on failure.
+ */
+extern int dvbfe_diseqc_read(struct dvbfe_handle *fehandle, int timeout, unsigned char *buf, unsigned int len);
+
+/**
  * Execute an SEC command string.
  *
  * An sec command consists of a sequence of the following codes, separated by
@@ -287,17 +360,6 @@ extern int dvbfe_get_info(struct dvbfe_handle *fehandle, enum dvbfe_info_mask qu
  * @return 0 on success, nonzero on failure.
  */
 extern int dvbfe_sec_command(struct dvbfe_handle *fehandle, char *command);
-
-/**
- * Read a DISEQC response from the frontend.
- *
- * @param fehandle Handle opened with dvbfe_open().
- * @param timeout Timeout for DISEQC response.
- * @param buf Buffer to store response in.
- * @param len Number of bytes in buffer.
- * @return >= 0 on success (number of received bytes), <0 on failure.
- */
-extern int dvbfe_diseqc_read(struct dvbfe_handle *fehandle, int timeout, unsigned char *buf, unsigned int len);
 
 #ifdef __cplusplus
 }

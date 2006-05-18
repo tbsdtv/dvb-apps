@@ -8,8 +8,7 @@ includes = diseqc.h   \
            dvbfe.h    \
            dvbnet.h
 
-objects  = diseqc.o   \
-           dvbca.o    \
+objects  = dvbca.o    \
            dvbdemux.o \
            dvbfe.o    \
            dvbnet.o
