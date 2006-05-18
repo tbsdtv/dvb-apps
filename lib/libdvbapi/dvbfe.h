@@ -238,13 +238,6 @@ extern void dvbfe_close(struct dvbfe_handle *handle);
 extern int dvbfe_set(struct dvbfe_handle *fehandle, struct dvbfe_parameters *params, int timeout);
 
 /**
- * Call this function regularly from a loop to maintain the frontend lock.
- *
- * @param fehandle Handle opened with dvbfe_open().
- */
-extern void dvbfe_poll(struct dvbfe_handle *fehandle);
-
-/**
  * Retrieve information about the frontend.
  *
  * @param fehandle Handle opened with dvbfe_open().

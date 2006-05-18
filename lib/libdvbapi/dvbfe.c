@@ -429,12 +429,6 @@ int dvbfe_set(struct dvbfe_handle *fehandle, struct dvbfe_parameters *params, in
 	return -ETIMEDOUT;
 }
 
-void dvbfe_poll(struct dvbfe_handle *fehandle)
-{
-	(void) fehandle;
-	// no implementation required yet
-}
-
 int dvbfe_set_22k_tone(struct dvbfe_handle *fehandle, dvbfe_sec_tone_mode_t tone)
 {
 	int ret = 0;
