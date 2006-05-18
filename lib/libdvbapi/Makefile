@@ -5,12 +5,16 @@ CPPFLAGS += -I../../include -I..
 includes = diseqc.h   \
            dvbca.h    \
            dvbdemux.h \
+           dvbaudio.h \
+           dvbvideo.h \
            dvbfe.h    \
            dvbnet.h
 
 objects  = dvbca.o    \
            dvbdemux.o \
            dvbfe.o    \
+           dvbaudio.o \
+           dvbvideo.o \
            dvbnet.o
 
 sharedlib = libdvbapi.so
