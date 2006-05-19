@@ -47,8 +47,8 @@ enum atsc_section_tag {
 /**
  * ATSC specific PSIP section structure.
  */
-struct section_psip {
-	struct section_ext		section_ext;
+struct atsc_section_psip {
+	struct section_ext		ext_head;
 	uint8_t				protocol_version;
 } __ucsi_packed;
 
@@ -58,14 +58,14 @@ struct section_psip {
  * @param section_ext Pointer to the processed section_ext structure.
  * @return Pointer to the parsed section_psip structure, or NULL if invalid.
  */
-static inline struct section_psip *section_psip_decode(struct section_ext *section_ext)
+static inline struct atsc_section_psip *atsc_section_psip_decode(struct section_ext *section_ext)
 {
 	size_t len = section_ext_length(section_ext);
-	if (len < sizeof(struct section_psip)) {
+	if (len < sizeof(struct atsc_section_psip)) {
 		return NULL;
 	}
 
-	return (struct section_psip *) section_ext;
+	return (struct atsc_section_psip *) section_ext;
 }
 
 #ifdef __cplusplus
