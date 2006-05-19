@@ -1,10 +1,12 @@
 # Makefile for linuxtv.org dvb-apps/lib/libucsi/atsc
 
 objects += atsc/stt_section.o           \
+	   atsc/mgt_section.o           \
 
 sub-includes = descriptor.h \
                section.h \
-               stt_section.h
+               stt_section.h \
+               mgt_section.h
 
 sub-install += atsc
 
