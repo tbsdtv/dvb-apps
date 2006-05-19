@@ -20,8 +20,9 @@
  */
 
 #include <libucsi/section.h>
-#include <libucsi/atsc/stt_section.h>
-#include <libucsi/atsc/mgt_section.h>
+//#include <libucsi/atsc/stt_section.h>
+//#include <libucsi/atsc/mgt_section.h>
+//#include <libucsi/atsc/tvct_section.h>
 
 #ifndef _UCSI_ATSC_SECTION_H
 #define _UCSI_ATSC_SECTION_H 1

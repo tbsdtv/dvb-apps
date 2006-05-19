@@ -19,52 +19,59 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include <libucsi/atsc/mgt_section.h>
+#include <libucsi/atsc/tvct_section.h>
 
-struct atsc_mgt_section *atsc_mgt_section_codec(struct atsc_section_psip *psip)
+struct atsc_tvct_section *atsc_tvct_section_codec(struct atsc_section_psip *psip)
 {
 	uint8_t * buf = (uint8_t *) psip;
 	size_t pos = sizeof(struct atsc_section_psip);
 	size_t len = section_ext_length(&(psip->ext_head));
 	int idx;
-	struct atsc_mgt_section *mgt = (struct atsc_mgt_section *) psip;
+	int i;
+	struct atsc_tvct_section *tvct = (struct atsc_tvct_section *) psip;
 
-	if (len < sizeof(struct atsc_mgt_section))
+	if (len < sizeof(struct atsc_tvct_section))
 		return NULL;
 
-	bswap16(buf + pos);
-	pos += 2;
+	pos++;
 
-	for(idx =0; idx < mgt->tables_defined; idx++) {
-		struct atsc_mgt_table *table = (struct atsc_mgt_table *) (buf+pos);
+	for(idx =0; idx < tvct->num_channels_in_section; idx++) {
+		struct atsc_tvct_channel *channel = (struct atsc_tvct_channel *) (buf+pos);
 
-		if ((pos + sizeof(struct atsc_mgt_table)) > len)
+		if ((pos + sizeof(struct atsc_tvct_channel)) > len)
 			return NULL;
 
-		bswap16(buf+pos);
-		bswap16(buf+pos+2);
-		bswap32(buf+pos+5);
-		bswap16(buf+pos+9);
-		pos+=11;
+		for(i=0; i< 7*2; i+=2)
+			bswap16(buf+pos+i);
+		pos += 7*2;
 
-		if ((pos + sizeof(struct atsc_mgt_table) + table->table_type_descriptors_length) > len)
+		bswap32(buf+pos);
+		bswap32(buf+pos+4);
+		bswap16(buf+pos+6);
+		bswap16(buf+pos+8);
+		bswap16(buf+pos+10);
+		bswap16(buf+pos+12);
+		bswap16(buf+pos+14);
+		pos+=16;
+
+		if ((pos + sizeof(struct atsc_tvct_channel) + channel->descriptors_length) > len)
 			return NULL;
 
-		if (verify_descriptors(buf + pos, table->table_type_descriptors_length))
+		if (verify_descriptors(buf + pos, channel->descriptors_length))
 			return NULL;
 
-		pos += table->table_type_descriptors_length;
+		pos += channel->descriptors_length;
 	}
 
-	struct atsc_mgt_section_part2 *part2 = (struct atsc_mgt_section_part2 *) (buf+pos);
+	struct atsc_tvct_section_part2 *part2 = (struct atsc_tvct_section_part2 *) (buf+pos);
 
-	if ((pos + sizeof(struct atsc_mgt_section_part2)) > len)
+	if ((pos + sizeof(struct atsc_tvct_section_part2)) > len)
 		return NULL;
 
 	bswap16(buf+pos);
 	pos+=2;
 
-	if ((pos + sizeof(struct atsc_mgt_section_part2) + part2->descriptors_length) > len)
+	if ((pos + sizeof(struct atsc_tvct_section_part2) + part2->descriptors_length) > len)
 		return NULL;
 
 	if (verify_descriptors(buf + pos, part2->descriptors_length))
@@ -73,5 +80,5 @@ struct atsc_mgt_section *atsc_mgt_section_codec(struct atsc_section_psip *psip)
 	if (pos != len)
 		return NULL;
 
-	return (struct atsc_mgt_section *) psip;
+	return (struct atsc_tvct_section *) psip;
 }
