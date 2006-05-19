@@ -82,6 +82,17 @@ static inline struct atsc_cvct_channel *
 struct atsc_cvct_section *atsc_cvct_section_codec(struct atsc_section_psip *section);
 
 /**
+ * Accessor for the transport_stream_id field of a CVCT.
+ *
+ * @param cvdt CVDT pointer.
+ * @return The transport_stream_id.
+ */
+static inline uint16_t atsc_cvct_section_transport_stream_id(struct atsc_cvct_section *cvct)
+{
+	return cvct->head.ext_head.table_id_ext;
+}
+
+/**
  * Iterator for the tables field in an atsc_cvct_section.
  *
  * @param mgt atsc_cvct_section pointer.
