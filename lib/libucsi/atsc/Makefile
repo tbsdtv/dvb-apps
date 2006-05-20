@@ -5,6 +5,7 @@ objects += atsc/stt_section.o           \
 	   atsc/tvct_section.o           \
 	   atsc/cvct_section.o           \
 	   atsc/rrt_section.o           \
+	   atsc/eit_section.o           \
 
 sub-includes = descriptor.h \
                section.h \
@@ -13,7 +14,8 @@ sub-includes = descriptor.h \
                mgt_section.h \
                tvct_section.h \
                cvct_section.h \
-               rrt_section.h
+               rrt_section.h \
+               eit_section.h
 
 sub-install += atsc
 
