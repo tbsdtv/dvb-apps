@@ -7,6 +7,7 @@ objects += atsc/stt_section.o           \
 	   atsc/rrt_section.o           \
 	   atsc/eit_section.o           \
 	   atsc/ett_section.o           \
+	   atsc/types.o           \
 
 sub-includes = descriptor.h \
                section.h \
