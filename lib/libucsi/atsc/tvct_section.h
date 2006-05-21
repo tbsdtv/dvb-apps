@@ -75,15 +75,15 @@ static inline struct atsc_tvct_channel *
 /**
  * Process a atsc_tvct_section.
  *
- * @param section Pointer to anj atsc_section_psip structure.
+ * @param section Pointer to an atsc_section_psip structure.
  * @return atsc_tvct_section pointer, or NULL on error.
  */
 struct atsc_tvct_section *atsc_tvct_section_codec(struct atsc_section_psip *section);
 
 /**
- * Accessor for the transport_stream_id field of a CVCT.
+ * Accessor for the transport_stream_id field of a TVCT.
  *
- * @param cvdt CVDT pointer.
+ * @param tvct TVCT pointer.
  * @return The transport_stream_id.
  */
 static inline uint16_t atsc_tvct_section_transport_stream_id(struct atsc_tvct_section *tvct)
@@ -92,11 +92,11 @@ static inline uint16_t atsc_tvct_section_transport_stream_id(struct atsc_tvct_se
 }
 
 /**
- * Iterator for the tables field in an atsc_tvct_section.
+ * Iterator for the channels field in an atsc_tvct_section.
  *
  * @param mgt atsc_tvct_section pointer.
  * @param pos Variable containing a pointer to the current atsc_tvct_channel.
- * @param idx Integer used to count which table we in.
+ * @param idx Integer used to count which channel we in.
  */
 #define atsc_tvct_section_channels_for_each(mgt, pos, idx) \
 	for ((pos) = atsc_tvct_section_channels_first(mgt), idx=0; \
@@ -106,13 +106,13 @@ static inline uint16_t atsc_tvct_section_transport_stream_id(struct atsc_tvct_se
 /**
  * Iterator for the descriptors field in a atsc_tvct_channel structure.
  *
- * @param table atsc_tvct_channel pointer.
+ * @param channel atsc_tvct_channel pointer.
  * @param pos Variable containing a pointer to the current descriptor.
  */
-#define atsc_tvct_channel_descriptors_for_each(table, pos) \
-	for ((pos) = atsc_tvct_channel_descriptors_first(table); \
+#define atsc_tvct_channel_descriptors_for_each(channel, pos) \
+	for ((pos) = atsc_tvct_channel_descriptors_first(channel); \
 	     (pos); \
-	     (pos) = atsc_tvct_channel_descriptors_next(table, pos))
+	     (pos) = atsc_tvct_channel_descriptors_next(channel, pos))
 
 /**
  * Accessor for the second part of an atsc_tvct_section.
@@ -125,11 +125,11 @@ static inline struct atsc_tvct_section_part2 *
 {
 	int pos = sizeof(struct atsc_tvct_section);
 
-	struct atsc_tvct_channel *cur_table;
+	struct atsc_tvct_channel *cur_channel;
 	int idx;
-	atsc_tvct_section_channels_for_each(mgt, cur_table, idx) {
+	atsc_tvct_section_channels_for_each(mgt, cur_channel, idx) {
 		pos += sizeof(struct atsc_tvct_channel);
-		pos += cur_table->descriptors_length;
+		pos += cur_channel->descriptors_length;
 	}
 
 	return (struct atsc_tvct_section_part2 *) (((uint8_t*) mgt) + pos);
@@ -181,22 +181,22 @@ static inline struct atsc_tvct_channel *
 }
 
 static inline struct descriptor *
-	atsc_tvct_channel_descriptors_first(struct atsc_tvct_channel *table)
+	atsc_tvct_channel_descriptors_first(struct atsc_tvct_channel *channel)
 {
 	size_t pos = sizeof(struct atsc_tvct_channel);
 
-	if (table->descriptors_length == 0)
+	if (channel->descriptors_length == 0)
 		return NULL;
 
-	return (struct descriptor*) (((uint8_t *) table) + pos);
+	return (struct descriptor*) (((uint8_t *) channel) + pos);
 }
 
 static inline struct descriptor *
-	atsc_tvct_channel_descriptors_next(struct atsc_tvct_channel *table,
+	atsc_tvct_channel_descriptors_next(struct atsc_tvct_channel *channel,
 					struct descriptor *pos)
 {
-	return next_descriptor((uint8_t*) table + sizeof(struct atsc_tvct_channel),
-				table->descriptors_length,
+	return next_descriptor((uint8_t*) channel + sizeof(struct atsc_tvct_channel),
+				channel->descriptors_length,
 				pos);
 }
 

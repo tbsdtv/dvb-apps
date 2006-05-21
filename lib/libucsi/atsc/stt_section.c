@@ -23,7 +23,7 @@
 
 struct atsc_stt_section *atsc_stt_section_codec(struct atsc_section_psip *psip)
 {
-	uint8_t * buf = (uint8_t *) psip;
+	uint8_t *buf = (uint8_t *) psip;
 	size_t pos = sizeof(struct atsc_section_psip);
 	size_t len = section_ext_length(&(psip->ext_head));
 

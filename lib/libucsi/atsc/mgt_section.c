@@ -35,40 +35,37 @@ struct atsc_mgt_section *atsc_mgt_section_codec(struct atsc_section_psip *psip)
 	bswap16(buf + pos);
 	pos += 2;
 
-	for(idx =0; idx < mgt->tables_defined; idx++) {
-		struct atsc_mgt_table *table = (struct atsc_mgt_table *) (buf+pos);
-
+	for(idx=0; idx < mgt->tables_defined; idx++) {
 		if ((pos + sizeof(struct atsc_mgt_table)) > len)
 			return NULL;
+		struct atsc_mgt_table *table = (struct atsc_mgt_table *) (buf+pos);
 
 		bswap16(buf+pos);
 		bswap16(buf+pos+2);
 		bswap32(buf+pos+5);
 		bswap16(buf+pos+9);
-		pos+=11;
 
-		if ((pos + sizeof(struct atsc_mgt_table) + table->table_type_descriptors_length) > len)
+		pos += sizeof(struct atsc_mgt_table);
+		if ((pos + table->table_type_descriptors_length) > len)
 			return NULL;
-
 		if (verify_descriptors(buf + pos, table->table_type_descriptors_length))
 			return NULL;
 
 		pos += table->table_type_descriptors_length;
 	}
 
-	struct atsc_mgt_section_part2 *part2 = (struct atsc_mgt_section_part2 *) (buf+pos);
-
 	if ((pos + sizeof(struct atsc_mgt_section_part2)) > len)
 		return NULL;
+	struct atsc_mgt_section_part2 *part2 = (struct atsc_mgt_section_part2 *) (buf+pos);
 
 	bswap16(buf+pos);
-	pos+=2;
 
-	if ((pos + sizeof(struct atsc_mgt_section_part2) + part2->descriptors_length) > len)
+	pos += sizeof(struct atsc_mgt_section_part2);
+	if ((pos + part2->descriptors_length) > len)
 		return NULL;
-
 	if (verify_descriptors(buf + pos, part2->descriptors_length))
 		return NULL;
+	pos += part2->descriptors_length;
 
 	if (pos != len)
 		return NULL;

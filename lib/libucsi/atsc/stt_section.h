@@ -41,14 +41,13 @@ struct atsc_stt_section {
 	uint16_t reserved			: 2; ,
 	uint16_t DS_day_of_month		: 5; ,
 	uint16_t DS_hour			: 8; );
-	uint8_t reserved1;
 	/* struct descriptor descriptors[] */
 } __ucsi_packed;
 
 /**
  * Process a atsc_stt_section.
  *
- * @param section Pointer to anj atsc_section_psip structure.
+ * @param section Pointer to an atsc_section_psip structure.
  * @return atsc_stt_section pointer, or NULL on error.
  */
 struct atsc_stt_section *atsc_stt_section_codec(struct atsc_section_psip *section);

@@ -29,6 +29,15 @@ extern "C"
 
 #include <libucsi/atsc/section.h>
 
+enum atsc_mgt_section_table_type {
+	ATSC_MGT_TABLE_TYPE_TVCT_CURRENT = 0,
+	ATSC_MGT_TABLE_TYPE_TVCT_NEXT = 1,
+	ATSC_MGT_TABLE_TYPE_CVCT_CURRENT = 2,
+	ATSC_MGT_TABLE_TYPE_CVCT_NEXT = 3,
+	ATSC_MGT_TABLE_TYPE_CHANNEL_ETT = 4,
+	ATSC_MGT_TABLE_TYPE_DCCSCT = 5,
+};
+
 /**
  * atsc_mgt_section structure.
  */

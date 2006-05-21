@@ -20,9 +20,13 @@
  */
 
 #include <libucsi/section.h>
-//#include <libucsi/atsc/stt_section.h>
-//#include <libucsi/atsc/mgt_section.h>
-//#include <libucsi/atsc/tvct_section.h>
+#include <libucsi/atsc/mgt_section.h>
+#include <libucsi/atsc/tvct_section.h>
+#include <libucsi/atsc/cvct_section.h>
+#include <libucsi/atsc/rrt_section.h>
+#include <libucsi/atsc/eit_section.h>
+#include <libucsi/atsc/ett_section.h>
+#include <libucsi/atsc/stt_section.h>
 
 #ifndef _UCSI_ATSC_SECTION_H
 #define _UCSI_ATSC_SECTION_H 1
@@ -40,11 +44,9 @@ enum atsc_section_tag {
 	stag_atsc_terrestrial_virtual_channel			= 0xc8,
 	stag_atsc_cable_virtual_channel				= 0xc9,
 	stag_atsc_rating_region					= 0xca,
-	stag_atsc_event_informationen				= 0xcb,
+	stag_atsc_event_information				= 0xcb,
 	stag_atsc_extended_text					= 0xcc,
 	stag_atsc_system_time					= 0xcd,
-	stag_atsc_directed_channel_change			= 0xd3,
-	stag_atsc_directed_channel_change_selection_code	= 0xd4,
 };
 
 /**
