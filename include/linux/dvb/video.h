@@ -26,6 +26,10 @@
 
 #include <linux/compiler.h>
 
+#ifndef __user
+#define __user
+#endif
+
 #ifdef __KERNEL__
 #include <linux/types.h>
 #else
