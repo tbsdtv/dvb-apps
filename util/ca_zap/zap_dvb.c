@@ -40,19 +40,33 @@ static int dvbthread_shutdown = 0;
 static pthread_t dvbthread;
 
 static void *dvbthread_func(void* arg);
+
 static int create_section_filter(int adapter, int demux, uint16_t pid, uint8_t table_id);
+static int create_decoder_filter(int adapter, int demux, uint16_t pid, int pestype);
+static int create_dvr_filter(int adapter, int demux, uint16_t pid);
+
 static void process_pat(int pat_fd, struct zap_dvb_params *params,
 			int *pat_version, int *pmt_fd, int *pmt_fd_dvrout, int *pmt_version, struct pollfd *pollfd);
 static void process_tdt(int tdt_fd);
 static void process_pmt(int pmt_fd, struct zap_dvb_params *params, int *pmt_version);
-static void decoder_pmt(struct mpeg_pmt_section *pmt);
-static void dvr_pmt(struct mpeg_pmt_section *pmt);
-static void dvr_pmt_full(struct mpeg_pmt_section *pmt);
-static int create_dvr_filter(int adapter, int demux, uint16_t pid);
+static void decoder_pmt(struct zap_dvb_params *params, struct mpeg_pmt_section *pmt);
+static void dvr_pmt(struct zap_dvb_params *params, struct mpeg_pmt_section *pmt);
+static void dvr_pmt_full(struct zap_dvb_params *params, struct mpeg_pmt_section *pmt);
+static void append_pid_fd(int pid, int fd);
+static void free_pid_fds(void);
 
+struct pid_fd {
+	int pid;
+	int fd;
+};
+struct pid_fd *pid_fds = NULL;
+int pid_fds_count = 0;
 
 int zap_dvb_start(struct zap_dvb_params *params)
 {
+	pid_fds = NULL;
+	pid_fds_count = 0;
+
 	pthread_create(&dvbthread, (void*) params, dvbthread_func, NULL);
 	return 0;
 }
@@ -61,6 +75,7 @@ void zap_dvb_stop(void)
 {
 	dvbthread_shutdown = 1;
 	pthread_join(dvbthread, NULL);
+	free_pid_fds();
 }
 
 static void *dvbthread_func(void* arg)
@@ -231,6 +246,25 @@ static int create_section_filter(int adapter, int demux, uint16_t pid, uint8_t t
 	return demux_fd;
 }
 
+static int create_decoder_filter(int adapter, int demux, uint16_t pid, int pestype)
+{
+	int demux_fd = -1;
+
+	// open the demuxer
+	if ((demux_fd = dvbdemux_open_demux(adapter, demux, 0)) < 0) {
+		return -1;
+	}
+
+	// create a section filter
+	if (dvbdemux_set_pes_filter(demux_fd, pid, DVBDEMUX_INPUT_FRONTEND, DVBDEMUX_OUTPUT_DECODER, pestype, 1)) {
+		close(demux_fd);
+		return -1;
+	}
+
+	// done
+	return demux_fd;
+}
+
 static int create_dvr_filter(int adapter, int demux, uint16_t pid)
 {
 	int demux_fd = -1;
@@ -249,6 +283,7 @@ static int create_dvr_filter(int adapter, int demux, uint16_t pid)
 	// done
 	return demux_fd;
 }
+
 static void process_pat(int pat_fd, struct zap_dvb_params *params,
 			int *pat_version, int *pmt_fd, int *pmt_fd_dvrout, int *pmt_version, struct pollfd *pollfd)
 {
@@ -373,30 +408,32 @@ static void process_pmt(int pmt_fd, struct zap_dvb_params *params, int *pmt_vers
 		return;
 	}
 
+	// close all old PID FDs
+	free_pid_fds();
+
 	// deal with the PMT appropriately
 	switch(params->output_type) {
 	case OUTPUT_TYPE_DECODER:
 	case OUTPUT_TYPE_DECODER_ABYPASS:
-		decoder_pmt(pmt);
+		decoder_pmt(params, pmt);
 		break;
 
 	case OUTPUT_TYPE_DVR:
 	case OUTPUT_TYPE_FILE:
-		dvr_pmt(pmt);
+		dvr_pmt(params, pmt);
 		break;
 
 	case OUTPUT_TYPE_DVR_FULL:
 	case OUTPUT_TYPE_FILE_FULL:
-		dvr_pmt_full(pmt);
+		dvr_pmt_full(params, pmt);
 		break;
 	}
-
 
 	// inform the main app of the new PMT
 	new_dvb_pmt(pmt);
 }
 
-static void decoder_pmt(struct mpeg_pmt_section *pmt)
+static void decoder_pmt(struct zap_dvb_params *params, struct mpeg_pmt_section *pmt)
 {
 	int audio_pid = -1;
 	int video_pid = -1;
@@ -416,14 +453,30 @@ static void decoder_pmt(struct mpeg_pmt_section *pmt)
 	}
 
 	if (audio_pid != -1) {
-		// FIXME
+		int fd = create_decoder_filter(params->adapter_id, params->demux_id, audio_pid, DVBDEMUX_PESTYPE_AUDIO);
+		if (fd < 0) {
+			fprintf(stderr, "Unable to create dvr filter for PID %i\n", audio_pid);
+		} else {
+			append_pid_fd(audio_pid, fd);
+		}
 	}
 	if (video_pid != -1) {
-		// FIXME
+		int fd = create_decoder_filter(params->adapter_id, params->demux_id, audio_pid, DVBDEMUX_PESTYPE_VIDEO);
+		if (fd < 0) {
+			fprintf(stderr, "Unable to create dvr filter for PID %i\n", audio_pid);
+		} else {
+			append_pid_fd(audio_pid, fd);
+		}
+	}
+	int fd = create_decoder_filter(params->adapter_id, params->demux_id, pmt->pcr_pid, DVBDEMUX_PESTYPE_PCR);
+	if (fd < 0) {
+		fprintf(stderr, "Unable to create dvr filter for PID %i\n", pmt->pcr_pid);
+	} else {
+		append_pid_fd(pmt->pcr_pid, fd);
 	}
 }
 
-static void dvr_pmt(struct mpeg_pmt_section *pmt)
+static void dvr_pmt(struct zap_dvb_params *params, struct mpeg_pmt_section *pmt)
 {
 	int audio_pid = -1;
 	int video_pid = -1;
@@ -443,17 +496,60 @@ static void dvr_pmt(struct mpeg_pmt_section *pmt)
 	}
 
 	if (audio_pid != -1) {
-		// FIXME
+		int fd = create_dvr_filter(params->adapter_id, params->demux_id, audio_pid);
+		if (fd < 0) {
+			fprintf(stderr, "Unable to create dvr filter for PID %i\n", audio_pid);
+		} else {
+			append_pid_fd(audio_pid, fd);
+		}
 	}
 	if (video_pid != -1) {
-		// FIXME
+		int fd = create_dvr_filter(params->adapter_id, params->demux_id, video_pid);
+		if (fd < 0) {
+			fprintf(stderr, "Unable to create dvr filter for PID %i\n", video_pid);
+		} else {
+			append_pid_fd(video_pid, fd);
+		}
 	}
 }
 
-static void dvr_pmt_full(struct mpeg_pmt_section *pmt)
+static void dvr_pmt_full(struct zap_dvb_params *params, struct mpeg_pmt_section *pmt)
 {
 	struct mpeg_pmt_stream *cur_stream;
 	mpeg_pmt_section_streams_for_each(pmt, cur_stream) {
-		// FIXME
+		int fd = create_dvr_filter(params->adapter_id, params->demux_id, cur_stream->pid);
+		if (fd < 0) {
+			fprintf(stderr, "Unable to create dvr filter for PID %i\n", cur_stream->pid);
+		} else {
+			append_pid_fd(cur_stream->pid, fd);
+		}
 	}
+}
+
+static void append_pid_fd(int pid, int fd)
+{
+	struct pid_fd *tmp;
+	if ((tmp = realloc(pid_fds, (pid_fds_count +1) * sizeof(struct pid_fd))) == NULL) {
+		fprintf(stderr, "Out of memory when adding a new pid_fd\n");
+		exit(1);
+	}
+	tmp[pid_fds_count].pid = pid;
+	tmp[pid_fds_count].fd = fd;
+	pid_fds_count++;
+	pid_fds = tmp;
+}
+
+static void free_pid_fds()
+{
+	if (pid_fds_count) {
+		int i;
+		for(i=0; i< pid_fds_count; i++) {
+			close(pid_fds[i].fd);
+		}
+	}
+	if (pid_fds)
+		free(pid_fds);
+
+	pid_fds_count = 0;
+	pid_fds = NULL;
 }
