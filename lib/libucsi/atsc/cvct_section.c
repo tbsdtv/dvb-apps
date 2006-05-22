@@ -28,18 +28,16 @@ struct atsc_cvct_section *atsc_cvct_section_codec(struct atsc_section_psip *psip
 	size_t len = section_ext_length(&(psip->ext_head));
 	int idx;
 	int i;
-	struct atsc_cvct_section *cvct = (struct atsc_cvct_section *) psip;
 
 	if (len < sizeof(struct atsc_cvct_section))
 		return NULL;
+	struct atsc_cvct_section *cvct = (struct atsc_cvct_section *) psip;
 
 	pos++;
-
 	for(idx =0; idx < cvct->num_channels_in_section; idx++) {
-		struct atsc_cvct_channel *channel = (struct atsc_cvct_channel *) (buf+pos);
-
 		if ((pos + sizeof(struct atsc_cvct_channel)) > len)
 			return NULL;
+		struct atsc_cvct_channel *channel = (struct atsc_cvct_channel *) (buf+pos);
 
 		for(i=0; i< 7*2; i+=2)
 			bswap16(buf+pos+i);
@@ -47,36 +45,34 @@ struct atsc_cvct_section *atsc_cvct_section_codec(struct atsc_section_psip *psip
 
 		bswap32(buf+pos);
 		bswap32(buf+pos+4);
-		bswap16(buf+pos+6);
 		bswap16(buf+pos+8);
 		bswap16(buf+pos+10);
 		bswap16(buf+pos+12);
 		bswap16(buf+pos+14);
-		pos+=16;
+		bswap16(buf+pos+16);
+		pos+=18;
 
-		if ((pos + sizeof(struct atsc_cvct_channel) + channel->descriptors_length) > len)
+		if ((pos + channel->descriptors_length) > len)
 			return NULL;
-
 		if (verify_descriptors(buf + pos, channel->descriptors_length))
 			return NULL;
 
 		pos += channel->descriptors_length;
 	}
 
-	struct atsc_cvct_section_part2 *part2 = (struct atsc_cvct_section_part2 *) (buf+pos);
-
 	if ((pos + sizeof(struct atsc_cvct_section_part2)) > len)
 		return NULL;
+	struct atsc_cvct_section_part2 *part2 = (struct atsc_cvct_section_part2 *) (buf+pos);
 
 	bswap16(buf+pos);
 	pos+=2;
 
-	if ((pos + sizeof(struct atsc_cvct_section_part2) + part2->descriptors_length) > len)
+	if ((pos + part2->descriptors_length) > len)
 		return NULL;
-
 	if (verify_descriptors(buf + pos, part2->descriptors_length))
 		return NULL;
 
+	pos += part2->descriptors_length;
 	if (pos != len)
 		return NULL;
 

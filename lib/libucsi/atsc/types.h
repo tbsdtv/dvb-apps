@@ -29,11 +29,37 @@ extern "C"
 #include <stdint.h>
 #include <time.h>
 
+enum atsc_vct_modulation {
+	ATSC_VCT_MODULATION_ANALOG 	= 0x01,
+	ATSC_VCT_MODULATION_SCTE_MODE1 	= 0x02,
+	ATSC_VCT_MODULATION_SCTE_MODE2 	= 0x03,
+	ATSC_VCT_MODULATION_8VSB 	= 0x04,
+	ATSC_VCT_MODULATION_16VSB 	= 0x05,
+};
+
+enum atsc_vct_service_type {
+	ATSC_VCT_SERVICE_TYPE_ANALOG 	= 0x01,
+	ATSC_VCT_SERVICE_TYPE_TV 	= 0x02,
+	ATSC_VCT_SERVICE_TYPE_AUDIO 	= 0x03,
+	ATSC_VCT_SERVICE_TYPE_DATA 	= 0x04,
+};
+
+enum atsc_etm_location {
+	ATSC_VCT_ETM_NONE	 	= 0x00,
+	ATSC_VCT_ETM_IN_THIS_PTC 	= 0x01,
+	ATSC_VCT_ETM_IN_CHANNEL_TSID 	= 0x02,
+};
+
+typedef uint32_t atsc_time_t;
+
 struct atsc_text {
 	// FIXME: define this
 };
 
 extern int atsc_text_validate(uint8_t *buf, int len);
+
+extern time_t atsc_time_to_unix_time(atsc_time_t atsc);
+extern atsc_time_t unix_time_to_atsc_time(time_t atsc);
 
 #ifdef __cplusplus
 }

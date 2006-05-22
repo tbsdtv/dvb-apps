@@ -28,6 +28,7 @@ extern "C"
 #endif
 
 #include <libucsi/atsc/section.h>
+#include <libucsi/atsc/types.h>
 
 /**
  * atsc_stt_section structure.
@@ -35,7 +36,7 @@ extern "C"
 struct atsc_stt_section {
 	struct atsc_section_psip head;
 
-	uint32_t system_time;
+	atsc_time_t system_time;
 	uint8_t gps_utc_offset;
   EBIT4(uint16_t DS_status			: 1; ,
 	uint16_t reserved			: 2; ,

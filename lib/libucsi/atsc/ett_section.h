@@ -29,20 +29,27 @@ extern "C"
 
 #include <libucsi/atsc/section.h>
 
+enum atsc_etm_type {
+	ATSC_ETM_CHANNEL 	= 0x00,
+	ATSC_ETM_EVENT 		= 0x02,
+};
+
 /**
  * atsc_ett_section structure.
  */
 struct atsc_ett_section {
 	struct atsc_section_psip head;
 
-	uint32_t ETM_id;
+  EBIT3(uint32_t ETM_source_id			:16; ,
+	uint32_t ETM_sub_id			:14; ,
+	uint32_t ETM_type			: 2; );
 	/* struct atsc_text extended_text_message */
 } __ucsi_packed;
 
 /**
  * Process a atsc_ett_section.
  *
- * @param section Pointer to anj atsc_section_psip structure.
+ * @param section Pointer to an atsc_section_psip structure.
  * @return atsc_ett_section pointer, or NULL on error.
  */
 struct atsc_ett_section *atsc_ett_section_codec(struct atsc_section_psip *section);
@@ -57,6 +64,10 @@ static inline struct atsc_text*
 	atsc_ett_section_extended_text_message(struct atsc_ett_section *ett)
 {
 	int pos = sizeof(struct atsc_ett_section);
+
+	if ((section_ext_length(&ett->head.ext_head) - sizeof(struct atsc_ett_section)) == 0)
+		return NULL;
+
 	return (struct atsc_text*) (((uint8_t*) ett) + pos);
 }
 

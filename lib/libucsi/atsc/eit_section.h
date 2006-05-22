@@ -43,7 +43,7 @@ struct atsc_eit_section {
 struct atsc_eit_event {
   EBIT2(uint16_t reserved			: 2; ,
 	uint16_t event_id			:14; );
-	uint32_t start_time;
+	atsc_time_t start_time;
   EBIT4(uint32_t reserved1			: 2; ,
 	uint32_t ETM_location			: 2; ,
 	uint32_t length_in_seconds		:20; ,
@@ -96,7 +96,7 @@ static inline uint16_t atsc_eit_section_source_id(struct atsc_eit_section *eit)
  * @param event atsc_eit_event pointer.
  * @return struct atsc_text pointer.
  */
-static inline struct atsc_text *atsc_eit_event_name_text(struct atsc_eit_event *event)
+static inline struct atsc_text *atsc_eit_event_name_title_text(struct atsc_eit_event *event)
 {
 	if (event->title_length == 0)
 		return NULL;
