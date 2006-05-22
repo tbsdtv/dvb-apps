@@ -27,6 +27,8 @@
 #include <libucsi/atsc/eit_section.h>
 #include <libucsi/atsc/ett_section.h>
 #include <libucsi/atsc/stt_section.h>
+#include <libucsi/atsc/dcct_section.h>
+#include <libucsi/atsc/dccsct_section.h>
 
 #ifndef _UCSI_ATSC_SECTION_H
 #define _UCSI_ATSC_SECTION_H 1
