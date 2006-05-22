@@ -43,7 +43,7 @@ struct atsc_eit_section {
 struct atsc_eit_event {
   EBIT2(uint16_t reserved			: 2; ,
 	uint16_t event_id			:14; );
-	atsc_time_t start_time;
+	atsctime_t start_time;
   EBIT4(uint32_t reserved1			: 2; ,
 	uint32_t ETM_location			: 2; ,
 	uint32_t length_in_seconds		:20; ,

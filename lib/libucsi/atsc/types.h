@@ -68,7 +68,7 @@ struct atsc_text_string_segment {
 	uint8_t compression_type;
 	uint8_t mode;
 	uint8_t number_bytes;
-	/* uint8_t string_bytes[] */
+	/* uint8_t bytes[] */
 };
 
 extern int atsc_text_validate(uint8_t *buf, int len);

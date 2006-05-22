@@ -36,7 +36,7 @@ extern "C"
 struct atsc_stt_section {
 	struct atsc_section_psip head;
 
-	atsc_time_t system_time;
+	atsctime_t system_time;
 	uint8_t gps_utc_offset;
   EBIT4(uint16_t DS_status			: 1; ,
 	uint16_t reserved			: 2; ,
