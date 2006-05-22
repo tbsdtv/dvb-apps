@@ -28,6 +28,7 @@ extern "C"
 #endif
 
 #include <libucsi/endianops.h>
+#include <libucsi/atsc/caption_service_descriptor.h>
 
 /**
  * Enumeration of ATSC descriptor tags.

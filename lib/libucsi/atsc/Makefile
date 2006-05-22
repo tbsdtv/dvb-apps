@@ -22,7 +22,8 @@ sub-includes = descriptor.h \
                eit_section.h \
                ett_section.h \
                dcct_section.h \
-               dccsct_section.h
+               dccsct_section.h \
+               caption_service_descriptor.h \
 
 sub-install += atsc
 
