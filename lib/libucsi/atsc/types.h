@@ -28,6 +28,7 @@ extern "C"
 
 #include <stdint.h>
 #include <time.h>
+#include <libucsi/types.h>
 
 enum atsc_vct_modulation {
 	ATSC_VCT_MODULATION_ANALOG 	= 0x01,
@@ -50,16 +51,30 @@ enum atsc_etm_location {
 	ATSC_VCT_ETM_IN_CHANNEL_TSID 	= 0x02,
 };
 
-typedef uint32_t atsc_time_t;
+typedef uint32_t atsctime_t;
 
 struct atsc_text {
-	// FIXME: define this
+	uint8_t number_strings;
+	/* struct atsc_text_string strings[] */
+};
+
+struct atsc_text_string {
+	iso639lang_t language_code;
+	uint8_t number_segments;
+	/* struct atsc_text_string_segment segments[] */
+};
+
+struct atsc_text_string_segment {
+	uint8_t compression_type;
+	uint8_t mode;
+	uint8_t number_bytes;
+	/* uint8_t string_bytes[] */
 };
 
 extern int atsc_text_validate(uint8_t *buf, int len);
 
-extern time_t atsc_time_to_unix_time(atsc_time_t atsc);
-extern atsc_time_t unix_time_to_atsc_time(time_t atsc);
+extern time_t atsctime_to_unixtime(atsctime_t atsc);
+extern atsctime_t unixtime_to_atsctime(time_t atsc);
 
 #ifdef __cplusplus
 }

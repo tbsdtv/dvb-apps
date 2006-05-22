@@ -26,3 +26,15 @@ int atsc_text_validate(uint8_t *buf, int len)
 	// FIXME: implement
 	return -1;
 }
+
+time_t atsctime_to_unixtime(atsctime_t atsc)
+{
+	// FIXME: implement
+	return 0;
+}
+
+atsctime_t unixtime_to_atsctime(time_t atsc)
+{
+	// FIXME: implement
+	return 0;
+}
