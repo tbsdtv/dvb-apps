@@ -22,6 +22,17 @@ PASS dvb/sdt_section.h
 PASS dvb/st_section.h
 PASS dvb/tdt_section.h
 PASS dvb/tot_section.h
+     dvb/tva_container_section.h
+     atsc/cvct_section.h
+     atsc/dccsct_section.h
+     atsc/dcct_section.h
+     atsc/eit_section.h
+     atsc/ett_section.h
+     atsc/mgt_section.h
+     atsc/psip_section.h
+     atsc/rrt_section.h
+     atsc/stt_section.h
+     atsc/tvct_section.h
 
 Descriptors:
 PASS mpeg/audio_stream_descriptor.h

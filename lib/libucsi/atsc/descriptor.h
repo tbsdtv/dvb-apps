@@ -36,6 +36,7 @@ extern "C"
 #include <libucsi/atsc/component_name_descriptor.h>
 #include <libucsi/atsc/dcc_departing_request_descriptor.h>
 #include <libucsi/atsc/dcc_arriving_request_descriptor.h>
+#include <libucsi/atsc/rc_descriptor.h>
 
 /**
  * Enumeration of ATSC descriptor tags.
