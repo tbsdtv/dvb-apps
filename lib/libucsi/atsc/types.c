@@ -23,8 +23,37 @@
 
 struct atsc_text *atsc_text_parse(uint8_t *buf, int len)
 {
-	// FIXME: implement
-	return -1;
+	int i;
+	int j;
+	int number_strings;
+	int number_segments;
+	int number_bytes;
+	int pos = 0;
+
+	if (len < 1)
+		return NULL;
+	number_strings = buf[pos];
+	pos++;
+
+	for(i=0; i< number_strings; i++) {
+		if (len < (pos+4))
+			return NULL;
+		number_segments = buf[pos+3];
+		pos+=4;
+
+		for(j=0; j < number_segments; j++) {
+			if (len < (pos+3))
+				return NULL;
+			number_bytes = buf[pos+2];
+			pos+=3;
+
+			if (len < (pos + number_bytes))
+				return NULL;
+			pos += number_bytes;
+		}
+	}
+
+	return (atsc_text *) buf;
 }
 
 time_t atsctime_to_unixtime(atsctime_t atsc)
