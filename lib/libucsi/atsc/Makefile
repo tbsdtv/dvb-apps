@@ -25,6 +25,9 @@ sub-includes = descriptor.h \
                dcct_section.h \
                dccsct_section.h \
                caption_service_descriptor.h \
+	       content_advisory_descriptor.h \
+	       extended_channel_name_descriptor.h \
+	       service_location_descriptor.h \
 
 sub-install += atsc
 

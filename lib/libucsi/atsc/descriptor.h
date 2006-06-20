@@ -30,6 +30,8 @@ extern "C"
 #include <libucsi/endianops.h>
 #include <libucsi/atsc/caption_service_descriptor.h>
 #include <libucsi/atsc/content_advisory_descriptor.h>
+#include <libucsi/atsc/extended_channel_name_descriptor.h>
+#include <libucsi/atsc/service_location_descriptor.h>
 
 /**
  * Enumeration of ATSC descriptor tags.
