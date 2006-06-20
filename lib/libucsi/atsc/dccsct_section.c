@@ -48,7 +48,7 @@ struct atsc_dccsct_section *atsc_dccsct_section_codec(struct atsc_section_psip *
 			if (update->update_data_length < sublen)
 				return NULL;
 
-			if (atsc_text_validate(buf+pos+sublen, update->update_data_length - sublen))
+			if (atsc_text_parse(buf+pos+sublen, update->update_data_length - sublen) != NULL)
 				return NULL;
 			break;
 		}
@@ -57,7 +57,7 @@ struct atsc_dccsct_section *atsc_dccsct_section_codec(struct atsc_section_psip *
 			if (update->update_data_length < sublen)
 				return NULL;
 
-			if (atsc_text_validate(buf+pos+sublen, update->update_data_length - sublen))
+			if (atsc_text_parse(buf+pos+sublen, update->update_data_length - sublen) != NULL)
 				return NULL;
 			break;
 		}
@@ -67,7 +67,7 @@ struct atsc_dccsct_section *atsc_dccsct_section_codec(struct atsc_section_psip *
 				return NULL;
 			bswap16(buf+pos+1);
 
-			if (atsc_text_validate(buf+pos+sublen, update->update_data_length - sublen))
+			if (atsc_text_parse(buf+pos+sublen, update->update_data_length - sublen) != NULL)
 				return NULL;
 			break;
 		}

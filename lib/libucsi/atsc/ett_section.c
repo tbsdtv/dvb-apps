@@ -34,7 +34,7 @@ struct atsc_ett_section *atsc_ett_section_codec(struct atsc_section_psip *psip)
 	bswap32(buf + pos);
 	pos += 4;
 
-	if (atsc_text_validate(buf+pos, section_ext_length(&psip->ext_head) - sizeof(struct atsc_ett_section)))
+	if (atsc_text_parse(buf+pos, section_ext_length(&psip->ext_head) - sizeof(struct atsc_ett_section)) != NULL)
 		return NULL;
 
 	return (struct atsc_ett_section *) psip;

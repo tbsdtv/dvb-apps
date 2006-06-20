@@ -102,7 +102,7 @@ struct atsc_text_string_segment {
  * @return Pointer to the bytes.
  */
 static inline uint8_t*
-	atsc_text_string_segment_bytes(struct atsc_genre_descriptor *d)
+	atsc_text_string_segment_bytes(struct atsc_text_string *d)
 {
 	return ((uint8_t*) d) + sizeof(struct atsc_text_string_segment);
 }
@@ -174,11 +174,11 @@ static inline struct atsc_text_string*
 		struct atsc_text_string_segment *seg =
 			(struct atsc_text_string_segment *) buf;
 
-		buf += sizeof(struct struct atsc_text_string_segment);
+		buf += sizeof(struct atsc_text_string_segment);
 		buf += seg->number_bytes;
 	}
 
-	return (struct atsc_content_advisory_entry *) pos;
+	return (struct atsc_text_string *) pos;
 }
 
 static inline struct atsc_text_string_segment*
@@ -198,8 +198,8 @@ static inline struct atsc_text_string_segment*
 	if (idx >= str->number_segments)
 		return NULL;
 
-	return (struct atsc_content_advisory_entry *)
-		(((uint8_t*) pos) + sizeof(struct atsc_text_string_segment) + pos->number_bytes;
+	return (struct atsc_text_string_segment *)
+		(((uint8_t*) pos) + sizeof(struct atsc_text_string_segment) + pos->number_bytes);
 }
 
 #ifdef __cplusplus

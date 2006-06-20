@@ -19,7 +19,7 @@
  */
 
 #include <string.h>
-#include "types.h"
+#include "libucsi/atsc/types.h"
 
 struct atsc_text *atsc_text_parse(uint8_t *buf, int len)
 {
@@ -53,7 +53,7 @@ struct atsc_text *atsc_text_parse(uint8_t *buf, int len)
 		}
 	}
 
-	return (atsc_text *) buf;
+	return (struct atsc_text *) buf;
 }
 
 time_t atsctime_to_unixtime(atsctime_t atsc)
