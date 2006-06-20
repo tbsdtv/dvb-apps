@@ -46,9 +46,22 @@ enum atsc_vct_service_type {
 };
 
 enum atsc_etm_location {
-	ATSC_VCT_ETM_NONE	 	= 0x00,
-	ATSC_VCT_ETM_IN_THIS_PTC 	= 0x01,
-	ATSC_VCT_ETM_IN_CHANNEL_TSID 	= 0x02,
+	ATSC_VCT_ETM_NONE	 		= 0x00,
+	ATSC_VCT_ETM_IN_THIS_PTC 		= 0x01,
+	ATSC_VCT_ETM_IN_CHANNEL_TSID 		= 0x02,
+};
+
+enum atsc_text_compress_type {
+	ATSC_TEXT_COMPRESS_NONE			= 0x00,
+	ATSC_TEXT_COMPRESS_PROGRAM_TITLE	= 0x01,
+	ATSC_TEXT_COMPRESS_PROGRAM_DESCRIPTION	= 0x02,
+};
+
+enum atsc_text_segment_mode {
+	ATSC_TEXT_SEGMENT_MODE_UNICODE_RANGE_MIN	= 0x00,
+	ATSC_TEXT_SEGMENT_MODE_UNICODE_RANGE_MAX	= 0x33,
+	ATSC_TEXT_SEGMENT_MODE_SCSU			= 0x3e,
+	ATSC_TEXT_SEGMENT_MODE_UTF16			= 0x3f,
 };
 
 typedef uint32_t atsctime_t;
@@ -140,8 +153,21 @@ extern int atsc_text_decode_program_title_segment(uint8_t *buf, size_t buflen,
 extern int atsc_text_decode_program_description_segment(uint8_t *buf, size_t buflen,
 					           uint8_t **dest, size_t *destlen);
 
+/**
+ * Convert from ATSC time to unix time_t.
+ *
+ * @param atsc ATSC time.
+ * @return The time value.
+ */
 extern time_t atsctime_to_unixtime(atsctime_t atsc);
-extern atsctime_t unixtime_to_atsctime(time_t atsc);
+
+/**
+ * Convert from unix time_t to atsc time.
+ *
+ * @param t unix time_t.
+ * @return The atsc time value.
+ */
+extern atsctime_t unixtime_to_atsctime(time_t t);
 
 
 
@@ -178,7 +204,7 @@ static inline struct atsc_text_string*
 		buf += seg->number_bytes;
 	}
 
-	return (struct atsc_text_string *) pos;
+	return (struct atsc_text_string *) buf;
 }
 
 static inline struct atsc_text_string_segment*

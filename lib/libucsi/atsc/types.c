@@ -65,7 +65,7 @@ time_t atsctime_to_unixtime(atsctime_t atsc)
 	return atsc + GPS_EPOCH;
 }
 
-atsctime_t unixtime_to_atsctime(time_t atsc)
+atsctime_t unixtime_to_atsctime(time_t t)
 {
-	return atsc - GPS_EPOCH;
+	return t - GPS_EPOCH;
 }
