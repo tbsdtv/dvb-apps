@@ -190,12 +190,9 @@ static inline struct section_ext * section_ext_encode(struct section_ext* sectio
 		int len = sizeof(struct section) + section->length;
 		uint32_t crc;
 
-		/* zap the current CRC value */
-		memset(buf+len-4, 0, 4);
-
 		/* the crc has to be performed on the swapped data */
 		bswap16(buf+1);
-		crc = crc32(CRC32_INIT, buf, len);
+		crc = crc32(CRC32_INIT, buf, len-4);
 		bswap16(buf+1);
 
 		/* update the CRC */
@@ -230,7 +227,7 @@ static inline int section_ext_useful(struct section_ext *section, struct psi_tab
 	if (section->version_number != tstate->version_number) {
 	        if (section->section_number != 0)
 	                return 0;
-     
+
 		tstate->next_section_number = 0;
 		tstate->complete = 0;
 		tstate->version_number = section->version_number;
