@@ -33,6 +33,7 @@ sub-includes = descriptor.h \
 	       dcc_departing_request_descriptor.h \
 	       dcc_arriving_request_descriptor.h \
 	       rc_descriptor.h \
+	       genre_descriptor.h \
 
 sub-install += atsc
 
