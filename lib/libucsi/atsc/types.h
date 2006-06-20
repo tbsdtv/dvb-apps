@@ -73,6 +73,12 @@ struct atsc_text_string_segment {
 
 extern int atsc_text_validate(uint8_t *buf, int len);
 
+extern int atsc_text_decode_program_title_segment(uint8_t *buf, size_t buflen,
+					     uint8_t **dest, size_t *destlen);
+
+extern int atsc_text_decode_program_description_segment(uint8_t *buf, size_t buflen,
+					           uint8_t **dest, size_t *destlen);
+
 extern time_t atsctime_to_unixtime(atsctime_t atsc);
 extern atsctime_t unixtime_to_atsctime(time_t atsc);
 

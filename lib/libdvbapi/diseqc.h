@@ -35,39 +35,33 @@
 #define POSITIONER_POLAR		0x31
 #define POSITIONER_ELEVATION		0x32
 
-/*		Commands		*/
-#define DISEQC_SET_LOW_LO		0
-#define DISEQC10_SET_VERT_POL		1
-#define DISEQC10_SET_SAT_POS_A		2
-#define DISEQC10_SET_SWITCH_OPT_A	3
-#define DISEQC10_SET_HIGH_LO		4
-#define DISEQC10_SET_HORIZ_POL		5
-#define DISEQC10_SET_SAT_POS_B		6
+enum dvbfe_diseqc_direction {
+	DISEQC_DIRECTION_EAST,
+	DISEQC_DIRECTION_WEST,
+};
 
-#define DISEQC10_SET_SWITCH_OPT_B	7
-#define DISEQC11_SET_SWITCH1_INP_A	8
-#define DISEQC11_SET_SWITCH2_INP_A	9
-#define DISEQC11_SET_SWITCH3_INP_A	10
-#define DISEQC11_SET_SWITCH4_INP_A	11
-#define DISEQC11_SET_SWITCH1_INP_B	12
-#define DISEQC11_SET_SWITCH2_INP_B	13
-#define DISEQC11_SET_SWITCH3_INP_B	14
-#define DISEQC11_SET_SWITCH4_INP_B	15
+extern int dvbfe_diseqc_set_reset(struct dvbfe_handle *fe, enum dvbfe_diseqc_address address, int state);
+extern int dvbfe_diseqc_set_power(struct dvbfe_handle *fe, enum dvbfe_diseqc_address address, int state);
+extern int dvbfe_diseqc_set_bus_state(struct dvbfe_handle *fe, enum dvbfe_diseqc_address address, int state);
 
-#define DISEQCxx_SET_BUS_SLEEP		16
-#define DISEQCxx_SET_BUS_AWAKE		17
-#define DISEQC11_SET_CHAN_FREQ		18
-#define DISEQC11_SET_RCVR_CHAN		19
-#define DISEQC12_SET_MOTOR_HALT		20
-#define DISEQC12_SET_LIMITS_OFF		21
-#define DISEQC12_SET_LIMITS_ON		22
-#define DISEQC22_GET_MOTOR_STATE	23
-#define DISEQC12_SET_MOTOR_WEST		24
-#define DISEQC12_SET_MOTOR_EAST		25
-#define DISEQC12_SET_WEST_LIMIT		26
-#define DISEQC12_SET_EAST_LIMIT		27
-#define DISEQC12_STEP_MOTOR_UP		28  //???????
-#define DISEQC12_STEP_MOTOR_DOWN	29
+extern int dvbfe_diseqc_set_committed_switches(struct dvbfe_handle *fe, enum dvbfe_diseqc_address address,
+					       int lo_hi, int polarisation, int sat_pos, int switch_option);
+extern int dvbfe_diseqc_set_uncommitted_switches(struct dvbfe_handle *fe, enum dvbfe_diseqc_address address,
+						 int sw1, int sw2, int sw3, int sw4);
+
+extern int dvbfe_diseqc_set_frequency(struct dvbfe_handle *fe, enum dvbfe_diseqc_address address, uint32_t frequency);
+extern int dvbfe_diseqc_set_channel(struct dvbfe_handle *fe, enum dvbfe_diseqc_address address, uint32_t frequency);
+
+extern int dvbfe_diseqc_halt_positioner(struct dvbfe_handle *fe, enum dvbfe_diseqc_address address);
+extern int dvbfe_diseqc_disable_limits(struct dvbfe_handle *fe, enum dvbfe_diseqc_address address);
+extern int dvbfe_diseqc_set_limit(struct dvbfe_handle *fe, enum dvbfe_diseqc_address address, enum dvbfe_diseqc_direction direction);
+extern int dvbfe_diseqc_drive_motor(struct dvbfe_handle *fe, enum dvbfe_diseqc_address address, enum dvbfe_diseqc_direction direction, int timeout);
+extern int dvbfe_diseqc_store_preset(struct dvbfe_handle *fe, enum dvbfe_diseqc_address address, int preset);
+
+extern int dvbfe_diseqc_goto_preset(struct dvbfe_handle *fe, enum dvbfe_diseqc_address address, int preset);
+extern int dvbfe_diseqc_goto_angle(struct dvbfe_handle *fe, enum dvbfe_diseqc_address address, int angle);
+
+
 
 struct diseqc_cmd {
 	uint8_t message[6];

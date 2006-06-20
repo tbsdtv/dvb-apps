@@ -9,6 +9,7 @@ objects += atsc/stt_section.o           \
 	   atsc/ett_section.o           \
 	   atsc/dcct_section.o           \
 	   atsc/dccsct_section.o           \
+	   atsc/atsc_huffman.o			\
 	   atsc/types.o           \
 
 sub-includes = descriptor.h \
