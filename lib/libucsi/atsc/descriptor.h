@@ -34,6 +34,8 @@ extern "C"
 #include <libucsi/atsc/service_location_descriptor.h>
 #include <libucsi/atsc/time_shifted_service_descriptor.h>
 #include <libucsi/atsc/component_name_descriptor.h>
+#include <libucsi/atsc/dcc_departing_request_descriptor.h>
+#include <libucsi/atsc/dcc_arriving_request_descriptor.h>
 
 /**
  * Enumeration of ATSC descriptor tags.

@@ -30,6 +30,8 @@ sub-includes = descriptor.h \
 	       service_location_descriptor.h \
 	       time_shifted_service_descriptor.h \
 	       component_name_descriptor.h \
+	       dcc_departing_request_descriptor.h \
+	       dcc_arriving_request_descriptor.h \
 
 sub-install += atsc
 
