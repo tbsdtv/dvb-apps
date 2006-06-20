@@ -21,7 +21,7 @@
 #include <string.h>
 #include "types.h"
 
-int atsc_text_validate(uint8_t *buf, int len)
+struct atsc_text *atsc_text_parse(uint8_t *buf, int len)
 {
 	// FIXME: implement
 	return -1;
