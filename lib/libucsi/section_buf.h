@@ -54,11 +54,10 @@ struct section_buf {
 extern int section_buf_init(struct section_buf *section, int max);
 
 /**
- * Initialise a section_buf structure.
+ * Reset a section_buf structure (e.g. if a discontinuity occurred). The
+ * section_buf will wait for the first PDU start indicator.
  *
- * @param section The section_buf to initialise.
- * @param max Maximum number of bytes in section (must be > 3)
- * @return 0 on success, nonzero on error.
+ * @param section The section_buf to reset.
  */
 static inline void section_buf_reset(struct section_buf *section)
 {
