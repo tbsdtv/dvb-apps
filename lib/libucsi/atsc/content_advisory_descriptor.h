@@ -69,8 +69,6 @@ struct atsc_content_advisory_entry_part2 {
 	/* struct atsc_text description */
 } __ucsi_packed;
 
-// FIXME
-
 /**
  * Process an atsc_content_advisory_descriptor.
  *
@@ -90,15 +88,28 @@ static inline struct atsc_content_advisory_descriptor*
 		return NULL;
 	pos++;
 
-	for(idx = 0; idx < ret->number_of_services; idx++) {
+	for(idx = 0; idx < ret->rating_region_count; idx++) {
 		if (d->len < (pos + sizeof(struct atsc_content_advisory_entry)))
 			return NULL;
 		struct atsc_content_advisory_entry *entry =
 			(struct atsc_content_advisory_entry *) (buf + pos);
 
-		bswap16(buf+pos+4);
-
 		pos += sizeof(struct atsc_content_advisory_entry);
+
+		if (d->len < (pos + (sizeof(struct atsc_content_advisory_entry_dimension) *
+				  entry->rated_dimensions)))
+			return NULL;
+
+		pos += sizeof(struct atsc_content_advisory_entry_dimension) * entry->rated_dimensions;
+
+		if (d->len < (pos + sizeof(struct atsc_content_advisory_entry_part2)))
+			return NULL;
+		struct atsc_content_advisory_entry_part2 *part2 =
+				(struct atsc_content_advisory_entry_part2 *) (buf + pos);
+
+		if (d->len < (pos + part2->rating_description_length))
+			return NULL;
+		pos += part2->rating_description_length;
 	}
 
 	return (struct atsc_content_advisory_descriptor*) d;
@@ -115,7 +126,50 @@ static inline struct atsc_content_advisory_descriptor*
 	     (pos); \
 	     (pos) = atsc_content_advisory_descriptor_entries_next(d, pos))
 
+/**
+ * Iterator for dimensions field of a atsc_content_advisory_entry.
+ *
+ * @param d atsc_content_advisory_entry pointer.
+ * @param pos Variable holding a pointer to the current atsc_content_advisory_entry_dimension.
+ * @param idx Integer used to count which dimension we are in.
+ */
+#define atsc_content_advisory_entry_dimensions_for_each(d, pos, idx) \
+	for ((pos) = atsc_content_advisory_entry_dimensions_first(d), idx=0; \
+	     (pos); \
+	     (pos) = atsc_content_advisory_entry_dimensions_next(d, pos, idx), idx++)
 
+/**
+ * Accessor for the part2 field of an atsc_content_advisory_entry.
+ *
+ * @param entry atsc_content_advisory_entry pointer.
+ * @return struct atsc_content_advisory_entry_part2 pointer.
+ */
+static inline struct atsc_content_advisory_entry_part2 *
+	atsc_content_advisory_entry_part2(struct atsc_content_advisory_entry *entry)
+{
+	int pos = sizeof(struct atsc_content_advisory_entry);
+	pos += entry->rated_dimensions * sizeof(struct atsc_content_advisory_entry_dimension);
+
+	return (struct atsc_dccsct_update_part2 *) (((uint8_t*) entry) + pos);
+}
+
+
+/**
+ * Accessor for the description field of an atsc_content_advisory_entry_part2.
+ *
+ * @param part2 atsc_content_advisory_entry_part2 pointer.
+ * @return Pointer to the atsc_text data.
+ */
+static inline struct atsc_text*
+	atsc_content_advisory_entry_part2_description(struct atsc_content_advisory_entry_part2 *part2)
+{
+	struct atsc_text *txt = ((uint8_t*) part2) + sizeof(struct atsc_content_advisory_entry_part2);
+
+	if (atsc_text_validate((uint8_t*) txt, part2->rating_description_length))
+		return NULL;
+
+	return txt;
+}
 
 
 
@@ -128,7 +182,7 @@ static inline struct atsc_content_advisory_descriptor*
 static inline struct atsc_content_advisory_entry*
 	atsc_content_advisory_descriptor_entries_first(struct atsc_content_advisory_descriptor *d)
 {
-	if (d->d.len == 0)
+	if (d->d.len <= 1)
 		return NULL;
 
 	return (struct atsc_content_advisory_entry *)
@@ -137,15 +191,41 @@ static inline struct atsc_content_advisory_entry*
 
 static inline struct atsc_content_advisory_entry*
 	atsc_content_advisory_descriptor_entries_next(struct atsc_content_advisory_descriptor *d,
-					     struct atsc_content_advisory_entry *pos)
+						      struct atsc_content_advisory_entry *pos)
 {
 	uint8_t *end = (uint8_t*) d + 2 + d->d.len;
-	uint8_t *next =	(uint8_t *) pos + sizeof(struct atsc_content_advisory_entry);
+	struct atsc_content_advisory_entry_part2 *part2 =
+		atsc_content_advisory_entry_part2(pos);
+	uint8_t *next =	(uint8_t *) part2 + sizeof(struct atsc_content_advisory_entry_part2) +
+			part2->rating_description_length;
 
 	if (next >= end)
 		return NULL;
 
 	return (struct atsc_content_advisory_entry *) next;
+}
+
+static inline struct atsc_content_advisory_entry_dimension*
+	atsc_content_advisory_entry_dimensions_first(struct atsc_content_advisory_entry *e)
+{
+	if (e->rated_dimensions == 0)
+		return NULL;
+
+	return (struct atsc_content_advisory_entry_dimension *)
+			((uint8_t*) e + sizeof(struct atsc_content_advisory_entry));
+}
+
+static inline struct atsc_content_advisory_entry_dimension*
+	atsc_content_advisory_entry_dimensions_next(struct atsc_content_advisory_entry *e,
+				   		    struct atsc_content_advisory_entry_dimension *pos,
+						    int idx)
+{
+	if (idx >= e->rated_dimensions)
+		return NULL;
+
+	uint8_t *next =	(uint8_t *) pos + sizeof(struct atsc_content_advisory_entry_dimension);
+
+	return (struct atsc_content_advisory_entry_dimension *) next;
 }
 
 #ifdef __cplusplus
