@@ -59,17 +59,14 @@ static inline struct atsc_extended_channel_name_descriptor*
  * Accessor for the text field of an atsc_extended_channel_name_descriptor.
  *
  * @param d atsc_extended_channel_name_descriptor pointer.
- * @return Pointer to the atsc_text data.
+ * @return Pointer to the atsc_text data, or NULL on error.
  */
 static inline struct atsc_text*
 	atsc_extended_channel_name_descriptor_text(struct atsc_extended_channel_name_descriptor *d)
 {
-	struct atsc_text *txt = ((uint8_t*) d) + sizeof(struct atsc_extended_channel_name_descriptor);
+	uint8_t atsc_text *txt = ((uint8_t*) d) + sizeof(struct atsc_extended_channel_name_descriptor);
 
-	if (atsc_text_validate((uint8_t*) txt, d->len))
-		return NULL;
-
-	return txt;
+	return atsc_text_validate(txt, d->len);
 }
 
 

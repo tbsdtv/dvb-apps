@@ -74,7 +74,7 @@ static inline uint8_t*
  * @return The length
  */
 static inline uint8_t*
-	atsc_rc_descriptor_info(struct atsc_rc_descriptor *d)
+	atsc_rc_descriptor_info_length(struct atsc_rc_descriptor *d)
 {
 	return d->d.len;
 }

@@ -19,8 +19,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef _UCSI_atsc_dcc_arriving_request_descriptor
-#define _UCSI_atsc_dcc_arriving_request_descriptor 1
+#ifndef _UCSI_ATSC_DCC_DEPARTING_REQUEST_DESCRIPTOR
+#define _UCSI_ATSC_DCC_DEPARTING_REQUEST_DESCRIPTOR 1
 
 #ifdef __cplusplus
 extern "C"
@@ -31,58 +31,56 @@ extern "C"
 #include <libucsi/endianops.h>
 #include <libucsi/types.h>
 
-enum atsc_dcc_arriving_request_type {
-	DCC_ARRIVAL_TYPE_DEFER_10SEC	= 0x01,
-	DCC_ARRIVAL_TYPE_DEFER		= 0x02,
+enum atsc_dcc_departing_request_type {
+	DCC_DEPART_TYPE_IMMEDIATE	= 0x01,
+	DCC_DEPART_TYPE_DEFER_10SEC	= 0x02,
+	DCC_DEPART_TYPE_DEFER		= 0x03,
 };
 
 /**
- * atsc_dcc_arriving_request_descriptor structure.
+ * atsc_dcc_departing_request_descriptor structure.
  */
-struct atsc_dcc_arriving_request_descriptor {
+struct atsc_dcc_departing_request_descriptor {
 	struct descriptor d;
 
-	uint8_t dcc_arriving_request_type;
-	uint8_t dcc_arriving_request_text_length;
+	uint8_t dcc_departing_request_type;
+	uint8_t dcc_departing_request_text_length;
 	/* struct atsc_text text[] */
 } __ucsi_packed;
 
 /**
- * Process an atsc_dcc_arriving_request_descriptor.
+ * Process an atsc_dcc_departing_request_descriptor.
  *
  * @param d Generic descriptor pointer.
- * @return atsc_dcc_arriving_request_descriptor pointer, or NULL on error.
+ * @return atsc_dcc_departing_request_descriptor pointer, or NULL on error.
  */
-static inline struct atsc_dcc_arriving_request_descriptor*
-	atsc_dcc_arriving_request_descriptor_codec(struct descriptor* d)
+static inline struct atsc_dcc_departing_request_descriptor*
+	atsc_dcc_departing_request_descriptor_codec(struct descriptor* d)
 {
-	struct atsc_dcc_arriving_request_descriptor *ret =
-		(struct atsc_dcc_arriving_request_descriptor *) d;
+	struct atsc_dcc_departing_request_descriptor *ret =
+		(struct atsc_dcc_departing_request_descriptor *) d;
 
 	if (d->len < 2)
 		return NULL;
 
-	if (d->len != 2 + ret->dcc_arriving_request_text_length)
+	if (d->len != 2 + ret->dcc_departing_request_text_length)
 		return NULL;
 
-	return (struct atsc_dcc_arriving_request_descriptor*) d;
+	return (struct atsc_dcc_departing_request_descriptor*) d;
 }
 
 /**
- * Accessor for the text field of an atsc_dcc_arriving_request_descriptor.
+ * Accessor for the text field of an atsc_dcc_departing_request_descriptor.
  *
- * @param d atsc_dcc_arriving_request_descriptor pointer.
- * @return Pointer to the atsc_text data.
+ * @param d atsc_dcc_departing_request_descriptor pointer.
+ * @return Pointer to the atsc_text data, or NULL on error.
  */
 static inline struct atsc_text*
-	atsc_dcc_arriving_request_descriptor_text(struct atsc_dcc_arriving_request_descriptor *d)
+	atsc_dcc_departing_request_descriptor_text(struct atsc_dcc_departing_request_descriptor *d)
 {
-	struct atsc_text *txt = ((uint8_t*) d) + sizeof(struct atsc_dcc_arriving_request_descriptor);
+	uint8_t *txt = ((uint8_t*) d) + sizeof(struct atsc_dcc_departing_request_descriptor);
 
-	if (atsc_text_validate((uint8_t*) txt, d->dcc_arriving_request_text_length))
-		return NULL;
-
-	return txt;
+	return atsc_text_validate(txt, d->dcc_departing_request_text_length);
 }
 
 

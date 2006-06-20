@@ -90,11 +90,12 @@ static inline struct atsc_time_shifted_service_descriptor*
  *
  * @param d atsc_time_shifted_service_descriptor pointer.
  * @param pos Variable holding a pointer to the current atsc_service_location_element.
+ * @param idx Integer used to count which service we are in.
  */
-#define atsc_time_shifted_service_descriptor_services_for_each(d, pos) \
-	for ((pos) = atsc_time_shifted_service_descriptor_services_first(d); \
+#define atsc_time_shifted_service_descriptor_services_for_each(d, pos, idx) \
+	for ((pos) = atsc_time_shifted_service_descriptor_services_first(d), idx=0; \
 	     (pos); \
-	     (pos) = atsc_time_shifted_service_descriptor_services_next(d, pos))
+	     (pos) = atsc_time_shifted_service_descriptor_services_next(d, pos, idx), idx++)
 
 
 
@@ -118,15 +119,14 @@ static inline struct atsc_time_shifted_service*
 
 static inline struct atsc_time_shifted_service*
  	atsc_time_shifted_service_descriptor_services_next(struct atsc_time_shifted_service_descriptor *d,
-							   struct atsc_time_shifted_service *pos)
+							   struct atsc_time_shifted_service *pos,
+							   int idx)
 {
-	uint8_t *end = (uint8_t*) d + 2 + d->d.len;
 	uint8_t *next =	(uint8_t *) pos + sizeof(struct atsc_time_shifted_service);
 
-	if (next >= end)
+	if (idx >= d->number_of_services)
 		return NULL;
-
-	return (struct atsc_time_shifted_service *) next;
+	return (struct atsc_caption_service_location_element *) next;
 }
 
 #ifdef __cplusplus

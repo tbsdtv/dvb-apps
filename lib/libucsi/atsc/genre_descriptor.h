@@ -56,6 +56,7 @@ static inline struct atsc_genre_descriptor*
 
 	if (d->len < 1)
 		return NULL;
+
 	if (d->len != (1 + ret->attribute_count))
 		return NULL;
 
@@ -72,18 +73,6 @@ static inline uint8_t*
 	atsc_genre_descriptor_attributes(struct atsc_genre_descriptor *d)
 {
 	return ((uint8_t*) d) + sizeof(struct atsc_genre_descriptor);
-}
-
-/**
- * Accessor for the length of the attributes field of an atsc_genre_descriptor.
- *
- * @param d atsc_genre_descriptor pointer.
- * @return The length
- */
-static inline uint8_t*
-	atsc_genre_descriptor_attributes_length(struct atsc_genre_descriptor *d)
-{
-	return d->attribute_count;
 }
 
 #ifdef __cplusplus

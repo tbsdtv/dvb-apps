@@ -93,11 +93,12 @@ static inline struct atsc_caption_service_descriptor*
  *
  * @param d atsc_caption_service_descriptor pointer.
  * @param pos Variable holding a pointer to the current atsc_caption_service_entry.
+ * @param idx Field iterator integer.
  */
-#define atsc_caption_service_descriptor_entries_for_each(d, pos) \
-	for ((pos) = atsc_caption_service_descriptor_entries_first(d); \
+#define atsc_caption_service_descriptor_entries_for_each(d, pos, idx) \
+	for ((pos) = atsc_caption_service_descriptor_entries_first(d), idx=0; \
 	     (pos); \
-	     (pos) = atsc_caption_service_descriptor_entries_next(d, pos))
+	     (pos) = atsc_caption_service_descriptor_entries_next(d, pos, idx), idx++)
 
 
 
@@ -112,7 +113,7 @@ static inline struct atsc_caption_service_descriptor*
 static inline struct atsc_caption_service_entry*
 	atsc_caption_service_descriptor_entries_first(struct atsc_caption_service_descriptor *d)
 {
-	if (d->d.len == 0)
+	if (d->number_of_services == 0)
 		return NULL;
 
 	return (struct atsc_caption_service_entry *)
@@ -121,15 +122,14 @@ static inline struct atsc_caption_service_entry*
 
 static inline struct atsc_caption_service_entry*
 	atsc_caption_service_descriptor_entries_next(struct atsc_caption_service_descriptor *d,
-					     struct atsc_caption_service_entry *pos)
+						     struct atsc_caption_service_entry *pos,
+						     int idx)
 {
-	uint8_t *end = (uint8_t*) d + 2 + d->d.len;
-	uint8_t *next =	(uint8_t *) pos + sizeof(struct atsc_caption_service_entry);
-
-	if (next >= end)
+	if (idx >= d->number_of_services)
 		return NULL;
 
-	return (struct atsc_caption_service_entry *) next;
+	return (struct atsc_caption_service_entry *)
+		((uint8_t *) pos + sizeof(struct atsc_caption_service_entry));
 }
 
 #ifdef __cplusplus

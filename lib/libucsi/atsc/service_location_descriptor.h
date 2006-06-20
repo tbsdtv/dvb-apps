@@ -51,7 +51,7 @@ struct atsc_service_location_descriptor {
 /**
  * An entry in the elements field of an atsc_service_location_descriptor.
  */
-struct atsc_caption_service_element {
+struct atsc_caption_service_location_element {
 	uint8_t stream_type;
   EBIT2(uint16_t reserved 		: 3; ,
 	uint16_t elementary_PID		:13; );
@@ -95,11 +95,12 @@ static inline struct atsc_service_location_descriptor*
  *
  * @param d atsc_service_location_descriptor pointer.
  * @param pos Variable holding a pointer to the current atsc_service_location_element.
+ * @param idx Integer used to count which dimension we are in.
  */
-#define atsc_service_location_descriptor_elements_for_each(d, pos) \
-	for ((pos) = atsc_service_location_descriptor_elements_first(d); \
+#define atsc_service_location_descriptor_elements_for_each(d, pos, idx) \
+	for ((pos) = atsc_service_location_descriptor_elements_first(d), idx=0; \
 	     (pos); \
-	     (pos) = atsc_service_location_descriptor_elements_next(d, pos))
+	     (pos) = atsc_service_location_descriptor_elements_next(d, pos, idx), idx++)
 
 
 
@@ -111,27 +112,26 @@ static inline struct atsc_service_location_descriptor*
 
 
 /******************************** PRIVATE CODE ********************************/
-static inline struct atsc_caption_service_element*
+static inline struct atsc_caption_service_location_element*
 	atsc_service_location_descriptor_elements_first(struct atsc_service_location_descriptor *d)
 {
-	if (d->d.len <= 3)
+	if (d->number_elements == 0)
 		return NULL;
 
 	return (struct atsc_caption_service_element *)
 		((uint8_t*) d + sizeof(struct atsc_service_location_descriptor));
 }
 
-static inline struct atsc_caption_service_element*
+static inline struct atsc_caption_service_location_element*
  	atsc_service_location_descriptor_elements_next(struct atsc_service_location_descriptor *d,
-						       struct atsc_caption_service_element *pos)
+						       struct atsc_caption_service_location_element *pos,
+ 						       int idx)
 {
-	uint8_t *end = (uint8_t*) d + 2 + d->d.len;
-	uint8_t *next =	(uint8_t *) pos + sizeof(struct atsc_caption_service_element);
+	uint8_t *next =	(uint8_t *) pos + sizeof(struct atsc_caption_service_location_element);
 
-	if (next >= end)
+	if (idx >= d->number_elements)
 		return NULL;
-
-	return (struct atsc_caption_service_element *) next;
+	return (struct atsc_caption_service_location_element *) next;
 }
 
 #ifdef __cplusplus
