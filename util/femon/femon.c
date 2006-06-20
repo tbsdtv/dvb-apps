@@ -89,6 +89,7 @@ int check_frontend (struct dvbfe_handle *fe, int human_readable)
 			printf("FE_HAS_LOCK");
 
 		printf("\n");
+		fflush(stdout);
 		usleep(1000000);
 	} while (1);
 
