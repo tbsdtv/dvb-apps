@@ -32,6 +32,8 @@ extern "C"
 #include <libucsi/atsc/content_advisory_descriptor.h>
 #include <libucsi/atsc/extended_channel_name_descriptor.h>
 #include <libucsi/atsc/service_location_descriptor.h>
+#include <libucsi/atsc/time_shifted_service_descriptor.h>
+#include <libucsi/atsc/component_name_descriptor.h>
 
 /**
  * Enumeration of ATSC descriptor tags.

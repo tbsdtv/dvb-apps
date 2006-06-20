@@ -28,6 +28,8 @@ sub-includes = descriptor.h \
 	       content_advisory_descriptor.h \
 	       extended_channel_name_descriptor.h \
 	       service_location_descriptor.h \
+	       time_shifted_service_descriptor.h \
+	       component_name_descriptor.h \
 
 sub-install += atsc
 
