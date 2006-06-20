@@ -21,6 +21,10 @@
 #include <string.h>
 #include "libucsi/atsc/types.h"
 
+/* GPS epoch == unix time_t at 06/Jan/1980 */
+#define GPS_EPOCH 315964800
+
+
 struct atsc_text *atsc_text_parse(uint8_t *buf, int len)
 {
 	int i;
@@ -58,12 +62,10 @@ struct atsc_text *atsc_text_parse(uint8_t *buf, int len)
 
 time_t atsctime_to_unixtime(atsctime_t atsc)
 {
-	// FIXME: implement
-	return 0;
+	return atsc + GPS_EPOCH;
 }
 
 atsctime_t unixtime_to_atsctime(time_t atsc)
 {
-	// FIXME: implement
-	return 0;
+	return atsc - GPS_EPOCH;
 }
