@@ -161,7 +161,7 @@ static inline struct atsc_mgt_table *
 				     struct atsc_mgt_table *pos,
 				     int idx)
 {
-	if ((idx+1) > stt->tables_defined)
+	if (idx >= stt->tables_defined)
 		return NULL;
 
 	return (struct atsc_mgt_table *)

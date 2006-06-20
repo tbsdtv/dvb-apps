@@ -58,17 +58,18 @@ struct atsc_ett_section *atsc_ett_section_codec(struct atsc_section_psip *sectio
  * Accessor for the extended_text_message part of an atsc_ett_section.
  *
  * @param ett atsc_ett_section pointer.
- * @return atsc_text pointer.
+ * @return atsc_text pointer, or NULL on error.
  */
 static inline struct atsc_text*
 	atsc_ett_section_extended_text_message(struct atsc_ett_section *ett)
 {
 	int pos = sizeof(struct atsc_ett_section);
+	int len = section_ext_length(&ett->head.ext_head) - sizeof(struct atsc_ett_section);
 
-	if ((section_ext_length(&ett->head.ext_head) - sizeof(struct atsc_ett_section)) == 0)
+	if (len == 0)
 		return NULL;
 
-	return (struct atsc_text*) (((uint8_t*) ett) + pos);
+	return atsc_text_parse(((uint8_t*) ett) + pos, len);
 }
 
 #ifdef __cplusplus

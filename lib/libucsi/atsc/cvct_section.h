@@ -174,7 +174,7 @@ static inline struct atsc_cvct_channel *
 				     struct atsc_cvct_channel *pos,
 				     int idx)
 {
-	if ((idx+1) > cvct->num_channels_in_section)
+	if (idx >= cvct->num_channels_in_section)
 		return NULL;
 
 	return (struct atsc_cvct_channel *)

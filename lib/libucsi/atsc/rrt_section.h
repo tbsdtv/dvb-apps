@@ -105,7 +105,7 @@ struct atsc_rrt_section *atsc_rrt_section_codec(struct atsc_section_psip *sectio
  * @param rrt RRT pointer.
  * @return The transport_stream_id.
  */
-static inline uint16_t atsc_rrt_section_rating_region(struct atsc_rrt_section *rrt)
+static inline uint8_t atsc_rrt_section_rating_region(struct atsc_rrt_section *rrt)
 {
 	return rrt->head.ext_head.table_id_ext & 0xff;
 }
@@ -114,15 +114,15 @@ static inline uint16_t atsc_rrt_section_rating_region(struct atsc_rrt_section *r
  * Accessor for the rating_region_name_text field of an RRT.
  *
  * @param rrt RRT pointer.
- * @return struct atsc_text pointer.
+ * @return struct atsc_text pointer, or NULL.
  */
 static inline struct atsc_text *atsc_rrt_section_rating_region_name_text(struct atsc_rrt_section *rrt)
 {
 	if (rrt->rating_region_name_length == 0)
 		return NULL;
 
-	return (struct atsc_text*)
-		(((uint8_t*) rrt) + sizeof(struct atsc_rrt_section));
+	return atsc_text_parse(((uint8_t*) rrt) + sizeof(struct atsc_rrt_section),
+				rrt->rating_region_name_length);
 }
 
 /**
@@ -134,9 +134,8 @@ static inline struct atsc_text *atsc_rrt_section_rating_region_name_text(struct 
 static inline struct atsc_rrt_section_part2 *atsc_rrt_section_part2(struct atsc_rrt_section *rrt)
 {
 	return (struct atsc_rrt_section_part2 *)
-			(((uint8_t*) rrt) +
-			 sizeof(struct atsc_rrt_section) +
-			 rrt->rating_region_name_length);
+		(((uint8_t*) rrt) + sizeof(struct atsc_rrt_section) +
+			rrt->rating_region_name_length);
 }
 
 /**
@@ -155,15 +154,15 @@ static inline struct atsc_rrt_section_part2 *atsc_rrt_section_part2(struct atsc_
  * Accessor for the dimension_name_text field of an atsc_rrt_dimension.
  *
  * @param dimension atsc_rrt_dimension pointer.
- * @return struct atsc_text pointer.
+ * @return struct atsc_text pointer, or NULL on error.
  */
 static inline struct atsc_text *atsc_rrt_dimension_name_text(struct atsc_rrt_dimension *dimension)
 {
 	if (dimension->dimension_name_length == 0)
 		return NULL;
 
-	return (struct atsc_text*)
-			(((uint8_t*) dimension) + sizeof(struct atsc_rrt_dimension));
+	return atsc_text_parse(((uint8_t*) dimension) + sizeof(struct atsc_rrt_dimension),
+				dimension->dimension_name_length);
 }
 
 /**
@@ -198,13 +197,14 @@ static inline struct atsc_rrt_dimension_part2 *atsc_rrt_dimension_part2(struct a
  * @param dimension atsc_rrt_dimension pointer.
  * @return struct atsc_text pointer.
  */
-static inline struct atsc_text *atsc_rrt_dimension_value_abbrev_rating_value_text(struct atsc_rrt_dimension_value *value)
+static inline struct atsc_text *
+	atsc_rrt_dimension_value_abbrev_rating_value_text(struct atsc_rrt_dimension_value *value)
 {
 	if (value->abbrev_rating_value_length == 0)
 		return NULL;
 
-	return (struct atsc_text*)
-			(((uint8_t*) value) + sizeof(struct atsc_rrt_dimension_value));
+	return atsc_text_parse(((uint8_t*) value) + sizeof(struct atsc_rrt_dimension_value),
+				value->abbrev_rating_value_length);
 }
 
 /**
@@ -216,9 +216,9 @@ static inline struct atsc_text *atsc_rrt_dimension_value_abbrev_rating_value_tex
 static inline struct atsc_rrt_dimension_value_part2 *atsc_rrt_dimension_value_part2(struct atsc_rrt_dimension_value *value)
 {
 	return (struct atsc_rrt_dimension_value_part2 *)
-			(((uint8_t*) value) +
-			sizeof(struct atsc_rrt_dimension_value) +
-			value->abbrev_rating_value_length);
+		(((uint8_t*) value) +
+		sizeof(struct atsc_rrt_dimension_value) +
+		value->abbrev_rating_value_length);
 }
 
 /**
@@ -232,8 +232,8 @@ static inline struct atsc_text *atsc_rrt_dimension_value_part2_rating_value_text
 	if (part2->rating_value_length == 0)
 		return NULL;
 
-	return (struct atsc_text*)
-			(((uint8_t*) part2) + sizeof(struct atsc_rrt_dimension_value_part2));
+	return atsc_text_parse(((uint8_t*) part2) + sizeof(struct atsc_rrt_dimension_value_part2),
+				part2->rating_value_length);
 }
 
 /**
@@ -309,7 +309,7 @@ static inline struct atsc_rrt_dimension *
 					 struct atsc_rrt_dimension *pos,
 					 int idx)
 {
-	if ((idx+1) > part2->dimensions_defined)
+	if (idx >= part2->dimensions_defined)
 		return NULL;
 
 	struct atsc_rrt_dimension_part2 *dpart2 = atsc_rrt_dimension_part2(pos);
@@ -346,7 +346,7 @@ static inline struct atsc_rrt_dimension_value *
 					     struct atsc_rrt_dimension_value *pos,
 					     int idx)
 {
-	if ((idx+1) > part2->values_defined)
+	if (idx >= part2->values_defined)
 		return NULL;
 
 	struct atsc_rrt_dimension_value_part2 *vpart2 = atsc_rrt_dimension_value_part2(pos);

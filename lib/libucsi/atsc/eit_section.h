@@ -94,14 +94,15 @@ static inline uint16_t atsc_eit_section_source_id(struct atsc_eit_section *eit)
  * Accessor for the title_text field of an atsc_eit_event.
  *
  * @param event atsc_eit_event pointer.
- * @return struct atsc_text pointer.
+ * @return struct atsc_text pointer, or NULL on error.
  */
 static inline struct atsc_text *atsc_eit_event_name_title_text(struct atsc_eit_event *event)
 {
 	if (event->title_length == 0)
 		return NULL;
 
-	return (struct atsc_text*) (((uint8_t*) event) + sizeof(struct atsc_eit_event));
+	return atsc_text_parse(((uint8_t*) event) + sizeof(struct atsc_eit_event),
+				event->title_length);
 }
 
 /**
@@ -154,7 +155,7 @@ static inline struct atsc_eit_event *
 				     struct atsc_eit_event *pos,
 				     int idx)
 {
-	if ((idx+1) > eit->num_events_in_section)
+	if (idx >= eit->num_events_in_section)
 		return NULL;
 
 	struct atsc_eit_event_part2 *part2 = atsc_eit_event_part2(pos);
