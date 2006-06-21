@@ -25,7 +25,7 @@
 #define GPS_EPOCH 315964800
 
 
-struct atsc_text *atsc_text_parse(uint8_t *buf, int len)
+int atsc_text_validate(uint8_t *buf, int len)
 {
 	int i;
 	int j;
@@ -34,30 +34,30 @@ struct atsc_text *atsc_text_parse(uint8_t *buf, int len)
 	int number_bytes;
 	int pos = 0;
 
-	if (len < 1)
-		return NULL;
+	if (len == 0)
+		return 0;
 	number_strings = buf[pos];
 	pos++;
 
 	for(i=0; i< number_strings; i++) {
 		if (len < (pos+4))
-			return NULL;
+			return -1;
 		number_segments = buf[pos+3];
 		pos+=4;
 
 		for(j=0; j < number_segments; j++) {
 			if (len < (pos+3))
-				return NULL;
+				return -1;
 			number_bytes = buf[pos+2];
 			pos+=3;
 
 			if (len < (pos + number_bytes))
-				return NULL;
+				return -1;
 			pos += number_bytes;
 		}
 	}
 
-	return (struct atsc_text *) buf;
+	return 0;
 }
 
 time_t atsctime_to_unixtime(atsctime_t atsc)

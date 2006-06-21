@@ -140,8 +140,8 @@ static inline struct atsc_text *atsc_dccsct_update_new_genre_name(struct atsc_dc
 	if ((update->update_data_length - 1) == 0)
 		return NULL;
 
-	return atsc_text_parse(((uint8_t*) update) + sizeof(struct atsc_dccsct_update_new_genre),
-				update->update_data_length - 1);
+	return (struct atsc_text *)
+		(((uint8_t*) update) + sizeof(struct atsc_dccsct_update_new_genre));
 }
 
 /**
@@ -171,8 +171,8 @@ static inline struct atsc_text *atsc_dccsct_update_new_state_name(struct atsc_dc
 	if ((update->update_data_length - 1) == 0)
 		return NULL;
 
-	return atsc_text_parse(((uint8_t*) update) + sizeof(struct atsc_dccsct_update_new_state),
-				 update->update_data_length - 1);
+	return (struct atsc_text *)
+		(((uint8_t*) update) + sizeof(struct atsc_dccsct_update_new_state));
 }
 
 /**
@@ -202,8 +202,8 @@ static inline struct atsc_text *atsc_dccsct_update_new_county_name(struct atsc_d
 	if ((update->update_data_length - 3) == 0)
 		return NULL;
 
-	return atsc_text_parse(((uint8_t*) update) + sizeof(struct atsc_dccsct_update_new_county),
-				 update->update_data_length - 3);
+	return (struct atsc_text*)
+		(((uint8_t*) update) + sizeof(struct atsc_dccsct_update_new_county));
 }
 
 /**

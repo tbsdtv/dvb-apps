@@ -121,8 +121,7 @@ static inline struct atsc_text *atsc_rrt_section_rating_region_name_text(struct 
 	if (rrt->rating_region_name_length == 0)
 		return NULL;
 
-	return atsc_text_parse(((uint8_t*) rrt) + sizeof(struct atsc_rrt_section),
-				rrt->rating_region_name_length);
+	return (struct atsc_text*)(((uint8_t*) rrt) + sizeof(struct atsc_rrt_section));
 }
 
 /**
@@ -161,8 +160,7 @@ static inline struct atsc_text *atsc_rrt_dimension_name_text(struct atsc_rrt_dim
 	if (dimension->dimension_name_length == 0)
 		return NULL;
 
-	return atsc_text_parse(((uint8_t*) dimension) + sizeof(struct atsc_rrt_dimension),
-				dimension->dimension_name_length);
+	return (struct atsc_text*)(((uint8_t*) dimension) + sizeof(struct atsc_rrt_dimension));
 }
 
 /**
@@ -203,8 +201,7 @@ static inline struct atsc_text *
 	if (value->abbrev_rating_value_length == 0)
 		return NULL;
 
-	return atsc_text_parse(((uint8_t*) value) + sizeof(struct atsc_rrt_dimension_value),
-				value->abbrev_rating_value_length);
+	return (struct atsc_text*)(((uint8_t*) value) + sizeof(struct atsc_rrt_dimension_value));
 }
 
 /**
@@ -232,8 +229,7 @@ static inline struct atsc_text *atsc_rrt_dimension_value_part2_rating_value_text
 	if (part2->rating_value_length == 0)
 		return NULL;
 
-	return atsc_text_parse(((uint8_t*) part2) + sizeof(struct atsc_rrt_dimension_value_part2),
-				part2->rating_value_length);
+	return (struct atsc_text*)(((uint8_t*) part2) + sizeof(struct atsc_rrt_dimension_value_part2));
 }
 
 /**

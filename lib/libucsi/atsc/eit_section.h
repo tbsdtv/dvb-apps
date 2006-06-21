@@ -101,8 +101,7 @@ static inline struct atsc_text *atsc_eit_event_name_title_text(struct atsc_eit_e
 	if (event->title_length == 0)
 		return NULL;
 
-	return atsc_text_parse(((uint8_t*) event) + sizeof(struct atsc_eit_event),
-				event->title_length);
+	return (struct atsc_text*)(((uint8_t*) event) + sizeof(struct atsc_eit_event));
 }
 
 /**

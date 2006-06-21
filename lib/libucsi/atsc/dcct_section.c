@@ -76,7 +76,7 @@ struct atsc_dcct_section *atsc_dcct_section_codec(struct atsc_section_psip *psip
 		pos += part2->descriptors_length;
 	}
 
-	if (len < (pos + sizeof(struct atsc_dcct_test_part2)))
+	if (len < (pos + sizeof(struct atsc_dcct_section_part2)))
 		return NULL;
 	struct atsc_dcct_section_part2 *part2 = (struct atsc_dcct_section_part2 *) (buf+pos);
 

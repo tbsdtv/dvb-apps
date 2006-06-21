@@ -121,13 +121,13 @@ static inline uint8_t*
 }
 
 /**
- * Parse a buffer containing an atsc_text structure.
+ * Validate a buffer containing an atsc_text structure.
  *
  * @param buf Start of the atsc_text structure.
  * @param len Length in bytes of the buffer.
- * @return atsc_text pointer if valid, NULL if not.
+ * @return 0 if valid, nonzero if not.
  */
-extern struct atsc_text *atsc_text_parse(uint8_t *buf, int len);
+extern int atsc_text_validate(uint8_t *buf, int len);
 
 /**
  * Decompress a huffman encoded program title string segment.

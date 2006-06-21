@@ -45,7 +45,7 @@ struct atsc_eit_section *atsc_eit_section_codec(struct atsc_section_psip *psip)
 		pos += sizeof(struct atsc_eit_event);
 		if (len < (pos + event->title_length))
 			return NULL;
-		if (atsc_text_parse(buf+pos, event->title_length) != NULL)
+		if (atsc_text_validate(buf+pos, event->title_length))
 			return NULL;
 
 		pos += event->title_length;

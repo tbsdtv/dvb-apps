@@ -69,7 +69,7 @@ static inline struct atsc_text*
 	if (len == 0)
 		return NULL;
 
-	return atsc_text_parse(((uint8_t*) ett) + pos, len);
+	return (struct atsc_text*)(((uint8_t*) ett) + pos);
 }
 
 #ifdef __cplusplus

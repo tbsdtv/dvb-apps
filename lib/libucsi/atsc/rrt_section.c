@@ -36,7 +36,7 @@ struct atsc_rrt_section *atsc_rrt_section_codec(struct atsc_section_psip *psip)
 
 	if (len < (pos + rrt->rating_region_name_length))
 		return NULL;
-	if (atsc_text_parse(buf+pos, rrt->rating_region_name_length) == NULL)
+	if (atsc_text_validate(buf+pos, rrt->rating_region_name_length))
 		return NULL;
 
 	pos += rrt->rating_region_name_length;
@@ -53,7 +53,7 @@ struct atsc_rrt_section *atsc_rrt_section_codec(struct atsc_section_psip *psip)
 		pos += sizeof(struct atsc_rrt_dimension);
 		if (len < (pos + dimension->dimension_name_length))
 			return NULL;
-		if (atsc_text_parse(buf+pos, dimension->dimension_name_length) == NULL)
+		if (atsc_text_validate(buf+pos, dimension->dimension_name_length))
 			return NULL;
 
 		pos += dimension->dimension_name_length;
@@ -70,18 +70,19 @@ struct atsc_rrt_section *atsc_rrt_section_codec(struct atsc_section_psip *psip)
 			pos += sizeof(struct atsc_rrt_dimension_value);
 			if (len < (pos + value->abbrev_rating_value_length))
 				return NULL;
-			if (atsc_text_parse(buf+pos, value->abbrev_rating_value_length) == NULL)
+			if (atsc_text_validate(buf+pos, value->abbrev_rating_value_length))
 				return NULL;
 
 			pos += value->abbrev_rating_value_length;
 			if (len < (pos + sizeof(struct atsc_rrt_dimension_value_part2)))
 				return NULL;
-			struct atsc_rrt_dimension_value_part2 *vpart2 = (struct atsc_rrt_dimension_value_part2 *) (buf+pos);
+			struct atsc_rrt_dimension_value_part2 *vpart2 =
+				(struct atsc_rrt_dimension_value_part2 *) (buf+pos);
 
 			pos += sizeof(struct atsc_rrt_dimension_value_part2);
 			if (len < (pos + vpart2->rating_value_length))
 				return NULL;
-			if (atsc_text_parse(buf+pos, vpart2->rating_value_length) == NULL)
+			if (atsc_text_validate(buf+pos, vpart2->rating_value_length))
 				return NULL;
 
 			pos+= vpart2->rating_value_length;
