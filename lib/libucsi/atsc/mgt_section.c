@@ -63,6 +63,7 @@ struct atsc_mgt_section *atsc_mgt_section_codec(struct atsc_section_psip *psip,
 			return NULL;
 
 		pos += table->table_type_descriptors_length;
+		tables_count++;
 	}
 
 	// according to the spec, there should only be a difference of "2" or "6" from the real table count.
