@@ -88,14 +88,14 @@ static int huffman_decode_uncompressed(struct huffbuff *hbuf,
 
     switch(c) {
     case HUFFSTRING_END:
-      return HUFFSTRING_END;
+      return 0;
 
     case HUFFSTRING_ESCAPE:
-      return HUFFSTRING_ESCAPE;
+      return 1;
 
     default:
       // do we need to allocate more space?
-      if (destpos > destlen) {
+      if (*destpos >= *destlen) {
         uint8_t *new_dest = realloc(dest, *destlen + DEST_ALLOC_DELTA);
         if (new_dest == NULL)
           return -ENOMEM;
@@ -103,11 +103,11 @@ static int huffman_decode_uncompressed(struct huffbuff *hbuf,
         *destlen += DEST_ALLOC_DELTA;
       }
       (*dest)[(*destpos)++] = c;
-      return c;
+      break;
     }
   }
 
-  return 0;
+  return 1;
 }
 
 static int huffman_decode(uint8_t *src, size_t srclen,
@@ -134,6 +134,7 @@ static int huffman_decode(uint8_t *src, size_t srclen,
     } else {
       treeval = tree[treeidx].right_idx;
     }
+
     if (treeval & HUFFTREE_LITERAL_MASK) {
       switch(treeval & ~HUFFTREE_LITERAL_MASK) {
       case HUFFSTRING_END:
@@ -144,14 +145,14 @@ static int huffman_decode(uint8_t *src, size_t srclen,
           return tmp;
         if (tmp == 0)
           return destpos;
-        // FIXME: which tree should we choose here?
+
         tree = hufftree[0];
         treeidx = 0;
         break;
 
       default:
         // do we need to allocate more space?
-        if (destpos > *destlen) {
+        if (destpos >= *destlen) {
           uint8_t *new_dest = realloc(dest, *destlen + DEST_ALLOC_DELTA);
           if (new_dest == NULL)
             return -ENOMEM;
