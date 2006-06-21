@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
 
 	// process arguments
 	if ((argc < 3) || (argc > 4)) {
-		fprintf(stderr, "Syntax: testucsi <adapter id> <channels file> [<pid to limit to>]\n");
+		fprintf(stderr, "Syntax: testucsi <adapter id> <zapchannels file> [<pid to limit to>]\n");
 		exit(1);
 	}
 	adapter = atoi(argv[1]);
@@ -153,14 +153,47 @@ int zapchannels_cb(void *private, struct dvbcfg_zapchannel *channel)
 {
 	int data_type = (int) private;
 
+	// FIXME: use the diseqc stuff here!
+	int freqadjust = 0;
         if (feinfo.type == DVBFE_TYPE_DVBS) {
-                // FIXME: do diseqc
+		char *diseqc_h_low = "t V W15 .D(E0 10 38 F2) W15 A W15 t";
+		char *diseqc_h_high = "t V W15 .D(E0 10 38 F3) W15 A W15 T";
+		char *diseqc_v_low = "t v W15 .D(E0 10 38 F0) W15 A W15 t";
+		char *diseqc_v_high = "t v W15 .D(E0 10 38 F1) W15 A W15 T";
+
+		char *diseqc = NULL;
+		switch(channel->fe_params.u.dvbs.polarization) {
+		case DVBFE_POLARIZATION_H:
+			if (channel->fe_params.frequency < 11700000) {
+				freqadjust = 9750000;
+				diseqc = diseqc_h_low;
+			} else {
+				freqadjust = 10600000;
+				diseqc = diseqc_h_high;
+			}
+			break;
+
+		case DVBFE_POLARIZATION_V:
+			if (channel->fe_params.frequency < 11700000) {
+				freqadjust = 9750000;
+				diseqc = diseqc_v_low;
+			} else {
+				freqadjust = 10600000;
+				diseqc = diseqc_v_high;
+			}
+			break;
+
+		case DVBFE_POLARIZATION_L:
+		case DVBFE_POLARIZATION_R:
+			break;
+		}
+
+		if (diseqc)
+			dvbfe_sec_command(fe, diseqc);
+		channel->fe_params.frequency -= freqadjust;
         }
 
-        printf("Tuning to: %i %i %i\n",
-                channel->fe_params.frequency,
-                channel->fe_params.u.dvbs.symbol_rate,
-                channel->fe_params.u.dvbs.fec_inner);
+        printf("Tuning to: %i\n", channel->fe_params.frequency + freqadjust);
         if (dvbfe_set(fe, &channel->fe_params, MAX_TUNE_TIME)) {
                 fprintf(stderr, "Failed to lock!\n");
         } else {
