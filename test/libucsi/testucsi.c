@@ -2945,8 +2945,111 @@ void parse_atsc_descriptor(struct descriptor *d, int indent, int data_type)
 
 	switch(d->tag) {
 	case dtag_atsc_stuffing:
+	{
+		struct atsc_stuffing_descriptor *dx;
+
+		iprintf(indent, "DSC Decode atsc_stuffing_descriptor\n");
+		dx = atsc_stuffing_descriptor_codec(d);
+		if (dx == NULL) {
+			fprintf(stderr, "DSC XXXX atsc_stuffing_descriptor decode error\n");
+			return;
+		}
+		hexdump(indent, "DSC",
+			atsc_stuffing_descriptor_data(dx),
+			atsc_stuffing_descriptor_data_length(dx));
+		break;
+	}
+
 	case dtag_atsc_ac3_audio:
+	{
+		struct atsc_ac3_descriptor *dx;
+		struct atsc_ac3_descriptor_part2 *part2;
+		struct atsc_ac3_descriptor_part3 *part3;
+
+		iprintf(indent, "DSC Decode atsc_ac3_descriptor\n");
+		dx = atsc_ac3_descriptor_codec(d);
+		if (dx == NULL) {
+			fprintf(stderr, "DSC XXXX atsc_ac3_descriptor decode error\n");
+			return;
+		}
+
+		iprintf(indent,
+			"DSC sample_rate_code:%i bsid:%i bit_rate_code:%i surround_mode:%i bsmod:%i num_channels:%i full_svc:%i langcod:%i\n",
+			dx->sample_rate_code,
+			dx->bsid,
+			dx->bit_rate_code,
+			dx->surround_mode,
+			dx->bsmod,
+			dx->num_channels,
+			dx->full_svc,
+			dx->langcod);
+		if (dx->num_channels == 0) {
+			iprintf(indent,
+				"DSC langcod2:%i\n",
+				atsc_ac3_descriptor_langcod2(dx));
+		}
+
+		part2 = atsc_ac3_descriptor_part2(dx);
+		if (dx->bsmod < 2) {
+			iprintf(indent,
+				"DSC mainid:%i priority:%i\n",
+				part2->flags.bsmodflags.mainid,
+				part2->flags.bsmodflags.priority);
+		} else {
+			iprintf(indent,
+				"DSC asvcflags:%i\n",
+				part2->flags.asvcflags);
+		}
+		iprintf(indent,
+			"DSC text_code:%i\n",
+			part2->text_code);
+		hexdump(indent, "DSC text",
+			atsc_ac3_descriptor_part2_text(part2),
+			part2->textlen);
+
+		part3 = atsc_ac3_descriptor_part3(part2);
+		if (part3->language_flag) {
+			iprintf(indent,
+				"DSC language:%.3s\n",
+				atsc_ac3_descriptor_part3_language(part3));
+		}
+		if (part3->language_flag_2) {
+			iprintf(indent,
+				"DSC language_2:%.3s\n",
+				atsc_ac3_descriptor_part3_language_2(part3));
+		}
+
+		hexdump(indent+1, "DSC additional_info",
+			atsc_ac3_descriptor_additional_info(part3),
+			atsc_ac3_descriptor_additional_info_length(dx, part3));
+		break;
+	}
+
 	case dtag_atsc_caption_service:
+	{
+		struct atsc_caption_service_descriptor *dx;
+		struct atsc_caption_service_entry *cur;
+		int idx;
+
+		iprintf(indent, "DSC Decode atsc_caption_service_descriptor\n");
+		dx = atsc_caption_service_descriptor_codec(d);
+		if (dx == NULL) {
+			fprintf(stderr, "DSC XXXX atsc_caption_service_descriptor decode error\n");
+			return;
+		}
+
+		atsc_caption_service_descriptor_entries_for_each(dx, cur, idx) {
+			iprintf(indent+1,
+				"DSC language_code:%.3s digital_cc:%i value:%i easy_reader:%i wide_aspect_ratio:%i\n",
+				cur->language_code,
+				cur->digital_cc,
+				cur->value,
+				cur->easy_reader,
+				cur->wide_aspect_ratio);
+		}
+		break;
+	}
+
 	case dtag_atsc_content_advisory:
 	case dtag_atsc_extended_channel_name:
 	case dtag_atsc_service_location:

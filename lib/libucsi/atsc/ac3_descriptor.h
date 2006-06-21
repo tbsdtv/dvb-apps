@@ -19,8 +19,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef _UCSI_DVB_AC3_DESCRIPTOR
-#define _UCSI_DVB_AC3_DESCRIPTOR 1
+#ifndef _UCSI_ATSC_AC3_DESCRIPTOR
+#define _UCSI_ATSC_AC3_DESCRIPTOR 1
 
 #ifdef __cplusplus
 extern "C"
@@ -135,7 +135,7 @@ static inline struct atsc_ac3_descriptor*
  */
 static inline int atsc_ac3_descriptor_langcod2(struct atsc_ac3_descriptor *d)
 {
-	if (d->numchannels)
+	if (d->num_channels)
 		return -1;
 
 	int pos = sizeof(struct atsc_ac3_descriptor);
@@ -152,7 +152,7 @@ static inline struct atsc_ac3_descriptor_part2 *
 	atsc_ac3_descriptor_part2(struct atsc_ac3_descriptor *d)
 {
 	int pos = sizeof(struct atsc_ac3_descriptor);
-	if (d->numchannels == 0)
+	if (d->num_channels == 0)
 		pos++;
 
 	return (struct atsc_ac3_descriptor_part2 *) (((uint8_t*) d) + pos);
@@ -167,7 +167,8 @@ static inline struct atsc_ac3_descriptor_part2 *
 static inline uint8_t *atsc_ac3_descriptor_part2_text(struct atsc_ac3_descriptor_part2 *part2)
 {
 	int pos = sizeof(struct atsc_ac3_descriptor_part2);
-	return *(((uint8_t*) part2) + pos);
+
+	return (((uint8_t*) part2) + pos);
 }
 
 /**
@@ -182,7 +183,7 @@ static inline struct atsc_ac3_descriptor_part3 *
 	int pos = sizeof(struct atsc_ac3_descriptor_part2);
 	pos += part2->textlen;
 
-	return (struct atsc_ac3_descriptor_part3 *) (((uint8_t*) d) + pos);
+	return (struct atsc_ac3_descriptor_part3 *) (((uint8_t*) part2) + pos);
 }
 
 /**
@@ -198,7 +199,7 @@ static inline iso639lang_t *atsc_ac3_descriptor_part3_language(struct atsc_ac3_d
 	if (!part3->language_flag)
 		return NULL;
 
-	return *(((uint8_t*) part3) + pos);
+	return (iso639lang_t *) (((uint8_t*) part3) + pos);
 }
 
 /**
@@ -213,10 +214,10 @@ static inline iso639lang_t *atsc_ac3_descriptor_part3_language_2(struct atsc_ac3
 
 	if (part3->language_flag)
 		pos += 3;
- 	if (!part3->language_flag3)
+ 	if (!part3->language_flag_2)
 		return NULL;
 
-	return *(((uint8_t*) part3) + pos);
+	return (iso639lang_t *) (((uint8_t*) part3) + pos);
 }
 
 /**
@@ -248,7 +249,9 @@ static inline uint8_t *atsc_ac3_descriptor_additional_info(struct atsc_ac3_descr
 static inline int atsc_ac3_descriptor_additional_info_length(struct atsc_ac3_descriptor* d,
 							     struct atsc_ac3_descriptor_part3 *part3)
 {
-	int pos = (part3 - d) + sizeof(struct atsc_ac3_descriptor_part3) - 2;
+	uint8_t *end = ((uint8_t*) d) + d->d.len;
+
+	int pos = ((int) end - (int) part3) + sizeof(struct atsc_ac3_descriptor_part3);
 
 	if (part3->language_flag) {
 		pos+=3;
@@ -257,7 +260,7 @@ static inline int atsc_ac3_descriptor_additional_info_length(struct atsc_ac3_des
 		pos+=3;
 	}
 
-	return d->d.len - pos;
+	return pos;
 }
 
 #ifdef __cplusplus
