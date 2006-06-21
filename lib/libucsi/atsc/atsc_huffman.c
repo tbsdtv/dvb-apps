@@ -96,7 +96,7 @@ static int huffman_decode_uncompressed(struct huffbuff *hbuf,
     default:
       // do we need to allocate more space?
       if (*destpos >= *destlen) {
-        uint8_t *new_dest = realloc(dest, *destlen + DEST_ALLOC_DELTA);
+        uint8_t *new_dest = realloc(*dest, *destlen + DEST_ALLOC_DELTA);
         if (new_dest == NULL)
           return -ENOMEM;
         *dest = new_dest;
@@ -153,7 +153,7 @@ static int huffman_decode(uint8_t *src, size_t srclen,
       default:
         // do we need to allocate more space?
         if (destpos >= *destlen) {
-          uint8_t *new_dest = realloc(dest, *destlen + DEST_ALLOC_DELTA);
+          uint8_t *new_dest = realloc(*dest, *destlen + DEST_ALLOC_DELTA);
           if (new_dest == NULL)
             return -ENOMEM;
           *dest = new_dest;
