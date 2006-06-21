@@ -99,6 +99,7 @@ PASS mpeg/video_stream_descriptor.h
      dvb/partial_transport_stream_descriptor.h
      dvb/pdc_descriptor.h
      dvb/private_data_specifier_descriptor.h
+     dvb/s2_satellite_delivery_descriptor.h
      dvb/satellite_delivery_descriptor.h
      dvb/service_descriptor.h
      dvb/service_list_descriptor.h
