@@ -83,6 +83,12 @@ extern "C"
 #include <libucsi/dvb/tva_id_descriptor.h>
 #include <libucsi/dvb/vbi_data_descriptor.h>
 #include <libucsi/dvb/vbi_teletext_descriptor.h>
+#include <libucsi/endianops.h>
+
+/**
+ * The following are disabled because support is incomplete just now.
+ */
+/*
 #include <libucsi/dvb/rnt_rar_over_dvb_stream_descriptor.h>
 #include <libucsi/dvb/rnt_rar_over_ip_descriptor.h>
 #include <libucsi/dvb/rnt_rnt_scan_descriptor.h>
@@ -90,7 +96,7 @@ extern "C"
 #include <libucsi/dvb/ait_application_name_descriptor.h>
 #include <libucsi/dvb/ait_external_application_authorisation_descriptor.h>
 #include <libucsi/dvb/ait_application_icons_descriptor.h>
-#include <libucsi/endianops.h>
+*/
 
 /**
  * The following are not implemented just now
