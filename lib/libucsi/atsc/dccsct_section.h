@@ -135,7 +135,7 @@ static inline struct atsc_dccsct_update_new_genre *atsc_dccsct_update_new_genre(
  * @param update atsc_dccsct_update_new_genre pointer.
  * @return text pointer.
  */
-static inline struct atsc_text *atsc_dccsct_update_new_genre_name(struct atsc_dccst_update *update)
+static inline struct atsc_text *atsc_dccsct_update_new_genre_name(struct atsc_dccsct_update *update)
 {
 	if ((update->update_data_length - 1) == 0)
 		return NULL;
@@ -197,12 +197,12 @@ static inline struct atsc_dccsct_update_new_county *
  * @param update atsc_dccsct_update_new_county pointer.
  * @return text pointer.
  */
-static inline struct atsc_text *atsc_dccsct_update_new_county_name(struct atsc_dccsct_update_new_county *update)
+static inline struct atsc_text *atsc_dccsct_update_new_county_name(struct atsc_dccsct_update *update)
 {
 	if ((update->update_data_length - 3) == 0)
 		return NULL;
 
-	return atsc_text_parse(((uint8_t*) update) + sizeof(struct atsc_dccsct_update_new_county_name),
+	return atsc_text_parse(((uint8_t*) update) + sizeof(struct atsc_dccsct_update_new_county),
 				 update->update_data_length - 3);
 }
 
