@@ -191,7 +191,7 @@ static inline struct atsc_ac3_descriptor_part3 *
  * @param part3 atsc_ac3_descriptor_part3 pointer.
  * @return Pointer to the language field, or NULL if not present.
  */
-static inline uint8_t *atsc_ac3_descriptor_part3_language(struct atsc_ac3_descriptor_part3 *part3)
+static inline iso639lang_t *atsc_ac3_descriptor_part3_language(struct atsc_ac3_descriptor_part3 *part3)
 {
 	int pos = sizeof(struct atsc_ac3_descriptor_part3);
 
@@ -207,7 +207,7 @@ static inline uint8_t *atsc_ac3_descriptor_part3_language(struct atsc_ac3_descri
  * @param part3 atsc_ac3_descriptor_part3 pointer.
  * @return Pointer to the language_2 field, or NULL if not present.
  */
-static inline uint8_t *atsc_ac3_descriptor_part3_language_2(struct atsc_ac3_descriptor_part3 *part3)
+static inline iso639lang_t *atsc_ac3_descriptor_part3_language_2(struct atsc_ac3_descriptor_part3 *part3)
 {
 	int pos = sizeof(struct atsc_ac3_descriptor_part3);
 
