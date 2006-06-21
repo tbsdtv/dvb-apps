@@ -105,7 +105,7 @@ static inline struct dvb_tva_id_entry*
 }
 
 static inline struct dvb_tva_id_entry*
-	dvb_tva_id_descriptor_countries_next(struct dvb_tva_id_descriptor *d,
+	dvb_tva_id_descriptor_entries_next(struct dvb_tva_id_descriptor *d,
 							     struct dvb_tva_id_entry *pos)
 {
 	uint8_t *end = (uint8_t*) d + 2 + d->d.len;

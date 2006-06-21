@@ -154,6 +154,17 @@ static inline struct dvb_content_identifier_entry_data_0*
 	return (struct dvb_content_identifier_entry_data_0*)
 		((uint8_t*) d + sizeof(struct dvb_content_identifier_entry));
 }
+/**
+ * Accessor for the data field of a dvb_content_identifier_entry_data_0.
+ *
+ * @param d dvb_content_identifier_entry_data_0 pointer.
+ * @return Pointer, or NULL on error.
+ */
+static inline uint8_t*
+	dvb_content_identifier_entry_data_0_data(struct dvb_content_identifier_entry_data_0 *d)
+{
+	return ((uint8_t*) d + sizeof(struct dvb_content_identifier_entry_data_0));
+}
 
 /**
  * Accessor for the data1 field of a dvb_content_identifier_entry.

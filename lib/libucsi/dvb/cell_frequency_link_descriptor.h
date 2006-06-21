@@ -160,7 +160,7 @@ static inline struct dvb_cell_frequency_link_cell*
 }
 
 static inline struct dvb_cell_frequency_link_cell_subcell*
-	dvb_cell_frequency_cell_subcells_first(struct dvb_cell_frequency_link_cell *d)
+	dvb_cell_frequency_link_cell_subcells_first(struct dvb_cell_frequency_link_cell *d)
 {
 	if (d->subcell_loop_info_length == 0)
 		return NULL;
@@ -170,7 +170,7 @@ static inline struct dvb_cell_frequency_link_cell_subcell*
 }
 
 static inline struct dvb_cell_frequency_link_cell_subcell*
-	dvb_cell_frequency_cell_subcells_next(struct dvb_cell_frequency_link_cell *cell,
+	dvb_cell_frequency_link_cell_subcells_next(struct dvb_cell_frequency_link_cell *cell,
 					      struct dvb_cell_frequency_link_cell_subcell *pos)
 {
 	uint8_t *end = (uint8_t*) cell + cell->subcell_loop_info_length;

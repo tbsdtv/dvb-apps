@@ -73,10 +73,10 @@ static inline struct dvb_service_availability_descriptor*
  * @param d dvb_service_availability_descriptor pointer.
  * @return Pointer to the field.
  */
-static inline uint32_t *
+static inline uint16_t *
 	dvb_service_availability_descriptor_cell_ids(struct dvb_service_availability_descriptor *d)
 {
-	return (uint32_t *) ((uint8_t *) d + sizeof(struct dvb_service_availability_descriptor));
+	return (uint16_t *) ((uint8_t *) d + sizeof(struct dvb_service_availability_descriptor));
 }
 
 /**

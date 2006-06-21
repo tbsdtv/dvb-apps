@@ -105,8 +105,8 @@ static inline struct dvb_application_signalling_entry*
 }
 
 static inline struct dvb_application_signalling_entry*
-	dvb_application_signalling_descriptor_countries_next(struct dvb_application_signalling_descriptor *d,
-							     struct dvb_application_signalling_entry *pos)
+	dvb_application_signalling_descriptor_entries_next(struct dvb_application_signalling_descriptor *d,
+							   struct dvb_application_signalling_entry *pos)
 {
 	uint8_t *end = (uint8_t*) d + 2 + d->d.len;
 	uint8_t *next =	(uint8_t *) pos + sizeof(struct dvb_application_signalling_entry);
