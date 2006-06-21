@@ -184,10 +184,10 @@ static inline struct atsc_rrt_dimension_part2 *atsc_rrt_dimension_part2(struct a
  * @param pos Variable containing a pointer to the current value.
  * @param idx Integer used to count which value we are in
  */
-#define atsc_rrt_dimension_part2_values_for_each(table, pos, idx) \
-	for ((pos) = atsc_rrt_dimension_part2_values_first(table), idx=0; \
+#define atsc_rrt_dimension_part2_values_for_each(part2, pos, idx) \
+	for ((pos) = atsc_rrt_dimension_part2_values_first(part2), idx=0; \
 	     (pos); \
-	     (pos) = atsc_rrt_dimension_part2_values_next(table, pos, idx), idx++)
+	     (pos) = atsc_rrt_dimension_part2_values_next(part2, pos, idx), idx++)
 
 /**
  * Accessor for the dimension_name_text field of an atsc_rrt_dimension.

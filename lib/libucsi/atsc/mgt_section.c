@@ -21,8 +21,7 @@
 
 #include <libucsi/atsc/mgt_section.h>
 
-struct atsc_mgt_section *atsc_mgt_section_codec(struct atsc_section_psip *psip,
-					        int *tables_defined_out)
+struct atsc_mgt_section *atsc_mgt_section_codec(struct atsc_section_psip *psip)
 {
 	uint8_t * buf = (uint8_t *) psip;
 	size_t pos = sizeof(struct atsc_section_psip);
@@ -71,7 +70,7 @@ struct atsc_mgt_section *atsc_mgt_section_codec(struct atsc_section_psip *psip,
 	    ((mgt->tables_defined - tables_count) != 6)) {
 		return NULL;
 	}
-	*tables_defined_out = tables_count;
+	mgt->tables_defined = tables_count;
 
 	if ((pos + sizeof(struct atsc_mgt_section_part2)) > len)
 		return NULL;

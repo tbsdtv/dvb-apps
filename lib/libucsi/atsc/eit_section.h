@@ -79,7 +79,7 @@ static inline uint16_t atsc_eit_section_source_id(struct atsc_eit_section *eit)
 }
 
 /**
- * Iterator for the events field in an atsc_eit_event_part2.
+ * Iterator for the events field in an atsc_eit_section.
  *
  * @param eit atsc_eit_section pointer.
  * @param pos Variable containing a pointer to the current atsc_eit_event.

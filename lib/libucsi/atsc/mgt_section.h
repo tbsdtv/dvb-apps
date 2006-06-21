@@ -75,14 +75,9 @@ static inline struct atsc_mgt_table *
  * Process a atsc_mgt_section.
  *
  * @param section Pointer to anj atsc_section_psip structure.
- * @param tables_defined Due to the *braindeadness* of the MGT, the
- * tables_defined value is *wrong* by a *different* amount depending on whether
- * it is cable or terrestrial. We autodetect the correct count. Use the value output here
- * and NOT the value in the atsc_mgt_section. see tables_defined on A/65C page 27.
  * @return atsc_mgt_section pointer, or NULL on error.
  */
-struct atsc_mgt_section *atsc_mgt_section_codec(struct atsc_section_psip *section,
-					        int *tables_defined);
+struct atsc_mgt_section *atsc_mgt_section_codec(struct atsc_section_psip *section);
 
 /**
  * Iterator for the tables field in an atsc_mgt_section.
