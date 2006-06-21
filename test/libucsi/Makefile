@@ -2,6 +2,7 @@
 
 CPPFLAGS += -I../../lib
 LDLIBS   += ../../lib/libdvbapi/libdvbapi.a ../../lib/libdvbcfg/libdvbcfg.a ../../lib/libucsi/libucsi.a
+LDFLAGS  += -static 
 
 binaries = testucsi
 
