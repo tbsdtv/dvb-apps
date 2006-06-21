@@ -3287,5 +3287,20 @@ void hexdump(int indent, char *prefix, uint8_t *buf, int buflen)
 
 void atsctextdump(char *header, int indent, struct atsc_text *atext)
 {
-	// FIXME: implement this!!
+	struct atsc_text_string *cur_string;
+	struct atsc_text_string_segment *cur_segment;
+	int str_idx;
+	int seg_idx;
+
+	atsc_text_strings_for_each(atext, cur_string, str_idx) {
+		iprintf(indent+1, "%s String %i language:%.3s\n", header, str_idx, cur_string->language_code);
+
+		atsc_text_string_segments_for_each(cur_string, cur_segment, seg_idx) {
+			iprintf(indent+2, "Segment %i compression_type:%i mode:%i\n",
+				seg_idx,
+				cur_segment->compression_type,
+			        cur_segment->mode);
+			// FIXME: output contents...
+		}
+	}
 }

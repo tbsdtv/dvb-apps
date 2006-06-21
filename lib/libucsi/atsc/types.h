@@ -103,10 +103,10 @@ struct atsc_text_string_segment {
  * @param pos Variable holding a pointer to the current atsc_text_string_segment.
  * @param idx Iterator variable.
  */
-#define atsc_text_string_segments_for_each(txt, pos, idx) \
-	for ((pos) = atsc_text_string_segments_first(txt), idx=0; \
+#define atsc_text_string_segments_for_each(str, pos, idx) \
+	for ((pos) = atsc_text_string_segments_first(str), idx=0; \
 	     (pos); \
-	     (pos) = atsc_text_string_segments_next(txt, pos, idx), idx++)
+	     (pos) = atsc_text_string_segments_next(str, pos, idx), idx++)
 
 /**
  * Accessor for the bytes field of an atsc_text_string_segment.
