@@ -38,6 +38,11 @@ enum atsc_mgt_section_table_type {
 	ATSC_MGT_TABLE_TYPE_DCCSCT = 5,
 };
 
+enum atsc_mgt_source {
+	ATSC_MGT_SOURCE_TERRESTRIAL = 0,
+	ATSC_MGT_SOURCE_CABLE = 1,
+};
+
 /**
  * atsc_mgt_section structure.
  */
@@ -75,9 +80,12 @@ static inline struct atsc_mgt_table *
  * Process a atsc_mgt_section.
  *
  * @param section Pointer to anj atsc_section_psip structure.
+ * @param source Due to the *braindeadness* of the MGT, you have to know what delivery system it is coming
+ * from to decode it... see A/65C page 27 (the bit defining tables_defined).
  * @return atsc_mgt_section pointer, or NULL on error.
  */
-struct atsc_mgt_section *atsc_mgt_section_codec(struct atsc_section_psip *section);
+struct atsc_mgt_section *atsc_mgt_section_codec(struct atsc_section_psip *section,
+					        enum atsc_mgt_source source);
 
 /**
  * Iterator for the tables field in an atsc_mgt_section.

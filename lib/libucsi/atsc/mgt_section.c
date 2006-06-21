@@ -21,7 +21,8 @@
 
 #include <libucsi/atsc/mgt_section.h>
 
-struct atsc_mgt_section *atsc_mgt_section_codec(struct atsc_section_psip *psip)
+struct atsc_mgt_section *atsc_mgt_section_codec(struct atsc_section_psip *psip,
+					        enum atsc_mgt_source source)
 {
 	uint8_t * buf = (uint8_t *) psip;
 	size_t pos = sizeof(struct atsc_section_psip);
@@ -34,6 +35,17 @@ struct atsc_mgt_section *atsc_mgt_section_codec(struct atsc_section_psip *psip)
 
 	bswap16(buf + pos);
 	pos += 2;
+
+	/* BRAINDEAD WARNING!! BRAINDEAD WARNING!! */
+	switch(source) {
+	case ATSC_MGT_SOURCE_TERRESTRIAL:
+		mgt->tables_defined -= 6;
+		break;
+
+	case ATSC_MGT_SOURCE_CABLE:
+		mgt->tables_defined -= 2;
+		break;
+	}
 
 	for(idx=0; idx < mgt->tables_defined; idx++) {
 		if ((pos + sizeof(struct atsc_mgt_table)) > len)
