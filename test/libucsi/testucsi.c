@@ -44,6 +44,7 @@ void parse_dvb_descriptor(struct descriptor *d, int indent, int data_type);
 void parse_atsc_descriptor(struct descriptor *d, int indent, int data_type);
 void iprintf(int indent, char *fmt, ...);
 void hexdump(int indent, char *prefix, uint8_t *buf, int buflen);
+void atsctextdump(char *header, int indent, struct atsc_text *atext);
 int zapchannels_cb(void *private, struct dvbcfg_zapchannel *channel);
 
 #define TIME_CHECK_VAL 1131835761
@@ -752,9 +753,269 @@ void parse_dvb_section(uint8_t *buf, int len, int pid, int data_type, struct sec
 void parse_atsc_section(uint8_t *buf, int len, int pid, int data_type, struct section *section)
 {
 	struct section_ext *section_ext = NULL;
+	struct atsc_section_psip *section_psip = NULL;
+	if ((section_ext = section_ext_decode(section, 1)) == NULL) {
+		return;
+	}
+	if ((section_psip = atsc_section_psip_decode(section_ext)) == NULL) {
+		return;
+	}
+
+	printf("SCT protocol_version:%i\n", section_psip->protocol_version);
 
 	switch(section->table_id) {
-	// FIXME: implement
+	case stag_atsc_master_guide:
+	{
+		struct atsc_mgt_section *mgt;
+		struct atsc_mgt_table *cur_table;
+		struct atsc_mgt_section_part2 *part2;
+		struct descriptor *curd;
+		int idx;
+
+		printf("SCT Decode MGT (pid:0x%04x) (table:0x%02x)\n", pid, section->table_id);
+		if ((mgt = atsc_mgt_section_codec(section_psip)) == NULL) {
+			fprintf(stderr, "SCT XXXX MGT section decode error\n");
+			return;
+		}
+		atsc_mgt_section_tables_for_each(mgt, cur_table, idx) {
+			printf("\tSCT table_type:0x%04x table_type_PID:%04x table_type_version_number:%i number_bytes:%i\n",
+			       cur_table->table_type,
+			       cur_table->table_type_PID,
+			       cur_table->table_type_version_number,
+			       cur_table->number_bytes);
+			atsc_mgt_table_descriptors_for_each(cur_table, curd) {
+				parse_descriptor(curd, 2, data_type);
+			}
+		}
+
+		part2 = atsc_mgt_section_part2(mgt);
+		atsc_mgt_section_part2_descriptors_for_each(part2, curd) {
+			parse_descriptor(curd, 1, data_type);
+		}
+		break;
+	}
+
+	case stag_atsc_terrestrial_virtual_channel:
+	{
+		struct atsc_tvct_section *tvct;
+		struct atsc_tvct_channel *cur_channel;
+		struct atsc_tvct_section_part2 *part2;
+		struct descriptor *curd;
+		int idx;
+
+		printf("SCT Decode TVCT (pid:0x%04x) (table:0x%02x)\n", pid, section->table_id);
+		if ((tvct = atsc_tvct_section_codec(section_psip)) == NULL) {
+			fprintf(stderr, "SCT XXXX TVCT section decode error\n");
+			return;
+		}
+		printf("\tSCT tranport_stream_id:0x%04x\n",
+		       atsc_tvct_section_transport_stream_id(tvct));
+
+		atsc_tvct_section_channels_for_each(tvct, cur_channel, idx) {
+			printf("\tSCT short_name:%04x %04x %04x %04x %04x %04x %04x major_channel_nuumber:%04x minor_channel_number:%04x modulation_mode:%02x carrier_frequency:%i channel_TSID:%04x program_number:%04x ETM_location:%i access_controlled:%i hidden:%i hide_guide:%i service_type:%02x source_id:%04x\n",
+			       cur_channel->short_name[0],
+			       cur_channel->short_name[1],
+			       cur_channel->short_name[2],
+			       cur_channel->short_name[3],
+			       cur_channel->short_name[4],
+			       cur_channel->short_name[5],
+			       cur_channel->short_name[6],
+			       cur_channel->major_channel_number,
+			       cur_channel->minor_channel_number,
+			       cur_channel->modulation_mode,
+			       cur_channel->carrier_frequency,
+			       cur_channel->channel_TSID,
+			       cur_channel->program_number,
+			       cur_channel->ETM_location,
+			       cur_channel->access_controlled,
+			       cur_channel->hidden,
+			       cur_channel->hide_guide,
+			       cur_channel->service_type,
+			       cur_channel->source_id);
+			atsc_tvct_channel_descriptors_for_each(cur_channel, curd) {
+				parse_descriptor(curd, 2, data_type);
+			}
+		}
+
+		part2 = atsc_tvct_section_part2(tvct);
+		atsc_tvct_section_part2_descriptors_for_each(part2, curd) {
+			parse_descriptor(curd, 1, data_type);
+		}
+		break;
+	}
+
+	case stag_atsc_cable_virtual_channel:
+	{
+		struct atsc_cvct_section *cvct;
+		struct atsc_cvct_channel *cur_channel;
+		struct atsc_cvct_section_part2 *part2;
+		struct descriptor *curd;
+		int idx;
+
+		printf("SCT Decode CVCT (pid:0x%04x) (table:0x%02x)\n", pid, section->table_id);
+		if ((cvct = atsc_cvct_section_codec(section_psip)) == NULL) {
+			fprintf(stderr, "SCT XXXX CVCT section decode error\n");
+			return;
+		}
+		printf("\tSCT tranport_stream_id:0x%04x\n",
+		       atsc_cvct_section_transport_stream_id(cvct));
+
+		atsc_cvct_section_channels_for_each(cvct, cur_channel, idx) {
+			printf("\tSCT short_name:%04x %04x %04x %04x %04x %04x %04x major_channel_nuumber:%04x minor_channel_number:%04x modulation_mode:%02x carrier_frequency:%i channel_TSID:%04x program_number:%04x ETM_location:%i access_controlled:%i hidden:%i path_select:%i out_of_band:%i hide_guide:%i service_type:%02x source_id:%04x\n",
+			       cur_channel->short_name[0],
+			       cur_channel->short_name[1],
+			       cur_channel->short_name[2],
+			       cur_channel->short_name[3],
+			       cur_channel->short_name[4],
+			       cur_channel->short_name[5],
+			       cur_channel->short_name[6],
+			       cur_channel->major_channel_number,
+			       cur_channel->minor_channel_number,
+			       cur_channel->modulation_mode,
+			       cur_channel->carrier_frequency,
+			       cur_channel->channel_TSID,
+			       cur_channel->program_number,
+			       cur_channel->ETM_location,
+			       cur_channel->access_controlled,
+			       cur_channel->hidden,
+			       cur_channel->path_select,
+			       cur_channel->out_of_band,
+			       cur_channel->hide_guide,
+			       cur_channel->service_type,
+			       cur_channel->source_id);
+			atsc_cvct_channel_descriptors_for_each(cur_channel, curd) {
+				parse_descriptor(curd, 2, data_type);
+			}
+		}
+
+		part2 = atsc_cvct_section_part2(cvct);
+		atsc_cvct_section_part2_descriptors_for_each(part2, curd) {
+			parse_descriptor(curd, 1, data_type);
+		}
+		break;
+	}
+
+	case stag_atsc_rating_region:
+	{
+		struct atsc_rrt_section *rrt;
+		struct atsc_rrt_section_part2 *part2;
+		struct atsc_rrt_dimension *cur_dimension;
+		struct atsc_rrt_dimension_part2 *dpart2;
+		struct atsc_rrt_dimension_value *cur_value;
+		struct atsc_rrt_dimension_value_part2 *vpart2;
+		struct atsc_rrt_section_part3 *part3;
+		struct descriptor *curd;
+		int didx;
+		int vidx;
+
+		printf("SCT Decode RRT (pid:0x%04x) (table:0x%02x)\n", pid, section->table_id);
+		if ((rrt = atsc_rrt_section_codec(section_psip)) == NULL) {
+			fprintf(stderr, "SCT XXXX RRT section decode error\n");
+			return;
+		}
+		printf("\tSCT rating_region:0x%02x\n",
+		       atsc_rrt_section_rating_region(rrt));
+		atsctextdump("SCT region_name:", 1, atsc_rrt_section_rating_region_name_text(rrt));
+
+		part2 = atsc_rrt_section_part2(rrt);
+		atsc_rrt_section_dimensions_for_each(part2, cur_dimension, didx) {
+			atsctextdump("SCT dimension_name:", 2, atsc_rrt_dimension_name_text(cur_dimension));
+
+ 			dpart2 = atsc_rrt_dimension_part2(cur_dimension);
+			printf("\tSCT graduated_scale:%i\n",
+			       dpart2->graduated_scale);
+
+			atsc_rrt_dimension_part2_values_for_each(dpart2, cur_value, vidx) {
+				atsctextdump("SCT value_abbrev_name:", 3,
+					     atsc_rrt_dimension_value_abbrev_rating_value_text(cur_value));
+
+				vpart2 = atsc_rrt_dimension_value_part2(cur_value);
+				atsctextdump("SCT value_text:", 3,
+					     atsc_rrt_dimension_value_part2_rating_value_text(vpart2));
+			}
+		}
+
+		part3 = atsc_rrt_section_part3(part2);
+		atsc_rrt_section_part3_descriptors_for_each(part3, curd) {
+			parse_descriptor(curd, 1, data_type);
+		}
+		break;
+	}
+
+	case stag_atsc_event_information:
+	{
+		struct atsc_eit_section *eit;
+		struct atsc_eit_event *cur_event;
+		struct atsc_eit_event_part2 *part2;
+		struct descriptor *curd;
+		int idx;
+
+		printf("SCT Decode EIT (pid:0x%04x) (table:0x%02x)\n", pid, section->table_id);
+		if ((eit = atsc_eit_section_codec(section_psip)) == NULL) {
+			fprintf(stderr, "SCT XXXX EIT section decode error\n");
+			return;
+		}
+		printf("\tSCT source_id:0x%04x\n",
+		       atsc_eit_section_source_id(eit));
+
+		atsc_eit_section_events_for_each(eit, cur_event, idx) {
+			printf("\t\tSCT event_id:%04x start_time:%08x ETM_location:%i length_in_secs:%i\n",
+			       cur_event->event_id,
+			       cur_event->start_time,
+			       cur_event->ETM_location,
+			       cur_event->length_in_seconds);
+
+			atsctextdump("SCT title:", 2, atsc_eit_event_name_title_text(cur_event));
+
+			part2 = atsc_eit_event_part2(cur_event);
+
+			atsc_eit_event_part2_descriptors_for_each(part2, curd) {
+				parse_descriptor(curd, 2, data_type);
+			}
+		}
+		break;
+	}
+
+	case stag_atsc_extended_text:
+	{
+		struct atsc_ett_section *ett;
+
+		printf("SCT Decode ETT (pid:0x%04x) (table:0x%02x)\n", pid, section->table_id);
+		if ((ett = atsc_ett_section_codec(section_psip)) == NULL) {
+			fprintf(stderr, "SCT XXXX ETT section decode error\n");
+			return;
+		}
+		printf("\tSCT ETM_source_id:0x%04x ETM_sub_id:%04x ETM_type:%02x\n",
+		       ett->ETM_source_id,
+		       ett->ETM_sub_id,
+		       ett->ETM_type);
+		atsctextdump("SCT text:", 1, atsc_ett_section_extended_text_message(ett));
+		break;
+	}
+
+	case stag_atsc_system_time:
+	{
+		struct atsc_stt_section *stt;
+		struct descriptor *curd;
+
+		printf("SCT Decode STT (pid:0x%04x) (table:0x%02x)\n", pid, section->table_id);
+		if ((stt = atsc_stt_section_codec(section_psip)) == NULL) {
+			fprintf(stderr, "SCT XXXX STT section decode error\n");
+			return;
+		}
+		printf("\tSCT system_time:0x%i gps_utc_offset:%i DS_status:%i DS_day_of_month:%i DS_hour:%i\n",
+		       stt->system_time,
+		       stt->gps_utc_offset,
+		       stt->DS_status,
+		       stt->DS_day_of_month,
+		       stt->DS_hour);
+		atsc_stt_section_descriptors_for_each(stt, curd) {
+			parse_descriptor(curd, 2, data_type);
+		}
+
+		break;
+	}
+
 	default:
 		fprintf(stderr, "SCT XXXX Unknown table_id:0x%02x (pid:0x%04x)\n", section->table_id, pid);
 		hexdump(0, "SCT ", buf, len);
@@ -2737,4 +2998,9 @@ void hexdump(int indent, char *prefix, uint8_t *buf, int buflen)
 		}
 		printf("%s%s|\n", prefix, line);
 	}
+}
+
+void atsctextdump(char *header, int indent, struct atsc_text *atext)
+{
+	// FIXME: implement
 }
