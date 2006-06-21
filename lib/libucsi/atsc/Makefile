@@ -24,16 +24,18 @@ sub-includes = descriptor.h \
                ett_section.h \
                dcct_section.h \
                dccsct_section.h \
+               ac3_descriptor.h \
                caption_service_descriptor.h \
-	       content_advisory_descriptor.h \
-	       extended_channel_name_descriptor.h \
-	       service_location_descriptor.h \
-	       time_shifted_service_descriptor.h \
 	       component_name_descriptor.h \
-	       dcc_departing_request_descriptor.h \
+	       content_advisory_descriptor.h \
 	       dcc_arriving_request_descriptor.h \
+	       dcc_departing_request_descriptor.h \
+	       extended_channel_name_descriptor.h \
+	       genre_descriptor.h \
 	       rc_descriptor.h \
-	       genre_descriptor.h
+	       service_location_descriptor.h \
+	       stuffing_descriptor.h \
+	       time_shifted_service_descriptor.h
 
 sub-install += atsc
 

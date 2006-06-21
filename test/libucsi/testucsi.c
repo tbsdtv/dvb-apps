@@ -2944,6 +2944,21 @@ void parse_atsc_descriptor(struct descriptor *d, int indent, int data_type)
 	(void) data_type;
 
 	switch(d->tag) {
+	case dtag_atsc_stuffing:
+	case dtag_atsc_ac3_audio:
+	case dtag_atsc_caption_service:
+	case dtag_atsc_content_advisory:
+	case dtag_atsc_extended_channel_name:
+	case dtag_atsc_service_location:
+	case dtag_atsc_time_shifted_service:
+	case dtag_atsc_component_name:
+	case dtag_atsc_dcc_departing_request:
+	case dtag_atsc_dcc_arriving_request:
+	case dtag_atsc_redistribution_control:
+	case dtag_atsc_private_information:
+	case dtag_atsc_content_identifier:
+	case dtag_atsc_genre:
+
 	// FIXME: implement
 	default:
 		fprintf(stderr, "DSC XXXX Unknown descriptor_tag:0x%02x\n", d->tag);

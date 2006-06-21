@@ -28,6 +28,8 @@ extern "C"
 #endif
 
 #include <libucsi/endianops.h>
+#include <libucsi/atsc/stuffing_descriptor.h>
+#include <libucsi/atsc/ac3_descriptor.h>
 #include <libucsi/atsc/caption_service_descriptor.h>
 #include <libucsi/atsc/component_name_descriptor.h>
 #include <libucsi/atsc/content_advisory_descriptor.h>
