@@ -64,7 +64,7 @@ void usage(void)
 		" -caslotnum <id>	ca slot number to use (default 0)\n"
 		" -channels <filename>	channels.conf file (default /etc/channels.conf)\n"
 		" -sec <filename>	sec.conf file (default /etc/sec.conf)\n"
-		" -secid <secid>	Name of SEC entry to use, for DVBS only\n"
+		" -secid <secid>	Override sec_id field in channels.conf, for DVBS only\n"
 		" -out :decoder		Output to hardware decoder\n"
 		"      :decoderabypass	Output to hardware decoder using audio bypass\n"
 		"      :dvr		Output A/V only to dvr device\n"
@@ -205,7 +205,7 @@ int main(int argc, char *argv[])
 	// find the requested LNB/SEC setting for DVBS
 	if ((zap_dvb_params.channel.fe_type == DVBFE_TYPE_DVBS) && (channel_name != NULL)) {
 		if (secid == NULL)
-			usage();
+			secid = zap_dvb_params.channel.sec_id;
 
 		if (dvbcfg_sec_find(secfile, secid,
 				    zap_dvb_params.channel.fe_params.frequency,
