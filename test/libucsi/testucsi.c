@@ -35,9 +35,13 @@
 #include <errno.h>
 #include <stdarg.h>
 
-void receive_data(int dvrfd, int timeout);
-void parse_section(uint8_t *buf, int len, int pid);
-void parse_descriptor(struct descriptor *d, int indent);
+void receive_data(int dvrfd, int timeout, int data_type);
+void parse_section(uint8_t *buf, int len, int pid, int data_type);
+void parse_dvb_section(uint8_t *buf, int len, int pid, int data_type, struct section *section);
+void parse_atsc_section(uint8_t *buf, int len, int pid, int data_type, struct section *section);
+void parse_descriptor(struct descriptor *d, int indent, int data_type);
+void parse_dvb_descriptor(struct descriptor *d, int indent, int data_type);
+void parse_atsc_descriptor(struct descriptor *d, int indent, int data_type);
 void iprintf(int indent, char *fmt, ...);
 void hexdump(int indent, char *prefix, uint8_t *buf, int buflen);
 int zapchannels_cb(void *private, struct dvbcfg_zapchannel *channel);
@@ -47,6 +51,10 @@ int zapchannels_cb(void *private, struct dvbcfg_zapchannel *channel);
 
 #define MAX_TUNE_TIME 3000
 #define MAX_DUMP_TIME 60
+
+#define DATA_TYPE_MPEG 0
+#define DATA_TYPE_DVB 1
+#define DATA_TYPE_ATSC 2
 
 struct dvbfe_handle *fe;
 struct dvbfe_info feinfo;
@@ -95,6 +103,18 @@ int main(int argc, char *argv[])
 		perror("get feinfo");
 		exit(1);
 	}
+	int data_type = DATA_TYPE_MPEG;
+	switch(feinfo.type) {
+	case DVBFE_TYPE_DVBS:
+	case DVBFE_TYPE_DVBC:
+	case DVBFE_TYPE_DVBT:
+		data_type = DATA_TYPE_DVB;
+		break;
+
+	case DVBFE_TYPE_ATSC:
+		data_type = DATA_TYPE_ATSC;
+		break;
+	}
 
 	// open demux devices
 	if ((demuxfd = dvbdemux_open_demux(adapter, 0, 0)) < 0) {
@@ -124,13 +144,13 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "Unable to open %s\n", channelsfile);
 		exit(1);
 	}
-        dvbcfg_zapchannel_load(channels, NULL, zapchannels_cb);
+	dvbcfg_zapchannel_load(channels, (void*) data_type, zapchannels_cb);
         return 0;
 }
 
 int zapchannels_cb(void *private, struct dvbcfg_zapchannel *channel)
 {
-        (void) private;
+	int data_type = (int) private;
 
         if (feinfo.type == DVBFE_TYPE_DVBS) {
                 // FIXME: do diseqc
@@ -144,13 +164,13 @@ int zapchannels_cb(void *private, struct dvbcfg_zapchannel *channel)
                 fprintf(stderr, "Failed to lock!\n");
         } else {
                 printf("Tuned successfully!\n");
-                receive_data(dvrfd, MAX_DUMP_TIME);
+                receive_data(dvrfd, MAX_DUMP_TIME, data_type);
         }
 
 	return 0;
 }
 
-void receive_data(int _dvrfd, int timeout)
+void receive_data(int _dvrfd, int timeout, int data_type)
 {
 	unsigned char databuf[TRANSPORT_PACKET_LENGTH*20];
 	int sz;
@@ -234,7 +254,7 @@ void receive_data(int _dvrfd, int timeout)
 
 				if (section_status == 1) {
 					parse_section(section_buf_data(section_bufs[pid]),
-						      section_bufs[pid]->len, pid);
+						      section_bufs[pid]->len, pid, data_type);
 					section_buf_reset(section_bufs[pid]);
 				} else if (section_status < 0) {
 					// some kind of error - just discard
@@ -246,7 +266,7 @@ void receive_data(int _dvrfd, int timeout)
 	}
 }
 
-void parse_section(uint8_t *buf, int len, int pid)
+void parse_section(uint8_t *buf, int len, int pid, int data_type)
 {
 	struct section *section;
 	struct section_ext *section_ext = NULL;
@@ -290,7 +310,7 @@ void parse_section(uint8_t *buf, int len, int pid)
 			return;
 		}
 		mpeg_cat_section_descriptors_for_each(cat, curd) {
-			parse_descriptor(curd, 1);
+			parse_descriptor(curd, 1, data_type);
 		}
 		break;
 	}
@@ -311,12 +331,12 @@ void parse_section(uint8_t *buf, int len, int pid)
 		}
 		printf("SCT program_number:0x%04x pcr_pid:0x%02x\n", mpeg_pmt_section_program_number(pmt), pmt->pcr_pid);
 		mpeg_pmt_section_descriptors_for_each(pmt, curd) {
-			parse_descriptor(curd, 1);
+			parse_descriptor(curd, 1, data_type);
 		}
 		mpeg_pmt_section_streams_for_each(pmt, cur_stream) {
 			printf("\tSCT stream_type:0x%02x pid:0x%04x\n", cur_stream->stream_type, cur_stream->pid);
 			mpeg_pmt_stream_descriptors_for_each(cur_stream, curd) {
-				parse_descriptor(curd, 2);
+				parse_descriptor(curd, 2, data_type);
 			}
 		}
 		break;
@@ -336,7 +356,7 @@ void parse_section(uint8_t *buf, int len, int pid)
 			return;
 		}
 		mpeg_tsdt_section_descriptors_for_each(tsdt, curd) {
-			parse_descriptor(curd, 1);
+			parse_descriptor(curd, 1, data_type);
 		}
 		break;
 	}
@@ -388,7 +408,7 @@ void parse_section(uint8_t *buf, int len, int pid)
 				printf("\tSCT MULTI 0x%04x 0x%02x\n", cur_stream->u.multi.esid, cur_stream->u.multi.fmc);
 			}
 			mpeg_odsmt_stream_descriptors_for_each(osdmt, cur_stream, curd) {
-				parse_descriptor(curd, 2);
+				parse_descriptor(curd, 2, data_type);
 			}
 		}
 		objects = mpeg_odsmt_section_object_descriptors(odsmt, &objects_length);
@@ -400,6 +420,32 @@ void parse_section(uint8_t *buf, int len, int pid)
 		break;
 	}
 
+	default:
+		switch(data_type) {
+		case DATA_TYPE_DVB:
+			parse_dvb_section(buf, len, pid, data_type, section);
+			break;
+
+		case DATA_TYPE_ATSC:
+			parse_atsc_section(buf, len, pid, data_type, section);
+			break;
+
+		default:
+			fprintf(stderr, "SCT XXXX Unknown table_id:0x%02x (pid:0x%04x)\n",
+				section->table_id, pid);
+			hexdump(0, "SCT ", buf, len);
+			return;
+		}
+	}
+
+	printf("\n");
+}
+
+void parse_dvb_section(uint8_t *buf, int len, int pid, int data_type, struct section *section)
+{
+	struct section_ext *section_ext = NULL;
+
+	switch(section->table_id) {
 	case stag_dvb_network_information_actual:
 	case stag_dvb_network_information_other:
 	{
@@ -418,13 +464,13 @@ void parse_section(uint8_t *buf, int len, int pid)
 		}
 		printf("SCT network_id:0x%04x\n", dvb_nit_section_network_id(nit));
 		dvb_nit_section_descriptors_for_each(nit, curd) {
-			parse_descriptor(curd, 1);
+			parse_descriptor(curd, 1, data_type);
 		}
 		part2 = dvb_nit_section_part2(nit);
 		dvb_nit_section_transports_for_each(nit, part2, cur_transport) {
 			printf("\tSCT transport_stream_id:0x%04x original_network_id:0x%04x\n", cur_transport->transport_stream_id, cur_transport->original_network_id);
 			dvb_nit_transport_descriptors_for_each(cur_transport, curd) {
-				parse_descriptor(curd, 2);
+				parse_descriptor(curd, 2, data_type);
 			}
 		}
 		break;
@@ -454,7 +500,7 @@ void parse_section(uint8_t *buf, int len, int pid)
 			       cur_service->running_status,
 			       cur_service->free_ca_mode);
 			dvb_sdt_service_descriptors_for_each(cur_service, curd) {
-				parse_descriptor(curd, 2);
+				parse_descriptor(curd, 2, data_type);
 			}
 		}
 		break;
@@ -477,7 +523,7 @@ void parse_section(uint8_t *buf, int len, int pid)
 		}
 		printf("SCT bouquet_id:0x%04x\n", dvb_bat_section_bouquet_id(bat));
 		dvb_bat_section_descriptors_for_each(bat, curd) {
-			parse_descriptor(curd, 1);
+			parse_descriptor(curd, 1, data_type);
 		}
 		part2 = dvb_bat_section_part2(bat);
 		dvb_bat_section_transports_for_each(part2, cur_transport) {
@@ -485,7 +531,7 @@ void parse_section(uint8_t *buf, int len, int pid)
 			       cur_transport->transport_stream_id,
 			       cur_transport->original_network_id);
 			dvb_bat_transport_descriptors_for_each(cur_transport, curd) {
-				parse_descriptor(curd, 2);
+				parse_descriptor(curd, 2, data_type);
 			}
 		}
 		break;
@@ -513,15 +559,15 @@ void parse_section(uint8_t *buf, int len, int pid)
 		       _int->platform_id,
 		       _int->processing_order);
 		dvb_int_section_platform_descriptors_for_each(_int, curd) {
-			parse_descriptor(curd, 1);
+			parse_descriptor(curd, 1, data_type);
 		}
 		dvb_int_section_target_loop_for_each(_int, cur_target) {
 			dvb_int_target_target_descriptors_for_each(cur_target, curd) {
-				parse_descriptor(curd, 2);
+				parse_descriptor(curd, 2, data_type);
 			}
 			operational_loop = dvb_int_target_operational_loop(cur_target);
 			dvb_int_operational_loop_operational_descriptors_for_each(operational_loop, curd) {
-				parse_descriptor(curd, 3);
+				parse_descriptor(curd, 3, data_type);
 			}
 		}
 		break;
@@ -563,7 +609,7 @@ void parse_section(uint8_t *buf, int len, int pid)
 			       (int) start_time,
 			       ctime(&start_time));
 			dvb_eit_event_descriptors_for_each(cur_event, curd) {
-				parse_descriptor(curd, 2);
+				parse_descriptor(curd, 2, data_type);
 			}
 		}
 		break;
@@ -634,7 +680,7 @@ void parse_section(uint8_t *buf, int len, int pid)
 		dvbtime = dvbdate_to_unixtime(tot->utc_time);
 		printf("SCT utc_time: %i -- %s", (int) dvbtime, ctime(&dvbtime));
 		dvb_tot_section_descriptors_for_each(tot, curd) {
-			parse_descriptor(curd, 1);
+			parse_descriptor(curd, 1, data_type);
 		}
 		break;
 	}
@@ -685,12 +731,12 @@ void parse_section(uint8_t *buf, int len, int pid)
 			return;
 		}
 		dvb_sit_section_descriptors_for_each(sit, curd) {
-			parse_descriptor(curd, 1);
+			parse_descriptor(curd, 1, data_type);
 		}
 		dvb_sit_section_services_for_each(sit, cur_service) {
 			printf("\tSCT service_id:0x%04x running_status:%i\n", cur_service->service_id, cur_service->running_status);
 			dvb_sit_service_descriptors_for_each(cur_service, curd) {
-				parse_descriptor(curd, 2);
+				parse_descriptor(curd, 2, data_type);
 			}
 		}
 		break;
@@ -701,11 +747,22 @@ void parse_section(uint8_t *buf, int len, int pid)
 		hexdump(0, "SCT ", buf, len);
 		return;
 	}
-
-	printf("\n");
 }
 
-void parse_descriptor(struct descriptor *d, int indent)
+void parse_atsc_section(uint8_t *buf, int len, int pid, int data_type, struct section *section)
+{
+	struct section_ext *section_ext = NULL;
+
+	switch(section->table_id) {
+	// FIXME: implement
+	default:
+		fprintf(stderr, "SCT XXXX Unknown table_id:0x%02x (pid:0x%04x)\n", section->table_id, pid);
+		hexdump(0, "SCT ", buf, len);
+		return;
+	}
+}
+
+void parse_descriptor(struct descriptor *d, int indent, int data_type)
 {
 	switch(d->tag) {
 	case dtag_mpeg_video_stream:
@@ -1375,8 +1432,28 @@ void parse_descriptor(struct descriptor *d, int indent)
 		break;
 	}
 
+	default:
+		switch(data_type) {
+		case DATA_TYPE_DVB:
+			parse_dvb_descriptor(d, indent, data_type);
+			return;
 
+		case DATA_TYPE_ATSC:
+			parse_atsc_descriptor(d, indent, data_type);
+			return;
 
+		default:
+			fprintf(stderr, "DSC XXXX Unknown descriptor_tag:0x%02x\n", d->tag);
+			return;
+		}
+	}
+}
+
+void parse_dvb_descriptor(struct descriptor *d, int indent, int data_type)
+{
+	(void) data_type;
+
+	switch(d->tag) {
 	case dtag_dvb_network_name:
 	{
 		struct dvb_network_name_descriptor *dx;
@@ -2595,6 +2672,18 @@ void parse_descriptor(struct descriptor *d, int indent)
 		break;
 	}
 
+	default:
+		fprintf(stderr, "DSC XXXX Unknown descriptor_tag:0x%02x\n", d->tag);
+		return;
+	}
+}
+
+void parse_atsc_descriptor(struct descriptor *d, int indent, int data_type)
+{
+	(void) data_type;
+
+	switch(d->tag) {
+	// FIXME: implement
 	default:
 		fprintf(stderr, "DSC XXXX Unknown descriptor_tag:0x%02x\n", d->tag);
 		return;
