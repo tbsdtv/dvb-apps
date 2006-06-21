@@ -22,12 +22,11 @@
 #include <libucsi/atsc/mgt_section.h>
 
 struct atsc_mgt_section *atsc_mgt_section_codec(struct atsc_section_psip *psip,
-					        enum atsc_mgt_source source)
+					        int *tables_defined_out)
 {
 	uint8_t * buf = (uint8_t *) psip;
 	size_t pos = sizeof(struct atsc_section_psip);
 	size_t len = section_ext_length(&(psip->ext_head));
-	int idx;
 	struct atsc_mgt_section *mgt = (struct atsc_mgt_section *) psip;
 
 	if (len < sizeof(struct atsc_mgt_section))
@@ -36,18 +35,18 @@ struct atsc_mgt_section *atsc_mgt_section_codec(struct atsc_section_psip *psip,
 	bswap16(buf + pos);
 	pos += 2;
 
-	/* BRAINDEAD WARNING!! BRAINDEAD WARNING!! */
-	switch(source) {
-	case ATSC_MGT_SOURCE_TERRESTRIAL:
-		mgt->tables_defined -= 6;
-		break;
+	// we cannot use the tables_defined value here because of the braindead ATSC spec!
+	int tables_count = 0;
+	while(1) {
+		// must have 1 byte at least
+		if ((pos + 1) > len)
+			return NULL;
 
-	case ATSC_MGT_SOURCE_CABLE:
-		mgt->tables_defined -= 2;
-		break;
-	}
+		// check if the top 4 bits are 1. If they are, we have fallen off the end of the tables list.
+		if ((buf[pos] & 0xf0) == 0xf0)
+			break;
 
-	for(idx=0; idx < mgt->tables_defined; idx++) {
+		// we think we're still in the tables - process as normal
 		if ((pos + sizeof(struct atsc_mgt_table)) > len)
 			return NULL;
 		struct atsc_mgt_table *table = (struct atsc_mgt_table *) (buf+pos);
@@ -65,6 +64,13 @@ struct atsc_mgt_section *atsc_mgt_section_codec(struct atsc_section_psip *psip,
 
 		pos += table->table_type_descriptors_length;
 	}
+
+	// according to the spec, there should only be a difference of "2" or "6" from the real table count.
+	if (((mgt->tables_defined - tables_count) != 2) &&
+	    ((mgt->tables_defined - tables_count) != 6)) {
+		return NULL;
+	}
+	*tables_defined_out = tables_count;
 
 	if ((pos + sizeof(struct atsc_mgt_section_part2)) > len)
 		return NULL;
