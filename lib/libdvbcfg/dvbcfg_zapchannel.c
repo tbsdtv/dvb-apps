@@ -279,9 +279,7 @@ int dvbcfg_zapchannel_load(FILE *f,
 				continue;
 
 			/* satellite switch position */
-			if (sscanf(line, "%i", &val) != 1)
-				continue;
-			tmpzapchannel.satellite_switch = val;
+			dvbcfg_curtoken(tmpzapchannel.sec_id, sizeof(tmpzapchannel.sec_id), line, ':');
 			if ((line = dvbcfg_nexttoken(line, ':')) == NULL)
 				continue;
 
@@ -425,10 +423,10 @@ int dvbcfg_zapchannel_save(FILE *f,
 				polarization = 'r';
 				break;
 			}
-			fprintf(f,  "%i:%c:%i:%i:",
+			fprintf(f,  "%i:%c:%s:%i:",
 				channels[i].fe_params.frequency / 1000,
 				polarization,
-				channels[i].satellite_switch,
+				channels[i].sec_id,
 				channels[i].fe_params.u.dvbs.symbol_rate / 1000);
 			break;
 

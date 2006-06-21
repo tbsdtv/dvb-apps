@@ -35,7 +35,7 @@ struct dvbcfg_zapchannel
         char name[128];
         enum dvbfe_type fe_type;
         struct dvbfe_parameters fe_params;
-        int satellite_switch;
+        char sec_id[128];
         int video_pid;
         int audio_pid;
         int channel_number;
