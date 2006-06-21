@@ -339,6 +339,27 @@ void parse_section(uint8_t *buf, int len, int pid)
 		break;
 	}
 
+	case stag_mpeg_metadata:
+	{
+		struct mpeg_metadata_section *metadata;
+
+		if ((section_ext = section_ext_decode(section, 1)) == NULL) {
+			return;
+		}
+		printf("SCT Decode metadata (pid:0x%04x) (table:0x%02x)\n", pid, section->table_id);
+		if ((metadata = mpeg_metadata_section_codec(section_ext)) == NULL) {
+			fprintf(stderr, "SCT XXXX metadata section decode error\n");
+			return;
+		}
+		printf("SCT random_access_indicator:%i decoder_config_flag:%i fragment_indicator:%i service_id:%02x\n",
+		       mpeg_metadata_section_random_access_indicator(metadata),
+		       mpeg_metadata_section_decoder_config_flag(metadata),
+		       mpeg_metadata_section_fragment_indicator(metadata),
+		       mpeg_metadata_section_service_id(metadata));
+		hexdump(0, "SCT ", mpeg_metadata_section_data(metadata), mpeg_metadata_section_data_length(metadata));
+		break;
+	}
+
 	case stag_mpeg_iso14496_scene_description:
 	case stag_mpeg_iso14496_object_description:
 	{
@@ -468,6 +489,7 @@ void parse_section(uint8_t *buf, int len, int pid)
 		break;
 	}
 
+	case stag_dvb_update_notification:
 	case stag_dvb_ip_mac_notification:
 	{
 		struct dvb_int_section *_int;
@@ -612,6 +634,24 @@ void parse_section(uint8_t *buf, int len, int pid)
 		dvb_tot_section_descriptors_for_each(tot, curd) {
 			parse_descriptor(curd, 1);
 		}
+		break;
+	}
+
+	case stag_dvb_tva_container:
+	{
+		struct dvb_tva_container_section *tva;
+
+		if ((section_ext = section_ext_decode(section, 1)) == NULL) {
+			return;
+		}
+		printf("SCT Decode tva (pid:0x%04x) (table:0x%02x)\n", pid, section->table_id);
+		if ((tva = dvb_tva_container_section_codec(section_ext)) == NULL) {
+			fprintf(stderr, "SCT XXXX tva section decode error\n");
+			return;
+		}
+		printf("SCT container_id:%04x\n",
+		       dvb_tva_container_section_container_id(tva));
+		hexdump(0, "SCT ", dvb_tva_container_section_data(tva), dvb_tva_container_section_data_length(tva));
 		break;
 	}
 
@@ -1100,6 +1140,240 @@ void parse_descriptor(struct descriptor *d, int indent)
 			dx->mb_buffer_size, dx->tb_leak_rate);
 		break;
 	}
+
+	case dtag_mpeg_content_labelling:
+	{
+		struct mpeg_content_labelling_descriptor *dx;
+
+		iprintf(indent, "DSC Decode mpeg_content_labelling_descriptor\n");
+		dx = mpeg_content_labelling_descriptor_codec(d);
+		if (dx == NULL) {
+			fprintf(stderr, "DSC XXXX mpeg_content_labelling_descriptor decode error\n");
+			return;
+		}
+		iprintf(indent, "DSC metadata_application_format:%04x\n",
+			dx->metadata_application_format);
+		struct mpeg_content_labelling_descriptor_application_format_identifier *id =
+			mpeg_content_labelling_descriptor_id(dx);
+		if (id != NULL) {
+			iprintf(indent, "DSC application_format_id:%04x\n",
+				id->id);
+		}
+		struct mpeg_content_labelling_descriptor_flags *flags =
+			mpeg_content_labelling_descriptor_flags(dx);
+		if (flags != NULL) {
+			iprintf(indent, "DSC content_reference_id_record_flag:%i content_time_base_indicator:%02x\n",
+				flags->content_reference_id_record_flag,
+				flags->content_time_base_indicator);
+
+			struct mpeg_content_labelling_descriptor_reference_id *reference_id =
+				mpeg_content_labelling_descriptor_reference_id(flags);
+			if (reference_id != NULL) {
+				hexdump(indent, "DSC reference_id " ,
+					mpeg_content_reference_id_data(reference_id),
+					reference_id->content_reference_id_record_length);
+			}
+
+			struct mpeg_content_labelling_descriptor_time_base *time_base =
+				mpeg_content_labelling_descriptor_time_base(flags);
+			if (time_base != NULL) {
+				iprintf(indent, "DSC time_base content_time_base_value:%lli metadata_time_base_value:%lli\n",
+					time_base->content_time_base_value,
+					time_base->metadata_time_base_value);
+			}
+
+			struct mpeg_content_labelling_descriptor_content_id *content_id =
+				mpeg_content_labelling_descriptor_content_id(flags);
+			if (content_id != NULL) {
+				iprintf(indent, "DSC content_id contentId:%i\n",
+					content_id->contentId);
+			}
+
+			struct mpeg_content_labelling_descriptor_time_base_association *time_base_assoc =
+				mpeg_content_labelling_descriptor_time_base_assoc(flags);
+			if (time_base_assoc != NULL) {
+				hexdump(indent, "DSC time_base_assoc" ,
+					mpeg_time_base_association_data(time_base_assoc),
+					time_base_assoc->time_base_association_data_length);
+			}
+
+			uint8_t *priv;
+			int priv_length;
+			priv = mpeg_content_labelling_descriptor_data(dx, flags, &priv_length);
+			hexdump(indent, "DSC private_data", priv, priv_length);
+		}
+
+		break;
+	}
+
+	case dtag_mpeg_metadata_pointer:
+	{
+		struct mpeg_metadata_pointer_descriptor *dx;
+
+		iprintf(indent, "DSC Decode mpeg_metadata_pointer_descriptor\n");
+		dx = mpeg_metadata_pointer_descriptor_codec(d);
+		if (dx == NULL) {
+			fprintf(stderr, "DSC XXXX mpeg_metadata_pointer_descriptor decode error\n");
+			return;
+		}
+		iprintf(indent, "DSC metadata_application_format:%04x\n",
+			dx->metadata_application_format);
+
+		struct mpeg_metadata_pointer_descriptor_application_format_identifier *id =
+			mpeg_metadata_pointer_descriptor_appid(dx);
+		if (id != NULL) {
+			iprintf(indent, "DSC application_format_id:%04x\n",
+				id->id);
+		}
+
+		struct mpeg_metadata_pointer_descriptor_format_identifier *did =
+			mpeg_metadata_pointer_descriptor_formid(dx);
+		if (did != NULL) {
+			iprintf(indent, "DSC mpeg_metadata_pointer_descriptor_format_id:%04x\n",
+				did->id);
+		}
+
+		struct mpeg_metadata_pointer_descriptor_flags *flags =
+			mpeg_metadata_pointer_descriptor_flags(dx);
+		if (flags != NULL) {
+			iprintf(indent, "DSC metadata_service_id:%i metadata_locator_record_flag:%i mpeg_carriage_flags:%x\n",
+				flags->metadata_service_id,
+				flags->metadata_locator_record_flag,
+				flags->mpeg_carriage_flags);
+
+			struct mpeg_metadata_pointer_descriptor_locator *locator =
+				mpeg_metadata_pointer_descriptor_locator(flags);
+			if (locator != NULL) {
+				hexdump(indent, "DSC locator" ,
+					mpeg_metadata_pointer_descriptor_locator_data(locator),
+					locator->metadata_locator_record_length);
+			}
+
+			struct mpeg_metadata_pointer_descriptor_program_number *pnum=
+				mpeg_metadata_pointer_descriptor_program_number(flags);
+			if (pnum != NULL) {
+				iprintf(indent, "DSC program_number number:%04x\n",
+					pnum->number);
+			}
+
+			struct mpeg_metadata_pointer_descriptor_carriage *carriage =
+				mpeg_metadata_pointer_descriptor_carriage(flags);
+			if (carriage != NULL) {
+				iprintf(indent, "DSC carriage transport_stream_location:%04x transport_stream_id:%04x\n",
+					carriage->transport_stream_location,
+					carriage->transport_stream_id);
+			}
+
+			uint8_t *priv;
+			int priv_length;
+			priv = mpeg_metadata_pointer_descriptor_private_data(dx, flags, &priv_length);
+			hexdump(indent, "DSC private_data" , priv, priv_length);
+		}
+
+		break;
+	}
+
+	case dtag_mpeg_metadata:
+	{
+		struct mpeg_metadata_descriptor *dx;
+
+		iprintf(indent, "DSC Decode mpeg_metadata_descriptor\n");
+		dx = mpeg_metadata_descriptor_codec(d);
+		if (dx == NULL) {
+			fprintf(stderr, "DSC XXXX mpeg_metadata_descriptor decode error\n");
+			return;
+		}
+		iprintf(indent, "DSC metadata_application_format:%04x\n",
+			dx->metadata_application_format);
+
+		struct mpeg_metadata_descriptor_application_format_identifier *id =
+			mpeg_metadata_descriptor_appid(dx);
+		if (id != NULL) {
+			iprintf(indent, "DSC application_format_id:%04x\n",
+				id->id);
+		}
+
+		struct mpeg_metadata_descriptor_format_identifier *did =
+			mpeg_metadata_descriptor_formid(dx);
+		if (did != NULL) {
+			iprintf(indent, "DSC mpeg_metadata_descriptor_format_id:%04x\n",
+				did->id);
+		}
+
+		struct mpeg_metadata_descriptor_flags *flags =
+			mpeg_metadata_descriptor_flags(dx);
+		if (flags != NULL) {
+			iprintf(indent, "DSC metadata_service_id:%i decoder_config_flags:%i dsm_cc_flag:%x\n",
+				flags->metadata_service_id,
+				flags->decoder_config_flags,
+				flags->dsm_cc_flag);
+
+			struct mpeg_metadata_descriptor_service_identifier *serviceid=
+				mpeg_metadata_descriptor_sevice_identifier(flags);
+			if (serviceid != NULL) {
+				hexdump(indent, "DSC service_id" ,
+					mpeg_metadata_descriptor_service_identifier_data(serviceid),
+					serviceid->service_identification_length);
+			}
+
+			struct mpeg_metadata_descriptor_decoder_config *dconfig=
+				mpeg_metadata_descriptor_decoder_config(flags);
+			if (dconfig != NULL) {
+				hexdump(indent, "DSC decoder_config" ,
+					mpeg_metadata_descriptor_decoder_config_data(dconfig),
+					dconfig->decoder_config_length);
+			}
+
+			struct mpeg_metadata_descriptor_decoder_config_id_record *dconfigid=
+				mpeg_metadata_descriptor_decoder_config_id_record(flags);
+			if (dconfigid != NULL) {
+				hexdump(indent, "DSC decoder_config" ,
+					mpeg_metadata_descriptor_decoder_config_id_record_data(dconfigid),
+					dconfigid->decoder_config_id_record_length);
+			}
+
+			struct mpeg_metadata_descriptor_decoder_config_service_id *dserviceid=
+				mpeg_metadata_descriptor_decoder_config_service_id(flags);
+			if (dserviceid != NULL) {
+				iprintf(indent, "DSC decoder config service_id:%04x\n",
+					dserviceid->decoder_config_metadata_service_id);
+			}
+
+			struct mpeg_metadata_descriptor_decoder_config_reserved *reserved=
+				mpeg_metadata_descriptor_decoder_config_reserved(flags);
+			if (reserved != NULL) {
+				hexdump(indent, "DSC reserved" ,
+					mpeg_metadata_descriptor_decoder_config_reserved_data(reserved),
+ 					reserved->reserved_data_length);
+			}
+
+			uint8_t *priv;
+			int priv_length;
+			priv = mpeg_metadata_descriptor_private_data(dx, flags, &priv_length);
+			hexdump(indent, "DSC private_data" , priv, priv_length);
+		}
+
+		break;
+	}
+
+	case dtag_mpeg_metadata_std:
+	{
+		struct mpeg_metadata_std_descriptor *dx;
+
+		iprintf(indent, "DSC Decode mpeg_metadata_std_descriptor\n");
+		dx = mpeg_metadata_std_descriptor_codec(d);
+		if (dx == NULL) {
+			fprintf(stderr, "DSC XXXX mpeg_metadata_std_descriptor decode error\n");
+			return;
+		}
+		iprintf(indent, "DSC metadata_input_leak_rate:%i metadata_buffer_size:%i metadata_output_leak_rate:%i\n",
+			dx->metadata_input_leak_rate,
+			dx->metadata_buffer_size,
+			dx->metadata_output_leak_rate);
+		break;
+	}
+
+
 
 	case dtag_dvb_network_name:
 	{

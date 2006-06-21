@@ -59,7 +59,7 @@ static inline uint16_t dvb_tva_container_section_container_id(struct dvb_tva_con
 }
 
 /**
- * Accessor for the selector_byte field of a dvb_data_broadcast_id_descriptor.
+ * Accessor for the data field of a dvb_data_broadcast_id_descriptor.
  *
  * @param d dvb_data_broadcast_id_descriptor pointer.
  * @return Pointer to the field.
