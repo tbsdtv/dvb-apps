@@ -48,7 +48,7 @@ struct atsc_time_shifted_service_descriptor {
 struct atsc_time_shifted_service {
   EBIT2(uint16_t reserved 		: 6; ,
 	uint16_t time_shift		:10; );
-  EBIT3(uint32_t reserved 		: 4; ,
+  EBIT3(uint32_t reserved2 		: 4; ,
 	uint32_t major_channel_number	:10; ,
 	uint32_t minor_channel_number	:10; );
 } __ucsi_packed;
@@ -75,7 +75,7 @@ static inline struct atsc_time_shifted_service_descriptor*
 	for(idx = 0; idx < ret->number_of_services; idx++) {
 		if (d->len < (pos + sizeof(struct atsc_time_shifted_service)))
 			return NULL;
-.
+
 		bswap16(buf+pos);
 		bswap24(buf+pos+2);
 
@@ -126,7 +126,7 @@ static inline struct atsc_time_shifted_service*
 
 	if (idx >= d->number_of_services)
 		return NULL;
-	return (struct atsc_caption_service_location_element *) next;
+	return (struct atsc_time_shifted_service *) next;
 }
 
 #ifdef __cplusplus

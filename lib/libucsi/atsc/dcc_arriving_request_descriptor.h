@@ -65,6 +65,10 @@ static inline struct atsc_dcc_arriving_request_descriptor*
 	if (d->len != 2 + ret->dcc_arriving_request_text_length)
 		return NULL;
 
+	if (atsc_text_validate((uint8_t*) d + sizeof(struct atsc_dcc_arriving_request_descriptor),
+	                       ret->dcc_arriving_request_text_length))
+		return NULL;
+
 	return (struct atsc_dcc_arriving_request_descriptor*) d;
 }
 
@@ -79,7 +83,7 @@ static inline struct atsc_text*
 {
 	uint8_t *txt = ((uint8_t*) d) + sizeof(struct atsc_dcc_arriving_request_descriptor);
 
-	return atsc_text_validate(txt, d->dcc_arriving_request_text_length);
+	return (struct atsc_text*) txt;
 }
 
 

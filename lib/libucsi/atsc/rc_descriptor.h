@@ -49,9 +49,6 @@ struct atsc_rc_descriptor {
 static inline struct atsc_rc_descriptor*
 	atsc_rc_descriptor_codec(struct descriptor* d)
 {
-	struct atsc_rc_descriptor *ret =
-		(struct atsc_rc_descriptor *) d;
-
 	return (struct atsc_rc_descriptor*) d;
 }
 
@@ -73,7 +70,7 @@ static inline uint8_t*
  * @param d atsc_rc_descriptor pointer.
  * @return The length
  */
-static inline uint8_t*
+static inline int
 	atsc_rc_descriptor_info_length(struct atsc_rc_descriptor *d)
 {
 	return d->d.len;

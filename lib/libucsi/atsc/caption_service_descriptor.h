@@ -77,8 +77,6 @@ static inline struct atsc_caption_service_descriptor*
 	for(idx = 0; idx < ret->number_of_services; idx++) {
 		if (d->len < (pos + sizeof(struct atsc_caption_service_entry)))
 			return NULL;
-		struct atsc_caption_service_entry *entry =
-			(struct atsc_caption_service_entry *) (buf + pos);
 
 		bswap16(buf+pos+4);
 

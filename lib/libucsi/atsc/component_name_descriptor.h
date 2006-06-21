@@ -30,6 +30,7 @@ extern "C"
 #include <libucsi/descriptor.h>
 #include <libucsi/endianops.h>
 #include <libucsi/types.h>
+#include <libucsi/atsc/types.h>
 
 /**
  * atsc_component_name_descriptor structure.
@@ -49,8 +50,10 @@ struct atsc_component_name_descriptor {
 static inline struct atsc_component_name_descriptor*
 	atsc_component_name_descriptor_codec(struct descriptor* d)
 {
-	struct atsc_component_name_descriptor *ret =
-		(struct atsc_component_name_descriptor *) d;
+	uint8_t *txt = ((uint8_t*) d) + sizeof(struct atsc_component_name_descriptor);
+
+	if (atsc_text_validate(txt, d->len))
+		return NULL;
 
 	return (struct atsc_component_name_descriptor*) d;
 }
@@ -66,7 +69,7 @@ static inline struct atsc_text*
 {
 	uint8_t *txt = ((uint8_t*) d) + sizeof(struct atsc_component_name_descriptor);
 
-	return atsc_text_validate(txt, d->len);
+	return (struct atsc_text*) txt;
 }
 
 

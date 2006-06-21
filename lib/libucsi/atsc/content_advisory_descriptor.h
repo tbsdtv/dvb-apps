@@ -107,6 +107,10 @@ static inline struct atsc_content_advisory_descriptor*
 
 		if (d->len < (pos + part2->rating_description_length))
 			return NULL;
+
+		if (atsc_text_validate(buf+pos, part2->rating_description_length))
+			return NULL;
+
 		pos += part2->rating_description_length;
 	}
 
@@ -149,7 +153,7 @@ static inline struct atsc_content_advisory_entry_part2 *
 	int pos = sizeof(struct atsc_content_advisory_entry);
 	pos += entry->rated_dimensions * sizeof(struct atsc_content_advisory_entry_dimension);
 
-	return (struct atsc_dccsct_update_part2 *) (((uint8_t*) entry) + pos);
+	return (struct atsc_content_advisory_entry_part2 *) (((uint8_t*) entry) + pos);
 }
 
 
@@ -164,7 +168,7 @@ static inline struct atsc_text*
 {
 	uint8_t *txt = ((uint8_t*) part2) + sizeof(struct atsc_content_advisory_entry_part2);
 
-	return atsc_text_validate(txt, part2->rating_description_length);
+	return (struct atsc_text *) txt;
 }
 
 

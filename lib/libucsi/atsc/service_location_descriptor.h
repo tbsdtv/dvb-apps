@@ -81,7 +81,7 @@ static inline struct atsc_service_location_descriptor*
 	for(idx = 0; idx < ret->number_elements; idx++) {
 		if (d->len < (pos + sizeof(struct atsc_caption_service_entry)))
 			return NULL;
-.
+
 		bswap16(buf+pos+1);
 
 		pos += sizeof(struct atsc_caption_service_entry);
@@ -118,7 +118,7 @@ static inline struct atsc_caption_service_location_element*
 	if (d->number_elements == 0)
 		return NULL;
 
-	return (struct atsc_caption_service_element *)
+	return (struct atsc_caption_service_location_element *)
 		((uint8_t*) d + sizeof(struct atsc_service_location_descriptor));
 }
 
