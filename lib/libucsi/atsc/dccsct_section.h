@@ -135,10 +135,13 @@ static inline struct atsc_dccsct_update_new_genre *atsc_dccsct_update_new_genre(
  * @param update atsc_dccsct_update_new_genre pointer.
  * @return text pointer.
  */
-static inline struct atsc_text *atsc_dccsct_update_new_genre_name(struct atsc_dccsct_update_new_genre *update)
+static inline struct atsc_text *atsc_dccsct_update_new_genre_name(struct atsc_dccst_update *update)
 {
-	return (struct atsc_text*)
-		(((uint8_t*) update) + sizeof(struct atsc_dccsct_update_new_genre));
+	if ((update->update_data_length - 1) == 0)
+		return NULL;
+
+	return atsc_text_parse(((uint8_t*) update) + sizeof(struct atsc_dccsct_update_new_genre),
+				update->update_data_length - 1);
 }
 
 /**
@@ -147,7 +150,8 @@ static inline struct atsc_text *atsc_dccsct_update_new_genre_name(struct atsc_dc
  * @param update atsc_dccsct_update pointer.
  * @return struct atsc_dccsct_update_new_state pointer.
  */
-static inline struct atsc_dccsct_update_new_state *atsc_dccsct_update_new_state(struct atsc_dccsct_update *update)
+static inline struct atsc_dccsct_update_new_state *
+	atsc_dccsct_update_new_state(struct atsc_dccsct_update *update)
 {
 	if (update->update_type != ATSC_DCCST_UPDATE_NEW_STATE)
 		return NULL;
@@ -162,10 +166,13 @@ static inline struct atsc_dccsct_update_new_state *atsc_dccsct_update_new_state(
  * @param update atsc_dccsct_update_new_state pointer.
  * @return text pointer.
  */
-static inline struct atsc_text *atsc_dccsct_update_new_state_name(struct atsc_dccsct_update_new_state *update)
+static inline struct atsc_text *atsc_dccsct_update_new_state_name(struct atsc_dccsct_update *update)
 {
-	return (struct atsc_text*)
-		(((uint8_t*) update) + sizeof(struct atsc_dccsct_update_new_state));
+	if ((update->update_data_length - 1) == 0)
+		return NULL;
+
+	return atsc_text_parse(((uint8_t*) update) + sizeof(struct atsc_dccsct_update_new_state),
+				 update->update_data_length - 1);
 }
 
 /**
@@ -174,7 +181,8 @@ static inline struct atsc_text *atsc_dccsct_update_new_state_name(struct atsc_dc
  * @param update atsc_dccsct_update pointer.
  * @return struct atsc_dccsct_update_new_county pointer.
  */
-static inline struct atsc_dccsct_update_new_county *atsc_dccsct_update_new_county(struct atsc_dccsct_update *update)
+static inline struct atsc_dccsct_update_new_county *
+	atsc_dccsct_update_new_county(struct atsc_dccsct_update *update)
 {
 	if (update->update_type != ATSC_DCCST_UPDATE_NEW_COUNTY)
 		return NULL;
@@ -191,8 +199,11 @@ static inline struct atsc_dccsct_update_new_county *atsc_dccsct_update_new_count
  */
 static inline struct atsc_text *atsc_dccsct_update_new_county_name(struct atsc_dccsct_update_new_county *update)
 {
-	return (struct atsc_text*)
-		(((uint8_t*) update) + sizeof(struct atsc_dccsct_update_new_county));
+	if ((update->update_data_length - 3) == 0)
+		return NULL;
+
+	return atsc_text_parse(((uint8_t*) update) + sizeof(struct atsc_dccsct_update_new_county_name),
+				 update->update_data_length - 3);
 }
 
 /**
@@ -258,7 +269,7 @@ static inline struct atsc_dccsct_update*
 				         struct atsc_dccsct_update *pos,
 				         int idx)
 {
-	if ((idx+1) > dccsct->updates_defined)
+	if (idx >= dccsct->updates_defined)
 		return NULL;
 
 	struct atsc_dccsct_update_part2 *part2 = atsc_dccsct_update_part2(pos);

@@ -11,6 +11,7 @@ PASS mpeg/pat_section.h
 PASS mpeg/pmt_section.h
      mpeg/tsdt_section.h
      mpeg/metadata_section.h
+
 PASS dvb/bat_section.h
      dvb/dit_section.h
 PASS dvb/eit_section.h
@@ -23,6 +24,7 @@ PASS dvb/st_section.h
 PASS dvb/tdt_section.h
 PASS dvb/tot_section.h
      dvb/tva_container_section.h
+
      atsc/cvct_section.h
      atsc/dccsct_section.h
      atsc/dcct_section.h
@@ -110,3 +112,14 @@ PASS mpeg/video_stream_descriptor.h
      dvb/transport_stream_descriptor.h
      dvb/vbi_data_descriptor.h
      dvb/vbi_teletext_descriptor.h
+
+     atsc/caption_service_descriptor.h
+     atsc/component_name_descriptor.h
+     atsc/content_advisory_descriptor.h
+     atsc/dcc_arriving_request_descriptor.h
+     atsc/dcc_departing_request_descriptor.h
+     atsc/extended_channel_name_descriptor.h
+     atsc/genre_descriptor.h
+     atsc/rc_descriptor.h
+     atsc/service_location_descriptor.h
+     atsc/time_shifted_service_descriptor.h

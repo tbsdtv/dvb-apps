@@ -37,14 +37,14 @@ enum atsc_dcc_context {
 
 enum atsc_dcc_selection_type {
 	ATSC_DCC_SELECTION_UNCONDITIONAL_CHANNEL_CHANGE = 0x00,
-	ATSC_DCC_SELECTION_NUMERIC_POSTAL_CODE = 0x01,
-	ATSC_DCC_SELECTION_ALPHANUMERIC_POSTAL_CODE = 0x02,
+	ATSC_DCC_SELECTION_NUMERIC_POSTAL_CODE_INCLUSION = 0x01,
+	ATSC_DCC_SELECTION_ALPHANUMERIC_POSTAL_CODE_INCLUSION = 0x02,
 	ATSC_DCC_SELECTION_DEMOGRAPHIC_CATEGORY_ONE_OR_MORE = 0x05,
 	ATSC_DCC_SELECTION_DEMOGRAPHIC_CATEGORY_ALL = 0x06,
 	ATSC_DCC_SELECTION_GENRE_CATEGORY_ONE_OR_MORE = 0x07,
 	ATSC_DCC_SELECTION_GENRE_CATEGORY_ALL = 0x08,
 	ATSC_DCC_SELECTION_CANNOT_BE_AUTHORIZED = 0x09,
-	ATSC_DCC_SELECTION_GEOGRAPHIC_LOCATION = 0x0c,
+	ATSC_DCC_SELECTION_GEOGRAPHIC_LOCATION_INCLUSION = 0x0c,
 	ATSC_DCC_SELECTION_RATING_BLOCKED = 0x0d,
 	ATSC_DCC_SELECTION_RETURN_TO_ORIGINAL_CHANNEL = 0x0f,
 	ATSC_DCC_SELECTION_NUMERIC_POSTAL_CODE_EXCLUSION = 0x11,
@@ -90,13 +90,13 @@ struct atsc_dcct_term {
 	uint8_t dcc_selection_type;
 	uint64_t dcc_selection_id;
   EBIT2(uint16_t reserved			: 6; ,
-	uint16_t descriptors_length	:10; );
+	uint16_t descriptors_length		:10; );
 	/* struct descriptor descriptors[] */
 } __ucsi_packed;
 
 struct atsc_dcct_test_part2 {
   EBIT2(uint16_t reserved			: 6; ,
-	uint16_t descriptors_length	:10; );
+	uint16_t descriptors_length		:10; );
 	/* struct descriptor descriptors[] */
 } __ucsi_packed;
 
@@ -277,7 +277,7 @@ static inline struct atsc_dcct_test *
 				     struct atsc_dcct_test *pos,
 				     int idx)
 {
-	if ((idx+1) > dcct->dcc_test_count)
+	if (idx >= dcct->dcc_test_count)
 		return NULL;
 
 	struct atsc_dcct_test_part2 *part2 = atsc_dcct_test_part2(pos);
@@ -303,7 +303,7 @@ static inline struct atsc_dcct_term *
 				  struct atsc_dcct_term *pos,
 				  int idx)
 {
-	if ((idx+1) > test->dcc_term_count)
+	if (idx >= test->dcc_term_count)
 		return NULL;
 
 	int len = sizeof(struct atsc_dcct_term);
