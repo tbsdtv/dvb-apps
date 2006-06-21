@@ -3051,18 +3051,185 @@ void parse_atsc_descriptor(struct descriptor *d, int indent, int data_type)
 	}
 
 	case dtag_atsc_content_advisory:
-	case dtag_atsc_extended_channel_name:
-	case dtag_atsc_service_location:
-	case dtag_atsc_time_shifted_service:
-	case dtag_atsc_component_name:
-	case dtag_atsc_dcc_departing_request:
-	case dtag_atsc_dcc_arriving_request:
-	case dtag_atsc_redistribution_control:
-	case dtag_atsc_private_information:
-	case dtag_atsc_content_identifier:
-	case dtag_atsc_genre:
+	{
+		struct atsc_content_advisory_descriptor *dx;
+		struct atsc_content_advisory_entry *cure;
+		struct atsc_content_advisory_entry_dimension *curd;
+		struct atsc_content_advisory_entry_part2 *part2;
+		int eidx;
+		int didx;
 
-	// FIXME: implement
+		iprintf(indent, "DSC Decode atsc_content_advisory_descriptor\n");
+		dx = atsc_content_advisory_descriptor_codec(d);
+		if (dx == NULL) {
+			fprintf(stderr, "DSC XXXX atsc_content_advisory_descriptor decode error\n");
+			return;
+		}
+
+		atsc_content_advisory_descriptor_entries_for_each(dx, cure, eidx) {
+			iprintf(indent+1,
+				"DSC rating_region:%i\n",
+				cure->rating_region);
+
+			atsc_content_advisory_entry_dimensions_for_each(cure, curd, didx) {
+				iprintf(indent+2,
+					"DSC rating_dimension_j:%i rating_value:%i\n",
+					curd->rating_dimension_j,
+				        curd->rating_value);
+			}
+
+			part2 = atsc_content_advisory_entry_part2(cure);
+
+			atsctextdump("SCT description:", 1, atsc_content_advisory_entry_part2_description(part2));
+		}
+		break;
+	}
+
+	case dtag_atsc_extended_channel_name:
+	{
+		struct atsc_extended_channel_name_descriptor *dx;
+
+		iprintf(indent, "DSC Decode atsc_extended_channel_name_descriptor\n");
+		dx = atsc_extended_channel_name_descriptor_codec(d);
+		if (dx == NULL) {
+			fprintf(stderr, "DSC XXXX atsc_extended_channel_name_descriptor decode error\n");
+			return;
+		}
+		atsctextdump("SCT text:", 1, atsc_extended_channel_name_descriptor_text(dx));
+		break;
+	}
+
+	case dtag_atsc_service_location:
+	{
+		struct atsc_service_location_descriptor *dx;
+		struct atsc_caption_service_location_element *cur;
+		int idx;
+
+		iprintf(indent, "DSC Decode atsc_service_location_descriptor\n");
+		dx = atsc_service_location_descriptor_codec(d);
+		if (dx == NULL) {
+			fprintf(stderr, "DSC XXXX atsc_service_location_descriptor decode error\n");
+			return;
+		}
+		iprintf(indent+1, "DSC PCR_PID:%04x\n", dx->PCR_PID);
+
+		atsc_service_location_descriptor_elements_for_each(dx, cur, idx) {
+			iprintf(indent+1, "DSC stream_type:%02x elementary_PID:%04x language_code:%.3s\n",
+			        cur->stream_type,
+			        cur->elementary_PID,
+			        cur->language_code);
+		}
+		break;
+	}
+
+	case dtag_atsc_time_shifted_service:
+	{
+		struct atsc_time_shifted_service_descriptor *dx;
+		struct atsc_time_shifted_service *cur;
+		int idx;
+
+		iprintf(indent, "DSC Decode atsc_time_shifted_service_descriptor\n");
+		dx = atsc_time_shifted_service_descriptor_codec(d);
+		if (dx == NULL) {
+			fprintf(stderr, "DSC XXXX atsc_time_shifted_service_descriptor decode error\n");
+			return;
+		}
+
+		atsc_time_shifted_service_descriptor_services_for_each(dx, cur, idx) {
+			iprintf(indent+1, "DSC time_shift:%i major_channel_number:%04x minor_channel_number:%04x\n",
+				cur->time_shift,
+				cur->major_channel_number,
+				cur->minor_channel_number);
+		}
+		break;
+	}
+
+	case dtag_atsc_component_name:
+	{
+		struct atsc_component_name_descriptor *dx;
+
+		iprintf(indent, "DSC Decode atsc_component_name_descriptor\n");
+		dx = atsc_component_name_descriptor_codec(d);
+		if (dx == NULL) {
+			fprintf(stderr, "DSC XXXX atsc_component_name_descriptor decode error\n");
+			return;
+		}
+		atsctextdump("SCT name:", 1, atsc_component_name_descriptor_text(dx));
+		break;
+	}
+
+	case dtag_atsc_dcc_departing_request:
+	{
+		struct atsc_dcc_departing_request_descriptor *dx;
+
+		iprintf(indent, "DSC Decode atsc_dcc_departing_request_descriptor\n");
+		dx = atsc_dcc_departing_request_descriptor_codec(d);
+		if (dx == NULL) {
+			fprintf(stderr, "DSC XXXX atsc_dcc_departing_request_descriptor decode error\n");
+			return;
+		}
+		iprintf(indent+1, "DSC dcc_departing_request_type:%02x\n",
+			dx->dcc_departing_request_type);
+
+		atsctextdump("SCT text:", 1, atsc_dcc_departing_request_descriptor_text(dx));
+		break;
+	}
+
+	case dtag_atsc_dcc_arriving_request:
+	{
+		struct atsc_dcc_arriving_request_descriptor *dx;
+
+		iprintf(indent, "DSC Decode atsc_dcc_arriving_request_descriptor\n");
+		dx = atsc_dcc_arriving_request_descriptor_codec(d);
+		if (dx == NULL) {
+			fprintf(stderr, "DSC XXXX atsc_dcc_arriving_request_descriptor decode error\n");
+			return;
+		}
+		iprintf(indent+1, "DSC dcc_arriving_request_type:%02x\n",
+			dx->dcc_arriving_request_type);
+
+		atsctextdump("SCT text:", 1, atsc_dcc_arriving_request_descriptor_text(dx));
+		break;
+	}
+
+	case dtag_atsc_redistribution_control:
+	{
+		struct atsc_rc_descriptor *dx;
+
+		iprintf(indent, "DSC Decode atsc_rc_descriptor\n");
+		dx = atsc_rc_descriptor_codec(d);
+		if (dx == NULL) {
+			fprintf(stderr, "DSC XXXX atsc_rc_descriptor decode error\n");
+			return;
+		}
+		hexdump(indent, "DSC",
+			atsc_rc_descriptor_info(dx),
+			atsc_rc_descriptor_info_length(dx));
+		break;
+	}
+
+	case dtag_atsc_genre:
+	{
+		struct atsc_genre_descriptor *dx;
+
+		iprintf(indent, "DSC Decode atsc_genre_descriptor\n");
+		dx = atsc_genre_descriptor_codec(d);
+		if (dx == NULL) {
+			fprintf(stderr, "DSC XXXX atsc_genre_descriptor decode error\n");
+			return;
+		}
+		hexdump(indent, "DSC",
+			atsc_genre_descriptor_attributes(dx),
+			dx->attribute_count);
+		break;
+	}
+
+	case dtag_atsc_private_information:
+		// FIXME: whats the format?
+
+	case dtag_atsc_content_identifier:
+		// FIXME: whats the format?
+
 	default:
 		fprintf(stderr, "DSC XXXX Unknown descriptor_tag:0x%02x\n", d->tag);
 		return;
@@ -3120,5 +3287,5 @@ void hexdump(int indent, char *prefix, uint8_t *buf, int buflen)
 
 void atsctextdump(char *header, int indent, struct atsc_text *atext)
 {
-	// FIXME: implement
+	// FIXME: implement this!!
 }
