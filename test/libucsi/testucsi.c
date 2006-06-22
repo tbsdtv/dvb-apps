@@ -45,7 +45,7 @@ void parse_dvb_descriptor(struct descriptor *d, int indent, int data_type);
 void parse_atsc_descriptor(struct descriptor *d, int indent, int data_type);
 void iprintf(int indent, char *fmt, ...);
 void hexdump(int indent, char *prefix, uint8_t *buf, int buflen);
-void atsctextdump(char *header, int indent, struct atsc_text *atext);
+void atsctextdump(char *header, int indent, struct atsc_text *atext, int len);
 int zapchannels_cb(void *private, struct dvbcfg_zapchannel *channel);
 void ts_from_file(char *filename, int data_type);
 
@@ -978,11 +978,15 @@ void parse_atsc_section(uint8_t *buf, int len, int pid, int data_type, struct se
 		}
 		printf("\tSCT rating_region:0x%02x\n",
 		       atsc_rrt_section_rating_region(rrt));
-		atsctextdump("SCT region_name:", 1, atsc_rrt_section_rating_region_name_text(rrt));
+		atsctextdump("SCT region_name:", 1,
+			     atsc_rrt_section_rating_region_name_text(rrt),
+			     rrt->rating_region_name_length);
 
 		part2 = atsc_rrt_section_part2(rrt);
 		atsc_rrt_section_dimensions_for_each(part2, cur_dimension, didx) {
-			atsctextdump("SCT dimension_name:", 2, atsc_rrt_dimension_name_text(cur_dimension));
+			atsctextdump("SCT dimension_name:", 2,
+				     atsc_rrt_dimension_name_text(cur_dimension),
+				     cur_dimension->dimension_name_length);
 
  			dpart2 = atsc_rrt_dimension_part2(cur_dimension);
 			printf("\tSCT graduated_scale:%i\n",
@@ -990,11 +994,13 @@ void parse_atsc_section(uint8_t *buf, int len, int pid, int data_type, struct se
 
 			atsc_rrt_dimension_part2_values_for_each(dpart2, cur_value, vidx) {
 				atsctextdump("SCT value_abbrev_name:", 3,
-					     atsc_rrt_dimension_value_abbrev_rating_value_text(cur_value));
+					     atsc_rrt_dimension_value_abbrev_rating_value_text(cur_value),
+					     cur_value->abbrev_rating_value_length);
 
 				vpart2 = atsc_rrt_dimension_value_part2(cur_value);
 				atsctextdump("SCT value_text:", 3,
-					     atsc_rrt_dimension_value_part2_rating_value_text(vpart2));
+					     atsc_rrt_dimension_value_part2_rating_value_text(vpart2),
+					     vpart2->rating_value_length);
 			}
 		}
 
@@ -1031,7 +1037,9 @@ void parse_atsc_section(uint8_t *buf, int len, int pid, int data_type, struct se
 			       cur_event->ETM_location,
 			       cur_event->length_in_seconds);
 
-			atsctextdump("SCT title:", 2, atsc_eit_event_name_title_text(cur_event));
+			atsctextdump("SCT title:", 2,
+				     atsc_eit_event_name_title_text(cur_event),
+				     cur_event->title_length);
 
 			part2 = atsc_eit_event_part2(cur_event);
 
@@ -1055,7 +1063,9 @@ void parse_atsc_section(uint8_t *buf, int len, int pid, int data_type, struct se
 		       ett->ETM_source_id,
 		       ett->ETM_sub_id,
 		       ett->ETM_type);
-		atsctextdump("SCT text:", 1, atsc_ett_section_extended_text_message(ett));
+		atsctextdump("SCT text:", 1,
+			     atsc_ett_section_extended_text_message(ett),
+			     atsc_ett_section_extended_text_message_length(ett));
 		break;
 	}
 
@@ -3167,8 +3177,6 @@ void parse_atsc_descriptor(struct descriptor *d, int indent, int data_type)
 {
 	(void) data_type;
 
-	return; //HACK!
-
 	switch(d->tag) {
 	case dtag_atsc_stuffing:
 	{
@@ -3183,17 +3191,12 @@ void parse_atsc_descriptor(struct descriptor *d, int indent, int data_type)
 		hexdump(indent, "DSC",
 			atsc_stuffing_descriptor_data(dx),
 			atsc_stuffing_descriptor_data_length(dx));
-
-		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
-		getchar();
 		break;
 	}
 
 	case dtag_atsc_ac3_audio:
 	{
 		struct atsc_ac3_descriptor *dx;
-		struct atsc_ac3_descriptor_part2 *part2;
-		struct atsc_ac3_descriptor_part3 *part3;
 
 		iprintf(indent, "DSC Decode atsc_ac3_descriptor\n");
 		dx = atsc_ac3_descriptor_codec(d);
@@ -3203,57 +3206,18 @@ void parse_atsc_descriptor(struct descriptor *d, int indent, int data_type)
 		}
 
 		iprintf(indent,
-			"DSC sample_rate_code:%i bsid:%i bit_rate_code:%i surround_mode:%i bsmod:%i num_channels:%i full_svc:%i langcod:%i\n",
+			"DSC sample_rate_code:%i bsid:%i bit_rate_code:%i surround_mode:%i bsmod:%i num_channels:%i full_svc:%i\n",
 			dx->sample_rate_code,
 			dx->bsid,
 			dx->bit_rate_code,
 			dx->surround_mode,
 			dx->bsmod,
 			dx->num_channels,
-			dx->full_svc,
-			dx->langcod);
-		if (dx->num_channels == 0) {
-			iprintf(indent,
-				"DSC langcod2:%i\n",
-				atsc_ac3_descriptor_langcod2(dx));
-		}
-
-		part2 = atsc_ac3_descriptor_part2(dx);
-		if (dx->bsmod < 2) {
-			iprintf(indent,
-				"DSC mainid:%i priority:%i\n",
-				part2->flags.bsmodflags.mainid,
-				part2->flags.bsmodflags.priority);
-		} else {
-			iprintf(indent,
-				"DSC asvcflags:%i\n",
-				part2->flags.asvcflags);
-		}
-		iprintf(indent,
-			"DSC text_code:%i\n",
-			part2->text_code);
-		hexdump(indent, "DSC text",
-			atsc_ac3_descriptor_part2_text(part2),
-			part2->textlen);
-
-		part3 = atsc_ac3_descriptor_part3(part2);
-		if (part3->language_flag) {
-			iprintf(indent,
-				"DSC language:%.3s\n",
-				atsc_ac3_descriptor_part3_language(part3));
-		}
-		if (part3->language_flag_2) {
-			iprintf(indent,
-				"DSC language_2:%.3s\n",
-				atsc_ac3_descriptor_part3_language_2(part3));
-		}
+			dx->full_svc);
 
 		hexdump(indent+1, "DSC additional_info",
-			atsc_ac3_descriptor_additional_info(part3),
-			atsc_ac3_descriptor_additional_info_length(dx, part3));
-
-		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
-		getchar();
+			atsc_ac3_descriptor_additional_info(dx),
+			atsc_ac3_descriptor_additional_info_length(dx));
 		break;
 	}
 
@@ -3279,9 +3243,6 @@ void parse_atsc_descriptor(struct descriptor *d, int indent, int data_type)
 				cur->easy_reader,
 				cur->wide_aspect_ratio);
 		}
-
-		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
-		getchar();
 		break;
 	}
 
@@ -3315,11 +3276,12 @@ void parse_atsc_descriptor(struct descriptor *d, int indent, int data_type)
 
 			part2 = atsc_content_advisory_entry_part2(cure);
 
-			atsctextdump("SCT description:", 1, atsc_content_advisory_entry_part2_description(part2));
+			atsctextdump("DSC description:",
+					indent,
+					atsc_content_advisory_entry_part2_description(part2),
+					part2->rating_description_length);
 		}
 
-		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
-		getchar();
 		break;
 	}
 
@@ -3333,10 +3295,10 @@ void parse_atsc_descriptor(struct descriptor *d, int indent, int data_type)
 			fprintf(stderr, "DSC XXXX atsc_extended_channel_name_descriptor decode error\n");
 			return;
 		}
-		atsctextdump("SCT text:", 1, atsc_extended_channel_name_descriptor_text(dx));
 
-		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
-		getchar();
+		atsctextdump("SCT text:", 1,
+				atsc_extended_channel_name_descriptor_text(dx),
+				atsc_extended_channel_name_descriptor_text_length(dx));
 		break;
 	}
 
@@ -3360,9 +3322,6 @@ void parse_atsc_descriptor(struct descriptor *d, int indent, int data_type)
 			        cur->elementary_PID,
 			        cur->language_code);
 		}
-
-		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
-		getchar();
 		break;
 	}
 
@@ -3401,7 +3360,10 @@ void parse_atsc_descriptor(struct descriptor *d, int indent, int data_type)
 			fprintf(stderr, "DSC XXXX atsc_component_name_descriptor decode error\n");
 			return;
 		}
-		atsctextdump("SCT name:", 1, atsc_component_name_descriptor_text(dx));
+
+		atsctextdump("SCT name:", 1,
+			     atsc_component_name_descriptor_text(dx),
+			     atsc_component_name_descriptor_text_length(dx));
 
 		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
 		getchar();
@@ -3421,7 +3383,9 @@ void parse_atsc_descriptor(struct descriptor *d, int indent, int data_type)
 		iprintf(indent+1, "DSC dcc_departing_request_type:%02x\n",
 			dx->dcc_departing_request_type);
 
-		atsctextdump("SCT text:", 1, atsc_dcc_departing_request_descriptor_text(dx));
+		atsctextdump("SCT text:", 1,
+				atsc_dcc_departing_request_descriptor_text(dx),
+				atsc_dcc_departing_request_descriptor_text_length(dx));
 
 		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
 		getchar();
@@ -3441,7 +3405,9 @@ void parse_atsc_descriptor(struct descriptor *d, int indent, int data_type)
 		iprintf(indent+1, "DSC dcc_arriving_request_type:%02x\n",
 			dx->dcc_arriving_request_type);
 
-		atsctextdump("SCT text:", 1, atsc_dcc_arriving_request_descriptor_text(dx));
+		atsctextdump("SCT text:", 1,
+			     atsc_dcc_arriving_request_descriptor_text(dx),
+			     atsc_dcc_arriving_request_descriptor_text_length(dx));
 
 		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
 		getchar();
@@ -3548,12 +3514,15 @@ void hexdump(int indent, char *prefix, uint8_t *buf, int buflen)
 	}
 }
 
-void atsctextdump(char *header, int indent, struct atsc_text *atext)
+void atsctextdump(char *header, int indent, struct atsc_text *atext, int len)
 {
 	struct atsc_text_string *cur_string;
 	struct atsc_text_string_segment *cur_segment;
 	int str_idx;
 	int seg_idx;
+
+	if (len == 0)
+		return;
 
 	atsc_text_strings_for_each(atext, cur_string, str_idx) {
 		iprintf(indent+1, "%s String %i language:%.3s\n", header, str_idx, cur_string->language_code);
