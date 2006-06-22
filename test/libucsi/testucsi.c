@@ -3585,6 +3585,9 @@ void atsctextdump(char *header, int indent, struct atsc_text *atext)
 				} else {
 					hexdump(indent+2, "decoded  ", decoded, count);
 				}
+
+				if (decoded)
+					free(decoded);
 				break;
 			}
 
@@ -3604,6 +3607,8 @@ void atsctextdump(char *header, int indent, struct atsc_text *atext)
 				} else {
 					hexdump(indent+2, "decoded ", decoded, count);
 				}
+				if (decoded)
+					free(decoded);
 				break;
 			}
  			}
