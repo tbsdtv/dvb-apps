@@ -1738,6 +1738,7 @@ void parse_descriptor(struct descriptor *d, int indent, int data_type)
 
 		default:
 			fprintf(stderr, "DSC XXXX Unknown descriptor_tag:0x%02x\n", d->tag);
+			hexdump(0, "DSC ", (uint8_t*) d, d->len+2);
 			return;
 		}
 	}
@@ -2968,6 +2969,7 @@ void parse_dvb_descriptor(struct descriptor *d, int indent, int data_type)
 
 	default:
 		fprintf(stderr, "DSC XXXX Unknown descriptor_tag:0x%02x\n", d->tag);
+		hexdump(0, "DSC ", (uint8_t*) d, d->len+2);
 		return;
 	}
 }
@@ -3265,6 +3267,7 @@ void parse_atsc_descriptor(struct descriptor *d, int indent, int data_type)
 
 	default:
 		fprintf(stderr, "DSC XXXX Unknown descriptor_tag:0x%02x\n", d->tag);
+		hexdump(0, "DSC ", (uint8_t*) d, d->len+2);
 		return;
 	}
 }
