@@ -62,6 +62,8 @@ enum atsc_text_segment_mode {
 	ATSC_TEXT_SEGMENT_MODE_UNICODE_RANGE_MAX	= 0x33,
 	ATSC_TEXT_SEGMENT_MODE_SCSU			= 0x3e,
 	ATSC_TEXT_SEGMENT_MODE_UTF16			= 0x3f,
+	ATSC_TEXT_SEGMENT_MODE_TAIWAN_BITMAP		= 0x40,
+	ATSC_TEXT_SEGMENT_MODE_TAIWAN_CODEWORD_BITMAP	= 0x41,
 };
 
 typedef uint32_t atsctime_t;
@@ -130,28 +132,18 @@ static inline uint8_t*
 extern int atsc_text_validate(uint8_t *buf, int len);
 
 /**
- * Decompress a huffman encoded program title string segment.
+ * Decodes an atsc_text_segment with mode < 0x3e. Decompression of the ATSC text encoding IS
+ * supported. The output text will be in the UTF-8 encoding.
  *
- * @param buf Pointer to the segment buffer.
- * @param buflen Length of the segment buffer.
- * @param dest Malloc()ed buffer.
- * @param destlen Size of malloced buffer.
- * @return Length of string in chars, or <0 on error.
+ * @param segment Pointer to the segment to decode.
+ * @param destbuf Pointer to the malloc()ed buffer to append text to (pass NULL if none).
+ * @param destbufsize Size of destbuf in bytes.
+ * @param destbufpos Position within destbuf. This will be updated to point after the end of the
+ * string on exit.
+ * @return New value of destbufpos, or < 0 on error.
  */
-extern int atsc_text_decode_program_title_segment(uint8_t *buf, size_t buflen,
-					     uint8_t **dest, size_t *destlen);
-
-/**
- * Decompress a huffman encoded program description string segment.
- *
- * @param buf Pointer to the segment buffer.
- * @param buflen Length of the segment buffer.
- * @param dest Malloc()ed buffer.
- * @param destlen Size of malloced buffer.
- * @return Length of string in chars, or <0 on error.
- */
-extern int atsc_text_decode_program_description_segment(uint8_t *buf, size_t buflen,
-					           uint8_t **dest, size_t *destlen);
+extern int atsc_text_segment_decode(struct atsc_text_string_segment *segment,
+				    uint8_t **destbuf, size_t *destbufsize, size_t *destbufpos);
 
 /**
  * Convert from ATSC time to unix time_t.

@@ -3537,50 +3537,22 @@ void atsctextdump(char *header, int indent, struct atsc_text *atext, int len)
 				atsc_text_string_segment_bytes(cur_segment),
 				cur_segment->number_bytes);
 
-			switch(cur_segment->compression_type) {
-			case ATSC_TEXT_COMPRESS_PROGRAM_TITLE:
-			{
-				uint8_t *raw = atsc_text_string_segment_bytes(cur_segment);
+			if (cur_segment->compression_type < 0x3e) {
 				uint8_t *decoded = NULL;
 				size_t decodedlen = 0;
-				int count;
+				size_t decodedpos = 0;
 
-				count  = atsc_text_decode_program_title_segment(raw,
-										cur_segment->number_bytes,
-										&decoded,
-										&decodedlen);
-				if (count < 0) {
+				if (atsc_text_segment_decode(cur_segment,
+				    			     &decoded,
+							     &decodedlen,
+							     &decodedpos) < 0) {
 					iprintf(indent+2, "Decode error\n");
 				} else {
-					hexdump(indent+2, "decoded  ", decoded, count);
-				}
-
-				if (decoded)
-					free(decoded);
-				break;
-			}
-
-			case ATSC_TEXT_COMPRESS_PROGRAM_DESCRIPTION:
-			{
-				uint8_t *raw = atsc_text_string_segment_bytes(cur_segment);
-				uint8_t *decoded = NULL;
-				size_t decodedlen = 0;
-				int count;
-
-				count  = atsc_text_decode_program_description_segment(raw,
-						cur_segment->number_bytes,
-						&decoded,
-						&decodedlen);
-				if (count < 0) {
-					iprintf(indent+2, "Decode error\n");
-				} else {
-					hexdump(indent+2, "decoded ", decoded, count);
+					hexdump(indent+2, "decoded  ", decoded, decodedpos);
 				}
 				if (decoded)
 					free(decoded);
-				break;
 			}
- 			}
 		}
 	}
 }
