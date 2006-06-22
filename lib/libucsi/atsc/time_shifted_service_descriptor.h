@@ -95,7 +95,7 @@ static inline struct atsc_time_shifted_service_descriptor*
 #define atsc_time_shifted_service_descriptor_services_for_each(d, pos, idx) \
 	for ((pos) = atsc_time_shifted_service_descriptor_services_first(d), idx=0; \
 	     (pos); \
-	     (pos) = atsc_time_shifted_service_descriptor_services_next(d, pos, idx), idx++)
+	     (pos) = atsc_time_shifted_service_descriptor_services_next(d, pos, ++idx))
 
 
 

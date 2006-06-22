@@ -1,4 +1,4 @@
-/*
+	/*
  * section and descriptor parser
  *
  * Copyright (C) 2005 Andrew de Quincey (adq_dvb@lidskialf.net)
@@ -134,9 +134,9 @@ extern int atsc_text_validate(uint8_t *buf, int len);
  *
  * @param buf Pointer to the segment buffer.
  * @param buflen Length of the segment buffer.
- * @param dest Destination for the malloc()ed decompressed string.
- * @param destlen Destination for the length of the decompressed string.
- * @return 0 on success, nonzero on failure.
+ * @param dest Malloc()ed buffer.
+ * @param destlen Size of malloced buffer.
+ * @return Length of string in chars, or <0 on error.
  */
 extern int atsc_text_decode_program_title_segment(uint8_t *buf, size_t buflen,
 					     uint8_t **dest, size_t *destlen);
@@ -146,9 +146,9 @@ extern int atsc_text_decode_program_title_segment(uint8_t *buf, size_t buflen,
  *
  * @param buf Pointer to the segment buffer.
  * @param buflen Length of the segment buffer.
- * @param dest Destination for the malloc()ed decompressed string.
- * @param destlen Destination for the length of the decompressed string.
- * @return 0 on success, nonzero on failure.
+ * @param dest Malloc()ed buffer.
+ * @param destlen Size of malloced buffer.
+ * @return Length of string in chars, or <0 on error.
  */
 extern int atsc_text_decode_program_description_segment(uint8_t *buf, size_t buflen,
 					           uint8_t **dest, size_t *destlen);

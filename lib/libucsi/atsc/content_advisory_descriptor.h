@@ -104,6 +104,7 @@ static inline struct atsc_content_advisory_descriptor*
 			return NULL;
 		struct atsc_content_advisory_entry_part2 *part2 =
 				(struct atsc_content_advisory_entry_part2 *) (buf + pos);
+		pos += sizeof(struct atsc_content_advisory_entry_part2);
 
 		if (d->len < (pos + part2->rating_description_length))
 			return NULL;
@@ -127,7 +128,7 @@ static inline struct atsc_content_advisory_descriptor*
 #define atsc_content_advisory_descriptor_entries_for_each(d, pos, idx) \
 	for ((pos) = atsc_content_advisory_descriptor_entries_first(d), idx=0; \
 	     (pos); \
-	     (pos) = atsc_content_advisory_descriptor_entries_next(d, pos, idx), idx++)
+	     (pos) = atsc_content_advisory_descriptor_entries_next(d, pos, ++idx))
 
 /**
  * Iterator for dimensions field of a atsc_content_advisory_entry.
@@ -139,7 +140,7 @@ static inline struct atsc_content_advisory_descriptor*
 #define atsc_content_advisory_entry_dimensions_for_each(d, pos, idx) \
 	for ((pos) = atsc_content_advisory_entry_dimensions_first(d), idx=0; \
 	     (pos); \
-	     (pos) = atsc_content_advisory_entry_dimensions_next(d, pos, idx), idx++)
+	     (pos) = atsc_content_advisory_entry_dimensions_next(d, pos, ++idx))
 
 /**
  * Accessor for the part2 field of an atsc_content_advisory_entry.

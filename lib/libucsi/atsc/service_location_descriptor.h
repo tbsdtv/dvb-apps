@@ -100,7 +100,7 @@ static inline struct atsc_service_location_descriptor*
 #define atsc_service_location_descriptor_elements_for_each(d, pos, idx) \
 	for ((pos) = atsc_service_location_descriptor_elements_first(d), idx=0; \
 	     (pos); \
-	     (pos) = atsc_service_location_descriptor_elements_next(d, pos, idx), idx++)
+	     (pos) = atsc_service_location_descriptor_elements_next(d, pos, ++idx))
 
 
 

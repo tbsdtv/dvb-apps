@@ -96,7 +96,7 @@ static inline struct atsc_caption_service_descriptor*
 #define atsc_caption_service_descriptor_entries_for_each(d, pos, idx) \
 	for ((pos) = atsc_caption_service_descriptor_entries_first(d), idx=0; \
 	     (pos); \
-	     (pos) = atsc_caption_service_descriptor_entries_next(d, pos, idx), idx++)
+	     (pos) = atsc_caption_service_descriptor_entries_next(d, pos, ++idx))
 
 
 

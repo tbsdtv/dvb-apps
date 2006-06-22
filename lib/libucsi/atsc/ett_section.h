@@ -72,6 +72,18 @@ static inline struct atsc_text*
 	return (struct atsc_text*)(((uint8_t*) ett) + pos);
 }
 
+/**
+ * Accessor for the extended_text_message part of an atsc_ett_section.
+ *
+ * @param ett atsc_ett_section pointer.
+ * @return The length.
+ */
+static inline int
+	atsc_ett_section_extended_text_message_length(struct atsc_ett_section *ett)
+{
+	return section_ext_length(&ett->head.ext_head) - sizeof(struct atsc_ett_section);
+}
+
 #ifdef __cplusplus
 }
 #endif

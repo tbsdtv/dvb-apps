@@ -72,6 +72,18 @@ static inline struct atsc_text*
 	return (struct atsc_text*) txt;
 }
 
+/**
+ * Accessor for the length of the text field of an atsc_component_name_descriptor_text.
+ *
+ * @param d atsc_component_name_descriptor pointer.
+ * @return The length in bytes.
+ */
+static inline int
+	atsc_component_name_descriptor_text_length(struct atsc_component_name_descriptor *d)
+{
+	return d->d.len;
+}
+
 
 #ifdef __cplusplus
 }
