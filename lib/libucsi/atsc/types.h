@@ -94,7 +94,7 @@ struct atsc_text_string_segment {
 #define atsc_text_strings_for_each(txt, pos, idx) \
 	for ((pos) = atsc_text_strings_first(txt), idx=0; \
 	     (pos); \
-	     (pos) = atsc_text_strings_next(txt, pos, idx), idx++)
+	     (pos) = atsc_text_strings_next(txt, pos, ++idx))
 
 /**
  * Iterator for segments field of an atsc_text_string structure.
@@ -106,7 +106,7 @@ struct atsc_text_string_segment {
 #define atsc_text_string_segments_for_each(str, pos, idx) \
 	for ((pos) = atsc_text_string_segments_first(str), idx=0; \
 	     (pos); \
-	     (pos) = atsc_text_string_segments_next(str, pos, idx), idx++)
+	     (pos) = atsc_text_string_segments_next(str, pos, ++idx))
 
 /**
  * Accessor for the bytes field of an atsc_text_string_segment.
@@ -115,7 +115,7 @@ struct atsc_text_string_segment {
  * @return Pointer to the bytes.
  */
 static inline uint8_t*
-	atsc_text_string_segment_bytes(struct atsc_text_string *d)
+	atsc_text_string_segment_bytes(struct atsc_text_string_segment *d)
 {
 	return ((uint8_t*) d) + sizeof(struct atsc_text_string_segment);
 }

@@ -102,7 +102,7 @@ static inline uint16_t atsc_cvct_section_transport_stream_id(struct atsc_cvct_se
 #define atsc_cvct_section_channels_for_each(mgt, pos, idx) \
 	for ((pos) = atsc_cvct_section_channels_first(mgt), idx=0; \
 	     (pos); \
-	     (pos) = atsc_cvct_section_channels_next(mgt, pos, idx), idx++)
+	     (pos) = atsc_cvct_section_channels_next(mgt, pos, ++idx))
 
 /**
  * Iterator for the descriptors field in a atsc_cvct_channel structure.
@@ -178,7 +178,7 @@ static inline struct atsc_cvct_channel *
 		return NULL;
 
 	return (struct atsc_cvct_channel *)
-		((uint8_t*) pos) + sizeof(struct atsc_cvct_channel) + pos->descriptors_length;
+		(((uint8_t*) pos) + sizeof(struct atsc_cvct_channel) + pos->descriptors_length);
 }
 
 static inline struct descriptor *

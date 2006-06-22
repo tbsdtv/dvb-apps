@@ -27,6 +27,7 @@ struct atsc_mgt_section *atsc_mgt_section_codec(struct atsc_section_psip *psip)
 	size_t pos = sizeof(struct atsc_section_psip);
 	size_t len = section_ext_length(&(psip->ext_head));
 	struct atsc_mgt_section *mgt = (struct atsc_mgt_section *) psip;
+	int i;
 
 	if (len < sizeof(struct atsc_mgt_section))
 		return NULL;
@@ -35,16 +36,7 @@ struct atsc_mgt_section *atsc_mgt_section_codec(struct atsc_section_psip *psip)
 	pos += 2;
 
 	// we cannot use the tables_defined value here because of the braindead ATSC spec!
-	int tables_count = 0;
-	while(1) {
-		// must have 1 byte at least
-		if ((pos + 1) > len)
-			return NULL;
-
-		// check if the top 4 bits are 1. If they are, we have fallen off the end of the tables list.
-		if ((buf[pos] & 0xf0) == 0xf0)
-			break;
-
+	for(i=0; i < mgt->tables_defined; i++) {
 		// we think we're still in the tables - process as normal
 		if ((pos + sizeof(struct atsc_mgt_table)) > len)
 			return NULL;
@@ -62,15 +54,7 @@ struct atsc_mgt_section *atsc_mgt_section_codec(struct atsc_section_psip *psip)
 			return NULL;
 
 		pos += table->table_type_descriptors_length;
-		tables_count++;
 	}
-
-	// according to the spec, there should only be a difference of "2" or "6" from the real table count.
-	if (((mgt->tables_defined - tables_count) != 2) &&
-	    ((mgt->tables_defined - tables_count) != 6)) {
-		return NULL;
-	}
-	mgt->tables_defined = tables_count;
 
 	if ((pos + sizeof(struct atsc_mgt_section_part2)) > len)
 		return NULL;

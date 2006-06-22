@@ -88,7 +88,7 @@ static inline uint16_t atsc_eit_section_source_id(struct atsc_eit_section *eit)
 #define atsc_eit_section_events_for_each(eit, pos, idx) \
 	for ((pos) = atsc_eit_section_events_first(eit), idx=0; \
 	     (pos); \
-	     (pos) = atsc_eit_section_events_next(eit, pos, idx), idx++)
+	     (pos) = atsc_eit_section_events_next(eit, pos, ++idx))
 
 /**
  * Accessor for the title_text field of an atsc_eit_event.
@@ -161,7 +161,7 @@ static inline struct atsc_eit_event *
 	int len = sizeof(struct atsc_eit_event_part2);
 	len += part2->descriptors_length;
 
-	return (struct atsc_eit_event *) ((uint8_t*) part2) + len;
+	return (struct atsc_eit_event *) (((uint8_t*) part2) + len);
 }
 
 static inline struct descriptor *

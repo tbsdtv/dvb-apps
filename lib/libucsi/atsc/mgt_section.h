@@ -67,9 +67,9 @@ struct atsc_mgt_section_part2 {
 	/* struct descriptor descriptors[] */
 } __ucsi_packed;
 
-static inline struct atsc_mgt_table * atsc_mgt_section_tables_first(struct atsc_mgt_section *stt);
+static inline struct atsc_mgt_table * atsc_mgt_section_tables_first(struct atsc_mgt_section *mgt);
 static inline struct atsc_mgt_table *
-	atsc_mgt_section_tables_next(struct atsc_mgt_section *stt, struct atsc_mgt_table *pos, int idx);
+	atsc_mgt_section_tables_next(struct atsc_mgt_section *mgt, struct atsc_mgt_table *pos, int idx);
 
 /**
  * Process a atsc_mgt_section.
@@ -89,7 +89,7 @@ struct atsc_mgt_section *atsc_mgt_section_codec(struct atsc_section_psip *sectio
 #define atsc_mgt_section_tables_for_each(mgt, pos, idx) \
 	for ((pos) = atsc_mgt_section_tables_first(mgt), idx=0; \
 	     (pos); \
-	     (pos) = atsc_mgt_section_tables_next(mgt, pos, idx), idx++)
+	     (pos) = atsc_mgt_section_tables_next(mgt, pos, ++idx))
 
 /**
  * Iterator for the descriptors field in a atsc_mgt_table structure.
@@ -146,26 +146,26 @@ static inline struct atsc_mgt_section_part2 *
 
 /******************************** PRIVATE CODE ********************************/
 static inline struct atsc_mgt_table *
-	atsc_mgt_section_tables_first(struct atsc_mgt_section *stt)
+	atsc_mgt_section_tables_first(struct atsc_mgt_section *mgt)
 {
 	size_t pos = sizeof(struct atsc_mgt_section);
 
-	if (stt->tables_defined == 0)
+	if (mgt->tables_defined == 0)
 		return NULL;
 
-	return (struct atsc_mgt_table*) (((uint8_t *) stt) + pos);
+	return (struct atsc_mgt_table*) (((uint8_t *) mgt) + pos);
 }
 
 static inline struct atsc_mgt_table *
-	atsc_mgt_section_tables_next(struct atsc_mgt_section *stt,
+	atsc_mgt_section_tables_next(struct atsc_mgt_section *mgt,
 				     struct atsc_mgt_table *pos,
 				     int idx)
 {
-	if (idx >= stt->tables_defined)
+	if (idx >= mgt->tables_defined)
 		return NULL;
 
 	return (struct atsc_mgt_table *)
-		((uint8_t*) pos) + sizeof(struct atsc_mgt_table) + pos->table_type_descriptors_length;
+		(((uint8_t*) pos) + sizeof(struct atsc_mgt_table) + pos->table_type_descriptors_length);
 }
 
 static inline struct descriptor *

@@ -112,7 +112,7 @@ static inline uint16_t atsc_dccsct_section_dccsct_type(struct atsc_dccsct_sectio
 #define atsc_dccsct_section_updates_for_each(dccsct, pos, idx) \
 	for ((pos) = atsc_dccsct_section_updates_first(dccsct), idx=0; \
 	     (pos); \
-	     (pos) = atsc_dccsct_section_updates_next(dccsct, pos, idx), idx++)
+	     (pos) = atsc_dccsct_section_updates_next(dccsct, pos, ++idx))
 
 /**
  * Accessor for the data field of a new genre atsc_dccsct_update.
@@ -276,7 +276,7 @@ static inline struct atsc_dccsct_update*
 	int len = sizeof(struct atsc_dccsct_update_part2);
 	len += part2->descriptors_length;
 
-	return (struct atsc_dccsct_update *) ((uint8_t*) part2) + len;
+	return (struct atsc_dccsct_update *) (((uint8_t*) part2) + len);
 }
 
 static inline struct descriptor *

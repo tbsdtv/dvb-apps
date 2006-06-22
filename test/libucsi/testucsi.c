@@ -34,6 +34,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <stdarg.h>
+#include <fcntl.h>
 
 void receive_data(int dvrfd, int timeout, int data_type);
 void parse_section(uint8_t *buf, int len, int pid, int data_type);
@@ -46,6 +47,7 @@ void iprintf(int indent, char *fmt, ...);
 void hexdump(int indent, char *prefix, uint8_t *buf, int buflen);
 void atsctextdump(char *header, int indent, struct atsc_text *atext);
 int zapchannels_cb(void *private, struct dvbcfg_zapchannel *channel);
+void ts_from_file(char *filename, int data_type);
 
 #define TIME_CHECK_VAL 1131835761
 #define DURATION_CHECK_VAL 5643
@@ -56,6 +58,7 @@ int zapchannels_cb(void *private, struct dvbcfg_zapchannel *channel);
 #define DATA_TYPE_MPEG 0
 #define DATA_TYPE_DVB 1
 #define DATA_TYPE_ATSC 2
+
 
 struct dvbfe_handle *fe;
 struct dvbfe_info feinfo;
@@ -72,8 +75,12 @@ int main(int argc, char *argv[])
 
 	// process arguments
 	if ((argc < 3) || (argc > 4)) {
-		fprintf(stderr, "Syntax: testucsi <adapter id> <zapchannels file> [<pid to limit to>]\n");
+		fprintf(stderr, "Syntax: testucsi <adapter id>|-atscfile <filename> <zapchannels file> [<pid to limit to>]\n");
 		exit(1);
+	}
+	if (!strcmp(argv[1], "-atscfile")) {
+		ts_from_file(argv[2], DATA_TYPE_ATSC);
+		exit(0);
 	}
 	adapter = atoi(argv[1]);
 	channelsfile = argv[2];
@@ -147,6 +154,15 @@ int main(int argc, char *argv[])
 	}
 	dvbcfg_zapchannel_load(channels, (void*) data_type, zapchannels_cb);
         return 0;
+}
+
+void ts_from_file(char *filename, int data_type) {
+	int fd = open(filename, O_RDONLY);
+	if (fd < 0) {
+		fprintf(stderr, "Unable to open file %s\n", filename);
+		exit(1);
+	}
+	receive_data(fd, 1000000000, data_type);
 }
 
 int zapchannels_cb(void *private, struct dvbcfg_zapchannel *channel)
@@ -392,6 +408,9 @@ void parse_section(uint8_t *buf, int len, int pid, int data_type)
 		mpeg_tsdt_section_descriptors_for_each(tsdt, curd) {
 			parse_descriptor(curd, 1, data_type);
 		}
+
+		hexdump(0, "SCT ", buf, len);
+		getchar();
 		break;
 	}
 
@@ -413,6 +432,9 @@ void parse_section(uint8_t *buf, int len, int pid, int data_type)
 		       mpeg_metadata_section_fragment_indicator(metadata),
 		       mpeg_metadata_section_service_id(metadata));
 		hexdump(0, "SCT ", mpeg_metadata_section_data(metadata), mpeg_metadata_section_data_length(metadata));
+
+		hexdump(0, "SCT ", buf, len);
+		getchar();
 		break;
 	}
 
@@ -451,6 +473,9 @@ void parse_section(uint8_t *buf, int len, int pid, int data_type)
 			break;
 		}
 		hexdump(1, "SCT ", objects, objects_length);
+
+		hexdump(0, "SCT ", buf, len);
+		getchar();
 		break;
 	}
 
@@ -467,7 +492,7 @@ void parse_section(uint8_t *buf, int len, int pid, int data_type)
 		default:
 			fprintf(stderr, "SCT XXXX Unknown table_id:0x%02x (pid:0x%04x)\n",
 				section->table_id, pid);
-			hexdump(0, "SCT ", buf, len);
+//			hexdump(0, "SCT ", buf, len);
 			return;
 		}
 	}
@@ -604,6 +629,9 @@ void parse_dvb_section(uint8_t *buf, int len, int pid, int data_type, struct sec
 				parse_descriptor(curd, 3, data_type);
 			}
 		}
+
+		hexdump(0, "SCT ", buf, len);
+		getchar();
 		break;
 	}
 
@@ -682,6 +710,9 @@ void parse_dvb_section(uint8_t *buf, int len, int pid, int data_type, struct sec
 			       cur_status->event_id,
 			       cur_status->running_status);
 		}
+
+//		hexdump(0, "SCT ", buf, len);
+//		getchar();
 		break;
 	}
 
@@ -734,6 +765,9 @@ void parse_dvb_section(uint8_t *buf, int len, int pid, int data_type, struct sec
 		printf("SCT container_id:%04x\n",
 		       dvb_tva_container_section_container_id(tva));
 		hexdump(0, "SCT ", dvb_tva_container_section_data(tva), dvb_tva_container_section_data_length(tva));
+
+		hexdump(0, "SCT ", buf, len);
+		getchar();
 		break;
 	}
 
@@ -747,6 +781,9 @@ void parse_dvb_section(uint8_t *buf, int len, int pid, int data_type, struct sec
 			return;
 		}
 		printf("SCT transition_flag:%i\n", dit->transition_flag);
+
+//		hexdump(0, "SCT ", buf, len);
+//		getchar();
 		break;
 	}
 
@@ -773,12 +810,15 @@ void parse_dvb_section(uint8_t *buf, int len, int pid, int data_type, struct sec
 				parse_descriptor(curd, 2, data_type);
 			}
 		}
+
+		hexdump(0, "SCT ", buf, len);
+		getchar();
 		break;
 	}
 
 	default:
 		fprintf(stderr, "SCT XXXX Unknown table_id:0x%02x (pid:0x%04x)\n", section->table_id, pid);
-		hexdump(0, "SCT ", buf, len);
+//		hexdump(0, "SCT ", buf, len);
 		return;
 	}
 }
@@ -845,14 +885,9 @@ void parse_atsc_section(uint8_t *buf, int len, int pid, int data_type, struct se
 		       atsc_tvct_section_transport_stream_id(tvct));
 
 		atsc_tvct_section_channels_for_each(tvct, cur_channel, idx) {
-			printf("\tSCT short_name:%04x %04x %04x %04x %04x %04x %04x major_channel_nuumber:%04x minor_channel_number:%04x modulation_mode:%02x carrier_frequency:%i channel_TSID:%04x program_number:%04x ETM_location:%i access_controlled:%i hidden:%i hide_guide:%i service_type:%02x source_id:%04x\n",
-			       cur_channel->short_name[0],
-			       cur_channel->short_name[1],
-			       cur_channel->short_name[2],
-			       cur_channel->short_name[3],
-			       cur_channel->short_name[4],
-			       cur_channel->short_name[5],
-			       cur_channel->short_name[6],
+			hexdump(0, "SCT short_name ", (uint8_t*) cur_channel->short_name, 7*2);
+
+			printf("\tSCT major_channel_number:%04x minor_channel_number:%04x modulation_mode:%02x carrier_frequency:%i channel_TSID:%04x program_number:%04x ETM_location:%i access_controlled:%i hidden:%i hide_guide:%i service_type:%02x source_id:%04x\n",
 			       cur_channel->major_channel_number,
 			       cur_channel->minor_channel_number,
 			       cur_channel->modulation_mode,
@@ -894,14 +929,9 @@ void parse_atsc_section(uint8_t *buf, int len, int pid, int data_type, struct se
 		       atsc_cvct_section_transport_stream_id(cvct));
 
 		atsc_cvct_section_channels_for_each(cvct, cur_channel, idx) {
-			printf("\tSCT short_name:%04x %04x %04x %04x %04x %04x %04x major_channel_nuumber:%04x minor_channel_number:%04x modulation_mode:%02x carrier_frequency:%i channel_TSID:%04x program_number:%04x ETM_location:%i access_controlled:%i hidden:%i path_select:%i out_of_band:%i hide_guide:%i service_type:%02x source_id:%04x\n",
-			       cur_channel->short_name[0],
-			       cur_channel->short_name[1],
-			       cur_channel->short_name[2],
-			       cur_channel->short_name[3],
-			       cur_channel->short_name[4],
-			       cur_channel->short_name[5],
-			       cur_channel->short_name[6],
+			hexdump(0, "SCT short_name ", (uint8_t*) cur_channel->short_name, 7*2);
+
+			printf("\tSCT major_channel_number:%04x minor_channel_number:%04x modulation_mode:%02x carrier_frequency:%i channel_TSID:%04x program_number:%04x ETM_location:%i access_controlled:%i hidden:%i path_select:%i out_of_band:%i hide_guide:%i service_type:%02x source_id:%04x\n",
 			       cur_channel->major_channel_number,
 			       cur_channel->minor_channel_number,
 			       cur_channel->modulation_mode,
@@ -972,6 +1002,9 @@ void parse_atsc_section(uint8_t *buf, int len, int pid, int data_type, struct se
 		atsc_rrt_section_part3_descriptors_for_each(part3, curd) {
 			parse_descriptor(curd, 1, data_type);
 		}
+
+		hexdump(0, "SCT ", buf, len);
+		getchar();
 		break;
 	}
 
@@ -992,7 +1025,7 @@ void parse_atsc_section(uint8_t *buf, int len, int pid, int data_type, struct se
 		       atsc_eit_section_source_id(eit));
 
 		atsc_eit_section_events_for_each(eit, cur_event, idx) {
-			printf("\t\tSCT event_id:%04x start_time:%08x ETM_location:%i length_in_secs:%i\n",
+			printf("\t\tSCT event_id:%04x start_time:%i ETM_location:%i length_in_secs:%i\n",
 			       cur_event->event_id,
 			       cur_event->start_time,
 			       cur_event->ETM_location,
@@ -1036,7 +1069,7 @@ void parse_atsc_section(uint8_t *buf, int len, int pid, int data_type, struct se
 			fprintf(stderr, "SCT XXXX STT section decode error\n");
 			return;
 		}
-		printf("\tSCT system_time:0x%i gps_utc_offset:%i DS_status:%i DS_day_of_month:%i DS_hour:%i\n",
+		printf("\tSCT system_time:%i gps_utc_offset:%i DS_status:%i DS_day_of_month:%i DS_hour:%i\n",
 		       stt->system_time,
 		       stt->gps_utc_offset,
 		       stt->DS_status,
@@ -1045,7 +1078,6 @@ void parse_atsc_section(uint8_t *buf, int len, int pid, int data_type, struct se
 		atsc_stt_section_descriptors_for_each(stt, curd) {
 			parse_descriptor(curd, 2, data_type);
 		}
-
 		break;
 	}
 
@@ -1118,6 +1150,9 @@ void parse_descriptor(struct descriptor *d, int indent, int data_type)
 			dx->hierarchy_layer_index,
 			dx->hierarchy_embedded_layer_index,
 			dx->hierarchy_channel);
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -1169,6 +1204,9 @@ void parse_descriptor(struct descriptor *d, int indent, int data_type)
 			dx->horizontal_size,
 		        dx->vertical_size,
 		        dx->aspect_ratio_information);
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -1186,6 +1224,9 @@ void parse_descriptor(struct descriptor *d, int indent, int data_type)
 			dx->horizontal_offset,
 			dx->vertical_offset,
 			dx->window_priority);
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -1350,6 +1391,9 @@ void parse_descriptor(struct descriptor *d, int indent, int data_type)
 		}
 		iprintf(indent, "DSC closed_gop_flag:%i identical_gop_flag:%i max_gop_length:%i\n",
 			dx->closed_gop_flag, dx->identical_gop_flag, dx->max_gop_length);
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -1365,6 +1409,9 @@ void parse_descriptor(struct descriptor *d, int indent, int data_type)
 		}
 		iprintf(indent, "DSC mpeg4_visual_profile_and_level:0x%02x\n",
 			dx->mpeg4_visual_profile_and_level);
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -1380,6 +1427,9 @@ void parse_descriptor(struct descriptor *d, int indent, int data_type)
 		}
 		iprintf(indent, "DSC mpeg4_audio_profile_and_level:0x%02x\n",
 			dx->mpeg4_audio_profile_and_level);
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -1397,6 +1447,9 @@ void parse_descriptor(struct descriptor *d, int indent, int data_type)
 			dx->scope_of_iod_label, dx->iod_label);
 		iprintf(indent, "DSC iod:\n");
 		hexdump(indent, "DSC ", mpeg_iod_descriptor_iod(dx), mpeg_iod_descriptor_iod_length(dx));
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -1412,6 +1465,9 @@ void parse_descriptor(struct descriptor *d, int indent, int data_type)
 		}
 		iprintf(indent, "DSC es_id:0x%04x\n",
 			dx->es_id);
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -1431,6 +1487,9 @@ void parse_descriptor(struct descriptor *d, int indent, int data_type)
 				cur_fm->es_id,
 				cur_fm->flex_mux_channel);
 		}
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -1461,6 +1520,9 @@ void parse_descriptor(struct descriptor *d, int indent, int data_type)
 		}
 		iprintf(indent, "DSC entries:\n");
 		hexdump(indent, "DSC ", mpeg_muxcode_descriptor_entries(dx), mpeg_muxcode_descriptor_entries_length(dx));
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -1491,6 +1553,9 @@ void parse_descriptor(struct descriptor *d, int indent, int data_type)
 		}
 		iprintf(indent, "DSC mb_buffer_size:%i tb_leak_rate:%i\n",
 			dx->mb_buffer_size, dx->tb_leak_rate);
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -1556,6 +1621,8 @@ void parse_descriptor(struct descriptor *d, int indent, int data_type)
 			hexdump(indent, "DSC private_data", priv, priv_length);
 		}
 
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -1623,6 +1690,8 @@ void parse_descriptor(struct descriptor *d, int indent, int data_type)
 			hexdump(indent, "DSC private_data" , priv, priv_length);
 		}
 
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -1706,6 +1775,8 @@ void parse_descriptor(struct descriptor *d, int indent, int data_type)
 			hexdump(indent, "DSC private_data" , priv, priv_length);
 		}
 
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -1723,6 +1794,9 @@ void parse_descriptor(struct descriptor *d, int indent, int data_type)
 			dx->metadata_input_leak_rate,
 			dx->metadata_buffer_size,
 			dx->metadata_output_leak_rate);
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -1835,6 +1909,9 @@ void parse_dvb_descriptor(struct descriptor *d, int indent, int data_type)
 		iprintf(indent, "DSC frequency:%i fec_outer:%i modulation:%i symbol_rate:%i fec_inner:%i\n",
 			dx->frequency, dx->fec_outer, dx->modulation,
 			dx->symbol_rate, dx->fec_inner);
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -1860,6 +1937,9 @@ void parse_dvb_descriptor(struct descriptor *d, int indent, int data_type)
 					curx->field_parity, curx->line_offset);
 			}
 		}
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -1879,6 +1959,9 @@ void parse_dvb_descriptor(struct descriptor *d, int indent, int data_type)
 				cur->language_code,
 				cur->type, cur->magazine_number, cur->page_number);
 		}
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -1910,7 +1993,8 @@ void parse_dvb_descriptor(struct descriptor *d, int indent, int data_type)
 			return;
 		}
 		part2 = dvb_service_descriptor_part2(dx);
-		iprintf(indent, "DSC service_type provider_name:%.*s service_name:%.*s\n",
+		iprintf(indent, "DSC service_type:%02x provider_name:%.*s service_name:%.*s\n",
+			dx->service_type,
 			dx->service_provider_name_length,
 			dvb_service_descriptor_service_provider_name(dx),
 			part2->service_name_length,
@@ -1933,6 +2017,9 @@ void parse_dvb_descriptor(struct descriptor *d, int indent, int data_type)
 		dvb_country_availability_descriptor_countries_for_each(dx, cur) {
 			iprintf(indent+1, "DSC country_code:%.3s\n", cur->country_code);
 		}
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -1966,8 +2053,6 @@ void parse_dvb_descriptor(struct descriptor *d, int indent, int data_type)
 			if (initial_service_id != -1) {
 				iprintf(indent, "DSC initial_service_id:0x%04x\n", initial_service_id);
 			}
-			hexdump(indent+1, "DSC", data, length);
-			break;
 		}
 
 		case 0x0b:
@@ -2003,6 +2088,9 @@ void parse_dvb_descriptor(struct descriptor *d, int indent, int data_type)
 			hexdump(indent+1, "DSC", dvb_linkage_descriptor_data(dx), dvb_linkage_descriptor_data_length(dx));
 			break;
 		}
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -2022,6 +2110,9 @@ void parse_dvb_descriptor(struct descriptor *d, int indent, int data_type)
 				cur->transport_stream_id, cur->original_network_id,
 				cur->service_id);
 		}
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -2036,6 +2127,9 @@ void parse_dvb_descriptor(struct descriptor *d, int indent, int data_type)
 			return;
 		}
 		iprintf(indent, "DSC reference_service_id:0x%04x\n", dx->reference_service_id);
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -2082,6 +2176,9 @@ void parse_dvb_descriptor(struct descriptor *d, int indent, int data_type)
 				cur->item_description_length, dvb_extended_event_item_description(cur),
 				ipart2->item_length, dvb_extended_event_item_part2_item(ipart2));
 		}
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -2097,6 +2194,9 @@ void parse_dvb_descriptor(struct descriptor *d, int indent, int data_type)
 		}
 		iprintf(indent, "DSC reference_service_id:0x%04x reference_event_id:0x%04x\n",
 			dx->reference_service_id, dx->reference_event_id);
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -2180,6 +2280,9 @@ void parse_dvb_descriptor(struct descriptor *d, int indent, int data_type)
 					curfield->elementary_cell_id);
 			}
 		}
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -2270,6 +2373,9 @@ void parse_dvb_descriptor(struct descriptor *d, int indent, int data_type)
 				cur->language_code,
 				cur->type, cur->magazine_number, cur->page_number);
 		}
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -2292,6 +2398,9 @@ void parse_dvb_descriptor(struct descriptor *d, int indent, int data_type)
 			dx->operator_code_length, dvb_telephone_descriptor_operator_code(dx),
 			dx->national_area_code_length, dvb_telephone_descriptor_national_area_code(dx),
 			dx->core_number_length, dvb_telephone_descriptor_core_number(dx));
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -2382,6 +2491,9 @@ void parse_dvb_descriptor(struct descriptor *d, int indent, int data_type)
 				cur->network_name_length,
 				dvb_multilingual_network_name_name(cur));
 		}
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -2403,6 +2515,9 @@ void parse_dvb_descriptor(struct descriptor *d, int indent, int data_type)
 				cur->bouquet_name_length,
 				dvb_multilingual_bouquet_name_name(cur));
 		}
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -2429,6 +2544,9 @@ void parse_dvb_descriptor(struct descriptor *d, int indent, int data_type)
 				part2->service_name_length,
 				dvb_multilingual_service_name_service_name(part2));
 		}
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -2443,9 +2561,10 @@ void parse_dvb_descriptor(struct descriptor *d, int indent, int data_type)
 			fprintf(stderr, "DSC XXXX dvb_multilingual_component_descriptor decode error\n");
 			return;
 		}
+		iprintf(indent, "DSC component_tag:%02x\n", dx->component_tag);
 		dvb_multilingual_component_descriptor_components_for_each(dx, cur) {
 			iprintf(indent+1,
-				"DSC language_code:%.3s bouquet_name:%.*s\n",
+				"DSC language_code:%.3s description:%.*s\n",
 				cur->language_code,
 				cur->text_description_length,
 				dvb_multilingual_component_text_char(cur));
@@ -2480,6 +2599,9 @@ void parse_dvb_descriptor(struct descriptor *d, int indent, int data_type)
 		}
 		iprintf(indent, "DSC new_original_network_id:0x%04x new_transport_stream_id:0x%04x new_service_id:0x%04x\n",
 			dx->new_original_network_id, dx->new_transport_stream_id, dx->new_service_id);
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -2498,6 +2620,9 @@ void parse_dvb_descriptor(struct descriptor *d, int indent, int data_type)
 		hexdump(indent, "DSC",
 			dvb_short_smoothing_buffer_descriptor_reserved(dx),
 			dvb_short_smoothing_buffer_descriptor_reserved_length(dx));
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -2536,6 +2661,9 @@ void parse_dvb_descriptor(struct descriptor *d, int indent, int data_type)
 		}
 		iprintf(indent, "DSC peak_rate:%i minimum_overall_smoothing_rate:%i maximum_overall_smoothing_rate:%i\n",
 			dx->peak_rate, dx->minimum_overall_smoothing_rate, dx->maximum_overall_smoothing_rate);
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -2557,6 +2685,12 @@ void parse_dvb_descriptor(struct descriptor *d, int indent, int data_type)
 			dx->selector_length, dvb_data_broadcast_descriptor_selector(dx),
 			part2->language_code,
 			part2->text_length, dvb_data_broadcast_descriptor_part2_text(part2));
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -2573,6 +2707,9 @@ void parse_dvb_descriptor(struct descriptor *d, int indent, int data_type)
 
 		iprintf(indent, "DSC scrambling_mode:0x%02x\n",
 			dx->scrambling_mode);
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -2607,6 +2744,9 @@ void parse_dvb_descriptor(struct descriptor *d, int indent, int data_type)
 		hexdump(indent, "DSC",
 			dvb_transport_stream_descriptor_data(dx),
 			dvb_transport_stream_descriptor_data_length(dx));
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -2623,6 +2763,9 @@ void parse_dvb_descriptor(struct descriptor *d, int indent, int data_type)
 		hexdump(indent, "DSC",
 			dvb_dsng_descriptor_data(dx),
 			dvb_dsng_descriptor_data_length(dx));
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -2638,6 +2781,9 @@ void parse_dvb_descriptor(struct descriptor *d, int indent, int data_type)
 		}
 		iprintf(indent, "DSC programme_id_label:0x%06x\n",
 			dx->programme_id_label);
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -2656,6 +2802,9 @@ void parse_dvb_descriptor(struct descriptor *d, int indent, int data_type)
 		hexdump(indent+1, "DSC",
 			dvb_ac3_descriptor_additional_info(dx),
 			dvb_ac3_descriptor_additional_info_length(dx));
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -2675,6 +2824,9 @@ void parse_dvb_descriptor(struct descriptor *d, int indent, int data_type)
 			dx->announcement_switching_data,
 			dx->extended_ancillary_data,
 			dx->dvd_video_ancillary_data);
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -2709,6 +2861,9 @@ void parse_dvb_descriptor(struct descriptor *d, int indent, int data_type)
 					cur_subcell->subcell_extend_of_longitude);
 			}
 		}
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -2737,6 +2892,8 @@ void parse_dvb_descriptor(struct descriptor *d, int indent, int data_type)
 					cur_subcell->transposer_frequency);
 			}
 		}
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -2772,6 +2929,9 @@ void parse_dvb_descriptor(struct descriptor *d, int indent, int data_type)
 					ref->component_tag);
 			}
 		}
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -2793,6 +2953,9 @@ void parse_dvb_descriptor(struct descriptor *d, int indent, int data_type)
 				cur->application_type,
 				cur->AIT_version_number);
 		}
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -2809,6 +2972,9 @@ void parse_dvb_descriptor(struct descriptor *d, int indent, int data_type)
 		iprintf(indent,
 			"DSC announcement_switching_data:%i\n",
 			dx->announcement_switching_data);
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -2825,6 +2991,9 @@ void parse_dvb_descriptor(struct descriptor *d, int indent, int data_type)
 		hexdump(indent, "DSC",
 			dvb_service_identifier_descriptor_identifier(dx),
 			dvb_service_identifier_descriptor_identifier_length(dx));
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -2850,6 +3019,9 @@ void parse_dvb_descriptor(struct descriptor *d, int indent, int data_type)
 		for(i=0; i< count; i++) {
 			iprintf(indent+1, "DSC", "%04x\n", cellids[i]);
 		}
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -2866,6 +3038,9 @@ void parse_dvb_descriptor(struct descriptor *d, int indent, int data_type)
 		hexdump(indent, "DSC",
 			dvb_default_authority_descriptor_name(dx),
 			dvb_default_authority_descriptor_name_length(dx));
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -2879,6 +3054,9 @@ void parse_dvb_descriptor(struct descriptor *d, int indent, int data_type)
 			fprintf(stderr, "DSC XXXX dvb_related_content_descriptor decode error\n");
 			return;
 		}
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -2900,6 +3078,9 @@ void parse_dvb_descriptor(struct descriptor *d, int indent, int data_type)
 				cur->tva_id,
 				cur->running_status);
 		}
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -2937,6 +3118,9 @@ void parse_dvb_descriptor(struct descriptor *d, int indent, int data_type)
 					data1->crid_ref);
 			}
 		}
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -2966,6 +3150,9 @@ void parse_dvb_descriptor(struct descriptor *d, int indent, int data_type)
 				"DSC input_stream_id:%i\n",
 				dvb_s2_satellite_delivery_descriptor_input_stream_id(dx));
 		}
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -2979,6 +3166,8 @@ void parse_dvb_descriptor(struct descriptor *d, int indent, int data_type)
 void parse_atsc_descriptor(struct descriptor *d, int indent, int data_type)
 {
 	(void) data_type;
+
+	return; //HACK!
 
 	switch(d->tag) {
 	case dtag_atsc_stuffing:
@@ -2994,6 +3183,9 @@ void parse_atsc_descriptor(struct descriptor *d, int indent, int data_type)
 		hexdump(indent, "DSC",
 			atsc_stuffing_descriptor_data(dx),
 			atsc_stuffing_descriptor_data_length(dx));
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -3059,6 +3251,9 @@ void parse_atsc_descriptor(struct descriptor *d, int indent, int data_type)
 		hexdump(indent+1, "DSC additional_info",
 			atsc_ac3_descriptor_additional_info(part3),
 			atsc_ac3_descriptor_additional_info_length(dx, part3));
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -3084,6 +3279,9 @@ void parse_atsc_descriptor(struct descriptor *d, int indent, int data_type)
 				cur->easy_reader,
 				cur->wide_aspect_ratio);
 		}
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -3119,6 +3317,9 @@ void parse_atsc_descriptor(struct descriptor *d, int indent, int data_type)
 
 			atsctextdump("SCT description:", 1, atsc_content_advisory_entry_part2_description(part2));
 		}
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -3133,6 +3334,9 @@ void parse_atsc_descriptor(struct descriptor *d, int indent, int data_type)
 			return;
 		}
 		atsctextdump("SCT text:", 1, atsc_extended_channel_name_descriptor_text(dx));
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -3156,6 +3360,9 @@ void parse_atsc_descriptor(struct descriptor *d, int indent, int data_type)
 			        cur->elementary_PID,
 			        cur->language_code);
 		}
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -3178,6 +3385,9 @@ void parse_atsc_descriptor(struct descriptor *d, int indent, int data_type)
 				cur->major_channel_number,
 				cur->minor_channel_number);
 		}
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -3192,6 +3402,9 @@ void parse_atsc_descriptor(struct descriptor *d, int indent, int data_type)
 			return;
 		}
 		atsctextdump("SCT name:", 1, atsc_component_name_descriptor_text(dx));
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -3209,6 +3422,9 @@ void parse_atsc_descriptor(struct descriptor *d, int indent, int data_type)
 			dx->dcc_departing_request_type);
 
 		atsctextdump("SCT text:", 1, atsc_dcc_departing_request_descriptor_text(dx));
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -3226,6 +3442,9 @@ void parse_atsc_descriptor(struct descriptor *d, int indent, int data_type)
 			dx->dcc_arriving_request_type);
 
 		atsctextdump("SCT text:", 1, atsc_dcc_arriving_request_descriptor_text(dx));
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -3242,6 +3461,9 @@ void parse_atsc_descriptor(struct descriptor *d, int indent, int data_type)
 		hexdump(indent, "DSC",
 			atsc_rc_descriptor_info(dx),
 			atsc_rc_descriptor_info_length(dx));
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -3258,6 +3480,9 @@ void parse_atsc_descriptor(struct descriptor *d, int indent, int data_type)
 		hexdump(indent, "DSC",
 			atsc_genre_descriptor_attributes(dx),
 			dx->attribute_count);
+
+		hexdump(0, "XXX", (uint8_t*) d, d->len + 2);
+		getchar();
 		break;
 	}
 
@@ -3338,7 +3563,50 @@ void atsctextdump(char *header, int indent, struct atsc_text *atext)
 				seg_idx,
 				cur_segment->compression_type,
 			        cur_segment->mode);
-			// FIXME: output contents...
+
+			hexdump(indent+2, "rawbytes ",
+				atsc_text_string_segment_bytes(cur_segment),
+				cur_segment->number_bytes);
+
+			switch(cur_segment->compression_type) {
+			case ATSC_TEXT_COMPRESS_PROGRAM_TITLE:
+			{
+				uint8_t *raw = atsc_text_string_segment_bytes(cur_segment);
+				uint8_t *decoded = NULL;
+				size_t decodedlen = 0;
+				int count;
+
+				count  = atsc_text_decode_program_title_segment(raw,
+										cur_segment->number_bytes,
+										&decoded,
+										&decodedlen);
+				if (count < 0) {
+					iprintf(indent+2, "Decode error\n");
+				} else {
+					hexdump(indent+2, "decoded  ", decoded, count);
+				}
+				break;
+			}
+
+			case ATSC_TEXT_COMPRESS_PROGRAM_DESCRIPTION:
+			{
+				uint8_t *raw = atsc_text_string_segment_bytes(cur_segment);
+				uint8_t *decoded = NULL;
+				size_t decodedlen = 0;
+				int count;
+
+				count  = atsc_text_decode_program_description_segment(raw,
+						cur_segment->number_bytes,
+						&decoded,
+						&decodedlen);
+				if (count < 0) {
+					iprintf(indent+2, "Decode error\n");
+				} else {
+					hexdump(indent+2, "decoded ", decoded, count);
+				}
+				break;
+			}
+ 			}
 		}
 	}
 }

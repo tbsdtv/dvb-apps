@@ -160,7 +160,7 @@ static inline uint8_t atsc_dcct_section_dcc_id(struct atsc_dcct_section *dcct)
 #define atsc_dcct_section_tests_for_each(dcct, pos, idx) \
 	for ((pos) = atsc_dcct_section_tests_first(dcct), idx=0; \
 	     (pos); \
-	     (pos) = atsc_dcct_section_tests_next(dcct, pos, idx), idx++)
+	     (pos) = atsc_dcct_section_tests_next(dcct, pos, ++idx))
 
 /**
  * Iterator for the terms field in an atsc_dcct_test.
@@ -172,7 +172,7 @@ static inline uint8_t atsc_dcct_section_dcc_id(struct atsc_dcct_section *dcct)
 #define atsc_dcct_test_terms_for_each(test, pos, idx) \
 	for ((pos) = atsc_dcct_test_terms_first(test), idx=0; \
 	     (pos); \
-	     (pos) = atsc_dcct_test_terms_next(test, pos, idx), idx++)
+	     (pos) = atsc_dcct_test_terms_next(test, pos, ++idx))
 
 /**
  * Iterator for the descriptors field in a atsc_dcct_term structure.
@@ -284,7 +284,7 @@ static inline struct atsc_dcct_test *
 	int len = sizeof(struct atsc_dcct_test_part2);
 	len += part2->descriptors_length;
 
-	return (struct atsc_dcct_test *) ((uint8_t*) part2) + len;
+	return (struct atsc_dcct_test *) (((uint8_t*) part2) + len);
 }
 
 static inline struct atsc_dcct_term *
@@ -309,7 +309,7 @@ static inline struct atsc_dcct_term *
 	int len = sizeof(struct atsc_dcct_term);
 	len += pos->descriptors_length;
 
-	return (struct atsc_dcct_term *) ((uint8_t*) pos) + len;
+	return (struct atsc_dcct_term *) (((uint8_t*) pos) + len);
 }
 
 static inline struct descriptor *

@@ -147,7 +147,7 @@ static inline struct atsc_rrt_section_part2 *atsc_rrt_section_part2(struct atsc_
 #define atsc_rrt_section_dimensions_for_each(rrt, pos, idx) \
 	for ((pos) = atsc_rrt_section_dimensions_first(rrt), idx=0; \
 	     (pos); \
-	     (pos) = atsc_rrt_section_dimensions_next(rrt, pos, idx), idx++)
+	     (pos) = atsc_rrt_section_dimensions_next(rrt, pos, ++idx))
 
 /**
  * Accessor for the dimension_name_text field of an atsc_rrt_dimension.
@@ -187,7 +187,7 @@ static inline struct atsc_rrt_dimension_part2 *atsc_rrt_dimension_part2(struct a
 #define atsc_rrt_dimension_part2_values_for_each(part2, pos, idx) \
 	for ((pos) = atsc_rrt_dimension_part2_values_first(part2), idx=0; \
 	     (pos); \
-	     (pos) = atsc_rrt_dimension_part2_values_next(part2, pos, idx), idx++)
+	     (pos) = atsc_rrt_dimension_part2_values_next(part2, pos, ++idx))
 
 /**
  * Accessor for the dimension_name_text field of an atsc_rrt_dimension.
@@ -323,7 +323,7 @@ static inline struct atsc_rrt_dimension *
 		len += vpart2->rating_value_length;
 	}
 
-	return (struct atsc_rrt_dimension *) ((uint8_t*) dpart2) + len;
+	return (struct atsc_rrt_dimension *) (((uint8_t*) dpart2) + len);
 }
 
 static inline struct atsc_rrt_dimension_value *
@@ -349,7 +349,7 @@ static inline struct atsc_rrt_dimension_value *
 	int len = sizeof(struct atsc_rrt_dimension_value_part2);
 	len += vpart2->rating_value_length;
 
-	return (struct atsc_rrt_dimension_value *) ((uint8_t*) vpart2) + len;
+	return (struct atsc_rrt_dimension_value *) (((uint8_t*) vpart2) + len);
 }
 
 static inline struct descriptor *
