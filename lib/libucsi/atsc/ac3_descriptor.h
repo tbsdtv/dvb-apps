@@ -116,12 +116,12 @@ static inline struct atsc_ac3_descriptor*
 	if (part3->language_flag) {
 		if (d->len < (pos + 3))
 			return NULL;
-		pos+3;
+		pos+=3;
 	}
 	if (part3->language_flag_2) {
 		if (d->len < (pos + 3))
 			return NULL;
-		pos+3;
+		pos+=3;
 	}
 
 	return (struct atsc_ac3_descriptor*) d;
