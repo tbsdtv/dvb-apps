@@ -2051,7 +2051,7 @@ void parse_dvb_descriptor(struct descriptor *d, int indent, int data_type)
 			return;
 		}
 		part2 = dvb_short_event_descriptor_part2(dx);
-		iprintf(indent, "DSC language_code:%3s event_name:%.*s text:%.*s\n",
+		iprintf(indent, "DSC language_code:%.3s event_name:%.*s text:%.*s\n",
 			dx->language_code,
 			dx->event_name_length, dvb_short_event_descriptor_event_name(dx),
 			part2->text_length, dvb_short_event_descriptor_text(part2));
@@ -2514,10 +2514,12 @@ void parse_dvb_descriptor(struct descriptor *d, int indent, int data_type)
 			fprintf(stderr, "DSC XXXX dvb_frequency_list_descriptor decode error\n");
 			return;
 		}
+		iprintf(0, "DSC coding_type=%i\n", dx->coding_type);
+
 		freqs = dvb_frequency_list_descriptor_centre_frequencies(dx);
 		count = dvb_frequency_list_descriptor_centre_frequencies_count(dx);
 		for(i=0; i< count; i++) {
-			iprintf(indent+1, "DSC", "%i\n", freqs[i]);
+			iprintf(indent+1, "DSC %i\n", freqs[i]);
 		}
 		break;
 	}

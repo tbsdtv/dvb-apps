@@ -1,4 +1,4 @@
-libucsi test record. Anything without PASS is either not tested, or is
+	libucsi test record. Anything without PASS is either not tested, or is
 currently broken.
 
 Testing means (a) ensure there are no segfaults etc. (b) dump the raw hex,
@@ -77,15 +77,14 @@ PASS mpeg/video_stream_descriptor.h
      dvb/cable_delivery_descriptor.h
      dvb/cell_frequency_link_descriptor.h
      dvb/cell_list_descriptor.h
-     dvb/component_descriptor.h
-     dvb/content_descriptor.h
+PASS dvb/component_descriptor.h
+PASS dvb/content_descriptor.h
      dvb/country_availability_descriptor.h
      dvb/data_broadcast_descriptor.h
      dvb/data_broadcast_id_descriptor.h
-     dvb/descriptor.h
      dvb/dsng_descriptor.h
      dvb/extended_event_descriptor.h
-     dvb/frequency_list_descriptor.h
+PASS dvb/frequency_list_descriptor.h
      dvb/linkage_descriptor.h
      dvb/local_time_offset_descriptor.h
      dvb/mosaic_descriptor.h
@@ -93,25 +92,25 @@ PASS mpeg/video_stream_descriptor.h
      dvb/multilingual_component_descriptor.h
      dvb/multilingual_network_name_descriptor.h
      dvb/multilingual_service_name_descriptor.h
-     dvb/network_name_descriptor.h
+PASS dvb/network_name_descriptor.h
      dvb/nvod_reference_descriptor.h
      dvb/parental_rating_descriptor.h
      dvb/partial_transport_stream_descriptor.h
      dvb/pdc_descriptor.h
-     dvb/private_data_specifier_descriptor.h
+PASS dvb/private_data_specifier_descriptor.h
      dvb/s2_satellite_delivery_descriptor.h
      dvb/satellite_delivery_descriptor.h
      dvb/service_descriptor.h
-     dvb/service_list_descriptor.h
+PASS dvb/service_list_descriptor.h
      dvb/service_move_descriptor.h
-     dvb/short_event_descriptor.h
+PASS dvb/short_event_descriptor.h
      dvb/short_smoothing_buffer_descriptor.h
      dvb/stream_identifier_descriptor.h
-     dvb/stuffing_descriptor.h
+PASS dvb/stuffing_descriptor.h
      dvb/subtitling_descriptor.h
      dvb/telephone_descriptor.h
      dvb/teletext_descriptor.h
-     dvb/terrestrial_delivery_descriptor.h
+PASS dvb/terrestrial_delivery_descriptor.h
      dvb/time_shifted_event_descriptor.h
      dvb/time_shifted_service_descriptor.h
      dvb/transport_stream_descriptor.h
