@@ -41,8 +41,6 @@ struct atsc_tvct_section *atsc_tvct_section_codec(struct atsc_section_psip *psip
 			return NULL;
 		struct atsc_tvct_channel *channel = (struct atsc_tvct_channel *) (buf+pos);
 
-		for(i=0; i< 7*2; i+=2)
-			bswap16(buf+pos+i);
 		pos += 7*2;
 
 		bswap32(buf+pos);

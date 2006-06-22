@@ -41,7 +41,7 @@ struct atsc_tvct_section {
 } __ucsi_packed;
 
 struct atsc_tvct_channel {
-	uint16_t short_name[7]; // UTF-16 host ordered
+	uint16_t short_name[7]; // UTF-16 network ordered
   EBIT4(uint32_t reserved			: 4; ,
 	uint32_t major_channel_number		:10; ,
   	uint32_t minor_channel_number		:10; ,
