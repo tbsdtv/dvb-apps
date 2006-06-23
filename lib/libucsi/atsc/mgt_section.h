@@ -74,7 +74,7 @@ static inline struct atsc_mgt_table *
 /**
  * Process a atsc_mgt_section.
  *
- * @param section Pointer to anj atsc_section_psip structure.
+ * @param section Pointer to an atsc_section_psip structure.
  * @return atsc_mgt_section pointer, or NULL on error.
  */
 struct atsc_mgt_section *atsc_mgt_section_codec(struct atsc_section_psip *section);
