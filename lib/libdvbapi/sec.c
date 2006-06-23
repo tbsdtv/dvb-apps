@@ -332,42 +332,43 @@ int dvbfe_diseqc_goto_preset(struct dvbfe_handle *fe,
 	return dvbfe_do_diseqc_command(fe, data, sizeof(data));
 }
 
-/*
-				int integer = 0;
-				int fraction = 0;
-				char *tmp;
+int dvbfe_diseqc_goto_rotator_bearing(struct dvbfe_handle *fe,
+				      enum dvbfe_diseqc_address address,
+				      float angle)
+{
+	int integer = (int) angle;
+	uint8_t data[] = { DISEQC_FRAMING_MASTER_NOREPLY, address, 0x6e, 0x00, 0x00};
 
-				if (sscanf(command+i+12, "%i %s", &addr, value_s) != 2)
-					return -EINVAL;
+	// transform the fraction into the correct representation
+	int fraction = (int) (((angle - integer) * 16.0) + 0.9) & 0x0f;
+	switch(fraction) {
+	case 1:
+	case 4:
+	case 7:
+	case 9:
+	case 12:
+	case 15:
+		fraction--;
+		break;
+	}
 
-				// parse the integer and fractional parts using fixed point
-				integer = atoi(value_s);
-				tmp = strchr(value_s, '.');
-				if (tmp != NULL) {
-					tmp++;
-					tmp[3] = 0;
-					fraction = ((atoi(tmp) * 16000) / 1000000) & 0xf;
-				}
+	// generate the command
+	if (integer < -256) {
+		return -EINVAL;
+	} else if (integer < 0) {
+		integer = -integer;
+		data[3] = 0xf0;
+	} else if (integer < 256) {
+		data[3] = 0x00;
+	} else if (integer < 512) {
+		integer -= 256;
+		data[3] = 0x10;
+	} else {
+		return -EINVAL;
+	}
+	data[3] |= ((integer / 16) & 0x0f);
+	integer = integer % 16;
+	data[4] |= ((integer & 0x0f) << 4) | fraction;
 
-				// generate the command
-				master_cmd.msg[0] = 0xe0;
-				master_cmd.msg[1] = addr;
-				master_cmd.msg[2] = 0x6e;
-				if (integer < -256) {
-					return -EINVAL;
-				} else if (integer < 0) {
-					integer = -integer;
-					master_cmd.msg[3] = 0xf0;
-				} else if (integer < 256) {
-					master_cmd.msg[3] = 0x00;
-				} else if (integer < 512) {
-					integer -= 256;
-					master_cmd.msg[3] = 0x10;
-				} else {
-					return -EINVAL;
-				}
-				master_cmd.msg[3] |= ((integer / 16) & 0x0f);
-				integer = integer % 16;
-				master_cmd.msg[4] |= ((integer & 0x0f) << 4) | fraction;
-				master_cmd.msg_len = 5;
-*/
+	return dvbfe_do_diseqc_command(fe, data, sizeof(data));
+}

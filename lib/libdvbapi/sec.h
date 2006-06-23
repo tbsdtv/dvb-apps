@@ -228,38 +228,38 @@ extern int dvbfe_diseqc_set_channel(struct dvbfe_handle *fe,
 				    uint16_t channel);
 
 /**
- * Halt the positioner.
+ * Halt the satellite positioner.
  *
  * @param fe Frontend concerned.
  * @param address Address of the device.
  * @return 0 on success, or nonzero on error.
  */
-extern int dvbfe_diseqc_halt_positioner(struct dvbfe_handle *fe,
-					enum dvbfe_diseqc_address address);
+extern int dvbfe_diseqc_halt_satpos(struct dvbfe_handle *fe,
+				    enum dvbfe_diseqc_address address);
 
 /**
- * Disable positioner limits.
+ * Disable satellite positioner limits.
  *
  * @param fe Frontend concerned.
  * @param address Address of the device.
  * @return 0 on success, or nonzero on error.
  */
-extern int dvbfe_diseqc_disable_limits(struct dvbfe_handle *fe,
-				       enum dvbfe_diseqc_address address);
+extern int dvbfe_diseqc_disable_satpos_limits(struct dvbfe_handle *fe,
+					      enum dvbfe_diseqc_address address);
 
 /**
- * Set positioner limits.
+ * Set satellite positioner limits.
  *
  * @param fe Frontend concerned.
  * @param address Address of the device.
  * @return 0 on success, or nonzero on error.
  */
-extern int dvbfe_diseqc_set_limit(struct dvbfe_handle *fe,
-				  enum dvbfe_diseqc_address address,
-				  enum dvbfe_diseqc_direction direction);
+extern int dvbfe_diseqc_set_satpos_limit(struct dvbfe_handle *fe,
+					 enum dvbfe_diseqc_address address,
+					 enum dvbfe_diseqc_direction direction);
 
 /**
- * Drive positioner motor.
+ * Drive satellite positioner motor.
  *
  * @param fe Frontend concerned.
  * @param address Address of the device.
@@ -269,38 +269,47 @@ extern int dvbfe_diseqc_set_limit(struct dvbfe_handle *fe,
  * @param value Value associated with the drive mode (range 0->127)
  * @return 0 on success, or nonzero on error.
  */
-extern int dvbfe_diseqc_drive_motor(struct dvbfe_handle *fe,
-				    enum dvbfe_diseqc_address address,
-				    enum dvbfe_diseqc_direction direction,
-				    enum dvbfe_diseqc_drive_mode mode,
-				    uint8_t value);
+extern int dvbfe_diseqc_drive_satpos_motor(struct dvbfe_handle *fe,
+					   enum dvbfe_diseqc_address address,
+					   enum dvbfe_diseqc_direction direction,
+					   enum dvbfe_diseqc_drive_mode mode,
+					   uint8_t value);
 
 /**
- * Store positioner preset id at current position.
+ * Store satellite positioner preset id at current position.
  *
  * @param fe Frontend concerned.
  * @param address Address of the device.
  * @param id ID of the preset.
  * @return 0 on success, or nonzero on error.
  */
-extern int dvbfe_diseqc_store_preset(struct dvbfe_handle *fe,
-				     enum dvbfe_diseqc_address address,
-				     uint8_t id);
+extern int dvbfe_diseqc_store_satpos_preset(struct dvbfe_handle *fe,
+					    enum dvbfe_diseqc_address address,
+					    uint8_t id);
 
 /**
- * Goto a pre-set position.
+ * Send a satellite positioner to a pre-set position.
  *
  * @param fe Frontend concerned.
  * @param address Address of the device.
  * @param id ID of the preset.
  * @return 0 on success, or nonzero on error.
  */
-extern int dvbfe_diseqc_goto_preset(struct dvbfe_handle *fe,
-				    enum dvbfe_diseqc_address address,
-				    uint8_t id);
+extern int dvbfe_diseqc_goto_satpos_preset(struct dvbfe_handle *fe,
+					   enum dvbfe_diseqc_address address,
+					   uint8_t id);
 
-extern int dvbfe_diseqc_goto_angle(struct dvbfe_handle *fe,
-				   enum dvbfe_diseqc_address address,
-				   int angle);
+/**
+ * Send a terrestrial aerial rotator to a particular bearing
+ * (0 degrees = north, fractional angles allowed).
+ *
+ * @param fe Frontend concerned.
+ * @param address Address of the device.
+ * @param angle Angle to rotate to (-256.0 -> 512.0)
+ * @return 0 on success, or nonzero on error.
+ */
+extern int dvbfe_diseqc_goto_rotator_bearing(struct dvbfe_handle *fe,
+					     enum dvbfe_diseqc_address address,
+					     float angle);
 
 #endif
