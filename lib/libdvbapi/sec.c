@@ -21,10 +21,11 @@ int dvbfe_sec_std_sequence(struct dvbfe_handle *fe,
 		dvbfe_set_voltage(fe, DVBFE_SEC_VOLTAGE_18);
 		break;
 	default:
-		return -EINVAL;
+		break;
 	}
 
-	usleep(15000);
+	if (polarisation != DISEQC_POLARISATION_UNCHANGED)
+		usleep(15000);
 
 	dvbfe_diseqc_set_committed_switches(fe,
 					    DISEQC_ADDRESS_MASTER,
@@ -43,10 +44,11 @@ int dvbfe_sec_std_sequence(struct dvbfe_handle *fe,
 		dvbfe_set_tone_data_burst(fe, DVBFE_SEC_MINI_B);
 		break;
 	default:
-		return -EINVAL;
+		break;
 	}
 
-	usleep(15000);
+	if (sat_pos != DISEQC_SWITCH_UNCHANGED)
+		usleep(15000);
 
 	switch(oscillator) {
 	case DISEQC_OSCILLATOR_LOW:
@@ -56,7 +58,7 @@ int dvbfe_sec_std_sequence(struct dvbfe_handle *fe,
 		dvbfe_set_22k_tone(fe, DVBFE_SEC_TONE_ON);
 		break;
 	default:
-		return -EINVAL;
+		break;
 	}
 
 	return 0;
