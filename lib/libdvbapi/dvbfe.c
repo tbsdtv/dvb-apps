@@ -496,7 +496,7 @@ int dvbfe_do_dishnetworks_legacy_cmd(struct dvbfe_handle *fehandle, unsigned int
 	return ret;
 }
 
-int dvbfe_do_diseqc_cmd(struct dvbfe_handle *fehandle, uint8_t *data, uint8_t len)
+int dvbfe_do_diseqc_command(struct dvbfe_handle *fehandle, uint8_t *data, uint8_t len)
 {
 	int ret = 0;
 	struct dvb_diseqc_master_cmd diseqc_message;
