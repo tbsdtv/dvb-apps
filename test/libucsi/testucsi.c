@@ -208,7 +208,8 @@ int zapchannels_cb(void *private, struct dvbcfg_zapchannel *channel)
 			dvbfe_sec_command(fe, diseqc);
         }
 
-        if (dvbfe_set(fe, &channel->fe_params, freqadjust, MAX_TUNE_TIME)) {
+	channel->fe_params.frequency -= freqadjust;
+        if (dvbfe_set(fe, &channel->fe_params, MAX_TUNE_TIME)) {
                 fprintf(stderr, "Failed to lock!\n");
         } else {
                 printf("Tuned successfully!\n");

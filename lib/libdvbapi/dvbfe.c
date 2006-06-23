@@ -322,7 +322,6 @@ int dvbfe_get_info(struct dvbfe_handle *fehandle, enum dvbfe_info_mask querymask
 
 int dvbfe_set(struct dvbfe_handle *fehandle,
 	      struct dvbfe_parameters *params,
-	      uint32_t frequency_adjust,
 	      int timeout)
 {
 	struct dvb_frontend_parameters kparams;
@@ -330,7 +329,7 @@ int dvbfe_set(struct dvbfe_handle *fehandle,
 	struct timeval endtime;
 	fe_status_t status;
 
-	kparams.frequency = params->frequency - frequency_adjust;
+	kparams.frequency = params->frequency;
 	kparams.inversion = lookupval(params->inversion, 0, dvbfe_spectral_inversion_to_kapi);
 	switch(fehandle->type) {
 	case FE_QPSK:

@@ -145,7 +145,8 @@ static void *dvbthread_func(void* arg)
 			}
 
 			// set the frontend params
-			if (dvbfe_set(params->fe, &params->channel.fe_params, frequency_adjust, 0)) {
+			params->channel.fe_params.frequency -= frequency_adjust;
+			if (dvbfe_set(params->fe, &params->channel.fe_params, 0)) {
 				fprintf(stderr, "Failed to set frontend\n");
 				exit(1);
 			}

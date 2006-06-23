@@ -230,7 +230,6 @@ extern void dvbfe_close(struct dvbfe_handle *handle);
  *
  * @param fehandle Handle opened with dvbfe_open().
  * @param params Params to set.
- * @param frequency_adjust This value will be subtracted from the frequency passed in params.
  * @param timeout <0 => wait forever for lock. 0=>return immediately, >0=>
  * number of milliseconds to wait for a lock.
  * @return 0 on locked (or if timeout==0 and everything else worked), or
@@ -238,7 +237,6 @@ extern void dvbfe_close(struct dvbfe_handle *handle);
  */
 extern int dvbfe_set(struct dvbfe_handle *fehandle,
 		     struct dvbfe_parameters *params,
-		     uint32_t frequency_adjust,
 		     int timeout);
 
 /**
