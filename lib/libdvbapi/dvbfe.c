@@ -133,6 +133,11 @@ static int dvbfe_dvbt_hierarchy_to_kapi[][2] =
 	{ -1, -1 }
 };
 
+struct diseqc_cmd {
+	uint8_t message[6];
+	uint8_t length;
+};
+
 static int lookupval(int val, int reverse, int table[][2])
 {
 	int i =0;
@@ -516,36 +521,18 @@ int dvbfe_do_dishnetworks_legacy_cmd(struct dvbfe_handle *fehandle, unsigned int
 	return ret;
 }
 
-int dvbfe_do_diseqc_cmd(struct dvbfe_handle *fehandle, uint8_t cmd, uint8_t  address, uint8_t *data)
+int dvbfe_do_diseqc_cmd(struct dvbfe_handle *fehandle, uint8_t *data, uint8_t len)
 {
 	int ret = 0;
-	uint8_t length;
-	struct diseqc_cmd diseqc_message;
+	struct dvb_diseqc_master_cmd diseqc_message;
 
-	memcpy(&diseqc_message.message[0], &msgtbl->command[1], 6);
-	length = msgtbl->command[0];
-	diseqc_message.length = length;
-
-	/*	Set Address	*/
-	diseqc_message.message[2] = address;
-	switch (length) {
-	case 6:
-		/*	Set Data		*/
-		diseqc_message.message[6] = data[2];
-	case 5:
-		/*	Set Data		*/
-		diseqc_message.message[5] = data[1];
-	case 4:
-		/*	Set Data		*/
-		diseqc_message.message[4] = data[0];
-	case 3:
-		/*	Only cmd	*/
-		break;
-	default:
+	if (len > 6)
 		return -EINVAL;
-	}
 
-	ret = ioctl(fehandle->fd, cmd, &diseqc_message);
+	diseqc_message.msg_len = len;
+	memcpy(diseqc_message.msg, data, len);
+
+	ret = ioctl(fehandle->fd, FE_DISEQC_SEND_MASTER_CMD, &diseqc_message);
 	if (ret == -1)
 		print(verbose, ERROR, 1, "IOCTL failed");
 

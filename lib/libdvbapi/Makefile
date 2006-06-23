@@ -15,7 +15,8 @@ objects  = dvbca.o    \
            dvbfe.o    \
            dvbaudio.o \
            dvbvideo.o \
-           dvbnet.o
+           dvbnet.o \
+	   diseqc.o
 
 sharedlib = libdvbapi.so
 staticlib = libdvbapi.a

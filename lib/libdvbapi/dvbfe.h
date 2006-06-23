@@ -285,12 +285,10 @@ extern int dvbfe_do_dishnetworks_legacy_command(struct dvbfe_handle *handle, uns
 /**
  *	Send a DiSEqC Command
  * 	@param fehandle Handle opened with dvbfe_open().
- *	@param cmd, the defined diseqc commands
- *	@param address, the address of the DiSEqC device to be controlled
- *	@param data, a pointer to am array containing the data to be sent
- *	max. length of data, that can be sent is 3 bytes
+ *	@param data, a pointer to am array containing the data to be sent.
+ *      @param len Length of data in  bytes, max 6 bytes.
  */
-extern int dvbfe_do_diseqc_command(struct dvbfe_handle *handle, uint8_t cmd, uint8_t address, uint8_t *data);
+extern int dvbfe_do_diseqc_command(struct dvbfe_handle *handle, uint8_t *data, uint8_t len);
 
 /**
  * Read a DISEQC response from the frontend.
