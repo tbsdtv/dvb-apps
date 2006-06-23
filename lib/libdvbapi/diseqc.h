@@ -99,6 +99,23 @@ enum dvbfe_diseqc_direction {
 };
 
 /**
+ * This will issue the standardised back-compatable DISEQC/SEC command
+ * sequence as defined in the DISEQC spec:
+ *
+ * i.e. tone off, set voltage, wait15, DISEQC, wait15, toneburst, wait15, set tone.
+ *
+ * @param fe Frontend concerned.
+ * @param oscillator Value to set the lo/hi switch to.
+ * @param polarisation Value to set the polarisation switch to.
+ * @param sat_pos Value to set the satellite position switch to.
+ * @return 0 on success, or nonzero on error.
+ */
+extern int dvbfe_diseqc_std_sequence(struct dvbfe_handle *fe,
+				     enum dvbfe_diseqc_oscillator oscillator,
+				     enum dvbfe_diseqc_polarisation polarisation,
+				     enum dvbfe_diseqc_switch sat_pos);
+
+/**
  * Control the reset status of an attached DISEQC device.
  *
  * @param fe Frontend concerned.
