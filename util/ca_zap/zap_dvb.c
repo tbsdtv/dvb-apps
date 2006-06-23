@@ -135,23 +135,19 @@ static void *dvbthread_func(void* arg)
 			dvbfe_get_info(params->fe, 0, &result);
 
 			// do sec for DVBS
+			uint32_t frequency_adjust = 0;
 			if (result.type == DVBFE_TYPE_DVBS) {
 				if (dvbfe_sec_command(params->fe, params->sec.command)) {
 					fprintf(stderr, "Failed to execute SEC command %s\n", params->sec.command);
 					exit(1);
 				}
-				params->channel.fe_params.frequency -= params->sec.lof;
+				frequency_adjust = params->sec.lof;
 			}
 
 			// set the frontend params
-			if (dvbfe_set(params->fe, &params->channel.fe_params, 0)) {
+			if (dvbfe_set(params->fe, &params->channel.fe_params, frequency_adjust, 0)) {
 				fprintf(stderr, "Failed to set frontend\n");
 				exit(1);
-			}
-
-			// restore the frequency in the channel in case we need it later
-			if (result.type == DVBFE_TYPE_DVBS) {
-				params->channel.fe_params.frequency += params->sec.lof;
 			}
 
 			tune_state++;

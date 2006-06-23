@@ -170,7 +170,7 @@ int zapchannels_cb(void *private, struct dvbcfg_zapchannel *channel)
 	int data_type = (int) private;
 
 	// FIXME: use the diseqc stuff here!
-	int freqadjust = 0;
+	uint32_t freqadjust = 0;
         if (feinfo.type == DVBFE_TYPE_DVBS) {
 		char *diseqc_h_low = "t V W15 .D(E0 10 38 F2) W15 A W15 t";
 		char *diseqc_h_high = "t V W15 .D(E0 10 38 F3) W15 A W15 T";
@@ -206,11 +206,9 @@ int zapchannels_cb(void *private, struct dvbcfg_zapchannel *channel)
 
 		if (diseqc)
 			dvbfe_sec_command(fe, diseqc);
-		channel->fe_params.frequency -= freqadjust;
         }
 
-        printf("Tuning to: %i\n", channel->fe_params.frequency + freqadjust);
-        if (dvbfe_set(fe, &channel->fe_params, MAX_TUNE_TIME)) {
+        if (dvbfe_set(fe, &channel->fe_params, freqadjust, MAX_TUNE_TIME)) {
                 fprintf(stderr, "Failed to lock!\n");
         } else {
                 printf("Tuned successfully!\n");
