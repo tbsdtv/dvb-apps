@@ -263,25 +263,25 @@ int dvbfe_diseqc_set_channel(struct dvbfe_handle *fe,
 	return dvbfe_do_diseqc_command(fe, data, sizeof(data));
 }
 
-int dvbfe_diseqc_halt_positioner(struct dvbfe_handle *fe,
-				 enum dvbfe_diseqc_address address)
+int dvbfe_diseqc_halt_satpos(struct dvbfe_handle *fe,
+			     enum dvbfe_diseqc_address address)
 {
 	uint8_t data[] = { DISEQC_FRAMING_MASTER_NOREPLY, address, 0x60};
 
 	return dvbfe_do_diseqc_command(fe, data, sizeof(data));
 }
 
-int dvbfe_diseqc_disable_limits(struct dvbfe_handle *fe,
-				enum dvbfe_diseqc_address address)
+int dvbfe_diseqc_disable_satpos_limits(struct dvbfe_handle *fe,
+				       enum dvbfe_diseqc_address address)
 {
 	uint8_t data[] = { DISEQC_FRAMING_MASTER_NOREPLY, address, 0x63};
 
 	return dvbfe_do_diseqc_command(fe, data, sizeof(data));
 }
 
-int dvbfe_diseqc_set_limit(struct dvbfe_handle *fe,
-			   enum dvbfe_diseqc_address address,
-			   enum dvbfe_diseqc_direction direction)
+int dvbfe_diseqc_set_satpos_limit(struct dvbfe_handle *fe,
+				  enum dvbfe_diseqc_address address,
+				  enum dvbfe_diseqc_direction direction)
 {
 	uint8_t data[] = { DISEQC_FRAMING_MASTER_NOREPLY, address, 0x66};
 
@@ -291,11 +291,11 @@ int dvbfe_diseqc_set_limit(struct dvbfe_handle *fe,
 	return dvbfe_do_diseqc_command(fe, data, sizeof(data));
 }
 
-int dvbfe_diseqc_drive_motor(struct dvbfe_handle *fe,
-			     enum dvbfe_diseqc_address address,
-			     enum dvbfe_diseqc_direction direction,
-			     enum dvbfe_diseqc_drive_mode mode,
-			     uint8_t value)
+int dvbfe_diseqc_drive_satpos_motor(struct dvbfe_handle *fe,
+				    enum dvbfe_diseqc_address address,
+				    enum dvbfe_diseqc_direction direction,
+				    enum dvbfe_diseqc_drive_mode mode,
+				    uint8_t value)
 {
 	uint8_t data[] = { DISEQC_FRAMING_MASTER_NOREPLY, address, 0x68, 0x00};
 
@@ -314,18 +314,18 @@ int dvbfe_diseqc_drive_motor(struct dvbfe_handle *fe,
 	return dvbfe_do_diseqc_command(fe, data, sizeof(data));
 }
 
-int dvbfe_diseqc_store_preset(struct dvbfe_handle *fe,
-			      enum dvbfe_diseqc_address address,
-			      uint8_t id)
+int dvbfe_diseqc_store_satpos_preset(struct dvbfe_handle *fe,
+				     enum dvbfe_diseqc_address address,
+				     uint8_t id)
 {
 	uint8_t data[] = { DISEQC_FRAMING_MASTER_NOREPLY, address, 0x6A, id};
 
 	return dvbfe_do_diseqc_command(fe, data, sizeof(data));
 }
 
-int dvbfe_diseqc_goto_preset(struct dvbfe_handle *fe,
-			     enum dvbfe_diseqc_address address,
-			     uint8_t id)
+int dvbfe_diseqc_goto_satpos_preset(struct dvbfe_handle *fe,
+				    enum dvbfe_diseqc_address address,
+				    uint8_t id)
 {
 	uint8_t data[] = { DISEQC_FRAMING_MASTER_NOREPLY, address, 0x6B, id};
 
