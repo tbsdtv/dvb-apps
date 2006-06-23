@@ -228,6 +228,9 @@ extern void dvbfe_close(struct dvbfe_handle *handle);
 /**
  * Set the frontend tuning parameters.
  *
+ * Note: this function provides only the basic tuning operation; you might want to
+ * investigate dvbfe_set_sec() in sec.h for a unified device tuning operation.
+ *
  * @param fehandle Handle opened with dvbfe_open().
  * @param params Params to set.
  * @param timeout <0 => wait forever for lock. 0=>return immediately, >0=>
