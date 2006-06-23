@@ -2,12 +2,12 @@
 #include <unistd.h>
 #include <errno.h>
 #include "dvbfe.h"
-#include "diseqc.h"
+#include "sec.h"
 
-int dvbfe_diseqc_std_sequence(struct dvbfe_handle *fe,
-			      enum dvbfe_diseqc_oscillator oscillator,
-			      enum dvbfe_diseqc_polarisation polarisation,
-			      enum dvbfe_diseqc_switch sat_pos)
+int dvbfe_sec_std_sequence(struct dvbfe_handle *fe,
+			   enum dvbfe_diseqc_oscillator oscillator,
+			   enum dvbfe_diseqc_polarisation polarisation,
+			   enum dvbfe_diseqc_switch sat_pos)
 {
 	dvbfe_set_22k_tone(fe, DVBFE_SEC_TONE_OFF);
 

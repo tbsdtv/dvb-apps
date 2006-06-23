@@ -17,8 +17,8 @@
 	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 
-#ifndef DVBFE_DISEQC_H
-#define DVBFE_DISEQC_H 1
+#ifndef DVBFE_SEC_H
+#define DVBFE_SEC_H 1
 
 #include <stdint.h>
 
@@ -110,10 +110,10 @@ enum dvbfe_diseqc_direction {
  * @param sat_pos Value to set the satellite position switch to.
  * @return 0 on success, or nonzero on error.
  */
-extern int dvbfe_diseqc_std_sequence(struct dvbfe_handle *fe,
-				     enum dvbfe_diseqc_oscillator oscillator,
-				     enum dvbfe_diseqc_polarisation polarisation,
-				     enum dvbfe_diseqc_switch sat_pos);
+extern int dvbfe_sec_std_sequence(struct dvbfe_handle *fe,
+				  enum dvbfe_diseqc_oscillator oscillator,
+				  enum dvbfe_diseqc_polarisation polarisation,
+				  enum dvbfe_diseqc_switch sat_pos);
 
 /**
  * Control the reset status of an attached DISEQC device.

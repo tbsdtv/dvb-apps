@@ -8,7 +8,8 @@ includes = diseqc.h   \
            dvbaudio.h \
            dvbvideo.h \
            dvbfe.h    \
-           dvbnet.h
+           dvbnet.h   \
+           sec.h
 
 objects  = dvbca.o    \
            dvbdemux.o \
@@ -16,7 +17,7 @@ objects  = dvbca.o    \
            dvbaudio.o \
            dvbvideo.o \
            dvbnet.o \
-	   diseqc.o
+	   sec.o
 
 sharedlib = libdvbapi.so
 staticlib = libdvbapi.a
