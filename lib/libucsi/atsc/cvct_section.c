@@ -27,7 +27,6 @@ struct atsc_cvct_section *atsc_cvct_section_codec(struct atsc_section_psip *psip
 	size_t pos = sizeof(struct atsc_section_psip);
 	size_t len = section_ext_length(&(psip->ext_head));
 	int idx;
-	int i;
 
 	if (len < sizeof(struct atsc_cvct_section))
 		return NULL;
