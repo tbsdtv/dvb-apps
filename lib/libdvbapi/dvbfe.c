@@ -34,9 +34,6 @@
 #include <linux/dvb/frontend.h>
 #include <libdvbmisc/dvbmisc.h>
 #include "dvbfe.h"
-#include "diseqc.h"
-
-#define GET_INFO_MIN_DELAY_US 100000
 
 int verbose = 0;
 
@@ -163,9 +160,6 @@ struct dvbfe_handle {
 	int fd;
 	enum dvbfe_type type;
 	char *name;
-	struct timeval nextinfotime;
-	struct dvbfe_info cachedinfo;
-	int cachedreturnval;
 };
 
 struct dvbfe_handle *dvbfe_open(int adapter, int frontend, int readonly)
@@ -236,15 +230,6 @@ int dvbfe_get_info(struct dvbfe_handle *fehandle, enum dvbfe_info_mask querymask
 	int returnval = 0;
 	fe_status_t status;
 	struct dvb_frontend_parameters kparams;
-	struct timeval curtime;
-
-	// limit how often this is called to reduce bus traffic
-	gettimeofday(&curtime, NULL);
-	if ((curtime.tv_sec < fehandle->nextinfotime.tv_sec) ||
-	    ((curtime.tv_sec == fehandle->nextinfotime.tv_sec) && (curtime.tv_usec < fehandle->nextinfotime.tv_usec))) {
-		memcpy(result, &fehandle->cachedinfo, sizeof(struct dvbfe_info));
-		return fehandle->cachedreturnval;
-	}
 
 	// retrieve the requested values
 	memset(result, 0, sizeof(result));
@@ -330,16 +315,6 @@ int dvbfe_get_info(struct dvbfe_handle *fehandle, enum dvbfe_info_mask querymask
 		if (!ioctl(fehandle->fd, FE_READ_UNCORRECTED_BLOCKS, &result->ucblocks))
 			returnval |= DVBFE_INFO_UNCORRECTED_BLOCKS;
 	}
-
-	// setup for next poll
-	gettimeofday(&fehandle->nextinfotime, NULL);
-	fehandle->nextinfotime.tv_usec += GET_INFO_MIN_DELAY_US;
-	if (fehandle->nextinfotime.tv_usec >= 1000000) {
-		fehandle->nextinfotime.tv_usec -= 1000000;
-		fehandle->nextinfotime.tv_sec++;
-	}
-	memcpy(&fehandle->cachedinfo, result, sizeof(struct dvbfe_info));
-	fehandle->cachedreturnval = returnval;
 
 	// done
 	return returnval;
