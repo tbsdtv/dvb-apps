@@ -300,6 +300,21 @@ extern int dvbfe_diseqc_goto_satpos_preset(struct dvbfe_handle *fe,
 					   uint8_t id);
 
 /**
+ * Recalculate satellite positions based on the current position, using
+ * magic positioner specific values.
+ *
+ * @param fe Frontend concerned.
+ * @param address Address of the device.
+ * @param val1 value1 (range 0->255, pass -1 to ignore).
+ * @param val2 value2 (range 0->255, pass -1 to ignore).
+ * @return 0 on success, or nonzero on error.
+ */
+extern int dvbfe_diseqc_recalculate_satpos_positions(struct dvbfe_handle *fe,
+						     enum dvbfe_diseqc_address address,
+						     int val1,
+						     int val2);
+
+/**
  * Send a terrestrial aerial rotator to a particular bearing
  * (0 degrees = north, fractional angles allowed).
  *

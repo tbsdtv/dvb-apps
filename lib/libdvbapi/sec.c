@@ -332,6 +332,26 @@ int dvbfe_diseqc_goto_preset(struct dvbfe_handle *fe,
 	return dvbfe_do_diseqc_command(fe, data, sizeof(data));
 }
 
+int dvbfe_diseqc_recalculate_satpos_positions(struct dvbfe_handle *fe,
+					      enum dvbfe_diseqc_address address,
+					      int val1,
+					      int val2)
+{
+	uint8_t data[] = { DISEQC_FRAMING_MASTER_NOREPLY, address, 0x6F, 0x00, 0x00};
+	int len = 3;
+
+	if (val1 != -1) {
+		data[3] = val1;
+		len++;
+	}
+	if (val2 != -1) {
+		data[4] = val2;
+		len = 5;
+	}
+
+	return dvbfe_do_diseqc_command(fe, data, len);
+}
+
 int dvbfe_diseqc_goto_rotator_bearing(struct dvbfe_handle *fe,
 				      enum dvbfe_diseqc_address address,
 				      float angle)
