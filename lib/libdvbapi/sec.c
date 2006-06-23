@@ -152,6 +152,9 @@ int dvbfe_diseqc_set_committed_switches(struct dvbfe_handle *fe,
 		break;
 	}
 
+	if (data[3] == 0)
+		return 0;
+
 	return dvbfe_do_diseqc_command(fe, data, sizeof(data));
 }
 
@@ -204,6 +207,9 @@ int dvbfe_diseqc_set_uncommitted_switches(struct dvbfe_handle *fe,
 	case DISEQC_SWITCH_UNCHANGED:
 		break;
 	}
+
+	if (data[3] == 0)
+		return 0;
 
 	return dvbfe_do_diseqc_command(fe, data, sizeof(data));
 }
