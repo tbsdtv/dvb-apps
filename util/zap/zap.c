@@ -71,7 +71,7 @@ void usage(void)
 		"			 * STANDARD - 10945 to 11450 Mhz, Single LO, 10000 Mhz.\n"
 		"			 * ENHANCED - Astra, 10700 to 11700 MHz, Single LO, 9750 MHz.\n"
 		"			 * C-BAND - Big Dish, 3700 to 4200 MHz, Single LO, 5150 Mhz.\n"
-		"			 * One of the values defined in the secfile if supplied"
+		"			 * One of the sec definitions from the secfile if supplied"
 		" -out :decoder		Output to hardware decoder\n"
 		"      :decoderabypass	Output to hardware decoder using audio bypass\n"
 		"      :dvr		Output A/V only to dvr device\n"
