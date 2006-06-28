@@ -18,6 +18,112 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
  */
 
+/**
+ * This library allows SEC (Satellite Equipment Control) configurations
+ * to be retrieved. Each configuration is identified by a unique satellite_id.
+ *
+ * In order to make things as easy as possible for users, there are a set of
+ * defaults hardcoded into the library covering the majority of LNB types. When
+ * these are used, the standard back-compatable sequence defined in the DISEQC
+ * standard will be used - this will suffice for _most_ situations.
+ *
+ * UNIVERSAL - Europe, 10800 to 11800 MHz and 11600 to 12700 Mhz, Dual LO, loband 9750, hiband 10600 MHz.
+ * DBS - Expressvu, North America, 12200 to 12700 MHz, Single LO, 11250 MHz.
+ * STANDARD - 10945 to 11450 Mhz, Single LO, 10000 Mhz.
+ * ENHANCED - Astra, 10700 to 11700 MHz, Single LO, 9750 MHz.
+ * C-BAND - Big Dish, 3700 to 4200 MHz, Single LO, 5150 Mhz.
+ *
+ * However, for the power user with a more complex setup, these simple defaults
+ * are not enough. Therefore, it is also possible to define additional SEC
+ * configurations in an external configuration file. This file consists of multiple
+ * entries in the following format:
+ *
+ * [sec]
+ * name=<sec_id>
+ * switch-frequency=<switching frequency (SLOF)>
+ * lof-lo=<low band frequency>
+ * lof-hi=<high band frequency>
+ * config-type=<none|simple|advanced>
+ * cmd-lo-v=<sec sequence>
+ * cmd-lo-h=<sec sequence>
+ * cmd-lo-r=<sec sequence>
+ * cmd-lo-l=<sec sequence>
+ * cmd-hi-v=<sec sequence>
+ * cmd-hi-h=<sec sequence>
+ * cmd-hi-r=<sec sequence>
+ * cmd-hi-l=<sec sequence>
+ *
+ * The sec_id is whatever unique value you wish. If it is the same as one of the hardcoded defaults, the configuration
+ * 	details from the file will be used instead of the hardcoded ones.
+ * The switch-frequency (or SLOF) indicates the point seperating low band frequencies from high band frequencies.
+ * 	Set this value to 0 if there is only one frequency band.
+ * The lof-lo is the frequency adjustment for the low band (i.e. less than SLOF), or is used if switch-frequency==0.
+ * The lof-hi is the frequency adjustment for the high band (unused if switch-frequency==0).
+ *
+ * config-type indicates the desired type of SEC command to use, it may be:
+ * 	none - No SEC commands will be issued (frequency adjustment will still be performed).
+ * 	simple - The standard DISEQC back compatable sequence will be issued.
+ * 	advanced - The DISEQC sequence described in the appropriate sec cmd string will be used.
+ *
+ * The cmd-<lo|hi>-<v|h|l|r> describes the SEC cmd string to use in advanced mode for each of the possible combinations of
+ * frequency band and polarisation. If a certain combination is not required, it may be omitted. It consists of a
+ * space seperated combination of commands - those available are as follows:
+ *
+ *	tone(<0|1>)  - control the 22kHz tone 0:off, 1:on
+ *	voltage(<0|13|18>) - control the LNB voltage 0v, 13v, or 18v
+ * 	toneburst(<a|b>) - issue a toneburst (mini command) for position A or B.
+ *	highvoltage(<0|1>) - control high lnb voltage for long cable runs 0: normal, 1:add 1v to LNB voltage.
+ *	dishnetworks(<integer>) - issue a dishnetworks legacy command.
+ *	wait(<integer>) - wait for the given number of milliseconds.
+ *	Dreset(<address>, <0|1>) - control the reset state of a DISEC device, 0:disable reset, 1:enable reset.
+ *	Dpower(<address>, <0|1>) - control the power of a DISEC device, 0:off, 1:on.
+ *	Dcommitted(<address>, <h|l|x>, <v|h|l|r|x>, <a|b|x>, <a|b|x>) - Write to the committed switches of a DISEC device.
+ * 		The parameters are for band, polarisation, satelliteposition, switchoption:
+ * 			band - h:high band, l:low band
+ * 			polarisation - v: vertical, h:horizontal,r:right,l:left
+ * 			satelliteposition - a:position A, b: position B
+ * 			switchoption - a:position A, b: position B
+ * 		The special value 'x' means "no change to this switch".
+ *
+ *	Duncommitted(<address>, <a|b|x>, <a|b|x>, <a|b|x>, <a|b|x>) - Write to the uncommitted switches of the a DISEC device.
+ * 		The parameters are for switch1, switch2, switch3, switch4, and may be set to position a or b.
+ * 		The special value 'x' means "no change to this switch".
+ *
+ * 	Dfrequency(<address>, <frequency in GHz>) - set the frequency of a DISEC device.
+ * 	Dchannel(<address>, <channel id>) - set the desired channel id of a DISEC device.
+ * 	Dgotopreset(<address>, <preset id>) - tell a DISEC satellite positioner to move to the given preset id.
+ * 	Dgotobearing(<address>, <bearing in degrees>) - tell a DISEQC terrestrial rotator to go to the
+ *		given bearing (range -256.0 -> 512.0 degrees, fractions allowed).
+ *
+ * 	In the above DISEQC commands, <address> is the integer (normally in hex format) address of the
+ * 		diseqc device to communicate with. A list of possiblities is as follows:
+ *
+ * 	DISEQC_ADDRESS_ANY_DEVICE		= 0x00
+ *
+ *	DISEQC_ADDRESS_ANY_LNB_SWITCHER_SMATV	= 0x10
+ *	DISEQC_ADDRESS_LNB			= 0x11
+ *	DISEQC_ADDRESS_LNB_WITH_LOOP		= 0x12
+ *	DISEQC_ADDRESS_SWITCHER			= 0x14
+ *	DISEQC_ADDRESS_SWITCHER_WITH_LOOP	= 0x15
+ *	DISEQC_ADDRESS_SMATV			= 0x18
+ *
+ *	DISEQC_ADDRESS_ANY_POLARISER		= 0x20
+ *	DISEQC_ADDRESS_LINEAR_POLARISER		= 0x21
+ *
+ *	DISEQC_ADDRESS_ANY_POSITIONER		= 0x30
+ *	DISEQC_ADDRESS_POLAR_AZIMUTH_POSITIONER	= 0x31
+ *	DISEQC_ADDRESS_ELEVATION_POSITIONER	= 0x32
+ *
+ *	DISEQC_ADDRESS_ANY_INSTALLER_AID	= 0x40
+ *	DISEQC_ADDRESS_SIGNAL_STRENGTH		= 0x41
+ *
+ *	DISEQC_ADDRESS_ANY_INTERFACE		= 0x70
+ *	DISEQC_ADDRESS_HEADEND_INTERFACE	= 0x71
+ *
+ *	DISEQC_ADDRESS_REALLOC_BASE		= 0x60
+ *	DISEQC_ADDRESS_OEM_BASE			= 0xf0
+ */
+
 #ifndef DVBCFG_SEC_H
 #define DVBCFG_SEC_H 1
 
@@ -29,23 +135,7 @@ extern "C"
 #include <stdio.h>
 #include <stdint.h>
 #include <libdvbapi/dvbfe.h>
-
-struct dvbcfg_sec
-{
-	/* these elements are use to match the entry */
-        char sec_id[128];
-	uint32_t slof; /* switching frequency */
-	enum dvbfe_polarization polarization;
-
-	/* these elements describe the SEC parameters */
-	uint32_t lof; /* frequency to subtract */
-	char command[256];
-
-	/* these two are not used by this library - they're provided as a
-	 * convenience for applications to use */
-	struct dvbcfg_sec *next;
-	struct dvbcfg_sec *prev;
-};
+#include <libdvbapi/sec.h>
 
 /**
  * Callback function used in dvbcfg_sec_load().
@@ -54,7 +144,7 @@ struct dvbcfg_sec
  * @param channel The current channel details.
  * @return 0 to continue, 1 to stop loading.
  */
-typedef int (*dvbcfg_sec_callback)(void *private, struct dvbcfg_sec *sec);
+typedef int (*dvbcfg_sec_callback)(void *private, struct dvbfe_sec_config *sec);
 
 /**
  * Load an SEC file.
@@ -68,20 +158,18 @@ extern int dvbcfg_sec_load(FILE *f, void *private,
 			   dvbcfg_sec_callback cb);
 
 /**
- * Convenience function to parse an SEC config file and find details for a particular setting.
+ * Convenience function to parse an SEC config file. This will also consult the set
+ * of hardcoded defaults if no config file was supplied, or a match was not found in
+ * the config file.
  *
- * @param config_file Config filename to load.
- * @param sec_id ID of SEC channel.
- * @param frequency Desired frequency.
- * @param polarization Desired polarization.
+ * @param config_file Config filename to load, or NULL to just check defaults.
+ * @param sec_id ID of SEC configuration.
  * @param sec Where to put the details if found.
  * @return 0 on success, nonzero on error.
  */
 extern int dvbcfg_sec_find(const char *config_file,
 			   const char *sec_id,
-			   uint32_t frequency,
-			   enum dvbfe_polarization polarization,
-			   struct dvbcfg_sec *sec);
+			   struct dvbfe_sec_config *sec);
 
 /**
  * Save SEC format config file.
@@ -92,7 +180,7 @@ extern int dvbcfg_sec_find(const char *config_file,
  * @return 0 on success, or nonzero error code on failure.
  */
 extern int dvbcfg_sec_save(FILE *f,
-			   struct dvbcfg_sec *secs,
+			   struct dvbfe_sec_config *secs,
 			   int count);
 
 #ifdef __cplusplus

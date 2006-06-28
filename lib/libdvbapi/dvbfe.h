@@ -306,57 +306,6 @@ extern int dvbfe_do_diseqc_command(struct dvbfe_handle *handle, uint8_t *data, u
  */
 extern int dvbfe_diseqc_read(struct dvbfe_handle *fehandle, int timeout, unsigned char *buf, unsigned int len);
 
-/**
- * Execute an SEC command string.
- *
- * An sec command consists of a sequence of the following codes, separated by
- * whitespace:
- * Simple commands:
- * t         - turn 22kHz tone off.
- * T         - turn 22kHz tone on.
- * _         - set voltage to 0v (i.e. off).
- * v         - set voltage to 13v.
- * V         - set voltage to 18v.
- * +         - Enable high LNB voltage.
- * -         - Disable high LNB voltage.
- * A         - send DISEQC mini command A.
- * B         - send DISEQC mini command B.
- * Wii       - Delay for ii milliseconds.
- *
- * Extended commands:
- * .dishnetworks(<value>) - Send a dish networks legacy command <value>
- * .D(<value> ...)   - Send a raw diseqc master command. The command may be up
- * 	to 6 bytes long.
- * .Dband(<addr> <lo|hi>) - Set frequency band hi or lo.
- * .Dpolarisation(<addr> <V|H|L|R>) - Set polarisation.
- * .Dsatellite_position(<addr> <A|B>) - Set "satellite position" input switch.
- * .Dswitch_option(<addr> <A|B>) - Set "switch option" input switch.
- * .Dport_group(<addr> <0|1> <value>) - Set port group 0 or 1 setting.
- * .Dgoto_preset(<addr> <index>) - Set a positioner to a preset index (integer)
- * .Dgoto_angle(<addr> <angle>) - Set a positioner to a given angle
- * (e.g. 49.6). The angle may range between -180 to 496. It may include a
- * fractional part.
- *
- * All integer values use standard notation - no prefix=>decimal, 0x=>hex etc.
- *
- * Set <addr> to 0x10 if you just have a simple DISEQC setup (e.g. one switch). See
- * the DISEQC specification at http://www.eutelsat.org/ for full information.
- *
- * Comments begin with '#' - any characters after this will be ignored
- * to the end of the line.
- *
- * Examples:
- * S-19.2E  11700000 V  9750000  t v W15 .Dport_group(0x10 0 0xf0) W15 A W15 t
- * S-19.2E  99999999 V 10600000  t v W15 .Dport_group(0x10 0 0xf1) W15 A W15 T
- * S-19.2E  11700000 H  9750000  t V W15 .Dport_group(0x10 0 0xf2) W15 A W15 t
- * S-19.2E  99999999 H 10600000  t V W15 .Dport_group(0x10 0 0xf3) W15 A W15 T
- *
- * @param fehandle Handle opened with dvbfe_open().
- * @param command Command to execute.
- * @return 0 on success, nonzero on failure.
- */
-extern int dvbfe_sec_command(struct dvbfe_handle *fehandle, char *command);
-
 #ifdef __cplusplus
 }
 #endif

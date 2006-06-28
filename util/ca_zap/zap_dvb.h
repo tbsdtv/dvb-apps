@@ -30,7 +30,7 @@ struct zap_dvb_params {
 	int frontend_id;
 	int demux_id;
 	struct dvbcfg_zapchannel channel;
-	struct dvbcfg_sec sec;
+	struct dvbfe_sec_config sec;
 	int output_type;
 	struct dvbfe_handle *fe;
 };

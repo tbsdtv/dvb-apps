@@ -32,10 +32,12 @@ int dvbcfg_sec_load(FILE *f,
 		    void *private,
 		    dvbcfg_sec_callback cb)
 {
-	struct dvbcfg_sec tmpsec;
+	struct dvbfe_sec_config tmpsec;
 	char *linebuf = NULL;
 	size_t line_size = 0;
 	int len;
+	int insection = 0;
+	char *value;
 
 	/* process each line */
 	while((len = getline(&linebuf, &line_size, f)) > 0) {
@@ -57,51 +59,58 @@ int dvbcfg_sec_load(FILE *f,
 		/* skip blank lines */
 		if (*line == 0)
 			continue;
-		memset(&tmpsec, 0, sizeof(tmpsec));
 
-		/* get the sec_id */
-		dvbcfg_curtoken(tmpsec.sec_id, sizeof(tmpsec.sec_id), line, ' ');
-		if ((line = dvbcfg_nexttoken(line, ' ')) == NULL)
-			continue;
+		if (dvbcfg_issection(line, "sec")) {
+			if (insection) {
+				if (cb(private, &tmpsec))
+					return 0;
+			}
+			insection = 1;
+			memset(&tmpsec, 0, sizeof(tmpsec));
 
-		/* the slof */
-		if (sscanf(line, "%i", &tmpsec.slof) != 1)
-			continue;
-		if ((line = dvbcfg_nexttoken(line, ' ')) == NULL)
-			continue;
-
-		/* the polarization */
-		switch(tolower(line[0])) {
-		case 'h':
-			tmpsec.polarization = DVBFE_POLARIZATION_H;
-			break;
-		case 'v':
-			tmpsec.polarization = DVBFE_POLARIZATION_V;
-			break;
-		case 'l':
-			tmpsec.polarization = DVBFE_POLARIZATION_L;
-			break;
-		case 'r':
-			tmpsec.polarization = DVBFE_POLARIZATION_R;
-			break;
-		default:
-			continue;
+		} else if ((value = dvbcfg_iskey(line, "name")) != NULL) {
+			strncpy(tmpsec.id, value, sizeof(tmpsec.id));
+		} else if ((value = dvbcfg_iskey(line, "switch-frequency")) != NULL) {
+			tmpsec.switch_frequency = atoi(value);
+		} else if ((value = dvbcfg_iskey(line, "lof-lo")) != NULL) {
+			tmpsec.lof_lo = atoi(value);
+		} else if ((value = dvbcfg_iskey(line, "lof-hi")) != NULL) {
+			tmpsec.lof_hi = atoi(value);
+		} else if ((value = dvbcfg_iskey(line, "config-type")) != NULL) {
+			if (!strcasecmp(value, "none")) {
+				tmpsec.config_type = DVBFE_SEC_CONFIG_NONE;
+			} else if (!strcasecmp(value, "simple")) {
+				tmpsec.config_type = DVBFE_SEC_CONFIG_SIMPLE;
+			} else if (!strcasecmp(value, "advanced")) {
+				tmpsec.config_type = DVBFE_SEC_CONFIG_ADVANCED;
+			} else {
+				insection = 0;
+			}
+		} else if ((value = dvbcfg_iskey(line, "cmd-lo-v")) != NULL) {
+			strncpy(tmpsec.adv_cmd_lo_v, value, sizeof(tmpsec.adv_cmd_lo_v));
+		} else if ((value = dvbcfg_iskey(line, "cmd-lo-h")) != NULL) {
+			strncpy(tmpsec.adv_cmd_lo_h, value, sizeof(tmpsec.adv_cmd_lo_h));
+		} else if ((value = dvbcfg_iskey(line, "cmd-lo-r")) != NULL) {
+			strncpy(tmpsec.adv_cmd_lo_r, value, sizeof(tmpsec.adv_cmd_lo_r));
+		} else if ((value = dvbcfg_iskey(line, "cmd-lo-l")) != NULL) {
+			strncpy(tmpsec.adv_cmd_lo_l, value, sizeof(tmpsec.adv_cmd_lo_l));
+		} else if ((value = dvbcfg_iskey(line, "cmd-hi-v")) != NULL) {
+			strncpy(tmpsec.adv_cmd_hi_v, value, sizeof(tmpsec.adv_cmd_hi_v));
+		} else if ((value = dvbcfg_iskey(line, "cmd-hi-h")) != NULL) {
+			strncpy(tmpsec.adv_cmd_hi_h, value, sizeof(tmpsec.adv_cmd_hi_h));
+		} else if ((value = dvbcfg_iskey(line, "cmd-hi-r")) != NULL) {
+			strncpy(tmpsec.adv_cmd_hi_r, value, sizeof(tmpsec.adv_cmd_hi_r));
+		} else if ((value = dvbcfg_iskey(line, "cmd-hi-l")) != NULL) {
+			strncpy(tmpsec.adv_cmd_hi_l, value, sizeof(tmpsec.adv_cmd_hi_l));
+		} else {
+			insection = 0;
 		}
-		if ((line = dvbcfg_nexttoken(line, ' ')) == NULL)
-			continue;
+	}
 
-		/* the LOF */
-		if (sscanf(line, "%i", &tmpsec.lof) != 1)
-			continue;
-		if ((line = dvbcfg_nexttoken(line, ' ')) == NULL)
-			continue;
-
-		/* the associated command NOTE: already null terminated */
-		strncpy(tmpsec.command, line, sizeof(tmpsec.command)-1);
-
-		// tell caller
+	// output the final section if there is one
+	if (insection) {
 		if (cb(private, &tmpsec))
-			break;
+			return 0;
 	}
 
 	if (linebuf)
@@ -109,91 +118,154 @@ int dvbcfg_sec_load(FILE *f,
 	return 0;
 }
 
-static int dvbcfg_sec_find_callback(void *private, struct dvbcfg_sec *sec);
+static int dvbcfg_sec_find_callback(void *private, struct dvbfe_sec_config *sec);
+static int dvbcfg_sec_find_default(const char *sec_id, struct dvbfe_sec_config *sec);
 
 struct findparams {
 	const char *sec_id;
-	uint32_t frequency;
-	enum dvbfe_polarization polarization;
-	struct dvbcfg_sec *sec_dest;
+	struct dvbfe_sec_config *sec_dest;
 };
 
 int dvbcfg_sec_find(const char *config_file,
 		    const char *sec_id,
-		    uint32_t frequency,
-		    enum dvbfe_polarization polarization,
-		    struct dvbcfg_sec *sec)
+		    struct dvbfe_sec_config *sec)
 {
 	struct findparams findp;
 
 	// open the file
-	FILE *f = fopen(config_file, "r");
-	if (f == NULL)
-		return -EIO;
+	if (config_file != NULL) {
+		FILE *f = fopen(config_file, "r");
+		if (f == NULL)
+			return -EIO;
 
-	// parse each entry
-	memset(sec, 0, sizeof(struct dvbcfg_sec));
-	findp.sec_id = sec_id;
-	findp.frequency = frequency;
-	findp.polarization = polarization;
-	findp.sec_dest = sec;
-	dvbcfg_sec_load(f, &findp, dvbcfg_sec_find_callback);
+		// parse each entry
+		memset(sec, 0, sizeof(struct dvbfe_sec_config));
+		findp.sec_id = sec_id;
+		findp.sec_dest = sec;
+		dvbcfg_sec_load(f, &findp, dvbcfg_sec_find_callback);
 
-	// done
-	fclose(f);
-	if (sec->sec_id[0])
+		// done
+		fclose(f);
+	}
+	if (sec->id[0])
 		return 0;
-	return -1;
+
+	return dvbcfg_sec_find_default(sec_id, sec);
 }
 
-static int dvbcfg_sec_find_callback(void *private, struct dvbcfg_sec *sec)
+static int dvbcfg_sec_find_callback(void *private, struct dvbfe_sec_config *sec)
 {
 	struct findparams *findp = private;
 
-	if (strcmp(findp->sec_id, sec->sec_id))
-		return 0;
-	if (findp->frequency > sec->slof)
-		return 0;
-	if (findp->polarization != sec->polarization)
+	if (strcmp(findp->sec_id, sec->id))
 		return 0;
 
-	memcpy(findp->sec_dest, sec, sizeof(struct dvbcfg_sec));
+	memcpy(findp->sec_dest, sec, sizeof(struct dvbfe_sec_config));
 	return 1;
 }
 
 int dvbcfg_sec_save(FILE *f,
-		    struct dvbcfg_sec *secs,
+		    struct dvbfe_sec_config *secs,
 		    int count)
 {
 	int i;
-	char polarization = ' ';
 
 	for(i=0; i<count; i++) {
-		fprintf(f,  "%s ", secs[i].sec_id);
-		fprintf(f,  "%ul ", secs[i].slof);
-
-		switch(secs[i].polarization) {
-		case DVBFE_POLARIZATION_H:
-			polarization = 'h';
+		char *config_type = "";
+		switch(secs[i].config_type) {
+		case DVBFE_SEC_CONFIG_NONE:
+			config_type = "none";
 			break;
-
-		case DVBFE_POLARIZATION_V:
-			polarization = 'v';
+		case DVBFE_SEC_CONFIG_SIMPLE:
+			config_type = "simple";
 			break;
-
-		case DVBFE_POLARIZATION_L:
-			polarization = 'l';
-			break;
-
-		case DVBFE_POLARIZATION_R:
-			polarization = 'r';
+		case DVBFE_SEC_CONFIG_ADVANCED:
+			config_type = "advanced";
 			break;
 		}
-		fprintf(f,  "%c ", polarization);
-		fprintf(f,  "%ul ", secs[i].lof);
-		fprintf(f,  "%s", secs[i].command);
-		fprintf(f,  "\n");
+
+		fprintf(f, "[lnb]\n");
+		fprintf(f, "switch-frequency=%i\n", secs[i].switch_frequency);
+		fprintf(f, "lof-lo=%i\n", secs[i].lof_lo);
+		fprintf(f, "lof-hi=%i\n", secs[i].lof_hi);
+		fprintf(f, "config-type=%s\n", config_type);
+
+		if (secs[i].config_type == DVBFE_SEC_CONFIG_ADVANCED) {
+			if (secs[i].adv_cmd_lo_h[0])
+				fprintf(f, "cmd-lo-h=%s\n", secs[i].adv_cmd_lo_h);
+			if (secs[i].adv_cmd_lo_v[0])
+				fprintf(f, "cmd-lo-v=%s\n", secs[i].adv_cmd_lo_v);
+			if (secs[i].adv_cmd_lo_r[0])
+				fprintf(f, "cmd-lo-r=%s\n", secs[i].adv_cmd_lo_r);
+			if (secs[i].adv_cmd_lo_l[0])
+				fprintf(f, "cmd-lo-l=%s\n", secs[i].adv_cmd_lo_l);
+			if (secs[i].adv_cmd_hi_h[0])
+				fprintf(f, "cmd-hi-h=%s\n", secs[i].adv_cmd_hi_h);
+			if (secs[i].adv_cmd_hi_v[0])
+				fprintf(f, "cmd-hi-v=%s\n", secs[i].adv_cmd_hi_v);
+			if (secs[i].adv_cmd_hi_r[0])
+				fprintf(f, "cmd-hi-r=%s\n", secs[i].adv_cmd_hi_r);
+			if (secs[i].adv_cmd_hi_l[0])
+				fprintf(f, "cmd-hi-l=%s\n", secs[i].adv_cmd_hi_l);
+		}
+
+		fprintf(f, "\n");
 	}
 
 	return 0;
+}
+
+static struct dvbfe_sec_config defaults[] = {
+
+	{
+		.id = "UNIVERSAL",
+		.switch_frequency = 11700000,
+		.lof_lo = 9750000,
+		.lof_hi = 10600000,
+		.config_type = DVBFE_SEC_CONFIG_SIMPLE,
+	},
+	{
+		.id = "DBS",
+		.switch_frequency = 0,
+		.lof_lo = 11250000,
+		.lof_hi = 0,
+		.config_type = DVBFE_SEC_CONFIG_SIMPLE,
+	},
+	{
+		.id = "STANDARD",
+		.switch_frequency = 0,
+		.lof_lo = 10000000,
+		.lof_hi = 0,
+		.config_type = DVBFE_SEC_CONFIG_SIMPLE,
+	},
+	{
+		.id = "ENHANCED",
+		.switch_frequency = 0,
+		.lof_lo = 9750000,
+		.lof_hi = 0,
+		.config_type = DVBFE_SEC_CONFIG_SIMPLE,
+	},
+	{
+		.id = "C-BAND",
+		.switch_frequency = 0,
+		.lof_lo = 5150000,
+		.lof_hi = 0,
+		.config_type = DVBFE_SEC_CONFIG_SIMPLE,
+	},
+};
+#define defaults_count (sizeof(defaults) / sizeof(struct dvbfe_sec_config))
+
+static int dvbcfg_sec_find_default(const char *sec_id,
+				   struct dvbfe_sec_config *sec)
+{
+	unsigned int i;
+
+	for(i=0; i< defaults_count; i++) {
+		if (!strncmp(sec_id, defaults[i].id, sizeof(defaults[i].id))) {
+			memcpy(sec, &defaults[i], sizeof(struct dvbfe_sec_config));
+			return 0;
+		}
+	}
+
+	return -1;
 }

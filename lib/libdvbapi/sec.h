@@ -34,18 +34,30 @@ enum dvbfe_diseqc_framing {
 };
 
 enum dvbfe_diseqc_address {
-	DISEQC_ADDRESS_MASTER			= 0x00,
-	DISEQC_ADDRESS_SMATV_MASTER		= 0x10,
-	DISEQC_ADDRESS_LNB_MASTER		= 0x10,
-	DISEQC_ADDRESS_SWITCHER_MASTER		= 0x10,
+	DISEQC_ADDRESS_ANY_DEVICE		= 0x00,
+
+	DISEQC_ADDRESS_ANY_LNB_SWITCHER_SMATV	= 0x10,
 	DISEQC_ADDRESS_LNB			= 0x11,
-	DISEQC_ADDRESS_LNB_LOOP			= 0x12,
-	DISEQC_ADDRESS_SWITCHER_DC		= 0x14,
-	DISEQC_ADDRESS_SWITCHER_DC_LOOP		= 0x15,
-	DISEQC_ADDRESS_POL_CONTROLLER		= 0x21,
-	DISEQC_ADDRESS_POSITIONER_MASTER	= 0x30,
-	DISEQC_ADDRESS_POSITIONER_POLAR		= 0x31,
-	DISEQC_ADDRESS_POSITIONER_ELEVATION	= 0x32,
+	DISEQC_ADDRESS_LNB_WITH_LOOP		= 0x12,
+	DISEQC_ADDRESS_SWITCHER			= 0x14,
+	DISEQC_ADDRESS_SWITCHER_WITH_LOOP	= 0x15,
+	DISEQC_ADDRESS_SMATV			= 0x18,
+
+	DISEQC_ADDRESS_ANY_POLARISER		= 0x20,
+	DISEQC_ADDRESS_LINEAR_POLARISER		= 0x21,
+
+	DISEQC_ADDRESS_ANY_POSITIONER		= 0x30,
+	DISEQC_ADDRESS_POLAR_AZIMUTH_POSITIONER	= 0x31,
+	DISEQC_ADDRESS_ELEVATION_POSITIONER	= 0x32,
+
+	DISEQC_ADDRESS_ANY_INSTALLER_AID	= 0x40,
+	DISEQC_ADDRESS_SIGNAL_STRENGTH		= 0x41,
+
+	DISEQC_ADDRESS_ANY_INTERFACE		= 0x70,
+	DISEQC_ADDRESS_HEADEND_INTERFACE	= 0x71,
+
+	DISEQC_ADDRESS_REALLOC_BASE		= 0x60,
+	DISEQC_ADDRESS_OEM_BASE			= 0xf0,
 };
 
 enum dvbfe_diseqc_reset {
@@ -69,14 +81,6 @@ enum dvbfe_diseqc_oscillator {
 	DISEQC_OSCILLATOR_UNCHANGED,
 };
 
-enum dvbfe_diseqc_polarisation {
-	DISEQC_POLARISATION_H,
-	DISEQC_POLARISATION_V,
-	DISEQC_POLARISATION_L,
-	DISEQC_POLARISATION_R,
-	DISEQC_POLARISATION_UNCHANGED,
-};
-
 enum dvbfe_diseqc_switch {
 	DISEQC_SWITCH_A,
 	DISEQC_SWITCH_B,
@@ -98,6 +102,74 @@ enum dvbfe_diseqc_direction {
 	DISEQC_DIRECTION_WEST,
 };
 
+enum dvbfe_sec_config_type {
+	DVBFE_SEC_CONFIG_NONE = 0,
+	DVBFE_SEC_CONFIG_SIMPLE,
+	DVBFE_SEC_CONFIG_ADVANCED,
+};
+
+
+#define MAX_SEC_CMD_LEN 100
+
+struct dvbfe_sec_config
+{
+	char id[32]; /* ID of this SEC config structure */
+	uint32_t switch_frequency; /* switching frequency - supply 0 for none. */
+	uint32_t lof_lo; /* frequency to subtract for LOW band channels - or for switch_frequency == 0 */
+	uint32_t lof_hi; /* frequency to subtract for HIGH band channels */
+
+	/**
+	 * The SEC control to be used depends on the type:
+	 *
+	 * NONE - no SEC commands will be issued. (Frequency adjustment will still be performed).
+	 *
+	 * SIMPLE - the standard DISEQC back compatable sequence is used.
+	 *
+	 * ADVANCED - SEC strings are supplied by the user describing the exact sequence
+	 * of operations to use.
+	 */
+	enum dvbfe_sec_config_type config_type;
+
+	/* stuff for type == DVBFE_SEC_CONFIG_ADVANCED */
+	char adv_cmd_lo_h[MAX_SEC_CMD_LEN];			/* ADVANCED SEC command to use for LOW/H. */
+	char adv_cmd_lo_v[MAX_SEC_CMD_LEN];			/* ADVANCED SEC command to use for LOW/V. */
+	char adv_cmd_lo_l[MAX_SEC_CMD_LEN];			/* ADVANCED SEC command to use for LOW/L. */
+	char adv_cmd_lo_r[MAX_SEC_CMD_LEN];			/* ADVANCED SEC command to use for LOW/R. */
+	char adv_cmd_hi_h[MAX_SEC_CMD_LEN];			/* ADVANCED SEC command to use for HI/H. */
+	char adv_cmd_hi_v[MAX_SEC_CMD_LEN];			/* ADVANCED SEC command to use for HI/V. */
+	char adv_cmd_hi_l[MAX_SEC_CMD_LEN];			/* ADVANCED SEC command to use for HI/L. */
+	char adv_cmd_hi_r[MAX_SEC_CMD_LEN];			/* ADVANCED SEC command to use for HI/R. */
+};
+
+/**
+ * Helper function for tuning adapters with SEC support. This function will do
+ * everything required, including frequency adjustment based on the parameters
+ * in sec_config.
+ *
+ * Note: Since the SEC configuration structure can be set to disable any SEC
+ * operations, this function can be reused for ALL DVB style devices (just
+ * set LOF=0,type=DVBFE_SEC_CONFIG_NONE for devices which do not require
+ * SEC control).
+ *
+ * The sec configuration structures can be looked up using the dvbcfg_sec library.
+ *
+ * @param fe Frontend concerned.
+ * @param sec_config SEC configuration structure. May be NULL to disable SEC/frequency adjustment.
+ * @param sat_pos Satellite position - only used if type == DISEQC_SEC_CONFIG_SIMPLE.
+ * @param switch_option Switch option - only used if type == DISEQC_SEC_CONFIG_SIMPLE.
+ * @param params Tuning parameters.
+ * @param timeout <0 => wait forever for lock. 0=>return immediately, >0=>
+ * number of milliseconds to wait for a lock.
+ * @return 0 on locked (or if timeout==0 and everything else worked), or
+ * nonzero on failure (including no lock).
+ */
+extern int dvbfe_sec_set(struct dvbfe_handle *fe,
+			  struct dvbfe_sec_config *sec_config,
+			  enum dvbfe_diseqc_switch sat_pos,
+			  enum dvbfe_diseqc_switch switch_option,
+			  struct dvbfe_parameters *params,
+			  int timeout);
+
 /**
  * This will issue the standardised back-compatable DISEQC/SEC command
  * sequence as defined in the DISEQC spec:
@@ -106,14 +178,26 @@ enum dvbfe_diseqc_direction {
  *
  * @param fe Frontend concerned.
  * @param oscillator Value to set the lo/hi switch to.
- * @param polarisation Value to set the polarisation switch to.
+ * @param polarization Value to set the polarisation switch to.
  * @param sat_pos Value to set the satellite position switch to.
+ * @param switch_option Value to set the "swtch option" switch to.
  * @return 0 on success, or nonzero on error.
  */
 extern int dvbfe_sec_std_sequence(struct dvbfe_handle *fe,
 				  enum dvbfe_diseqc_oscillator oscillator,
-				  enum dvbfe_diseqc_polarisation polarisation,
-				  enum dvbfe_diseqc_switch sat_pos);
+				  enum dvbfe_polarization polarization,
+				  enum dvbfe_diseqc_switch sat_pos,
+				  enum dvbfe_diseqc_switch switch_option);
+
+/**
+ * Execute an SEC command string on the provided frontend. Please see the documentation
+ * in dvbcfg_sec.h on the command format,
+ *
+ * @param fe Frontend concerned.
+ * @param command The command to execute.
+ * @return 0 on success, or nonzero on error.
+ */
+extern int dvbfe_sec_command(struct dvbfe_handle *fe, char *command);
 
 /**
  * Control the reset status of an attached DISEQC device.
@@ -158,7 +242,7 @@ extern int dvbfe_diseqc_set_listen(struct dvbfe_handle *fe,
  * @param fe Frontend concerned.
  * @param address Address of the device.
  * @param oscillator Value to set the lo/hi switch to.
- * @param polarisation Value to set the polarisation switch to.
+ * @param polarization Value to set the polarization switch to, or -1 to not change it.
  * @param sat_pos Value to set the satellite position switch to.
  * @param switch_option Value to set the switch option switch to.
  * @return 0 on success, or nonzero on error.
@@ -166,7 +250,7 @@ extern int dvbfe_diseqc_set_listen(struct dvbfe_handle *fe,
 extern int dvbfe_diseqc_set_committed_switches(struct dvbfe_handle *fe,
 					       enum dvbfe_diseqc_address address,
 					       enum dvbfe_diseqc_oscillator oscillator,
-					       enum dvbfe_diseqc_polarisation polarisation,
+					       int polarization,
 					       enum dvbfe_diseqc_switch sat_pos,
 					       enum dvbfe_diseqc_switch switch_option);
 

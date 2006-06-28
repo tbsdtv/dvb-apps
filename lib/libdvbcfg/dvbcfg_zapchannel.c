@@ -112,6 +112,8 @@ int dvbcfg_zapchannel_load(FILE *f,
 {
 	struct dvbcfg_zapchannel tmpzapchannel;
 	char *linebuf = NULL;
+	char satid[32];
+	int isatid;
 	size_t line_size = 0;
 	int len;
 	int val;
@@ -278,8 +280,16 @@ int dvbcfg_zapchannel_load(FILE *f,
 			if ((line = dvbcfg_nexttoken(line, ':')) == NULL)
 				continue;
 
-			/* satellite switch position */
-			dvbcfg_curtoken(tmpzapchannel.sec_id, sizeof(tmpzapchannel.sec_id), line, ':');
+			/* satellite switch position/satellite_id */
+			dvbcfg_curtoken(satid, sizeof(satid), line, ':');
+			isatid = -1;
+			sscanf(satid, "%i", &isatid);
+			tmpzapchannel.sat_pos = DISEQC_SWITCH_A;
+			tmpzapchannel.switch_option = DISEQC_SWITCH_A;
+			if (isatid & 0x01)
+				tmpzapchannel.sat_pos = DISEQC_SWITCH_B;
+			if (isatid & 0x02)
+				tmpzapchannel.switch_option = DISEQC_SWITCH_B;
 			if ((line = dvbcfg_nexttoken(line, ':')) == NULL)
 				continue;
 
@@ -423,10 +433,17 @@ int dvbcfg_zapchannel_save(FILE *f,
 				polarization = 'r';
 				break;
 			}
-			fprintf(f,  "%i:%c:%s:%i:",
+
+			int isatid = 0;
+			if (channels[i].sat_pos == DISEQC_SWITCH_B)
+				isatid |= 1;
+			if (channels[i].switch_option == DISEQC_SWITCH_B)
+				isatid |= 2;
+
+			fprintf(f,  "%i:%c:%i:%i:",
 				channels[i].fe_params.frequency / 1000,
 				polarization,
-				channels[i].sec_id,
+				isatid,
 				channels[i].fe_params.u.dvbs.symbol_rate / 1000);
 			break;
 

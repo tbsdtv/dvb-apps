@@ -203,9 +203,11 @@ int main(int argc, char *argv[])
 	}
 
 	// find the requested LNB/SEC setting for DVBS
+	/*
+	// FIXME: implement this
 	if ((zap_dvb_params.channel.fe_type == DVBFE_TYPE_DVBS) && (channel_name != NULL)) {
 		if (secid == NULL)
-			secid = zap_dvb_params.channel.sec_id;
+			secid = zap_dvb_params.channel.id;
 
 		if (dvbcfg_sec_find(secfile, secid,
 				    zap_dvb_params.channel.fe_params.frequency,
@@ -215,6 +217,7 @@ int main(int argc, char *argv[])
 			exit(1);
 		}
 	}
+	*/
 
 	// open the frontend
 	zap_dvb_params.fe = dvbfe_open(adapter_id, frontend_id, 0);

@@ -136,6 +136,8 @@ static void *dvbthread_func(void* arg)
 
 			// do sec for DVBS
 			uint32_t frequency_adjust = 0;
+			/*
+			// FIXME: implement this
 			if (result.type == DVBFE_TYPE_DVBS) {
 				if (dvbfe_sec_command(params->fe, params->sec.command)) {
 					fprintf(stderr, "Failed to execute SEC command %s\n", params->sec.command);
@@ -143,6 +145,7 @@ static void *dvbthread_func(void* arg)
 				}
 				frequency_adjust = params->sec.lof;
 			}
+			*/
 
 			// set the frontend params
 			params->channel.fe_params.frequency -= frequency_adjust;

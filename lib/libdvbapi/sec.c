@@ -1,38 +1,136 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
+#include <string.h>
+#include <stdio.h>
+#include <ctype.h>
 #include "dvbfe.h"
 #include "sec.h"
 
+// uncomment this to make dvbfe_sec_command print out debug instead of talking to a frontend
+// #define TEST_SEC_COMMAND 1
+
+int dvbfe_sec_set(struct dvbfe_handle *fe,
+		   struct dvbfe_sec_config *sec_config,
+		   enum dvbfe_diseqc_switch sat_pos,
+		   enum dvbfe_diseqc_switch switch_option,
+		   struct dvbfe_parameters *params,
+		   int timeout)
+{
+	int tmp;
+	struct dvbfe_parameters localparams;
+	struct dvbfe_parameters *topass = params;
+
+	// perform SEC
+	if (sec_config != NULL) {
+		switch(sec_config->config_type) {
+		case DVBFE_SEC_CONFIG_NONE:
+			break;
+		case DVBFE_SEC_CONFIG_SIMPLE:
+		{
+			// calculate the correct oscillator value
+			enum dvbfe_diseqc_oscillator osc = DISEQC_OSCILLATOR_LOW;
+			if (sec_config->switch_frequency && (sec_config->switch_frequency < params->frequency))
+				osc = DISEQC_OSCILLATOR_HIGH;
+
+			if ((tmp = dvbfe_sec_std_sequence(fe,
+			     				  osc,
+							  params->u.dvbs.polarization,
+							  sat_pos,
+							  switch_option)) < 0)
+				return tmp;
+			break;
+		}
+
+		case DVBFE_SEC_CONFIG_ADVANCED:
+		{
+			// are we high or not?
+			int high = 0;
+			if (sec_config->switch_frequency && (sec_config->switch_frequency < params->frequency))
+				high = 1;
+
+			//  determine correct string
+			char *cmd = NULL;
+			switch(params->u.dvbs.polarization) {
+			case DVBFE_POLARIZATION_H:
+				if (!high)
+					cmd = sec_config->adv_cmd_lo_h;
+				else
+					cmd = sec_config->adv_cmd_hi_h;
+				break;
+			case DVBFE_POLARIZATION_V:
+				if (!high)
+					cmd = sec_config->adv_cmd_lo_v;
+				else
+					cmd = sec_config->adv_cmd_hi_v;
+				break;
+			case DVBFE_POLARIZATION_L:
+				if (!high)
+					cmd = sec_config->adv_cmd_lo_l;
+				else
+					cmd = sec_config->adv_cmd_hi_l;
+				break;
+			case DVBFE_POLARIZATION_R:
+				if (!high)
+					cmd = sec_config->adv_cmd_lo_r;
+				else
+					cmd = sec_config->adv_cmd_hi_r;
+				break;
+			default:
+				return -EINVAL;
+			}
+
+			// do it
+			if (cmd)
+				if ((tmp = dvbfe_sec_command(fe, cmd)) < 0)
+					return tmp;
+			break;
+		}
+		}
+
+		// frequency adjustment
+		uint32_t lof = sec_config->lof_lo;
+		if (sec_config->switch_frequency && (sec_config->switch_frequency < params->frequency))
+			lof = sec_config->lof_hi;
+
+		if (lof) {
+			memcpy(&localparams, params, sizeof(struct dvbfe_parameters));
+			localparams.frequency -= lof;
+			topass = &localparams;
+		}
+	}
+
+	// set the frontend!
+	return dvbfe_set(fe, topass, timeout);
+}
+
 int dvbfe_sec_std_sequence(struct dvbfe_handle *fe,
 			   enum dvbfe_diseqc_oscillator oscillator,
-			   enum dvbfe_diseqc_polarisation polarisation,
-			   enum dvbfe_diseqc_switch sat_pos)
+			   enum dvbfe_polarization polarization,
+			   enum dvbfe_diseqc_switch sat_pos,
+			   enum dvbfe_diseqc_switch switch_option)
 {
 	dvbfe_set_22k_tone(fe, DVBFE_SEC_TONE_OFF);
 
-	switch(polarisation) {
-	case DISEQC_POLARISATION_V:
-	case DISEQC_POLARISATION_R:
+	switch(polarization) {
+	case DVBFE_POLARIZATION_V:
+	case DVBFE_POLARIZATION_R:
 		dvbfe_set_voltage(fe, DVBFE_SEC_VOLTAGE_13);
 		break;
-	case DISEQC_POLARISATION_H:
-	case DISEQC_POLARISATION_L:
+	case DVBFE_POLARIZATION_H:
+	case DVBFE_POLARIZATION_L:
 		dvbfe_set_voltage(fe, DVBFE_SEC_VOLTAGE_18);
 		break;
 	default:
-		break;
+		return -EINVAL;
 	}
 
-	if (polarisation != DISEQC_POLARISATION_UNCHANGED)
-		usleep(15000);
-
 	dvbfe_diseqc_set_committed_switches(fe,
-					    DISEQC_ADDRESS_MASTER,
+					    DISEQC_ADDRESS_ANY_DEVICE,
 					    oscillator,
-					    polarisation,
+					    polarization,
 					    sat_pos,
-					    DISEQC_SWITCH_UNCHANGED);
+					    switch_option);
 
 	usleep(15000);
 
@@ -103,7 +201,7 @@ int dvbfe_diseqc_set_listen(struct dvbfe_handle *fe,
 int dvbfe_diseqc_set_committed_switches(struct dvbfe_handle *fe,
 					enum dvbfe_diseqc_address address,
 					enum dvbfe_diseqc_oscillator oscillator,
-					enum dvbfe_diseqc_polarisation polarisation,
+					int polarization,
 					enum dvbfe_diseqc_switch sat_pos,
 					enum dvbfe_diseqc_switch switch_option)
 {
@@ -119,16 +217,16 @@ int dvbfe_diseqc_set_committed_switches(struct dvbfe_handle *fe,
 	case DISEQC_OSCILLATOR_UNCHANGED:
 		break;
 	}
-	switch(polarisation) {
-	case DISEQC_POLARISATION_V:
-	case DISEQC_POLARISATION_R:
+	switch(polarization) {
+	case DVBFE_POLARIZATION_V:
+	case DVBFE_POLARIZATION_R:
 		data[3] |= 0x20;
 		break;
-	case DISEQC_POLARISATION_H:
-	case DISEQC_POLARISATION_L:
+	case DVBFE_POLARIZATION_H:
+	case DVBFE_POLARIZATION_L:
 		data[3] |= 0x02;
 		break;
-	case DISEQC_POLARISATION_UNCHANGED:
+	case -1:
 		break;
 	}
 	switch(sat_pos) {
@@ -391,4 +489,397 @@ int dvbfe_diseqc_goto_rotator_bearing(struct dvbfe_handle *fe,
 	data[4] |= ((integer & 0x0f) << 4) | fraction;
 
 	return dvbfe_do_diseqc_command(fe, data, sizeof(data));
+}
+
+static int skipwhite(char **line, char *end)
+{
+	while(**line) {
+		if (end && (*line >= end))
+			return -1;
+		if (!isspace(**line))
+			return 0;
+		(*line)++;
+	}
+
+	return -1;
+}
+
+static int getstringupto(char **line, char *end, char *matches, char **ptrdest, int *ptrlen)
+{
+	char *start = *line;
+
+	while(**line) {
+		if (end && (*line >= end))
+			break;
+		if (strchr(matches, **line)) {
+			*ptrdest = start;
+			*ptrlen = *line - start;
+			return 0;
+		}
+		(*line)++;
+	}
+
+	*ptrdest = start;
+	*ptrlen = *line - start;
+	return 0;
+}
+
+static int parsefunction(char **line,
+			 char **nameptr, int *namelen,
+			 char **argsptr, int *argslen)
+{
+	if (skipwhite(line, NULL))
+		return -1;
+
+	if (getstringupto(line, NULL, "(", nameptr, namelen))
+		return -1;
+	if ((*line) == 0)
+		return -1;
+	(*line)++; // skip the '('
+	if (getstringupto(line, NULL, ")", argsptr, argslen))
+		return -1;
+	if ((*line) == 0)
+		return -1;
+	(*line)++; // skip the ')'
+
+	return 0;
+}
+
+static int parseintarg(char **args, char *argsend, int *result)
+{
+	char tmp[32];
+	char *arg;
+	int arglen;
+
+	// skip whitespace
+	if (skipwhite(args, argsend))
+		return -1;
+
+	// get the arg
+	if (getstringupto(args, argsend, ",", &arg, &arglen))
+		return -1;
+	if ((**args) == ',')
+		(*args)++; // skip the ',' if present
+	if (arglen > 31)
+		arglen = 31;
+	strncpy(tmp, arg, arglen);
+	tmp[arglen] = 0;
+
+	if (sscanf(tmp, "%i", result) != 1)
+		return -1;
+
+	return 0;
+}
+
+static int parsechararg(char **args, char *argsend, int *result)
+{
+	char *arg;
+	int arglen;
+
+	// skip whitespace
+	if (skipwhite(args, argsend))
+		return -1;
+
+	// get the arg
+	if (getstringupto(args, argsend, ",", &arg, &arglen))
+		return -1;
+	if ((**args) == ',')
+		(*args)++; // skip the ',' if present
+	if (arglen > 0)
+		*result = arg[0];
+
+	return 0;
+}
+
+static int parsefloatarg(char **args, char *argsend, float *result)
+{
+	char tmp[32];
+	char *arg;
+	int arglen;
+
+	// skip whitespace
+	if (skipwhite(args, argsend))
+		return -1;
+
+	// get the arg
+	if (getstringupto(args, argsend, ",", &arg, &arglen))
+		return -1;
+	if ((**args) == ',')
+		(*args)++; // skip the ',' if present
+	if (arglen > 31)
+		arglen = 31;
+	strncpy(tmp, arg, arglen);
+	arg[arglen] = 0;
+
+	if (sscanf(tmp, "%f", result) != 1)
+		return -1;
+
+	return 0;
+}
+
+static enum dvbfe_diseqc_switch parse_switch(int c)
+{
+	switch(toupper(c)) {
+	case 'A':
+		return DISEQC_SWITCH_A;
+	case 'B':
+		return DISEQC_SWITCH_B;
+	default:
+		return DISEQC_SWITCH_UNCHANGED;
+	}
+}
+
+int dvbfe_sec_command(struct dvbfe_handle *fe, char *command)
+{
+	char *name;
+	char *args;
+	int namelen;
+	int argslen;
+	int address;
+	int iarg;
+	int iarg2;
+	int iarg3;
+	int iarg4;
+	float farg;
+
+	while(!parsefunction(&command, &name, &namelen, &args, &argslen)) {
+		char *argsend = args+argslen;
+
+		if (!strncasecmp(name, "tone", namelen)) {
+			if (parsechararg(&args, argsend, &iarg))
+				return -1;
+
+#ifdef TEST_SEC_COMMAND
+			printf("tone: %c\n", iarg);
+#else
+			if (toupper(iarg) == 'B') {
+				dvbfe_set_22k_tone(fe, DVBFE_SEC_TONE_ON);
+			} else {
+				dvbfe_set_22k_tone(fe, DVBFE_SEC_TONE_OFF);
+			}
+#endif
+		} else if (!strncasecmp(name, "voltage", namelen)) {
+			if (parseintarg(&args, argsend, &iarg))
+				return -1;
+
+#ifdef TEST_SEC_COMMAND
+			printf("voltage: %i\n", iarg);
+#else
+			switch(iarg) {
+			case 0:
+				dvbfe_set_voltage(fe, DVBFE_SEC_VOLTAGE_OFF);
+				break;
+			case 13:
+				dvbfe_set_voltage(fe, DVBFE_SEC_VOLTAGE_13);
+				break;
+			case 18:
+				dvbfe_set_voltage(fe, DVBFE_SEC_VOLTAGE_18);
+				break;
+			default:
+				return -1;
+			}
+#endif
+		} else if (!strncasecmp(name, "toneburst", namelen)) {
+			if (parsechararg(&args, argsend, &iarg))
+				return -1;
+
+#ifdef TEST_SEC_COMMAND
+			printf("toneburst: %c\n", iarg);
+#else
+			if (toupper(iarg) == 'B') {
+				dvbfe_set_tone_data_burst(fe, DVBFE_SEC_MINI_B);
+			} else {
+				dvbfe_set_tone_data_burst(fe, DVBFE_SEC_MINI_A);
+			}
+#endif
+		} else if (!strncasecmp(name, "highvoltage", namelen)) {
+			if (parseintarg(&args, argsend, &iarg))
+				return -1;
+
+#ifdef TEST_SEC_COMMAND
+			printf("highvoltage: %i\n", iarg);
+#else
+			dvbfe_set_high_lnb_voltage(fe, iarg ? 1 : 0);
+#endif
+		} else if (!strncasecmp(name, "dishnetworks", namelen)) {
+			if (parseintarg(&args, argsend, &iarg))
+				return -1;
+
+#ifdef TEST_SEC_COMMAND
+			printf("dishnetworks: %i\n", iarg);
+#else
+			dvbfe_do_dishnetworks_legacy_command(fe, iarg);
+#endif
+		} else if (!strncasecmp(name, "wait", namelen)) {
+			if (parseintarg(&args, argsend, &iarg))
+				return -1;
+
+#ifdef TEST_SEC_COMMAND
+			printf("wait: %i\n", iarg);
+#else
+			if (iarg)
+				usleep(iarg * 1000);
+#endif
+		} else if (!strncasecmp(name, "Dreset", namelen)) {
+			if (parseintarg(&args, argsend, &address))
+				return -1;
+			if (parseintarg(&args, argsend, &iarg))
+				return -1;
+
+#ifdef TEST_SEC_COMMAND
+			printf("Dreset: %i %i\n", address, iarg);
+#else
+			if (iarg) {
+				dvbfe_diseqc_set_reset(fe, address, DISEQC_RESET);
+			} else {
+				dvbfe_diseqc_set_reset(fe, address, DISEQC_RESET_CLEAR);
+			}
+#endif
+		} else if (!strncasecmp(name, "Dpower", namelen)) {
+			if (parseintarg(&args, argsend, &address))
+				return -1;
+			if (parseintarg(&args, argsend, &iarg))
+				return -1;
+
+#ifdef TEST_SEC_COMMAND
+			printf("Dpower: %i %i\n", address, iarg);
+#else
+			if (iarg) {
+				dvbfe_diseqc_set_power(fe, address, DISEQC_POWER_ON);
+			} else {
+				dvbfe_diseqc_set_power(fe, address, DISEQC_POWER_OFF);
+			}
+#endif
+		} else if (!strncasecmp(name, "Dcommitted", namelen)) {
+			if (parseintarg(&args, argsend, &address))
+				return -1;
+			if (parsechararg(&args, argsend, &iarg))
+				return -1;
+			if (parsechararg(&args, argsend, &iarg2))
+				return -1;
+			if (parsechararg(&args, argsend, &iarg3))
+				return -1;
+			if (parsechararg(&args, argsend, &iarg4))
+				return -1;
+
+			enum dvbfe_diseqc_oscillator oscillator;
+			switch(toupper(iarg)) {
+			case 'H':
+				oscillator = DISEQC_OSCILLATOR_HIGH;
+				break;
+			case 'L':
+				oscillator = DISEQC_OSCILLATOR_LOW;
+				break;
+			default:
+				oscillator = DISEQC_OSCILLATOR_UNCHANGED;
+				break;
+			}
+
+			int polarization = -1;
+			switch(toupper(iarg2)) {
+			case 'H':
+				polarization = DVBFE_POLARIZATION_H;
+				break;
+			case 'V':
+				polarization = DVBFE_POLARIZATION_V;
+				break;
+			case 'L':
+				polarization = DVBFE_POLARIZATION_L;
+				break;
+			case 'R':
+				polarization = DVBFE_POLARIZATION_R;
+				break;
+			default:
+				polarization = -1;
+				break;
+			}
+
+#ifdef TEST_SEC_COMMAND
+			printf("Dcommitted: %i %i %i %i %i\n", address,
+			       oscillator,
+			       polarization,
+			       parse_switch(iarg3),
+			       parse_switch(iarg4));
+#else
+			dvbfe_diseqc_set_committed_switches(fe, address,
+							    oscillator,
+							    polarization,
+							    parse_switch(iarg3),
+							    parse_switch(iarg4));
+#endif
+		} else if (!strncasecmp(name, "Duncommitted", namelen)) {
+			if (parsechararg(&args, argsend, &address))
+				return -1;
+			if (parsechararg(&args, argsend, &iarg))
+				return -1;
+			if (parsechararg(&args, argsend, &iarg2))
+				return -1;
+			if (parsechararg(&args, argsend, &iarg3))
+				return -1;
+			if (parsechararg(&args, argsend, &iarg4))
+				return -1;
+
+#ifdef TEST_SEC_COMMAND
+			printf("Duncommitted: %i %i %i %i %i\n", address,
+			       parse_switch(iarg),
+			       parse_switch(iarg2),
+			       parse_switch(iarg3),
+			       parse_switch(iarg4));
+#else
+			dvbfe_diseqc_set_uncommitted_switches(fe, address,
+					parse_switch(iarg),
+					parse_switch(iarg2),
+					parse_switch(iarg3),
+					parse_switch(iarg4));
+#endif
+		} else if (!strncasecmp(name, "Dfrequency", namelen)) {
+			if (parseintarg(&args, argsend, &address))
+				return -1;
+			if (parseintarg(&args, argsend, &iarg))
+				return -1;
+
+#ifdef TEST_SEC_COMMAND
+			printf("Dfrequency: %i %i\n", address, iarg);
+#else
+			dvbfe_diseqc_set_frequency(fe, address, iarg);
+#endif
+		} else if (!strncasecmp(name, "Dchannel", namelen)) {
+			if (parseintarg(&args, argsend, &address))
+				return -1;
+			if (parseintarg(&args, argsend, &iarg))
+				return -1;
+
+#ifdef TEST_SEC_COMMAND
+			printf("Dchannel: %i %i\n", address, iarg);
+#else
+			dvbfe_diseqc_set_channel(fe, address, iarg);
+#endif
+		} else if (!strncasecmp(name, "Dgotopreset", namelen)) {
+			if (parseintarg(&args, argsend, &address))
+				return -1;
+			if (parseintarg(&args, argsend, &iarg))
+				return -1;
+
+#ifdef TEST_SEC_COMMAND
+			printf("Dgotopreset: %i %i\n", address, iarg);
+#else
+			dvbfe_diseqc_goto_satpos_preset(fe, address, iarg);
+#endif
+		} else if (!strncasecmp(name, "Dgotobearing", namelen)) {
+			if (parseintarg(&args, argsend, &address))
+				return -1;
+			if (parsefloatarg(&args, argsend, &farg))
+				return -1;
+
+#ifdef TEST_SEC_COMMAND
+			printf("Dgotobearing: %i %f\n", address, farg);
+#else
+			dvbfe_diseqc_goto_rotator_bearing(fe, address, farg);
+#endif
+		} else {
+			return -1;
+		}
+	}
+
+	return 0;
 }

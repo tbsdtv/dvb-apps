@@ -22,13 +22,18 @@
 #include <stdio.h>
 #include <string.h>
 #include <libdvbcfg/dvbcfg_zapchannel.h>
+#include <libdvbcfg/dvbcfg_sec.h>
 
 void syntax(void);
 
 struct dvbcfg_zapchannel *zapchannels = NULL;
 int zapcount = 0;
 
+struct dvbfe_sec_config *secconfigs = NULL;
+int seccount = 0;
+
 int zapload_callback(void *private, struct dvbcfg_zapchannel *channel);
+int secload_callback(void *private, struct dvbfe_sec_config *sec);
 
 int main(int argc, char *argv[])
 {
@@ -36,7 +41,7 @@ int main(int argc, char *argv[])
                 syntax();
         }
 
-        if (!strcmp(argv[1], "-zapchannel")) {
+	if (!strcmp(argv[1], "-zapchannel")) {
 
 		FILE *f = fopen(argv[2], "r");
 		if (!f) {
@@ -51,10 +56,28 @@ int main(int argc, char *argv[])
 			fprintf(stderr, "Unable to write %s\n", argv[3]);
 			exit(1);
 		}
-                dvbcfg_zapchannel_save(f, zapchannels, zapcount);
+		dvbcfg_zapchannel_save(f, zapchannels, zapcount);
 		fclose(f);
 
-        } else {
+	} else if (!strcmp(argv[1], "-sec")) {
+
+		FILE *f = fopen(argv[2], "r");
+		if (!f) {
+			fprintf(stderr, "Unable to load %s\n", argv[2]);
+			exit(1);
+		}
+		dvbcfg_sec_load(f, NULL, secload_callback);
+		fclose(f);
+
+		f = fopen(argv[3], "w");
+		if (!f) {
+			fprintf(stderr, "Unable to write %s\n", argv[3]);
+			exit(1);
+		}
+		dvbcfg_sec_save(f, secconfigs, seccount);
+		fclose(f);
+
+	} else {
                 syntax();
         }
 
@@ -77,9 +100,25 @@ int zapload_callback(void *private, struct dvbcfg_zapchannel *channel)
 	return 0;
 }
 
+int secload_callback(void *private, struct dvbfe_sec_config *sec)
+{
+	(void) private;
+
+	struct dvbfe_sec_config *tmp = realloc(secconfigs, (seccount+1) * sizeof(struct dvbfe_sec_config));
+	if (tmp == NULL) {
+		fprintf(stderr, "Out of memory\n");
+		exit(1);
+	}
+	secconfigs = tmp;
+
+	memcpy(&secconfigs[seccount++], sec, sizeof(struct dvbfe_sec_config));
+
+	return 0;
+}
+
 void syntax()
 {
         fprintf(stderr,
-                "Syntax: dvbcfg_test <-zapchannel> <input filename> <output filename>\n");
+                "Syntax: dvbcfg_test <-zapchannel|-sec> <input filename> <output filename>\n");
         exit(1);
 }
