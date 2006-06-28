@@ -134,22 +134,18 @@ static void *dvbthread_func(void* arg)
 			memset(&result, 0, sizeof(result));
 			dvbfe_get_info(params->fe, 0, &result);
 
-			// do sec for DVBS
-			uint32_t frequency_adjust = 0;
-			/*
-			// FIXME: implement this
-			if (result.type == DVBFE_TYPE_DVBS) {
-				if (dvbfe_sec_command(params->fe, params->sec.command)) {
-					fprintf(stderr, "Failed to execute SEC command %s\n", params->sec.command);
-					exit(1);
-				}
-				frequency_adjust = params->sec.lof;
-			}
-			*/
+			// do we have a valid SEC configuration?
+			struct dvbfe_sec_config *sec = NULL;
+			if (params->valid_sec)
+				sec = &params->sec;
 
-			// set the frontend params
-			params->channel.fe_params.frequency -= frequency_adjust;
-			if (dvbfe_set(params->fe, &params->channel.fe_params, 0)) {
+			// tune!
+			if (dvbfe_sec_set(params->fe,
+			    		  sec,
+					  params->channel.sat_pos,
+					  params->channel.switch_option,
+					  &params->channel.fe_params,
+					  0)) {
 				fprintf(stderr, "Failed to set frontend\n");
 				exit(1);
 			}

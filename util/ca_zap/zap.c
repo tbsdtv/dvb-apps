@@ -62,9 +62,16 @@ void usage(void)
 		" -frontend <id>	frontend to use (default 0)\n"
 		" -demux <id>		demux to use (default 0)\n"
 		" -caslotnum <id>	ca slot number to use (default 0)\n"
-		" -channels <filename>	channels.conf file (default /etc/channels.conf)\n"
-		" -sec <filename>	sec.conf file (default /etc/sec.conf)\n"
-		" -secid <secid>	Override sec_id field in channels.conf, for DVBS only\n"
+		" -channels <filename>	channels.conf file.\n"
+		" -secfile <filename>	Optional sec.conf file.\n"
+		" -secid <secid>	ID of the SEC configuration to use, one of:\n"
+		"			 * UNIVERSAL (default) - Europe, 10800 to 11800 MHz and 11600 to 12700 Mhz,\n"
+		" 						 Dual LO, loband 9750, hiband 10600 MHz.\n"
+		"			 * DBS - Expressvu, North America, 12200 to 12700 MHz, Single LO, 11250 MHz.\n"
+		"			 * STANDARD - 10945 to 11450 Mhz, Single LO, 10000 Mhz.\n"
+		"			 * ENHANCED - Astra, 10700 to 11700 MHz, Single LO, 9750 MHz.\n"
+		"			 * C-BAND - Big Dish, 3700 to 4200 MHz, Single LO, 5150 Mhz.\n"
+		"			 * One of the values defined in the secfile if supplied"
 		" -out :decoder		Output to hardware decoder\n"
 		"      :decoderabypass	Output to hardware decoder using audio bypass\n"
 		"      :dvr		Output A/V only to dvr device\n"
@@ -76,7 +83,6 @@ void usage(void)
 		" -cammenu		Show the CAM menu\n"
 		" -moveca		Move CA descriptors from stream to programme level if possible\n"
 		" <channel name>\n";
-
 	fprintf(stderr, "%s\n", _usage);
 
 	exit(1);
@@ -135,7 +141,7 @@ int main(int argc, char *argv[])
 			chanfile = argv[argpos+1];
 			argpos+=2;
 
-		} else if (!strcmp(argv[argpos], "-sec")) {
+		} else if (!strcmp(argv[argpos], "-secfile")) {
 			if ((argpos - argc) < 2)
 				usage();
 			secfile = argv[argpos+1];
@@ -202,22 +208,23 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	// find the requested LNB/SEC setting for DVBS
-	/*
-	// FIXME: implement this
-	if ((zap_dvb_params.channel.fe_type == DVBFE_TYPE_DVBS) && (channel_name != NULL)) {
-		if (secid == NULL)
-			secid = zap_dvb_params.channel.id;
+	// find the requested LNB/SEC setting
+	if (channel_name != NULL) {
+		// use a default with a DVBS card
+		if ((secid == NULL) && (zap_dvb_params.channel.fe_type == DVBFE_TYPE_DVBS))
+			secid = "UNIVERSAL";
 
-		if (dvbcfg_sec_find(secfile, secid,
-				    zap_dvb_params.channel.fe_params.frequency,
-				    zap_dvb_params.channel.fe_params.u.dvbs.polarization,
-		    		    &zap_dvb_params.sec)) {
-			fprintf(stderr, "Unable to find suitable sec/lnb configuration for channel\n");
-			exit(1);
+		// look it up if one were supplied
+		zap_dvb_params.valid_sec = 0;
+		if (secid != NULL) {
+			if (dvbcfg_sec_find(secfile, secid,
+					&zap_dvb_params.sec)) {
+				fprintf(stderr, "Unable to find suitable sec/lnb configuration for channel\n");
+				exit(1);
+			}
+			zap_dvb_params.valid_sec = 1;
 		}
 	}
-	*/
 
 	// open the frontend
 	zap_dvb_params.fe = dvbfe_open(adapter_id, frontend_id, 0);
