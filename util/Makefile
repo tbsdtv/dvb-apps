@@ -4,7 +4,7 @@
 
 all clean install:
 	$(MAKE) -C av7110_loadkeys $@
-	$(MAKE) -C ca_zap $@
+	$(MAKE) -C zap $@
 	$(MAKE) -C dib3000-watch $@
 	$(MAKE) -C dst-utils $@
 	$(MAKE) -C dvbdate $@
