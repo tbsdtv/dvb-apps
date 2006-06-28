@@ -152,7 +152,7 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "Unable to open %s\n", channelsfile);
 		exit(1);
 	}
-	dvbcfg_zapchannel_load(channels, (void*) data_type, zapchannels_cb);
+	dvbcfg_zapchannel_load(channels, (void*) (long) data_type, zapchannels_cb);
         return 0;
 }
 
@@ -167,7 +167,7 @@ void ts_from_file(char *filename, int data_type) {
 
 int zapchannels_cb(void *private, struct dvbcfg_zapchannel *channel)
 {
-	int data_type = (int) private;
+	long data_type = (long) private;
 
 	// FIXME: use the diseqc stuff here!
 	uint32_t freqadjust = 0;

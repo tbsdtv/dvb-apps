@@ -224,8 +224,8 @@ static void *dvbthread_func(void* arg)
 static int create_section_filter(int adapter, int demux, uint16_t pid, uint8_t table_id)
 {
 	int demux_fd = -1;
-	char filter[18];
-	char mask[18];
+	uint8_t filter[18];
+	uint8_t mask[18];
 
 	// open the demuxer
 	if ((demux_fd = dvbdemux_open_demux(adapter, demux, 0)) < 0) {
@@ -288,7 +288,7 @@ static void process_pat(int pat_fd, struct zap_dvb_params *params,
 			int *pat_version, int *pmt_fd, int *pmt_fd_dvrout, int *pmt_version, struct pollfd *pollfd)
 {
 	int size;
-	char sibuf[4096];
+	uint8_t sibuf[4096];
 
 	// read the section
 	if ((size = read(pat_fd, sibuf, sizeof(sibuf))) < 0) {
@@ -354,7 +354,7 @@ static void process_pat(int pat_fd, struct zap_dvb_params *params,
 static void process_tdt(int tdt_fd)
 {
 	int size;
-	char sibuf[4096];
+	uint8_t sibuf[4096];
 
 	// read the section
 	if ((size = read(tdt_fd, sibuf, sizeof(sibuf))) < 0) {
@@ -380,7 +380,7 @@ static void process_tdt(int tdt_fd)
 static void process_pmt(int pmt_fd, struct zap_dvb_params *params, int *pmt_version)
 {
 	int size;
-	char sibuf[4096];
+	uint8_t sibuf[4096];
 
 	// read the section
 	if ((size = read(pmt_fd, sibuf, sizeof(sibuf))) < 0) {

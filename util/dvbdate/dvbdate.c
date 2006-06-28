@@ -174,8 +174,8 @@ int do_options(int arg_count, char **arg_strings)
 int scan_date(time_t *dvb_time, unsigned int to)
 {
 	int tdt_fd;
-	char filter[18];
-	char mask[18];
+	uint8_t filter[18];
+	uint8_t mask[18];
 	unsigned char sibuf[4096];
 	int size;
 

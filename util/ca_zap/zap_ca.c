@@ -179,7 +179,7 @@ void zap_ca_ui(void)
 							     MMI_ANSW_ID_CANCEL, NULL, 0);
 				} else {
 					en50221_app_mmi_answ(stdcam->mmi_resource, stdcam->mmi_session_number,
-							     MMI_ANSW_ID_ANSWER, ui_line, ui_linepos);
+							     MMI_ANSW_ID_ANSWER, (uint8_t*) ui_line, ui_linepos);
 				}
 				mmi_state = MMI_STATE_OPEN;
 				break;

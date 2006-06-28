@@ -61,9 +61,9 @@ struct mpeg_odsmt_stream_multi
  */
 struct mpeg_odsmt_stream {
 	union {
-		struct mpeg_odsmt_stream_single single __ucsi_packed;
-		struct mpeg_odsmt_stream_multi multi __ucsi_packed;
-	} u __ucsi_packed;
+		struct mpeg_odsmt_stream_single single;
+		struct mpeg_odsmt_stream_multi multi;
+	} u;
 } __ucsi_packed;
 
 /**

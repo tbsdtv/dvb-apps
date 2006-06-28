@@ -315,15 +315,15 @@ int main(int argc, char * argv[])
             in_menu = 0;
         }
         if (in_enq) {
-            int i;
-            int len = strlen(tmp);
+            uint32_t i;
+            uint32_t len = strlen(tmp);
             for(i=0; i< len; i++) {
                 if (!isdigit(tmp[i])) {
                     len = i;
                     break;
                 }
             }
-            en50221_app_mmi_answ(mmi_resource, mmi_session_number, MMI_ANSW_ID_ANSWER, tmp, len);
+	    en50221_app_mmi_answ(mmi_resource, mmi_session_number, MMI_ANSW_ID_ANSWER, (uint8_t*) tmp, len);
             in_enq = 0;
         }
     }
@@ -757,7 +757,7 @@ void *stackthread_func(void* arg) {
 void *pmtthread_func(void* arg) {
     (void)arg;
     char buf[4096];
-    char capmt[4096];
+    uint8_t capmt[4096];
     int pmtversion = -1;
 
     while(!shutdown_pmtthread) {
@@ -813,8 +813,8 @@ void *pmtthread_func(void* arg) {
 struct section_ext *read_section_ext(char *buf, int buflen, int adapter, int demux, int pid, int table_id)
 {
     int demux_fd = -1;
-    char filter[18];
-    char mask[18];
+    uint8_t filter[18];
+    uint8_t mask[18];
     int size;
     struct section *section;
     struct section_ext *result = NULL;
@@ -839,7 +839,7 @@ struct section_ext *read_section_ext(char *buf, int buflen, int adapter, int dem
     }
 
     // parse it as a section
-    section = section_codec(buf, size);
+    section = section_codec((uint8_t*) buf, size);
     if (section == NULL) {
         goto exit;
     }
