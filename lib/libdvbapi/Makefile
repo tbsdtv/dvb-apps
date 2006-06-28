@@ -2,7 +2,7 @@
 
 CPPFLAGS += -I../../include -I..
 
-includes = diseqc.h   \
+includes = sec.h   \
            dvbca.h    \
            dvbdemux.h \
            dvbaudio.h \
