@@ -50,7 +50,7 @@
  * lof-hi-h=<high band + H + frequency>
  * lof-hi-l=<high band + L + frequency>
  * lof-hi-r=<high band + R + frequency>
- * config-type=<none|simple|advanced>
+ * config-type=<none|power|standard|advanced>
  * cmd-lo-v=<sec sequence>
  * cmd-lo-h=<sec sequence>
  * cmd-lo-r=<sec sequence>

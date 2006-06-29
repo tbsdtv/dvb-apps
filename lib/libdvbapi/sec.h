@@ -140,7 +140,7 @@ struct dvbfe_sec_config
 	 *
 	 * POWER - only the SEC power will be turned on.
 	 *
-	 * SIMPLE - the standard DISEQC back compatable sequence is used.
+	 * STANDARD - the standard DISEQC back compatable sequence is used.
 	 *
 	 * ADVANCED - SEC strings are supplied by the user describing the exact sequence
 	 * of operations to use.
@@ -173,8 +173,8 @@ struct dvbfe_sec_config
  * @param fe Frontend concerned.
  * @param sec_config SEC configuration structure. May be NULL to disable SEC/frequency adjustment.
  * @param polarization Polarization of signal.
- * @param sat_pos Satellite position - only used if type == DISEQC_SEC_CONFIG_SIMPLE.
- * @param switch_option Switch option - only used if type == DISEQC_SEC_CONFIG_SIMPLE.
+ * @param sat_pos Satellite position - only used if type == DISEQC_SEC_CONFIG_STANDARD.
+ * @param switch_option Switch option - only used if type == DISEQC_SEC_CONFIG_STANDARD.
  * @param params Tuning parameters.
  * @param timeout <0 => wait forever for lock. 0=>return immediately, >0=>
  * number of milliseconds to wait for a lock.
