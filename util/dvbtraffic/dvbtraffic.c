@@ -12,8 +12,7 @@
 #include <sys/time.h>
 #include <string.h>
 #include <limits.h>
-
-#include <linux/dvb/dmx.h>
+#include <libdvbapi/dvbdemux.h>
 
 #define BSIZE 188
 
@@ -24,16 +23,14 @@ static void usage(FILE *output)
 	fprintf(output,
 		"Usage: dvbtraffic [OPTION]...\n"
 		"Options:\n"
-		"	-a N	use DVB /dev/dvb/adapterN/\n"
-		"	-d N	use DVB /dev/dvb/adapter?/demuxN\n"
+		"	-a N	use dvb adapter N\n"
+		"	-d N	use demux N\n"
 		"	-h	display this help\n");
 }
 
 int main(int argc, char **argv)
 {
-	char demux_devname[PATH_MAX], dvr_devname[PATH_MAX];
 	struct timeval startt;
-	struct dmx_pes_filter_params flt;
 	int adapter = 0, demux = 0;
 	char *search = NULL;
 	int fd, ffd, packets = 0;
@@ -59,40 +56,22 @@ int main(int argc, char **argv)
 		}
 	}
 
-	snprintf(demux_devname, sizeof demux_devname,
-		 "/dev/dvb/adapter%d/demux%d", adapter, demux);
-	snprintf(dvr_devname, sizeof dvr_devname,
-		 "/dev/dvb/adapter%d/dvr%d", adapter, demux);
-
-	fd = open(dvr_devname, O_RDONLY);
+	// open the DVR device
+	fd = dvbdemux_open_dvr(adapter, demux, 1, 0);
 	if (fd < 0) {
-		fprintf(stderr, "dvbtraffic: Could not open dvr device '%s': %m\n",
-			dvr_devname);
+ 		fprintf(stderr, "dvbtraffic: Could not open dvr device: %m\n");
 		exit(1);
 	}
+	dvbdemux_set_buffer(fd, 1024 * 1024);
 
-	ioctl(fd, DMX_SET_BUFFER_SIZE, 1024 * 1024);
-
-	ffd = open(demux_devname, O_RDWR);
+	ffd = dvbdemux_open_demux(adapter, demux, 0);
 	if (ffd < 0) {
-		fprintf(stderr, "dvbtraffic: Could not open demux device '%s': %m\n",
-			demux_devname);
+		fprintf(stderr, "dvbtraffic: Could not open demux device: %m\n");
 		exit(1);
 	}
 
-	flt.pid = 0x2000;
-	flt.input = DMX_IN_FRONTEND;
-	flt.output = DMX_OUT_TS_TAP;
-	flt.pes_type = DMX_PES_OTHER;
-	flt.flags = 0;
-
-	if (ioctl(ffd, DMX_SET_PES_FILTER, &flt) < 0) {
-		perror("DMX_SET_PES_FILTER");
-		return -1;
-	}
-
-	if (ioctl(ffd, DMX_START, 0) < 0) {
-		perror("DMX_SET_PES_FILTER");
+	if (dvbdemux_set_pid_filter(ffd, -1, DVBDEMUX_INPUT_FRONTEND, DVBDEMUX_OUTPUT_DVR, 1)) {
+		perror("dvbdemux_set_pid_filter");
 		return -1;
 	}
 
