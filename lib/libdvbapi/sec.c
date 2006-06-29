@@ -132,7 +132,10 @@ int dvbfe_sec_set(struct dvbfe_handle *fe,
 		// do frequency adjustment
 		if (lof) {
 			memcpy(&localparams, params, sizeof(struct dvbfe_parameters));
-			localparams.frequency -= lof;
+			int64_t tmpfreq = localparams.frequency - lof;
+			if (tmpfreq < 0)
+				tmpfreq *= -1;
+			localparams.frequency = (uint32_t) tmpfreq;
 			topass = &localparams;
 		}
 	}
