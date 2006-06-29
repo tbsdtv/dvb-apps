@@ -71,6 +71,8 @@ void usage(void)
 		"			 * STANDARD - 10945 to 11450 Mhz, Single LO, 10000 Mhz.\n"
 		"			 * ENHANCED - Astra, 10700 to 11700 MHz, Single LO, 9750 MHz.\n"
 		"			 * C-BAND - Big Dish, 3700 to 4200 MHz, Single LO, 5150 Mhz.\n"
+		"			 * C-MULTI - Big Dish - Multipoint LNBf, 3700 to 4200 MHz,\n"
+		"						Dual LO, H:5150MHz, V:5750MHz.\n"
 		"			 * One of the sec definitions from the secfile if supplied\n"
 		" -out :decoder		Output to hardware decoder\n"
 		"      :decoderabypass	Output to hardware decoder using audio bypass\n"

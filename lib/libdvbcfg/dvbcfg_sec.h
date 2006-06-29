@@ -29,9 +29,10 @@
  *
  * UNIVERSAL - Europe, 10800 to 11800 MHz and 11600 to 12700 Mhz, Dual LO, loband 9750, hiband 10600 MHz.
  * DBS - Expressvu, North America, 12200 to 12700 MHz, Single LO, 11250 MHz.
- * STANDARD - 10945 to 11450 Mhz, Single LO, 10000 Mhz.
- * ENHANCED - Astra, 10700 to 11700 MHz, Single LO, 9750 MHz.
- * C-BAND - Big Dish, 3700 to 4200 MHz, Single LO, 5150 Mhz.
+ * STANDARD - 10945 to 11450 Mhz, Single LO, 10000Mhz.
+ * ENHANCED - Astra, 10700 to 11700 MHz, Single LO, 9750MHz.
+ * C-BAND - Big Dish, 3700 to 4200 MHz, Single LO, 5150Mhz.
+ * C-MULTI - Big Dish - Multipoint LNBf, 3700 to 4200 MHz, Dual LO, H:5150MHz, V:5750MHz.
  *
  * However, for the power user with a more complex setup, these simple defaults
  * are not enough. Therefore, it is also possible to define additional SEC
