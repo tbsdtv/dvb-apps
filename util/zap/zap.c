@@ -112,47 +112,46 @@ int main(int argc, char *argv[])
 		if (!strcmp(argv[argpos], "-h")) {
 			usage();
 		} else if (!strcmp(argv[argpos], "-adapter")) {
-			if ((argpos - argc) < 2)
+			if ((argc - argpos) < 2)
 				usage();
 			if (sscanf(argv[argpos+1], "%i", &adapter_id) != 1)
 				usage();
 			argpos+=2;
 		} else if (!strcmp(argv[argpos], "-frontend")) {
-			if ((argpos - argc) < 2)
+			if ((argc - argpos) < 2)
 				usage();
 			if (sscanf(argv[argpos+1], "%i", &frontend_id) != 1)
 				usage();
 			argpos+=2;
 		} else if (!strcmp(argv[argpos], "-demux")) {
-			if ((argpos - argc) < 2)
+			if ((argc - argpos) < 2)
 				usage();
 			if (sscanf(argv[argpos+1], "%i", &demux_id) != 1)
 				usage();
 			argpos+=2;
 		} else if (!strcmp(argv[argpos], "-caslotnum")) {
-			if ((argpos - argc) < 2)
+			if ((argc - argpos) < 2)
 				usage();
 			if (sscanf(argv[argpos+1], "%i", &caslot_num) != 1)
 				usage();
 			argpos+=2;
 		} else if (!strcmp(argv[argpos], "-channels")) {
-			if ((argpos - argc) < 2)
+			if ((argc - argpos) < 2)
 				usage();
 			chanfile = argv[argpos+1];
 			argpos+=2;
-
 		} else if (!strcmp(argv[argpos], "-secfile")) {
-			if ((argpos - argc) < 2)
+			if ((argc - argpos) < 2)
 				usage();
 			secfile = argv[argpos+1];
 			argpos+=2;
 		} else if (!strcmp(argv[argpos], "-secid")) {
-			if ((argpos - argc) < 2)
+			if ((argc - argpos) < 2)
 				usage();
 			secid = argv[argpos+1];
 			argpos+=2;
 		} else if (!strcmp(argv[argpos], "-out")) {
-			if ((argpos - argc) < 2)
+			if ((argc - argpos) < 2)
 				usage();
 			if (!strcmp(argv[argpos+1], ":decoder")) {
 				output_type = OUTPUT_TYPE_DECODER;
@@ -166,13 +165,13 @@ int main(int argc, char *argv[])
 				output_type = OUTPUT_TYPE_NULL;
 			} else if (!strcmp(argv[argpos+1], ":file")) {
 				output_type = OUTPUT_TYPE_FILE;
-				if ((argpos - argc) < 3)
+				if ((argc - argpos) < 3)
 					usage();
 				outfile = argv[argpos+2];
 				argpos++;
 			} else if (!strcmp(argv[argpos+1], ":filefull")) {
 				output_type = OUTPUT_TYPE_FILE_FULL;
-				if ((argpos - argc) < 3)
+				if ((argc - argpos) < 3)
 					usage();
 				outfile = argv[argpos+2];
 				argpos++;
@@ -181,7 +180,7 @@ int main(int argc, char *argv[])
 			}
 			argpos+=2;
 		} else if (!strcmp(argv[argpos], "-timeout")) {
-			if ((argpos - argc) < 2)
+			if ((argc - argpos) < 2)
 				usage();
 			if (sscanf(argv[argpos+1], "%i", &timeout) != 1)
 				usage();
@@ -193,7 +192,7 @@ int main(int argc, char *argv[])
 			cammenu = 1;
 			argpos++;
 		} else {
-			if ((argpos - argc) != 1)
+			if ((argc - argpos) != 1)
 				usage();
 			channel_name = argv[argpos];
 			argpos++;

@@ -166,30 +166,30 @@ void zap_ca_ui(void)
 		return;
 	} else if (c == '\n') {
 		switch(mmi_state) {
-			case MMI_STATE_CLOSED:
-			case MMI_STATE_OPEN:
-				if ((ui_linepos == 0) && (ca_resource_connected)) {
-					en50221_app_ai_entermenu(stdcam->ai_resource, stdcam->ai_session_number);
-				}
-				break;
+		case MMI_STATE_CLOSED:
+		case MMI_STATE_OPEN:
+			if ((ui_linepos == 0) && (ca_resource_connected)) {
+				en50221_app_ai_entermenu(stdcam->ai_resource, stdcam->ai_session_number);
+			}
+			break;
 
-			case MMI_STATE_ENQ:
-				if (ui_linepos == 0) {
-					en50221_app_mmi_answ(stdcam->mmi_resource, stdcam->mmi_session_number,
-							     MMI_ANSW_ID_CANCEL, NULL, 0);
-				} else {
-					en50221_app_mmi_answ(stdcam->mmi_resource, stdcam->mmi_session_number,
-							     MMI_ANSW_ID_ANSWER, (uint8_t*) ui_line, ui_linepos);
-				}
-				mmi_state = MMI_STATE_OPEN;
-				break;
+		case MMI_STATE_ENQ:
+			if (ui_linepos == 0) {
+				en50221_app_mmi_answ(stdcam->mmi_resource, stdcam->mmi_session_number,
+							MMI_ANSW_ID_CANCEL, NULL, 0);
+			} else {
+				en50221_app_mmi_answ(stdcam->mmi_resource, stdcam->mmi_session_number,
+							MMI_ANSW_ID_ANSWER, (uint8_t*) ui_line, ui_linepos);
+			}
+			mmi_state = MMI_STATE_OPEN;
+			break;
 
-			case MMI_STATE_MENU:
-				ui_line[ui_linepos] = 0;
-				en50221_app_mmi_menu_answ(stdcam->mmi_resource, stdcam->mmi_session_number,
-							  atoi(ui_line));
-				mmi_state = MMI_STATE_OPEN;
-				break;
+		case MMI_STATE_MENU:
+			ui_line[ui_linepos] = 0;
+			en50221_app_mmi_menu_answ(stdcam->mmi_resource, stdcam->mmi_session_number,
+							atoi(ui_line));
+			mmi_state = MMI_STATE_OPEN;
+			break;
 		}
 		ui_linepos = 0;
 	} else {
