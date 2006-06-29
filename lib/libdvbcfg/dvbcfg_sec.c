@@ -91,8 +91,10 @@ int dvbcfg_sec_load(FILE *f,
 		} else if ((value = dvbcfg_iskey(line, "config-type")) != NULL) {
 			if (!strcasecmp(value, "none")) {
 				tmpsec.config_type = DVBFE_SEC_CONFIG_NONE;
-			} else if (!strcasecmp(value, "simple")) {
-				tmpsec.config_type = DVBFE_SEC_CONFIG_SIMPLE;
+			} else if (!strcasecmp(value, "power")) {
+				tmpsec.config_type = DVBFE_SEC_CONFIG_POWER;
+			} else if (!strcasecmp(value, "standard")) {
+				tmpsec.config_type = DVBFE_SEC_CONFIG_STANDARD;
 			} else if (!strcasecmp(value, "advanced")) {
 				tmpsec.config_type = DVBFE_SEC_CONFIG_ADVANCED;
 			} else {
@@ -188,8 +190,11 @@ int dvbcfg_sec_save(FILE *f,
 		case DVBFE_SEC_CONFIG_NONE:
 			config_type = "none";
 			break;
-		case DVBFE_SEC_CONFIG_SIMPLE:
-			config_type = "simple";
+		case DVBFE_SEC_CONFIG_POWER:
+			config_type = "power";
+			break;
+		case DVBFE_SEC_CONFIG_STANDARD:
+			config_type = "standard";
 			break;
 		case DVBFE_SEC_CONFIG_ADVANCED:
 			config_type = "advanced";
@@ -250,42 +255,42 @@ static struct dvbfe_sec_config defaults[] = {
 		.lof_lo_h = 9750000,
 		.lof_hi_v = 10600000,
 		.lof_hi_h = 10600000,
-		.config_type = DVBFE_SEC_CONFIG_SIMPLE,
+		.config_type = DVBFE_SEC_CONFIG_STANDARD,
 	},
 	{
 		.id = "DBS",
 		.switch_frequency = 0,
 		.lof_lo_v = 11250000,
 		.lof_lo_h = 11250000,
-		.config_type = DVBFE_SEC_CONFIG_SIMPLE,
+		.config_type = DVBFE_SEC_CONFIG_STANDARD,
 	},
 	{
 		.id = "STANDARD",
 		.switch_frequency = 0,
 		.lof_lo_v = 10000000,
 		.lof_lo_h = 10000000,
-		.config_type = DVBFE_SEC_CONFIG_SIMPLE,
+		.config_type = DVBFE_SEC_CONFIG_STANDARD,
 	},
 	{
 		.id = "ENHANCED",
 		.switch_frequency = 0,
 		.lof_lo_v = 9750000,
 		.lof_lo_h = 9750000,
-		.config_type = DVBFE_SEC_CONFIG_SIMPLE,
+		.config_type = DVBFE_SEC_CONFIG_STANDARD,
 	},
 	{
 		.id = "C-BAND",
 		.switch_frequency = 0,
 		.lof_lo_v = 5150000,
 		.lof_lo_h = 5150000,
-		.config_type = DVBFE_SEC_CONFIG_SIMPLE,
+		.config_type = DVBFE_SEC_CONFIG_POWER,
 	},
 	{
 		.id = "C-MULTI",
 		.switch_frequency = 0,
 		.lof_lo_v = 5750000,
 		.lof_lo_h = 5150000,
-		.config_type = DVBFE_SEC_CONFIG_SIMPLE,
+		.config_type = DVBFE_SEC_CONFIG_POWER,
 	},
 };
 #define defaults_count (sizeof(defaults) / sizeof(struct dvbfe_sec_config))

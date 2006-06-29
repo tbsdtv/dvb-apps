@@ -27,7 +27,12 @@ int dvbfe_sec_set(struct dvbfe_handle *fe,
 		switch(sec_config->config_type) {
 		case DVBFE_SEC_CONFIG_NONE:
 			break;
-		case DVBFE_SEC_CONFIG_SIMPLE:
+
+		case DVBFE_SEC_CONFIG_POWER:
+			dvbfe_set_voltage(fe, DVBFE_SEC_VOLTAGE_13);
+			break;
+
+		case DVBFE_SEC_CONFIG_STANDARD:
 		{
 			// calculate the correct oscillator value
 			enum dvbfe_diseqc_oscillator osc = DISEQC_OSCILLATOR_LOW;

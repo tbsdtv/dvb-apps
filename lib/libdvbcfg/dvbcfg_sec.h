@@ -75,7 +75,8 @@
  *
  * config-type indicates the desired type of SEC command to use, it may be:
  * 	none - No SEC commands will be issued (frequency adjustment will still be performed).
- * 	simple - The standard DISEQC back compatable sequence will be issued.
+ * 	power - Only the SEC power is turned on.
+ * 	standard - The standard DISEQC back compatable sequence will be issued.
  * 	advanced - The DISEQC sequence described in the appropriate sec cmd string will be used.
  *
  * The cmd-<lo|hi>-<v|h|l|r> describes the SEC cmd string to use in advanced mode for each of the possible combinations of

@@ -112,7 +112,8 @@ enum dvbfe_diseqc_direction {
 
 enum dvbfe_sec_config_type {
 	DVBFE_SEC_CONFIG_NONE = 0,
-	DVBFE_SEC_CONFIG_SIMPLE,
+	DVBFE_SEC_CONFIG_POWER,
+	DVBFE_SEC_CONFIG_STANDARD,
 	DVBFE_SEC_CONFIG_ADVANCED,
 };
 
@@ -136,6 +137,8 @@ struct dvbfe_sec_config
 	 * The SEC control to be used depends on the type:
 	 *
 	 * NONE - no SEC commands will be issued. (Frequency adjustment will still be performed).
+	 *
+	 * POWER - only the SEC power will be turned on.
 	 *
 	 * SIMPLE - the standard DISEQC back compatable sequence is used.
 	 *
