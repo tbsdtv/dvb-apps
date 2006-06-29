@@ -79,8 +79,7 @@ void usage(void)
 		"      :dvr		Output A/V only to dvr device\n"
 		"      :dvrfull		Output complete stream to dvr device\n"
 		"      :null		Do not output anything\n"
-		"      :file <filename>	Output A/V only to file\n"
-		"      :filefull <filename>	Output complete stream to file\n"
+		"      :file <filename>	Output stream to file\n"
 		" -timeout <secs>	Number of seconds to output channel for (0=>exit immediately after successful tuning)\n"
 		" -cammenu		Show the CAM menu\n"
 		" -moveca		Move CA descriptors from stream to programme level if possible\n"
@@ -167,12 +166,6 @@ int main(int argc, char *argv[])
 				output_type = OUTPUT_TYPE_NULL;
 			} else if (!strcmp(argv[argpos+1], ":file")) {
 				output_type = OUTPUT_TYPE_FILE;
-				if ((argc - argpos) < 3)
-					usage();
-				outfile = argv[argpos+2];
-				argpos++;
-			} else if (!strcmp(argv[argpos+1], ":filefull")) {
-				output_type = OUTPUT_TYPE_FILE_FULL;
 				if ((argc - argpos) < 3)
 					usage();
 				outfile = argv[argpos+2];
@@ -266,7 +259,6 @@ int main(int argc, char *argv[])
 			break;
 
 		case OUTPUT_TYPE_FILE:
-		case OUTPUT_TYPE_FILE_FULL:
 			// open output file
 			outfd = open(outfile, O_WRONLY|O_CREAT|O_LARGEFILE, 0644);
 			if (outfd < 0) {

@@ -109,7 +109,7 @@ static void *dvbthread_func(void* arg)
 	// output PAT to DVR if requested
 	switch(params->output_type) {
 	case OUTPUT_TYPE_DVR_FULL:
-	case OUTPUT_TYPE_FILE_FULL:
+	case OUTPUT_TYPE_FILE:
 		pat_fd_dvrout = create_dvr_filter(params->adapter_id, params->demux_id, TRANSPORT_PAT_PID);
 	}
 
@@ -332,7 +332,7 @@ static void process_pat(int pat_fd, struct zap_dvb_params *params,
 			// output PMT to DVR if requested
 			switch(params->output_type) {
 			case OUTPUT_TYPE_DVR_FULL:
-			case OUTPUT_TYPE_FILE_FULL:
+			case OUTPUT_TYPE_FILE:
 				if (*pmt_fd_dvrout != -1)
 					close(*pmt_fd_dvrout);
 				*pmt_fd_dvrout = create_dvr_filter(params->adapter_id, params->demux_id, cur_program->pid);
@@ -416,12 +416,11 @@ static void process_pmt(int pmt_fd, struct zap_dvb_params *params, int *pmt_vers
 		break;
 
 	case OUTPUT_TYPE_DVR:
-	case OUTPUT_TYPE_FILE:
 		dvr_pmt(params, pmt);
 		break;
 
 	case OUTPUT_TYPE_DVR_FULL:
-	case OUTPUT_TYPE_FILE_FULL:
+	case OUTPUT_TYPE_FILE:
 		dvr_pmt_full(params, pmt);
 		break;
 	}
