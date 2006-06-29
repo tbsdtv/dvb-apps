@@ -183,13 +183,12 @@ void usage(char *prog_name)
 {
 	fprintf(stderr, "Usage: %s [options]\n", prog_name);
 	fprintf(stderr, "Where options are:\n");
-	fprintf(stderr, "\t-a AD  : Adapter card AD (default 0)\n");
-	fprintf(stderr, "\t-n NET : Net demux NET (default 0)\n");
+	fprintf(stderr, "\t-a AD  : Adapter card (default 0)\n");
+	fprintf(stderr, "\t-n DD  : Demux (default 0)\n");
 	fprintf(stderr, "\t-p PID : Add interface listening on PID\n");
-	fprintf(stderr, "\t-d NUM : Remove interface dvbAD_NUM\n");
-	fprintf(stderr,
-		"\t-l     : List currently available interfaces\n");
-	fprintf(stderr, "\t-U     : use ULE framing (defualt: MPE)\n" );
+	fprintf(stderr, "\t-d NUM : Remove interface NUM\n");
+	fprintf(stderr,	"\t-l     : List currently available interfaces\n");
+	fprintf(stderr, "\t-U     : use ULE framing (default: MPE)\n" );
 	fprintf(stderr, "\t-v     : Print current version\n\n");
 }
 
