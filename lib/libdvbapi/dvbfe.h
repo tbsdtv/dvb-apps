@@ -40,13 +40,6 @@ enum dvbfe_type {
 	DVBFE_TYPE_ATSC,
 };
 
-enum dvbfe_polarization {
-	DVBFE_POLARIZATION_H,
-	DVBFE_POLARIZATION_V,
-	DVBFE_POLARIZATION_L,
-	DVBFE_POLARIZATION_R,
-};
-
 enum dvbfe_spectral_inversion {
 	DVBFE_INVERSION_OFF,
 	DVBFE_INVERSION_ON,
@@ -132,7 +125,6 @@ struct dvbfe_parameters {
 		struct {
 			uint32_t			symbol_rate;
 			enum dvbfe_code_rate		fec_inner;
-			enum dvbfe_polarization		polarization;
 		} dvbs;
 
 		struct {

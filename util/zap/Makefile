@@ -2,7 +2,7 @@
 
 CPPFLAGS += -I../../lib
 LDFLAGS  += -L../../lib/libdvbapi -L../../lib/libdvbcfg -L../../lib/libdvben50221 -L../../lib/libucsi
-LDLIBS   += -ldvbcfg -ldvben50221 -lucsi -lpthread -ldvbapi
+LDLIBS   += -ldvbcfg -ldvben50221 -lucsi -lpthread -ldvbapi -static
 
 objects  = zap_dvb.o \
            zap_ca.o

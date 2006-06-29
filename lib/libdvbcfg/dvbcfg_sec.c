@@ -72,10 +72,22 @@ int dvbcfg_sec_load(FILE *f,
 			strncpy(tmpsec.id, value, sizeof(tmpsec.id));
 		} else if ((value = dvbcfg_iskey(line, "switch-frequency")) != NULL) {
 			tmpsec.switch_frequency = atoi(value);
-		} else if ((value = dvbcfg_iskey(line, "lof-lo")) != NULL) {
-			tmpsec.lof_lo = atoi(value);
-		} else if ((value = dvbcfg_iskey(line, "lof-hi")) != NULL) {
-			tmpsec.lof_hi = atoi(value);
+		} else if ((value = dvbcfg_iskey(line, "lof-lo-v")) != NULL) {
+			tmpsec.lof_lo_v = atoi(value);
+		} else if ((value = dvbcfg_iskey(line, "lof-lo-h")) != NULL) {
+			tmpsec.lof_lo_h = atoi(value);
+		} else if ((value = dvbcfg_iskey(line, "lof-lo-l")) != NULL) {
+			tmpsec.lof_lo_l = atoi(value);
+		} else if ((value = dvbcfg_iskey(line, "lof-lo-r")) != NULL) {
+			tmpsec.lof_lo_r = atoi(value);
+		} else if ((value = dvbcfg_iskey(line, "lof-hi-v")) != NULL) {
+			tmpsec.lof_hi_v = atoi(value);
+		} else if ((value = dvbcfg_iskey(line, "lof-hi-h")) != NULL) {
+			tmpsec.lof_hi_h = atoi(value);
+		} else if ((value = dvbcfg_iskey(line, "lof-hi-l")) != NULL) {
+			tmpsec.lof_hi_l = atoi(value);
+		} else if ((value = dvbcfg_iskey(line, "lof-hi-r")) != NULL) {
+			tmpsec.lof_hi_r = atoi(value);
 		} else if ((value = dvbcfg_iskey(line, "config-type")) != NULL) {
 			if (!strcasecmp(value, "none")) {
 				tmpsec.config_type = DVBFE_SEC_CONFIG_NONE;
@@ -186,8 +198,22 @@ int dvbcfg_sec_save(FILE *f,
 
 		fprintf(f, "[lnb]\n");
 		fprintf(f, "switch-frequency=%i\n", secs[i].switch_frequency);
-		fprintf(f, "lof-lo=%i\n", secs[i].lof_lo);
-		fprintf(f, "lof-hi=%i\n", secs[i].lof_hi);
+		if (secs[i].lof_lo_v)
+			fprintf(f, "lof-lo-v=%i\n", secs[i].lof_lo_v);
+		if (secs[i].lof_lo_h)
+			fprintf(f, "lof-lo-h=%i\n", secs[i].lof_lo_h);
+		if (secs[i].lof_lo_l)
+			fprintf(f, "lof-lo-l=%i\n", secs[i].lof_lo_l);
+		if (secs[i].lof_lo_r)
+			fprintf(f, "lof-lo-r=%i\n", secs[i].lof_lo_r);
+		if (secs[i].lof_hi_v)
+			fprintf(f, "lof-hi-v=%i\n", secs[i].lof_hi_v);
+		if (secs[i].lof_hi_h)
+			fprintf(f, "lof-hi-h=%i\n", secs[i].lof_hi_h);
+		if (secs[i].lof_hi_l)
+			fprintf(f, "lof-hi-l=%i\n", secs[i].lof_hi_l);
+		if (secs[i].lof_hi_r)
+			fprintf(f, "lof-hi-r=%i\n", secs[i].lof_hi_r);
 		fprintf(f, "config-type=%s\n", config_type);
 
 		if (secs[i].config_type == DVBFE_SEC_CONFIG_ADVANCED) {
@@ -220,36 +246,45 @@ static struct dvbfe_sec_config defaults[] = {
 	{
 		.id = "UNIVERSAL",
 		.switch_frequency = 11700000,
-		.lof_lo = 9750000,
-		.lof_hi = 10600000,
+		.lof_lo_v = 9750000,
+		.lof_lo_h = 9750000,
+		.lof_hi_v = 10600000,
+		.lof_hi_h = 10600000,
 		.config_type = DVBFE_SEC_CONFIG_SIMPLE,
 	},
 	{
 		.id = "DBS",
 		.switch_frequency = 0,
-		.lof_lo = 11250000,
-		.lof_hi = 0,
+		.lof_lo_v = 11250000,
+		.lof_lo_h = 11250000,
 		.config_type = DVBFE_SEC_CONFIG_SIMPLE,
 	},
 	{
 		.id = "STANDARD",
 		.switch_frequency = 0,
-		.lof_lo = 10000000,
-		.lof_hi = 0,
+		.lof_lo_v = 10000000,
+		.lof_lo_h = 10000000,
 		.config_type = DVBFE_SEC_CONFIG_SIMPLE,
 	},
 	{
 		.id = "ENHANCED",
 		.switch_frequency = 0,
-		.lof_lo = 9750000,
-		.lof_hi = 0,
+		.lof_lo_v = 9750000,
+		.lof_lo_h = 9750000,
 		.config_type = DVBFE_SEC_CONFIG_SIMPLE,
 	},
 	{
 		.id = "C-BAND",
 		.switch_frequency = 0,
-		.lof_lo = 5150000,
-		.lof_hi = 0,
+		.lof_lo_v = 5150000,
+		.lof_lo_h = 5150000,
+		.config_type = DVBFE_SEC_CONFIG_SIMPLE,
+	},
+	{
+		.id = "C-MULTI",
+		.switch_frequency = 0,
+		.lof_lo_v = 5750000,
+		.lof_lo_h = 5150000,
 		.config_type = DVBFE_SEC_CONFIG_SIMPLE,
 	},
 };

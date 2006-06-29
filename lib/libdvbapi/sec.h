@@ -75,16 +75,24 @@ enum dvbfe_diseqc_listen {
 	DISEQC_LISTEN_AWAKE,
 };
 
+enum dvbfe_diseqc_polarization {
+	DISEQC_POLARIZATION_UNCHANGED = 0,
+	DISEQC_POLARIZATION_H,
+	DISEQC_POLARIZATION_V,
+	DISEQC_POLARIZATION_L,
+	DISEQC_POLARIZATION_R,
+};
+
 enum dvbfe_diseqc_oscillator {
+	DISEQC_OSCILLATOR_UNCHANGED = 0,
 	DISEQC_OSCILLATOR_LOW,
 	DISEQC_OSCILLATOR_HIGH,
-	DISEQC_OSCILLATOR_UNCHANGED,
 };
 
 enum dvbfe_diseqc_switch {
+	DISEQC_SWITCH_UNCHANGED = 0,
 	DISEQC_SWITCH_A,
 	DISEQC_SWITCH_B,
-	DISEQC_SWITCH_UNCHANGED,
 };
 
 enum dvbfe_diseqc_analog_id {
@@ -115,8 +123,14 @@ struct dvbfe_sec_config
 {
 	char id[32]; /* ID of this SEC config structure */
 	uint32_t switch_frequency; /* switching frequency - supply 0 for none. */
-	uint32_t lof_lo; /* frequency to subtract for LOW band channels - or for switch_frequency == 0 */
-	uint32_t lof_hi; /* frequency to subtract for HIGH band channels */
+	uint32_t lof_lo_v; /* frequency to subtract for V + LOW band channels - or for switch_frequency == 0 */
+	uint32_t lof_lo_h; /* frequency to subtract for H + LOW band channels - or for switch_frequency == 0 */
+	uint32_t lof_lo_l; /* frequency to subtract for L + LOW band channels - or for switch_frequency == 0 */
+	uint32_t lof_lo_r; /* frequency to subtract for R + LOW band channels - or for switch_frequency == 0 */
+	uint32_t lof_hi_v; /* frequency to subtract for V + HIGH band channels */
+	uint32_t lof_hi_h; /* frequency to subtract for H + HIGH band channels */
+	uint32_t lof_hi_l; /* frequency to subtract for L + HIGH band channels */
+	uint32_t lof_hi_r; /* frequency to subtract for R + HIGH band channels */
 
 	/**
 	 * The SEC control to be used depends on the type:
@@ -148,13 +162,14 @@ struct dvbfe_sec_config
  *
  * Note: Since the SEC configuration structure can be set to disable any SEC
  * operations, this function can be reused for ALL DVB style devices (just
- * set LOF=0,type=DVBFE_SEC_CONFIG_NONE for devices which do not require
+ * set all LOF=0,type=DVBFE_SEC_CONFIG_NONE for devices which do not require
  * SEC control).
  *
  * The sec configuration structures can be looked up using the dvbcfg_sec library.
  *
  * @param fe Frontend concerned.
  * @param sec_config SEC configuration structure. May be NULL to disable SEC/frequency adjustment.
+ * @param polarization Polarization of signal.
  * @param sat_pos Satellite position - only used if type == DISEQC_SEC_CONFIG_SIMPLE.
  * @param switch_option Switch option - only used if type == DISEQC_SEC_CONFIG_SIMPLE.
  * @param params Tuning parameters.
@@ -165,6 +180,7 @@ struct dvbfe_sec_config
  */
 extern int dvbfe_sec_set(struct dvbfe_handle *fe,
 			  struct dvbfe_sec_config *sec_config,
+			  enum dvbfe_diseqc_polarization polarization,
 			  enum dvbfe_diseqc_switch sat_pos,
 			  enum dvbfe_diseqc_switch switch_option,
 			  struct dvbfe_parameters *params,
@@ -185,7 +201,7 @@ extern int dvbfe_sec_set(struct dvbfe_handle *fe,
  */
 extern int dvbfe_sec_std_sequence(struct dvbfe_handle *fe,
 				  enum dvbfe_diseqc_oscillator oscillator,
-				  enum dvbfe_polarization polarization,
+				  enum dvbfe_diseqc_polarization polarization,
 				  enum dvbfe_diseqc_switch sat_pos,
 				  enum dvbfe_diseqc_switch switch_option);
 
@@ -242,7 +258,7 @@ extern int dvbfe_diseqc_set_listen(struct dvbfe_handle *fe,
  * @param fe Frontend concerned.
  * @param address Address of the device.
  * @param oscillator Value to set the lo/hi switch to.
- * @param polarization Value to set the polarization switch to, or -1 to not change it.
+ * @param polarization Value to set the polarization switch to.
  * @param sat_pos Value to set the satellite position switch to.
  * @param switch_option Value to set the switch option switch to.
  * @return 0 on success, or nonzero on error.
@@ -250,7 +266,7 @@ extern int dvbfe_diseqc_set_listen(struct dvbfe_handle *fe,
 extern int dvbfe_diseqc_set_committed_switches(struct dvbfe_handle *fe,
 					       enum dvbfe_diseqc_address address,
 					       enum dvbfe_diseqc_oscillator oscillator,
-					       int polarization,
+					       enum dvbfe_diseqc_polarization polarization,
 					       enum dvbfe_diseqc_switch sat_pos,
 					       enum dvbfe_diseqc_switch switch_option);
 

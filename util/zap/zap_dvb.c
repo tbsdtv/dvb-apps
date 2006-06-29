@@ -142,6 +142,7 @@ static void *dvbthread_func(void* arg)
 			// tune!
 			if (dvbfe_sec_set(params->fe,
 			    		  sec,
+					  params->channel.polarization,
 					  params->channel.sat_pos,
 					  params->channel.switch_option,
 					  &params->channel.fe_params,

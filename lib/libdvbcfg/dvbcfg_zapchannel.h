@@ -109,6 +109,7 @@ struct dvbcfg_zapchannel
         char name[128];
         enum dvbfe_type fe_type;
         struct dvbfe_parameters fe_params;
+	enum dvbfe_diseqc_polarization polarization;
 	enum dvbfe_diseqc_switch sat_pos;
 	enum dvbfe_diseqc_switch switch_option;
 	int video_pid;

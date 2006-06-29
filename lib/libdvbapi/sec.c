@@ -12,6 +12,7 @@
 
 int dvbfe_sec_set(struct dvbfe_handle *fe,
 		   struct dvbfe_sec_config *sec_config,
+		   enum dvbfe_diseqc_polarization polarization,
 		   enum dvbfe_diseqc_switch sat_pos,
 		   enum dvbfe_diseqc_switch switch_option,
 		   struct dvbfe_parameters *params,
@@ -35,7 +36,7 @@ int dvbfe_sec_set(struct dvbfe_handle *fe,
 
 			if ((tmp = dvbfe_sec_std_sequence(fe,
 			     				  osc,
-							  params->u.dvbs.polarization,
+							  polarization,
 							  sat_pos,
 							  switch_option)) < 0)
 				return tmp;
@@ -51,26 +52,26 @@ int dvbfe_sec_set(struct dvbfe_handle *fe,
 
 			//  determine correct string
 			char *cmd = NULL;
-			switch(params->u.dvbs.polarization) {
-			case DVBFE_POLARIZATION_H:
+			switch(polarization) {
+			case DISEQC_POLARIZATION_H:
 				if (!high)
 					cmd = sec_config->adv_cmd_lo_h;
 				else
 					cmd = sec_config->adv_cmd_hi_h;
 				break;
-			case DVBFE_POLARIZATION_V:
+			case DISEQC_POLARIZATION_V:
 				if (!high)
 					cmd = sec_config->adv_cmd_lo_v;
 				else
 					cmd = sec_config->adv_cmd_hi_v;
 				break;
-			case DVBFE_POLARIZATION_L:
+			case DISEQC_POLARIZATION_L:
 				if (!high)
 					cmd = sec_config->adv_cmd_lo_l;
 				else
 					cmd = sec_config->adv_cmd_hi_l;
 				break;
-			case DVBFE_POLARIZATION_R:
+			case DISEQC_POLARIZATION_R:
 				if (!high)
 					cmd = sec_config->adv_cmd_lo_r;
 				else
@@ -88,11 +89,47 @@ int dvbfe_sec_set(struct dvbfe_handle *fe,
 		}
 		}
 
-		// frequency adjustment
-		uint32_t lof = sec_config->lof_lo;
-		if (sec_config->switch_frequency && (sec_config->switch_frequency < params->frequency))
-			lof = sec_config->lof_hi;
+		// work out the correct LOF value
+		uint32_t lof = 0;
+		if ((sec_config->switch_frequency == 0) || (params->frequency < sec_config->switch_frequency)) {
+			// LOW band
+			switch(polarization) {
+			case DISEQC_POLARIZATION_H:
+				lof = sec_config->lof_lo_h;
+				break;
+			case DISEQC_POLARIZATION_V:
+				lof = sec_config->lof_lo_v;
+				break;
+			case DISEQC_POLARIZATION_L:
+				lof = sec_config->lof_lo_l;
+				break;
+			case DISEQC_POLARIZATION_R:
+				lof = sec_config->lof_lo_r;
+				break;
+			case DISEQC_POLARIZATION_UNCHANGED:
+				break;
+			}
+		} else {
+			// HIGH band
+			switch(polarization) {
+			case DISEQC_POLARIZATION_H:
+				lof = sec_config->lof_hi_h;
+				break;
+			case DISEQC_POLARIZATION_V:
+				lof = sec_config->lof_hi_v;
+				break;
+			case DISEQC_POLARIZATION_L:
+				lof = sec_config->lof_hi_l;
+				break;
+			case DISEQC_POLARIZATION_R:
+				lof = sec_config->lof_hi_r;
+				break;
+			case DISEQC_POLARIZATION_UNCHANGED:
+				break;
+			}
+		}
 
+		// do frequency adjustment
 		if (lof) {
 			memcpy(&localparams, params, sizeof(struct dvbfe_parameters));
 			localparams.frequency -= lof;
@@ -106,19 +143,19 @@ int dvbfe_sec_set(struct dvbfe_handle *fe,
 
 int dvbfe_sec_std_sequence(struct dvbfe_handle *fe,
 			   enum dvbfe_diseqc_oscillator oscillator,
-			   enum dvbfe_polarization polarization,
+			   enum dvbfe_diseqc_polarization polarization,
 			   enum dvbfe_diseqc_switch sat_pos,
 			   enum dvbfe_diseqc_switch switch_option)
 {
 	dvbfe_set_22k_tone(fe, DVBFE_SEC_TONE_OFF);
 
 	switch(polarization) {
-	case DVBFE_POLARIZATION_V:
-	case DVBFE_POLARIZATION_R:
+	case DISEQC_POLARIZATION_V:
+	case DISEQC_POLARIZATION_R:
 		dvbfe_set_voltage(fe, DVBFE_SEC_VOLTAGE_13);
 		break;
-	case DVBFE_POLARIZATION_H:
-	case DVBFE_POLARIZATION_L:
+	case DISEQC_POLARIZATION_H:
+	case DISEQC_POLARIZATION_L:
 		dvbfe_set_voltage(fe, DVBFE_SEC_VOLTAGE_18);
 		break;
 	default:
@@ -201,7 +238,7 @@ int dvbfe_diseqc_set_listen(struct dvbfe_handle *fe,
 int dvbfe_diseqc_set_committed_switches(struct dvbfe_handle *fe,
 					enum dvbfe_diseqc_address address,
 					enum dvbfe_diseqc_oscillator oscillator,
-					int polarization,
+					enum dvbfe_diseqc_polarization polarization,
 					enum dvbfe_diseqc_switch sat_pos,
 					enum dvbfe_diseqc_switch switch_option)
 {
@@ -218,15 +255,15 @@ int dvbfe_diseqc_set_committed_switches(struct dvbfe_handle *fe,
 		break;
 	}
 	switch(polarization) {
-	case DVBFE_POLARIZATION_V:
-	case DVBFE_POLARIZATION_R:
+	case DISEQC_POLARIZATION_V:
+	case DISEQC_POLARIZATION_R:
 		data[3] |= 0x20;
 		break;
-	case DVBFE_POLARIZATION_H:
-	case DVBFE_POLARIZATION_L:
+	case DISEQC_POLARIZATION_H:
+	case DISEQC_POLARIZATION_L:
 		data[3] |= 0x02;
 		break;
-	case -1:
+	default:
 		break;
 	}
 	switch(sat_pos) {
@@ -778,16 +815,16 @@ int dvbfe_sec_command(struct dvbfe_handle *fe, char *command)
 			int polarization = -1;
 			switch(toupper(iarg2)) {
 			case 'H':
-				polarization = DVBFE_POLARIZATION_H;
+				polarization = DISEQC_POLARIZATION_H;
 				break;
 			case 'V':
-				polarization = DVBFE_POLARIZATION_V;
+				polarization = DISEQC_POLARIZATION_V;
 				break;
 			case 'L':
-				polarization = DVBFE_POLARIZATION_L;
+				polarization = DISEQC_POLARIZATION_L;
 				break;
 			case 'R':
-				polarization = DVBFE_POLARIZATION_R;
+				polarization = DISEQC_POLARIZATION_R;
 				break;
 			default:
 				polarization = -1;

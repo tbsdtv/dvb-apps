@@ -41,8 +41,14 @@
  * [sec]
  * name=<sec_id>
  * switch-frequency=<switching frequency (SLOF)>
- * lof-lo=<low band frequency>
- * lof-hi=<high band frequency>
+ * lof-lo-v=<low band + V + frequency>
+ * lof-lo-h=<low band + H + frequency>
+ * lof-lo-l=<low band + L + frequency>
+ * lof-lo-r=<low band + R + frequency>
+ * lof-hi-v=<high band + V + frequency>
+ * lof-hi-h=<high band + H + frequency>
+ * lof-hi-l=<high band + L + frequency>
+ * lof-hi-r=<high band + R + frequency>
  * config-type=<none|simple|advanced>
  * cmd-lo-v=<sec sequence>
  * cmd-lo-h=<sec sequence>
@@ -57,8 +63,14 @@
  * 	details from the file will be used instead of the hardcoded ones.
  * The switch-frequency (or SLOF) indicates the point seperating low band frequencies from high band frequencies.
  * 	Set this value to 0 if there is only one frequency band.
- * The lof-lo is the frequency adjustment for the low band (i.e. less than SLOF), or is used if switch-frequency==0.
- * The lof-hi is the frequency adjustment for the high band (unused if switch-frequency==0).
+ * The lof-lo-v is the frequency adjustment for V + low band (i.e. less than SLOF), or is used if switch-frequency==0.
+ * The lof-lo-h is the frequency adjustment for H + low band (i.e. less than SLOF), or is used if switch-frequency==0.
+ * The lof-lo-l is the frequency adjustment for L + low band (i.e. less than SLOF), or is used if switch-frequency==0.
+ * The lof-lo-r is the frequency adjustment for R + low band (i.e. less than SLOF), or is used if switch-frequency==0.
+ * The lof-hi-v is the frequency adjustment for V + high band (unused if switch-frequency==0).
+ * The lof-hi-h is the frequency adjustment for H + high band (unused if switch-frequency==0).
+ * The lof-hi-l is the frequency adjustment for L + high band (unused if switch-frequency==0).
+ * The lof-hi-r is the frequency adjustment for R + high band (unused if switch-frequency==0).
  *
  * config-type indicates the desired type of SEC command to use, it may be:
  * 	none - No SEC commands will be issued (frequency adjustment will still be performed).

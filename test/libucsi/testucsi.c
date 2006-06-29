@@ -178,8 +178,8 @@ int zapchannels_cb(void *private, struct dvbcfg_zapchannel *channel)
 		char *diseqc_v_high = "t v W15 .D(E0 10 38 F1) W15 A W15 T";
 
 		char *diseqc = NULL;
-		switch(channel->fe_params.u.dvbs.polarization) {
-		case DVBFE_POLARIZATION_H:
+		switch(channel->polarization) {
+		case DISEQC_POLARIZATION_H:
 			if (channel->fe_params.frequency < 11700000) {
 				freqadjust = 9750000;
 				diseqc = diseqc_h_low;
@@ -189,7 +189,7 @@ int zapchannels_cb(void *private, struct dvbcfg_zapchannel *channel)
 			}
 			break;
 
-		case DVBFE_POLARIZATION_V:
+		case DISEQC_POLARIZATION_V:
 			if (channel->fe_params.frequency < 11700000) {
 				freqadjust = 9750000;
 				diseqc = diseqc_v_low;
@@ -199,8 +199,7 @@ int zapchannels_cb(void *private, struct dvbcfg_zapchannel *channel)
 			}
 			break;
 
-		case DVBFE_POLARIZATION_L:
-		case DVBFE_POLARIZATION_R:
+		default:
 			break;
 		}
 
