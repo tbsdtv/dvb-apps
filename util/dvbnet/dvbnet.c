@@ -114,6 +114,7 @@ int main(int argc, char **argv)
 int queryInterface(int fd_net, int dev)
 {
 	int IF, nIFaces = 0, ret = FAIL;
+	char *encap;
 
 	printf("Query DVB network interfaces:\n");
 	printf("-----------------------------\n");
@@ -125,10 +126,20 @@ int queryInterface(int fd_net, int dev)
 
 		if (dev == ifnum)
 			ret = OK;
+	   
+		encap = "???";
+		switch(_encapsulation) {
+		case DVBNET_ENCAP_MPE:
+			encap = "MPE";
+			break;
+		case DVBNET_ENCAP_ULE:
+			encap = "ULE";
+			break;
+		}
 
 		printf("Found device %d: interface dvb%d_%d, "
-		       "listening on PID %d\n",
-		       IF, adapter, ifnum, _pid);
+		       "listening on PID %d, encapsulation %s\n",
+		       IF, adapter, ifnum, _pid, encap);
 
 		nIFaces++;
 	}
