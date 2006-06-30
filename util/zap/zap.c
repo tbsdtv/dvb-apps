@@ -85,7 +85,7 @@ void usage(void)
 		"      file <filename>	Output stream to file\n"
 		"      udp <ip> <port>	Output stream to ip:port using udp\n"
 		"      udpif <ip> <port> <interface> Output stream to ip:port using udp forcing the specified interface\n"
-		" -timeout <secs>	Number of seconds to output channel for (0=>exit immediately after successful tuning)\n"
+		" -timeout <secs>	Number of seconds to output channel for (0=>exit immediately after successful tuning, default is to output forever)\n"
 		" -cammenu		Show the CAM menu\n"
 		" -nomoveca		Do not attempt to move CA descriptors from stream to programme level\n"
 		" <channel name>\n";
