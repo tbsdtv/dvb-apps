@@ -95,7 +95,7 @@ int main(int argc, char *argv[])
 	int demux_id = 0;
 	int caslot_num = 0;
 	char *chanfile = "/etc/channels.conf";
-	char *secfile = "/etc/sec.conf";
+	char *secfile = NULL;
 	char *secid = NULL;
 	char *channel_name = NULL;
 	int output_type = OUTPUT_TYPE_DECODER;
