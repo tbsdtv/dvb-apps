@@ -230,6 +230,7 @@ int main(int argc, char *argv[])
 
 	// setup any signals
 	signal(SIGINT, signal_handler);
+	signal(SIGPIPE, SIG_IGN);
 
 	// start the CA stuff
 	zap_ca_params.adapter_id = adapter_id;
@@ -239,7 +240,7 @@ int main(int argc, char *argv[])
 	zap_ca_start(&zap_ca_params);
 
 	// frontend setup if a channel name was supplied
-	if (channel_name != NULL) {
+	if ((!cammenu) && (channel_name != NULL)) {
 		// find the requested channel
 		if (dvbcfg_zapchannel_find(chanfile, channel_name, &zap_dvb_params.channel)) {
 			fprintf(stderr, "Unable to find requested channel %s\n", channel_name);
