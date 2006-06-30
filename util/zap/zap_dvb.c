@@ -51,7 +51,6 @@ static void process_tdt(int tdt_fd);
 static void process_pmt(int pmt_fd, struct zap_dvb_params *params, int *pmt_version);
 static void decoder_pmt(struct zap_dvb_params *params, struct mpeg_pmt_section *pmt);
 static void dvr_pmt(struct zap_dvb_params *params, struct mpeg_pmt_section *pmt);
-static void dvr_pmt_full(struct zap_dvb_params *params, struct mpeg_pmt_section *pmt);
 static void append_pid_fd(int pid, int fd);
 static void free_pid_fds(void);
 
@@ -107,7 +106,7 @@ static void *dvbthread_func(void* arg)
 
 	// output PAT to DVR if requested
 	switch(params->output_type) {
-	case OUTPUT_TYPE_DVR_FULL:
+	case OUTPUT_TYPE_DVR:
 	case OUTPUT_TYPE_FILE:
 		pat_fd_dvrout = create_dvr_filter(params->adapter_id, params->demux_id, TRANSPORT_PAT_PID);
 	}
@@ -156,7 +155,7 @@ static void *dvbthread_func(void* arg)
 			memset(&result, 0, sizeof(result));
 			dvbfe_get_info(params->fe, FE_STATUS_PARAMS, &result);
 
-			printf ("status %c%c%c%c%c | signal %04x | snr %04x | ber %08x | unc %08x |\r",
+			fprintf(stderr, "status %c%c%c%c%c | signal %04x | snr %04x | ber %08x | unc %08x |\r",
 				result.signal ? 'S' : ' ',
 				result.carrier ? 'C' : ' ',
 				result.viterbi ? 'V' : ' ',
@@ -166,11 +165,12 @@ static void *dvbthread_func(void* arg)
 				result.snr,
 				result.ber,
 				result.ucblocks);
-			fflush(stdout);
+			fflush(stderr);
 
 			if (result.lock) {
 				tune_state++;
-				printf("\n");
+				fprintf(stderr, "\n");
+				fflush(stderr);
 			} else {
 				usleep(500000);
 			}
@@ -330,7 +330,7 @@ static void process_pat(int pat_fd, struct zap_dvb_params *params,
 
 			// output PMT to DVR if requested
 			switch(params->output_type) {
-			case OUTPUT_TYPE_DVR_FULL:
+			case OUTPUT_TYPE_DVR:
 			case OUTPUT_TYPE_FILE:
 				if (*pmt_fd_dvrout != -1)
 					close(*pmt_fd_dvrout);
@@ -415,12 +415,8 @@ static void process_pmt(int pmt_fd, struct zap_dvb_params *params, int *pmt_vers
 		break;
 
 	case OUTPUT_TYPE_DVR:
-		dvr_pmt(params, pmt);
-		break;
-
-	case OUTPUT_TYPE_DVR_FULL:
 	case OUTPUT_TYPE_FILE:
-		dvr_pmt_full(params, pmt);
+		dvr_pmt(params, pmt);
 		break;
 	}
 
@@ -472,43 +468,6 @@ static void decoder_pmt(struct zap_dvb_params *params, struct mpeg_pmt_section *
 }
 
 static void dvr_pmt(struct zap_dvb_params *params, struct mpeg_pmt_section *pmt)
-{
-	int audio_pid = -1;
-	int video_pid = -1;
-	struct mpeg_pmt_stream *cur_stream;
-	mpeg_pmt_section_streams_for_each(pmt, cur_stream) {
-		switch(cur_stream->stream_type) {
-		case 1:
-		case 2: // video
-			video_pid = cur_stream->pid;
-			break;
-
-		case 3:
-		case 4: // audio
-			audio_pid = cur_stream->pid;
-			break;
-		}
-	}
-
-	if (audio_pid != -1) {
-		int fd = create_dvr_filter(params->adapter_id, params->demux_id, audio_pid);
-		if (fd < 0) {
-			fprintf(stderr, "Unable to create dvr filter for PID %i\n", audio_pid);
-		} else {
-			append_pid_fd(audio_pid, fd);
-		}
-	}
-	if (video_pid != -1) {
-		int fd = create_dvr_filter(params->adapter_id, params->demux_id, video_pid);
-		if (fd < 0) {
-			fprintf(stderr, "Unable to create dvr filter for PID %i\n", video_pid);
-		} else {
-			append_pid_fd(video_pid, fd);
-		}
-	}
-}
-
-static void dvr_pmt_full(struct zap_dvb_params *params, struct mpeg_pmt_section *pmt)
 {
 	struct mpeg_pmt_stream *cur_stream;
 	mpeg_pmt_section_streams_for_each(pmt, cur_stream) {

@@ -76,8 +76,7 @@ void usage(void)
 		"			 * One of the sec definitions from the secfile if supplied\n"
 		" -out :decoder		Output to hardware decoder\n"
 		"      :decoderabypass	Output to hardware decoder using audio bypass\n"
-		"      :dvr		Output A/V only to dvr device\n"
-		"      :dvrfull		Output complete stream to dvr device\n"
+		"      :dvr		Output stream to dvr device\n"
 		"      :null		Do not output anything\n"
 		"      :file <filename>	Output stream to file\n"
 		" -timeout <secs>	Number of seconds to output channel for (0=>exit immediately after successful tuning)\n"
@@ -160,8 +159,6 @@ int main(int argc, char *argv[])
 				output_type = OUTPUT_TYPE_DECODER_ABYPASS;
 			} else if (!strcmp(argv[argpos+1], ":dvr")) {
 				output_type = OUTPUT_TYPE_DVR;
-			} else if (!strcmp(argv[argpos+1], ":dvrsi")) {
-				output_type = OUTPUT_TYPE_DVR_FULL;
 			} else if (!strcmp(argv[argpos+1], ":null")) {
 				output_type = OUTPUT_TYPE_NULL;
 			} else if (!strcmp(argv[argpos+1], ":file")) {
