@@ -69,6 +69,7 @@ static int camthread_shutdown = 0;
 static pthread_t camthread;
 int moveca = 0;
 int seenpmt = 0;
+int cammenu = 0;
 
 char ui_line[256];
 uint32_t ui_linepos = 0;
@@ -110,16 +111,22 @@ void zap_ca_start(struct zap_ca_params *params)
 	}
 
 	// hook up the MMI callbacks
-	if (stdcam->mmi_resource && params->cammenu) {
-		en50221_app_mmi_register_close_callback(stdcam->mmi_resource, zap_mmi_close_callback, stdcam);
-		en50221_app_mmi_register_display_control_callback(stdcam->mmi_resource, zap_mmi_display_control_callback, stdcam);
-		en50221_app_mmi_register_enq_callback(stdcam->mmi_resource, zap_mmi_enq_callback, stdcam);
-		en50221_app_mmi_register_menu_callback(stdcam->mmi_resource, zap_mmi_menu_callback, stdcam);
-		en50221_app_mmi_register_list_callback(stdcam->mmi_resource, zap_mmi_menu_callback, stdcam);
+	if (params->cammenu) {
+		if (stdcam->mmi_resource) {
+			en50221_app_mmi_register_close_callback(stdcam->mmi_resource, zap_mmi_close_callback, stdcam);
+			en50221_app_mmi_register_display_control_callback(stdcam->mmi_resource, zap_mmi_display_control_callback, stdcam);
+			en50221_app_mmi_register_enq_callback(stdcam->mmi_resource, zap_mmi_enq_callback, stdcam);
+			en50221_app_mmi_register_menu_callback(stdcam->mmi_resource, zap_mmi_menu_callback, stdcam);
+			en50221_app_mmi_register_list_callback(stdcam->mmi_resource, zap_mmi_menu_callback, stdcam);
+		} else {
+			fprintf(stderr, "CAM Menus are not supported by this interface hardware\n");
+			exit(1);
+		}
 	}
 
 	// any other stuff
 	moveca = params->moveca;
+	cammenu = params->cammenu;
 
 	// start the cam thread
 	pthread_create(&camthread, NULL, camthread_func, NULL);
@@ -247,9 +254,15 @@ void new_dvb_time(time_t dvb_time)
 static void *camthread_func(void* arg)
 {
 	(void) arg;
+	int entered_menu = 0;
 
 	while(!camthread_shutdown) {
 		stdcam->poll(stdcam);
+
+		if ((!entered_menu) && cammenu && ca_resource_connected && stdcam->mmi_resource) {
+			en50221_app_ai_entermenu(stdcam->ai_resource, stdcam->ai_session_number);
+			entered_menu = 1;
+		}
 	}
 
 	return 0;
