@@ -379,6 +379,7 @@ static void process_pmt(int pmt_fd, struct zap_dvb_params *params, int *pmt_vers
 {
 	int size;
 	uint8_t sibuf[4096];
+	int tmp;
 
 	// read the section
 	if ((size = read(pmt_fd, sibuf, sizeof(sibuf))) < 0) {
@@ -423,8 +424,11 @@ static void process_pmt(int pmt_fd, struct zap_dvb_params *params, int *pmt_vers
 		break;
 	}
 
-	// inform the main app of the new PMT
-	new_dvb_pmt(pmt);
+	// remember the version number if the CA stuff doesn't care
+	tmp = new_dvb_pmt(pmt);
+	if (tmp != 0) {
+		*pmt_version = section_ext->version_number;
+	}
 }
 
 static void decoder_pmt(struct zap_dvb_params *params, struct mpeg_pmt_section *pmt)

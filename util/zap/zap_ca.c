@@ -209,13 +209,13 @@ void zap_ca_ui(void)
 	}
 }
 
-void new_dvb_pmt(struct mpeg_pmt_section *pmt)
+int new_dvb_pmt(struct mpeg_pmt_section *pmt)
 {
 	uint8_t capmt[4096];
 	int size;
 
 	if (stdcam == NULL)
-		return;
+		return -1;
 
 	if (ca_resource_connected) {
 		fprintf(stderr, "Recieved new PMT - sending to CAM...\n");
@@ -230,15 +230,19 @@ void new_dvb_pmt(struct mpeg_pmt_section *pmt)
 		if ((size = en50221_ca_format_pmt(pmt, capmt, sizeof(capmt), moveca, listmgmt,
 						  CA_PMT_CMD_ID_OK_DESCRAMBLING)) < 0) {
 			fprintf(stderr, "Failed to format PMT\n");
-			return;
+			return -1;
 		}
 
 		// set it
 		if (en50221_app_ca_pmt(stdcam->ca_resource, stdcam->ca_session_number, capmt, size)) {
 			fprintf(stderr, "Failed to send PMT\n");
-			return;
+			return -1;
 		}
+
+		return 1;
 	}
+
+	return 0;
 }
 
 
