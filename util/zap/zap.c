@@ -194,17 +194,29 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	// find the requested channel
+	// the user didn't select anything!
+	if ((channel_name == NULL) && (!cammenu))
+		usage();
+
+	// setup any signals
+	signal(SIGINT, signal_handler);
+
+	// start the CA stuff
+	zap_ca_params.adapter_id = adapter_id;
+	zap_ca_params.caslot_num = caslot_num;
+	zap_ca_params.cammenu = cammenu;
+	zap_ca_params.moveca = moveca;
+	zap_ca_start(&zap_ca_params);
+
+	// frontend setup if a channel name was supplied
 	if (channel_name != NULL) {
+		// find the requested channel
 		if (dvbcfg_zapchannel_find(chanfile, channel_name, &zap_dvb_params.channel)) {
 			fprintf(stderr, "Unable to find requested channel %s\n", channel_name);
 			exit(1);
 		}
-	}
 
-	// find the requested LNB/SEC setting
-	if (channel_name != NULL) {
-		// use a default with a DVBS card
+		// default SEC with a DVBS card
 		if ((secid == NULL) && (zap_dvb_params.channel.fe_type == DVBFE_TYPE_DVBS))
 			secid = "UNIVERSAL";
 
@@ -218,26 +230,14 @@ int main(int argc, char *argv[])
 			}
 			zap_dvb_params.valid_sec = 1;
 		}
-	}
 
-	// open the frontend
-	zap_dvb_params.fe = dvbfe_open(adapter_id, frontend_id, 0);
-	if (zap_dvb_params.fe == NULL) {
-		fprintf(stderr, "Failed to open frontend\n");
-		exit(1);
-	}
+		// open the frontend
+		zap_dvb_params.fe = dvbfe_open(adapter_id, frontend_id, 0);
+		if (zap_dvb_params.fe == NULL) {
+			fprintf(stderr, "Failed to open frontend\n");
+			exit(1);
+		}
 
-	// setup any signals
-	signal(SIGINT, signal_handler);
-
-	// start the CA stuff
-	zap_ca_params.adapter_id = adapter_id;
-	zap_ca_params.caslot_num = caslot_num;
-	zap_ca_params.cammenu = cammenu;
-	zap_ca_params.moveca = moveca;
-	zap_ca_start(&zap_ca_params);
-
-	if (channel_name != NULL) {
 		// start the DVB stuff
 		zap_dvb_params.adapter_id = adapter_id;
 		zap_dvb_params.frontend_id = frontend_id;

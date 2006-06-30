@@ -67,7 +67,7 @@ int zap_dvb_start(struct zap_dvb_params *params)
 	pid_fds = NULL;
 	pid_fds_count = 0;
 
-	pthread_create(&dvbthread, (void*) params, dvbthread_func, NULL);
+	pthread_create(&dvbthread, NULL, dvbthread_func, (void*) params);
 	return 0;
 }
 
@@ -95,7 +95,6 @@ static void *dvbthread_func(void* arg)
 	struct pollfd pollfds[3];
 
 	struct zap_dvb_params *params = (struct zap_dvb_params *) arg;
-
 
 	// create PAT filter
 	if ((pat_fd = create_section_filter(params->adapter_id, params->demux_id,

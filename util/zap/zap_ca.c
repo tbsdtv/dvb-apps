@@ -152,6 +152,9 @@ void zap_ca_ui(void)
 	pollfd.fd = 0;
 	pollfd.events = POLLIN|POLLPRI|POLLERR;
 
+	if (stdcam == NULL)
+		return;
+
 	// is there a character?
 	if (poll(&pollfd, 1, 10) != 1)
 		return;
@@ -204,6 +207,9 @@ void new_dvb_pmt(struct mpeg_pmt_section *pmt)
 	uint8_t capmt[4096];
 	int size;
 
+	if (stdcam == NULL)
+		return;
+
 	if (ca_resource_connected) {
 		fprintf(stderr, "Recieved new PMT - sending to CAM...\n");
 
@@ -231,6 +237,9 @@ void new_dvb_pmt(struct mpeg_pmt_section *pmt)
 
 void new_dvb_time(time_t dvb_time)
 {
+	if (stdcam == NULL)
+		return;
+
 	if (stdcam->dvbtime)
 		stdcam->dvbtime(stdcam, dvb_time);
 }
