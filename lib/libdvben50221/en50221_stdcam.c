@@ -45,5 +45,6 @@ struct en50221_stdcam *en50221_stdcam_create(int adapter, int slotnum,
 
 	}
 
+	close(cafd);
 	return NULL;
 }
