@@ -107,7 +107,7 @@ struct en50221_stdcam *en50221_stdcam_llci_create(int cafd, int slotnum,
 	memset(llci, 0, sizeof(struct en50221_stdcam_llci));
 
 	// create the sendfuncs
-	llci->sendfuncs.arg  = llci;
+	llci->sendfuncs.arg  = sl;
 	llci->sendfuncs.send_data  = (en50221_send_data) en50221_sl_send_data;
 	llci->sendfuncs.send_datav = (en50221_send_datav) en50221_sl_send_datav;
 
@@ -164,8 +164,8 @@ struct en50221_stdcam *en50221_stdcam_llci_create(int cafd, int slotnum,
 	resource_idx++;
 
 	// register session layer callbacks
-	en50221_sl_register_lookup_callback(sl, llci_lookup_callback, sl);
-	en50221_sl_register_session_callback(sl, llci_session_callback, sl);
+	en50221_sl_register_lookup_callback(sl, llci_lookup_callback, llci);
+	en50221_sl_register_session_callback(sl, llci_session_callback, llci);
 
 	// done
 	llci->stdcam.destroy = en50221_stdcam_llci_destroy;
