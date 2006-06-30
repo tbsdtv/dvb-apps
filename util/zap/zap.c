@@ -31,6 +31,9 @@
 #include <signal.h>
 #include <pthread.h>
 #include <sys/poll.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #include <libdvbapi/dvbdemux.h>
 #include <libdvbapi/dvbaudio.h>
 #include <libdvbcfg/dvbcfg_zapchannel.h>
@@ -43,10 +46,11 @@
 
 static void signal_handler(int _signal);
 static void *fileoutputthread_func(void* arg);
+static void *udpoutputthread_func(void* arg);
 
 static int quit_app = 0;
-static int fileoutputthread_shutdown = 0;
-static pthread_t fileoutputthread;
+static int outputthread_shutdown = 0;
+static pthread_t outputthread;
 static int dvrfd = -1;
 static int outfd = -1;
 
@@ -79,6 +83,8 @@ void usage(void)
 		"      :dvr		Output stream to dvr device\n"
 		"      :null		Do not output anything\n"
 		"      :file <filename>	Output stream to file\n"
+		"      :udp <ip> <port>	Output stream to ip:port using udp\n"
+		"      :udpif <ip> <port> <interface> Output stream to ip:port using udp forcing the specified interface\n"
 		" -timeout <secs>	Number of seconds to output channel for (0=>exit immediately after successful tuning)\n"
 		" -cammenu		Show the CAM menu\n"
 		" -moveca		Move CA descriptors from stream to programme level if possible\n"
@@ -100,6 +106,8 @@ int main(int argc, char *argv[])
 	char *channel_name = NULL;
 	int output_type = OUTPUT_TYPE_DECODER;
 	char *outfile = NULL;
+	struct sockaddr_in outaddr;
+	char *outif = NULL;
 	int timeout = -1;
 	int moveca = 0;
 	int cammenu = 0;
@@ -167,6 +175,31 @@ int main(int argc, char *argv[])
 					usage();
 				outfile = argv[argpos+2];
 				argpos++;
+			} else if (!strcmp(argv[argpos+1], ":udp")) {
+				output_type = OUTPUT_TYPE_UDP;
+				if ((argc - argpos) < 4)
+					usage();
+
+				outaddr.sin_family = AF_INET;
+				if (!inet_aton(argv[argpos+2], &outaddr.sin_addr))
+					usage();
+				if ((outaddr.sin_port = atoi(argv[argpos+3])) == 0)
+					usage();
+				outaddr.sin_port = htons(outaddr.sin_port);
+				argpos+=2;
+			} else if (!strcmp(argv[argpos+1], ":udpif")) {
+				output_type = OUTPUT_TYPE_UDP;
+				if ((argc - argpos) < 5)
+					usage();
+
+				outaddr.sin_family = AF_INET;
+				if (!inet_aton(argv[argpos+2], &outaddr.sin_addr))
+					usage();
+				if ((outaddr.sin_port = atoi(argv[argpos+3])) == 0)
+					usage();
+				outaddr.sin_port = htons(outaddr.sin_port);
+				outif = argv[argpos+4];
+				argpos+=3;
 			} else {
 				usage();
 			}
@@ -270,7 +303,33 @@ int main(int argc, char *argv[])
 				exit(1);
 			}
 
-			pthread_create(&fileoutputthread, NULL, fileoutputthread_func, NULL);
+			pthread_create(&outputthread, NULL, fileoutputthread_func, NULL);
+			break;
+
+		case OUTPUT_TYPE_UDP:
+			// open output socket
+			outfd = socket(PF_INET, SOCK_DGRAM, 0);
+			if (outfd < 0) {
+				fprintf(stderr, "Failed to open output socket\n");
+				exit(1);
+			}
+
+			// bind to local interface if requested
+			if (outif != NULL) {
+				if (setsockopt(outfd, SOL_SOCKET, SO_BINDTODEVICE, outif, strlen(outif)) < 0) {
+					fprintf(stderr, "Failed to bind to interface %s\n", outif);
+					exit(1);
+				}
+			}
+
+			// open dvr device
+			dvrfd = dvbdemux_open_dvr(adapter_id, 0, 1, 0);
+			if (dvrfd < 0) {
+				fprintf(stderr, "Failed to open DVR device\n");
+				exit(1);
+			}
+
+			pthread_create(&outputthread, NULL, udpoutputthread_func, &outaddr);
 			break;
 		}
 	}
@@ -290,10 +349,10 @@ int main(int argc, char *argv[])
 			usleep(1);
 	}
 
-	// shutdown fileoutput thread if necessary
+	// shutdown output thread if necessary
 	if (dvrfd != -1) {
-		fileoutputthread_shutdown = 1;
-		pthread_join(fileoutputthread, NULL);
+		outputthread_shutdown = 1;
+		pthread_join(outputthread, NULL);
 	}
 
 	// shutdown DVB stuff
@@ -326,7 +385,7 @@ static void *fileoutputthread_func(void* arg)
 	pollfd.fd = dvrfd;
 	pollfd.events = POLLIN|POLLPRI|POLLERR;
 
-	while(!fileoutputthread_shutdown) {
+	while(!outputthread_shutdown) {
 		if (poll(&pollfd, 1, 1000) != 1)
 			continue;
 		if (pollfd.revents & POLLERR) {
@@ -341,6 +400,53 @@ static void *fileoutputthread_func(void* arg)
 		}
 
 		write(outfd, buf, size);
+	}
+
+	return 0;
+}
+
+static void *udpoutputthread_func(void* arg)
+{
+	(void)arg;
+	uint8_t buf[188*7];
+	struct pollfd pollfd;
+	int bufsize = 0;
+	int readsize;
+	struct sockaddr_in *outaddr = (struct sockaddr_in*) arg;
+
+	pollfd.fd = dvrfd;
+	pollfd.events = POLLIN|POLLPRI|POLLERR;
+
+	while(!outputthread_shutdown) {
+		if (poll(&pollfd, 1, 1000) != 1)
+			continue;
+		if (pollfd.revents & POLLERR) {
+			fprintf(stderr, "DVR device read failure\n");
+			return 0;
+		}
+
+		readsize = sizeof(buf) - bufsize;
+		readsize = read(dvrfd, buf + bufsize, readsize);
+		if (readsize < 0) {
+			fprintf(stderr, "DVR device read failure\n");
+			return 0;
+		}
+		bufsize += readsize;
+
+		if (bufsize == sizeof(buf)) {
+			if (sendto(outfd, buf, bufsize, 0, (struct sockaddr*) outaddr, sizeof(struct sockaddr_in)) < 0) {
+				fprintf(stderr, "Socket send failure\n");
+				return 0;
+			}
+			bufsize = 0;
+		}
+	}
+
+	if (bufsize) {
+		if (sendto(outfd, buf, bufsize, 0, (struct sockaddr*) outaddr, sizeof(struct sockaddr_in)) < 0) {
+			fprintf(stderr, "Socket send failure\n");
+			return 0;
+		}
 	}
 
 	return 0;

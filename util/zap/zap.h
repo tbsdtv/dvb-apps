@@ -30,6 +30,7 @@
 #define OUTPUT_TYPE_DVR 2
 #define OUTPUT_TYPE_NULL 3
 #define OUTPUT_TYPE_FILE 4
+#define OUTPUT_TYPE_UDP 5
 
 extern void new_dvb_pmt(struct mpeg_pmt_section *pmt);
 extern void new_dvb_time(time_t dvb_time);
