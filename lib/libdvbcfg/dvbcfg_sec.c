@@ -249,6 +249,10 @@ int dvbcfg_sec_save(FILE *f,
 static struct dvbfe_sec_config defaults[] = {
 
 	{
+		.id = "NULL",
+		.config_type = DVBFE_SEC_CONFIG_STANDARD,
+	},
+	{
 		.id = "UNIVERSAL",
 		.switch_frequency = 11700000,
 		.lof_lo_v = 9750000,
@@ -288,8 +292,8 @@ static struct dvbfe_sec_config defaults[] = {
 	{
 		.id = "C-MULTI",
 		.switch_frequency = 0,
-		.lof_lo_v = 5750000,
-		.lof_lo_h = 5150000,
+		.lof_lo_v = 5150000,
+		.lof_lo_h = 5750000,
 		.config_type = DVBFE_SEC_CONFIG_POWER,
 	},
 };
