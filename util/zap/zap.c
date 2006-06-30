@@ -53,6 +53,7 @@ static int outputthread_shutdown = 0;
 static pthread_t outputthread;
 static int dvrfd = -1;
 static int outfd = -1;
+static int usertp = 0;
 
 void usage(void)
 {
@@ -85,6 +86,8 @@ void usage(void)
 		"      file <filename>	Output stream to file\n"
 		"      udp <ip> <port>	Output stream to ip:port using udp\n"
 		"      udpif <ip> <port> <interface> Output stream to ip:port using udp forcing the specified interface\n"
+		"      rtp <ip> <port>	Output stream to ip:port using udp-rtp\n"
+		"      rtpif <ip> <port> <interface> Output stream to ip:port using udp-rtp forcing the specified interface\n"
 		" -timeout <secs>	Number of seconds to output channel for (0=>exit immediately after successful tuning, default is to output forever)\n"
 		" -cammenu		Show the CAM menu\n"
 		" -nomoveca		Do not attempt to move CA descriptors from stream to programme level\n"
@@ -175,10 +178,14 @@ int main(int argc, char *argv[])
 					usage();
 				outfile = argv[argpos+2];
 				argpos++;
-			} else if (!strcmp(argv[argpos+1], "udp")) {
+			} else if ((!strcmp(argv[argpos+1], "udp")) ||
+				   (!strcmp(argv[argpos+1], "rtp"))) {
 				output_type = OUTPUT_TYPE_UDP;
 				if ((argc - argpos) < 4)
 					usage();
+
+				if (!strcmp(argv[argpos+1], "rtp"))
+					usertp = 1;
 
 				outaddr.sin_family = AF_INET;
 				if (!inet_aton(argv[argpos+2], &outaddr.sin_addr))
@@ -187,10 +194,14 @@ int main(int argc, char *argv[])
 					usage();
 				outaddr.sin_port = htons(outaddr.sin_port);
 				argpos+=2;
-			} else if (!strcmp(argv[argpos+1], "udpif")) {
+			} else if ((!strcmp(argv[argpos+1], "udpif")) ||
+				   (!strcmp(argv[argpos+1], "rtpif"))) {
 				output_type = OUTPUT_TYPE_UDP;
 				if ((argc - argpos) < 5)
 					usage();
+
+				if (!strcmp(argv[argpos+1], "rtpif"))
+					usertp = 1;
 
 				outaddr.sin_family = AF_INET;
 				if (!inet_aton(argv[argpos+2], &outaddr.sin_addr))
@@ -406,17 +417,38 @@ static void *fileoutputthread_func(void* arg)
 	return 0;
 }
 
+#define TS_PAYLOAD_SIZE (188*7)
+
 static void *udpoutputthread_func(void* arg)
 {
 	(void)arg;
-	uint8_t buf[188*7];
+	uint8_t buf[12 + TS_PAYLOAD_SIZE];
 	struct pollfd pollfd;
 	int bufsize = 0;
+	int bufbase = 0;
 	int readsize;
 	struct sockaddr_in *outaddr = (struct sockaddr_in*) arg;
+	uint16_t rtpseq = 0;
 
 	pollfd.fd = dvrfd;
 	pollfd.events = POLLIN|POLLPRI|POLLERR;
+
+	if (usertp) {
+		srandom(time(NULL));
+		int ssrc = random();
+		rtpseq = random();
+		buf[0x0] = 0x80;
+		buf[0x1] = 0x21;
+		buf[0x4] = 0x00; // }
+		buf[0x5] = 0x00; // } FIXME: should really be a valid stamp
+		buf[0x6] = 0x00; // }
+		buf[0x7] = 0x00; // }
+		buf[0x8] = ssrc >> 24;
+		buf[0x9] = ssrc >> 16;
+		buf[0xa] = ssrc >> 8;
+		buf[0xb] = ssrc;
+		bufbase = 12;
+	}
 
 	while(!outputthread_shutdown) {
 		if (poll(&pollfd, 1, 1000) != 1)
@@ -426,25 +458,34 @@ static void *udpoutputthread_func(void* arg)
 			return 0;
 		}
 
-		readsize = sizeof(buf) - bufsize;
-		readsize = read(dvrfd, buf + bufsize, readsize);
+		readsize = TS_PAYLOAD_SIZE - bufsize;
+		readsize = read(dvrfd, buf + bufbase + bufsize, readsize);
 		if (readsize < 0) {
 			fprintf(stderr, "DVR device read failure\n");
 			return 0;
 		}
 		bufsize += readsize;
 
-		if (bufsize == sizeof(buf)) {
-			if (sendto(outfd, buf, bufsize, 0, (struct sockaddr*) outaddr, sizeof(struct sockaddr_in)) < 0) {
+		if (bufsize == TS_PAYLOAD_SIZE) {
+			if (usertp) {
+				buf[2] = rtpseq >> 8;
+				buf[3] = rtpseq;
+			}
+			if (sendto(outfd, buf, bufbase + bufsize, 0, (struct sockaddr*) outaddr, sizeof(struct sockaddr_in)) < 0) {
 				fprintf(stderr, "Socket send failure\n");
 				return 0;
 			}
+			rtpseq++;
 			bufsize = 0;
 		}
 	}
 
 	if (bufsize) {
-		if (sendto(outfd, buf, bufsize, 0, (struct sockaddr*) outaddr, sizeof(struct sockaddr_in)) < 0) {
+		if (usertp) {
+			buf[2] = rtpseq >> 8;
+			buf[3] = rtpseq;
+		}
+		if (sendto(outfd, buf, bufbase + bufsize, 0, (struct sockaddr*) outaddr, sizeof(struct sockaddr_in)) < 0) {
 			fprintf(stderr, "Socket send failure\n");
 			return 0;
 		}
