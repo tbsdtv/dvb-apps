@@ -78,13 +78,13 @@ void usage(void)
 		"			 * C-MULTI - Big Dish - Multipoint LNBf, 3700 to 4200 MHz,\n"
 		"						Dual LO, H:5150MHz, V:5750MHz.\n"
 		"			 * One of the sec definitions from the secfile if supplied\n"
-		" -out :decoder		Output to hardware decoder\n"
-		"      :decoderabypass	Output to hardware decoder using audio bypass\n"
-		"      :dvr		Output stream to dvr device\n"
-		"      :null		Do not output anything\n"
-		"      :file <filename>	Output stream to file\n"
-		"      :udp <ip> <port>	Output stream to ip:port using udp\n"
-		"      :udpif <ip> <port> <interface> Output stream to ip:port using udp forcing the specified interface\n"
+		" -out decoder		Output to hardware decoder\n"
+		"      decoderabypass	Output to hardware decoder using audio bypass\n"
+		"      dvr		Output stream to dvr device\n"
+		"      null		Do not output anything\n"
+		"      file <filename>	Output stream to file\n"
+		"      udp <ip> <port>	Output stream to ip:port using udp\n"
+		"      udpif <ip> <port> <interface> Output stream to ip:port using udp forcing the specified interface\n"
 		" -timeout <secs>	Number of seconds to output channel for (0=>exit immediately after successful tuning)\n"
 		" -cammenu		Show the CAM menu\n"
 		" -moveca		Move CA descriptors from stream to programme level if possible\n"
@@ -161,21 +161,21 @@ int main(int argc, char *argv[])
 		} else if (!strcmp(argv[argpos], "-out")) {
 			if ((argc - argpos) < 2)
 				usage();
-			if (!strcmp(argv[argpos+1], ":decoder")) {
+			if (!strcmp(argv[argpos+1], "decoder")) {
 				output_type = OUTPUT_TYPE_DECODER;
-			} else if (!strcmp(argv[argpos+1], ":decoderabypass")) {
+			} else if (!strcmp(argv[argpos+1], "decoderabypass")) {
 				output_type = OUTPUT_TYPE_DECODER_ABYPASS;
-			} else if (!strcmp(argv[argpos+1], ":dvr")) {
+			} else if (!strcmp(argv[argpos+1], "dvr")) {
 				output_type = OUTPUT_TYPE_DVR;
-			} else if (!strcmp(argv[argpos+1], ":null")) {
+			} else if (!strcmp(argv[argpos+1], "null")) {
 				output_type = OUTPUT_TYPE_NULL;
-			} else if (!strcmp(argv[argpos+1], ":file")) {
+			} else if (!strcmp(argv[argpos+1], "file")) {
 				output_type = OUTPUT_TYPE_FILE;
 				if ((argc - argpos) < 3)
 					usage();
 				outfile = argv[argpos+2];
 				argpos++;
-			} else if (!strcmp(argv[argpos+1], ":udp")) {
+			} else if (!strcmp(argv[argpos+1], "udp")) {
 				output_type = OUTPUT_TYPE_UDP;
 				if ((argc - argpos) < 4)
 					usage();
@@ -187,7 +187,7 @@ int main(int argc, char *argv[])
 					usage();
 				outaddr.sin_port = htons(outaddr.sin_port);
 				argpos+=2;
-			} else if (!strcmp(argv[argpos+1], ":udpif")) {
+			} else if (!strcmp(argv[argpos+1], "udpif")) {
 				output_type = OUTPUT_TYPE_UDP;
 				if ((argc - argpos) < 5)
 					usage();
