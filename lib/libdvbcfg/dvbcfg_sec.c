@@ -146,6 +146,9 @@ int dvbcfg_sec_find(const char *config_file,
 {
 	struct findparams findp;
 
+	// clear the structure
+	memset(sec, 0, sizeof(struct dvbfe_sec_config));
+
 	// open the file
 	if (config_file != NULL) {
 		FILE *f = fopen(config_file, "r");
@@ -153,16 +156,17 @@ int dvbcfg_sec_find(const char *config_file,
 			return -EIO;
 
 		// parse each entry
-		memset(sec, 0, sizeof(struct dvbfe_sec_config));
 		findp.sec_id = sec_id;
 		findp.sec_dest = sec;
 		dvbcfg_sec_load(f, &findp, dvbcfg_sec_find_callback);
 
 		// done
 		fclose(f);
+
+		// find it?
+		if (sec->id[0])
+			return 0;
 	}
-	if (sec->id[0])
-		return 0;
 
 	return dvbcfg_sec_find_default(sec_id, sec);
 }
