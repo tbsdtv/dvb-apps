@@ -31,6 +31,8 @@ struct en50221_stdcam *en50221_stdcam_create(int adapter, int slotnum,
 					     struct en50221_transport_layer *tl,
 					     struct en50221_session_layer *sl)
 {
+	struct en50221_stdcam *result = NULL;
+
 	int cafd = dvbca_open(adapter, 0);
 	if (cafd == -1)
 		return NULL;
@@ -38,13 +40,15 @@ struct en50221_stdcam *en50221_stdcam_create(int adapter, int slotnum,
 	int ca_type = dvbca_get_interface_type(cafd, slotnum);
 	switch(ca_type) {
 	case DVBCA_INTERFACE_LINK:
-		return en50221_stdcam_llci_create(cafd, slotnum, tl, sl);
+		result = en50221_stdcam_llci_create(cafd, slotnum, tl, sl);
+		break;
 
 	case DVBCA_INTERFACE_HLCI:
-		return en50221_stdcam_hlci_create(cafd, slotnum);
-
+		result = en50221_stdcam_hlci_create(cafd, slotnum);
+		break;
 	}
 
-	close(cafd);
-	return NULL;
+	if (result == NULL)
+		close(cafd);
+	return result;
 }
