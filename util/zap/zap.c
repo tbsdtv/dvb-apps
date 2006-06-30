@@ -87,7 +87,7 @@ void usage(void)
 		"      udpif <ip> <port> <interface> Output stream to ip:port using udp forcing the specified interface\n"
 		" -timeout <secs>	Number of seconds to output channel for (0=>exit immediately after successful tuning)\n"
 		" -cammenu		Show the CAM menu\n"
-		" -moveca		Move CA descriptors from stream to programme level if possible\n"
+		" -nomoveca		Do not attempt to move CA descriptors from stream to programme level\n"
 		" <channel name>\n";
 	fprintf(stderr, "%s\n", _usage);
 
@@ -109,7 +109,7 @@ int main(int argc, char *argv[])
 	struct sockaddr_in outaddr;
 	char *outif = NULL;
 	int timeout = -1;
-	int moveca = 0;
+	int moveca = 1;
 	int cammenu = 0;
 	int argpos = 1;
 	struct zap_dvb_params zap_dvb_params;
@@ -210,8 +210,8 @@ int main(int argc, char *argv[])
 			if (sscanf(argv[argpos+1], "%i", &timeout) != 1)
 				usage();
 			argpos+=2;
-		} else if (!strcmp(argv[argpos], "-moveca")) {
-			moveca = 1;
+		} else if (!strcmp(argv[argpos], "-nomoveca")) {
+			moveca = 0;
 			argpos++;
 		} else if (!strcmp(argv[argpos], "-cammenu")) {
 			cammenu = 1;
