@@ -1,21 +1,21 @@
-linuxtv-dvb-apps-1.1.0
+linuxtv-dvb-apps-1.?
 ======================
 
 Linux DVB API test/demo applications and utilities.
 
-You find a README in each subdirectory explaining what the code there does.
-For beginners utils/szap/ and utils/scan/ are probably most useful.
+You will find a README in each subdirectory explaining what the code there does.
+For beginners utils/zap/ and utils/scan/ are probably most useful.
+
+szap/czap/tzap/azap are now deprecated in favour of the new unified 'zap'.
+The new program can do everything the original applications did. However, it
+adds significant new functionality, such as controlling CAMs, and streaming 
+tv in a variety of ways.
 
 For convenience, dvb-apps contains a copy of the DVB API include
-files as they are contained in the linuxtv-dvb-1.1.0 realease
+files as they are contained in the linuxtv-dvb-1.? release
 and the 2.6.x Linux kernel. However, since the DVB API hasn't changed,
 the apps will still work with the old "DVB" drivers, should you decide not
-to use linuxtv-dvb-1.1.0 (or the dvb-kernel CVS).
-
-
-Historical note:
-The apps have been copied from the "DVB" CVS tree, which means that
-the stuff in "DVB" is now unmaintained and out of date.
-
+to use linuxtv-dvb-1.? (or the dvb-kernel HG).
 
 Johannes Stezenbach <js@convergence.de>
+Andrew de Quincey <adq_dvb@lidskialf.net>
