@@ -156,7 +156,7 @@ static void *dvbthread_func(void* arg)
 			memset(&result, 0, sizeof(result));
 			dvbfe_get_info(params->fe, FE_STATUS_PARAMS, &result);
 
-			fprintf(stderr, "status %c%c%c%c%c | signal %04x | snr %04x | ber %08x | unc %08x |\r",
+			fprintf(stderr, "status %c%c%c%c%c | signal %04x | snr %04x | ber %08x | unc %08x | %s\r",
 				result.signal ? 'S' : ' ',
 				result.carrier ? 'C' : ' ',
 				result.viterbi ? 'V' : ' ',
@@ -165,7 +165,8 @@ static void *dvbthread_func(void* arg)
 				result.signal_strength,
 				result.snr,
 				result.ber,
-				result.ucblocks);
+				result.ucblocks,
+				result.lock ? "FE_HAS_LOCK" : "");
 			fflush(stderr);
 
 			if (result.lock) {
