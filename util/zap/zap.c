@@ -79,7 +79,7 @@ void usage(void)
 		"			 * C-MULTI - Big Dish - Multipoint LNBf, 3700 to 4200 MHz,\n"
 		"						Dual LO, H:5150MHz, V:5750MHz.\n"
 		"			 * One of the sec definitions from the secfile if supplied\n"
-		" -out decoder		Output to hardware decoder\n"
+		" -out decoder		Output to hardware decoder (default)\n"
 		"      decoderabypass	Output to hardware decoder using audio bypass\n"
 		"      dvr		Output stream to dvr device\n"
 		"      null		Do not output anything\n"
@@ -117,7 +117,7 @@ int main(int argc, char *argv[])
 	int argpos = 1;
 	struct zap_dvb_params zap_dvb_params;
 	struct zap_ca_params zap_ca_params;
-	int ffaudiofd;
+	int ffaudiofd = -1;
 
 	while(argpos != argc) {
 		if (!strcmp(argv[argpos], "-h")) {
@@ -280,6 +280,16 @@ int main(int argc, char *argv[])
 			exit(1);
 		}
 
+		// failover decoder to dvr output if decoder not available
+		if ((output_type == OUTPUT_TYPE_DECODER) ||
+		    (output_type == OUTPUT_TYPE_DECODER_ABYPASS)) {
+			ffaudiofd = dvbaudio_open(adapter_id, 0);
+			if (ffaudiofd < 0) {
+				fprintf(stderr, "Cannot open decoder; defaulting to dvr output\n");
+				output_type = OUTPUT_TYPE_DVR;
+			}
+		}
+
 		// start the DVB stuff
 		zap_dvb_params.adapter_id = adapter_id;
 		zap_dvb_params.frontend_id = frontend_id;
@@ -291,11 +301,6 @@ int main(int argc, char *argv[])
 		switch(output_type) {
 		case OUTPUT_TYPE_DECODER:
 		case OUTPUT_TYPE_DECODER_ABYPASS:
-			ffaudiofd = dvbaudio_open(adapter_id, 0);
-			if (ffaudiofd < 0) {
-				fprintf(stderr, "Failed to open audio device\n");
-				exit(1);
-			}
 			dvbaudio_set_bypass(ffaudiofd, (output_type == OUTPUT_TYPE_DECODER_ABYPASS) ? 1 : 0);
 			close(ffaudiofd);
 			break;
