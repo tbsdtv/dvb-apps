@@ -1,46 +1,27 @@
 # Makefile for linuxtv.org dvb-apps/lib/libdvbapi
 
-CPPFLAGS += -I../../include -I..
-
-includes = sec.h   \
+includes = dvbaudio.h \
            dvbca.h    \
            dvbdemux.h \
-           dvbaudio.h \
-           dvbvideo.h \
            dvbfe.h    \
            dvbnet.h   \
+           dvbvideo.h \
            sec.h
 
-objects  = dvbca.o    \
+objects  = dvbaudio.o \
+           dvbca.o    \
            dvbdemux.o \
            dvbfe.o    \
-           dvbaudio.o \
+           dvbnet.o   \
            dvbvideo.o \
-           dvbnet.o \
-	   sec.o
+           sec.o
 
-sharedlib = libdvbapi.so
-staticlib = libdvbapi.a
+lib_name = libdvbapi
 
-ifeq ($(prefix),)
-prefix = /usr
-endif
+CPPFLAGS += -I../../include -I../../lib
 
-.PHONY: all clean install
+.PHONY: all
 
-all: $(sharedlib) $(staticlib)
-
-$(sharedlib): $(objects)
-
-$(staticlib): $(objects)
-
-clean::
-	rm -f $(objects) $(sharedlib) $(staticlib)
-
-install:
-	mkdir -p $(prefix)/include/libdvbapi
-	cp $(includes) $(prefix)/include/libdvbapi
-	mkdir -p $(prefix)/lib
-	cp $(sharedlib) $(staticlib) $(prefix)/lib
+all: library
 
 include ../../Make.rules

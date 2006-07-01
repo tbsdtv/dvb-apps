@@ -1,29 +1,20 @@
-# Makefile for linuxtv.org dvb-apps/util/ca_zap
+# Makefile for linuxtv.org dvb-apps/util/zap
 
-CPPFLAGS += -I../../lib
-LDFLAGS  += -L../../lib/libdvbapi -L../../lib/libdvbcfg -L../../lib/libdvben50221 -L../../lib/libucsi
-LDLIBS   += -ldvbcfg -ldvben50221 -lucsi -lpthread -ldvbapi
-
-objects  = zap_dvb.o \
-           zap_ca.o
+objects  = zap_ca.o  \
+           zap_dvb.o
 
 binaries = zap
 
-ifeq ($(prefix),)
-prefix = /usr
-endif
+inst_bin = $(binaries)
 
-.PHONY: all clean install
+CPPFLAGS += -I../../lib
+LDFLAGS  += -L../../lib/libdvbapi -L../../lib/libdvbcfg -L../../lib/libdvben50221 -L../../lib/libucsi
+LDLIBS   += -ldvbapi -ldvbcfg -ldvben50221 -lucsi -lpthread
+
+.PHONY: all
 
 all: $(binaries)
 
 $(binaries): $(objects)
-
-clean::
-	rm -f $(objects) $(binaries)
-
-install:
-	mkdir -p $(prefix)/bin
-	cp $(binaries) $(prefix)/bin
 
 include ../../Make.rules

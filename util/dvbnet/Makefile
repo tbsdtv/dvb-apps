@@ -1,26 +1,15 @@
 # Makefile for linuxtv.org dvb-apps/util/dvbnet
 
-CPPFLAGS += -I../../lib
-LDFLAGS  += -L../../lib/libdvbapi
-LDLIBS   += -ldvbapi -lpthread
-
 binaries = dvbnet
 
-ifeq ($(prefix),)
-prefix = /usr
-endif
+inst_bin = $(binaries)
 
-CFLAGS += -DVERSION_INFO=\"1.1.0-TVF\" # FIXME
+CPPFLAGS += -I../../lib
+LDFLAGS  += -L../../lib/libdvbapi
+LDLIBS   += -ldvbapi
 
-.PHONY: all clean install
+.PHONY: all
 
 all: $(binaries)
-
-clean::
-	rm -f $(binaries)
-
-install:
-	mkdir -p $(prefix)/bin
-	cp $(binaries) $(prefix)/bin
 
 include ../../Make.rules

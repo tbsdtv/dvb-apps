@@ -1,7 +1,5 @@
 # Makefile for linuxtv.org dvb-apps/lib/libdvben50221
 
-CPPFLAGS += -I..
-
 includes = asn_1.h                 \
            en50221_app_ai.h        \
            en50221_app_auth.h      \
@@ -17,8 +15,8 @@ includes = asn_1.h                 \
            en50221_app_teletext.h  \
            en50221_app_utils.h     \
            en50221_errno.h         \
-           en50221_stdcam.h        \
            en50221_session.h       \
+           en50221_stdcam.h        \
            en50221_transport.h
 
 objects  = asn_1.o                 \
@@ -34,36 +32,18 @@ objects  = asn_1.o                 \
            en50221_app_smartcard.o \
            en50221_app_teletext.o  \
            en50221_app_utils.o     \
-           en50221_stdcam.o   	   \
-           en50221_stdcam_llci.o   \
-           en50221_stdcam_hlci.o   \
            en50221_session.o       \
+           en50221_stdcam.o        \
+           en50221_stdcam_hlci.o   \
+           en50221_stdcam_llci.o   \
            en50221_transport.o
 
-sharedlib = libdvben50221.so
-staticlib = libdvben50221.a
+lib_name = libdvben50221
 
-ifeq ($(prefix),)
-prefix = /usr
-endif
+CPPFLAGS += -I../../lib -DLOG_LEVEL=1 # FIXME
 
-CFLAGS += -DLOG_LEVEL=1 # FIXME
+.PHONY: all
 
-.PHONY: all clean install
-
-all: $(sharedlib) $(staticlib)
-
-$(sharedlib): $(objects)
-
-$(staticlib): $(objects)
-
-clean::
-	rm -f $(objects) $(sharedlib) $(staticlib)
-
-install:
-	mkdir -p $(prefix)/include/libdvben50221
-	cp $(includes) $(prefix)/include/libdvben50221
-	mkdir -p $(prefix)/lib
-	cp $(sharedlib) $(staticlib) $(prefix)/lib
+all: library
 
 include ../../Make.rules

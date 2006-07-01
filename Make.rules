@@ -1,47 +1,93 @@
-# dvb-apps common build rules
+# build rules for linuxtv.org dvb-apps
 
-ifeq ($(origin CC),default)
-CC := gcc
-endif
-export CC
+CFLAGS ?= -g -O2 -Wall -W -Wshadow -Wpointer-arith -Wstrict-prototypes
 
-ifeq ($(origin CFLAGS),undefined)
-CFLAGS := -g -O1
+ifneq ($(lib_name),)
+
+# additional rules for libraries
+
+CFLAGS_LIB ?= -fPIC
+CFLAGS += $(CFLAGS_LIB)
+
+libraries = $(lib_name).so $(lib_name).a
+
+.PHONY: library
+
+library: $(libraries)
+
+$(libraries): $(objects)
+
 endif
-CFLAGS += -Wall -W -Wshadow -Wpointer-arith -Wstrict-prototypes
-CFLAGS += -fPIC
-export CFLAGS
+
+prerequisites = $(subst .o,.d,$(objects)) $(addsuffix .d,$(binaries))
+
+.PHONY: clean install
+
+ifeq ($(prefix),)
+prefix = /usr
+endif
 
 ifeq ($(V),1)
 %.o: %.c
-	$(CC) -c -MMD $(CPPFLAGS) $(CFLAGS) -o $@ $<
+	$(CC) -c $(CPPFLAGS) $(CFLAGS) -MMD -o $@ $< $(filter-out %.h %.c,$^)
 %: %.o
-	$(CC) $(LDFLAGS) $^ $(LOADLIBES) $(LDLIBS) -o $@
+	$(CC) $(LDFLAGS) -o $@ $^ $(LOADLIBES) $(LDLIBS)
 %: %.c
-	$(CC) -MMD $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(filter %.o %.c,$^) $(LOADLIBES) $(LDLIBS) -o $@
+	$(CC) $(CPPFLAGS) $(CFLAGS) -MMD $(LDFLAGS) -o $@ $< $(filter-out %.h %.c,$^) $(LOADLIBES) $(LDLIBS)
 %.so:
 	$(LD) -shared -o $@ $^
 %.a:
 	$(AR) rcs $@ $^
+clean::
+	$(RM) -f $(prerequisites) $(objects) $(libraries) $(binaries) $(removing)
+install::
+ifneq ($(includes),)
+	mkdir -p $(prefix)/include/$(lib_name)
+	install -m 644 $(includes) $(prefix)/include/$(lib_name)/
+endif
+ifneq ($(libraries),)
+	mkdir -p $(prefix)/lib
+	install -m 644 $(libraries) $(prefix)/lib/
+endif
+ifneq ($(inst_bin),)
+	mkdir -p $(prefix)/bin
+	install -m 755 $(inst_bin) $(prefix)/bin/
+endif
 else
 %.o: %.c
 	@echo CC $@
-	@$(CC) -c -MMD $(CPPFLAGS) $(CFLAGS) -o $@ $<
+	@$(CC) -c $(CPPFLAGS) $(CFLAGS) -MMD -o $@ $< $(filter-out %.h %.c,$^)
 %: %.o
-	@echo LD $@
-	@$(CC) $(LDFLAGS) $^ $(LOADLIBES) $(LDLIBS) -o $@
+	@echo CC $@
+	@$(CC) $(LDFLAGS) -o $@ $^ $(LOADLIBES) $(LDLIBS)
 %: %.c
 	@echo CC $@
-	@$(CC) -MMD $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(filter %.o %.c,$^) $(LOADLIBES) $(LDLIBS) -o $@
+	@$(CC) $(CPPFLAGS) $(CFLAGS) -MMD $(LDFLAGS) -o $@ $< $(filter-out %.h %.c,$^) $(LOADLIBES) $(LDLIBS)
 %.so:
 	@echo LD $@
 	@$(LD) -shared -o $@ $^
 %.a:
 	@echo AR $@
 	@$(AR) rcs $@ $^
+clean::
+	@echo cleaning
+	@$(RM) -f $(prerequisites) $(objects) $(libraries) $(binaries) $(removing)
+install::
+ifneq ($(includes),)
+	@echo installing headers
+	@mkdir -p $(prefix)/include/$(lib_name)
+	@install -m 644 $(includes) $(prefix)/include/$(lib_name)/
+endif
+ifneq ($(libraries),)
+	@echo installing libraries
+	@mkdir -p $(prefix)/lib
+	@install -m 644 $(libraries) $(prefix)/lib/
+endif
+ifneq ($(inst_bin),)
+	@echo installing binaries
+	@mkdir -p $(prefix)/bin
+	@install -m 755 $(inst_bin) $(prefix)/bin/
+endif
 endif
 
-clean::
-	rm -f *.d
-
--include *.d ...dummy
+-include $(prerequisites)

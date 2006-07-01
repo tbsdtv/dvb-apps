@@ -1,7 +1,5 @@
 # Makefile for linuxtv.org dvb-apps/util/scan
 
-CPPFLAGS += -I../../include
-
 objects  = atsc_psip_section.o \
            diseqc.o            \
            dump-vdr.o          \
@@ -12,11 +10,13 @@ objects  = atsc_psip_section.o \
 
 binaries = scan
 
-ifeq ($(prefix),)
-prefix = /usr
-endif
+inst_bin = $(binaries)
 
-.PHONY: all clean install
+removing = atsc_psip_section.c atsc_psip_section.h
+
+CPPFLAGS += -I../../include
+
+.PHONY: all
 
 all: $(binaries)
 
@@ -26,12 +26,5 @@ $(objects): atsc_psip_section.c atsc_psip_section.h
 
 atsc_psip_section.c atsc_psip_section.h:
 	perl section_generate.pl atsc_psip_section.pl
-
-clean::
-	rm -f atsc_psip_section.c atsc_psip_section.h $(objects) $(binaries)
-
-install:
-	mkdir -p $(prefix)/bin
-	cp $(binaries) $(prefix)/bin
 
 include ../../Make.rules

@@ -1,22 +1,13 @@
 # Makefile for linuxtv.org dvb-apps/util/dst-utils
 
-CPPFLAGS += -I../../include -I../../lib
-
 binaries = dst_test
 
-ifeq ($(prefix),)
-prefix = /usr
-endif
+inst_bin = $(binaries)
 
-.PHONY: all clean install
+CPPFLAGS += -I../../include -I../../lib
+
+.PHONY: all
 
 all: $(binaries)
-
-clean::
-	rm -f $(binaries)
-
-install:
-	mkdir -p $(prefix)/bin
-	cp $(binaries) $(prefix)/bin
 
 include ../../Make.rules

@@ -1,27 +1,20 @@
 # Makefile for linuxtv.org dvb-apps/util/szap
 
-CPPFLAGS += -I../../include
+objects  = lnb.o
 
 binaries = azap  \
            czap  \
            szap  \
            tzap
 
-ifeq ($(prefix),)
-prefix = /usr
-endif
+inst_bin = $(binaries)
 
-.PHONY: all clean install
+CPPFLAGS += -I../../include
+
+.PHONY: all
 
 all: $(binaries)
 
-$(binaries): lnb.o
-
-clean::
-	rm -f lnb.o $(binaries)
-
-install:
-	mkdir -p $(prefix)/bin
-	cp $(binaries) $(prefix)/bin
+$(binaries): $(objects)
 
 include ../../Make.rules
