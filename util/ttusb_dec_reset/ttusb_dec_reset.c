@@ -25,10 +25,12 @@ void dec_reset(struct usb_device *dev)
 	}
 }
 
-int main()
+int main(int argc, char *argv[])
 {
 	struct usb_bus *busses;
 	struct usb_bus *bus;
+	(void) argc;
+	(void) argv;
 
 	usb_init();
 	usb_find_busses();
