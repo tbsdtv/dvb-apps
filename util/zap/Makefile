@@ -9,7 +9,7 @@ inst_bin = $(binaries)
 
 CPPFLAGS += -I../../lib
 LDFLAGS  += -L../../lib/libdvbapi -L../../lib/libdvbcfg -L../../lib/libdvben50221 -L../../lib/libucsi
-LDLIBS   += -ldvbapi -ldvbcfg -ldvben50221 -lucsi -lpthread
+LDLIBS   += -ldvbcfg -ldvben50221 -ldvbapi -lucsi -lpthread
 
 .PHONY: all
 
