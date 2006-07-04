@@ -25,12 +25,10 @@
 struct zap_ca_params {
 	int adapter_id;
 	int caslot_num;
-	int cammenu;
 	int moveca;
 };
 
 extern void zap_ca_start(struct zap_ca_params *params);
-extern void zap_ca_ui(void);
 extern void zap_ca_stop(void);
 
 extern int zap_ca_new_pmt(struct mpeg_pmt_section *pmt);

@@ -1,8 +1,7 @@
 # Makefile for linuxtv.org dvb-apps/util/zap
 
 objects  = zap_ca.o  \
-           zap_dvb.o \
-           zap_data.o
+           zap_dvb.o
 
 binaries = zap
 

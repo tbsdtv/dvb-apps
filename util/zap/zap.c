@@ -32,10 +32,8 @@
 #include <libdvbcfg/dvbcfg_zapchannel.h>
 #include <libdvbcfg/dvbcfg_sec.h>
 #include <libucsi/mpeg/section.h>
-#include "zap.h"
 #include "zap_dvb.h"
 #include "zap_ca.h"
-#include "zap_data.h"
 
 
 static void signal_handler(int _signal);
@@ -57,26 +55,6 @@ void usage(void)
 		" -channels <filename>	channels.conf file.\n"
 		" -secfile <filename>	Optional sec.conf file.\n"
 		" -secid <secid>	ID of the SEC configuration to use, one of:\n"
-		"			 * UNIVERSAL (default) - Europe, 10800 to 11800 MHz and 11600 to 12700 Mhz,\n"
-		" 						 Dual LO, loband 9750, hiband 10600 MHz.\n"
-		"			 * DBS - Expressvu, North America, 12200 to 12700 MHz, Single LO, 11250 MHz.\n"
-		"			 * STANDARD - 10945 to 11450 Mhz, Single LO, 10000 Mhz.\n"
-		"			 * ENHANCED - Astra, 10700 to 11700 MHz, Single LO, 9750 MHz.\n"
-		"			 * C-BAND - Big Dish, 3700 to 4200 MHz, Single LO, 5150 Mhz.\n"
-		"			 * C-MULTI - Big Dish - Multipoint LNBf, 3700 to 4200 MHz,\n"
-		"						Dual LO, H:5150MHz, V:5750MHz.\n"
-		"			 * One of the sec definitions from the secfile if supplied\n"
-		" -out decoder		Output to hardware decoder (default)\n"
-		"      decoderabypass	Output to hardware decoder using audio bypass\n"
-		"      dvr		Output stream to dvr device\n"
-		"      null		Do not output anything\n"
-		"      file <filename>	Output stream to file\n"
-		"      udp <ip> <port>	Output stream to ip:port using udp\n"
-		"      udpif <ip> <port> <interface> Output stream to ip:port using udp forcing the specified interface\n"
-		"      rtp <ip> <port>	Output stream to ip:port using udp-rtp\n"
-		"      rtpif <ip> <port> <interface> Output stream to ip:port using udp-rtp forcing the specified interface\n"
-		" -timeout <secs>	Number of seconds to output channel for (0=>exit immediately after successful tuning, default is to output forever)\n"
-		" -cammenu		Show the CAM menu\n"
 		" -nomoveca		Do not attempt to move CA descriptors from stream to programme level\n"
 		" <channel name>\n";
 	fprintf(stderr, "%s\n", _usage);
@@ -94,18 +72,10 @@ int main(int argc, char *argv[])
 	char *secfile = NULL;
 	char *secid = NULL;
 	char *channel_name = NULL;
-	int output_type = OUTPUT_TYPE_DECODER;
-	char *outfile = NULL;
-	struct sockaddr_in outaddr;
-	char *outif = NULL;
-	int timeout = -1;
 	int moveca = 1;
-	int cammenu = 0;
 	int argpos = 1;
 	struct zap_dvb_params zap_dvb_params;
 	struct zap_ca_params zap_ca_params;
-	int ffaudiofd = -1;
-	int usertp = 0;
 
 	while(argpos != argc) {
 		if (!strcmp(argv[argpos], "-h")) {
@@ -149,71 +119,8 @@ int main(int argc, char *argv[])
 				usage();
 			secid = argv[argpos+1];
 			argpos+=2;
-		} else if (!strcmp(argv[argpos], "-out")) {
-			if ((argc - argpos) < 2)
-				usage();
-			if (!strcmp(argv[argpos+1], "decoder")) {
-				output_type = OUTPUT_TYPE_DECODER;
-			} else if (!strcmp(argv[argpos+1], "decoderabypass")) {
-				output_type = OUTPUT_TYPE_DECODER_ABYPASS;
-			} else if (!strcmp(argv[argpos+1], "dvr")) {
-				output_type = OUTPUT_TYPE_DVR;
-			} else if (!strcmp(argv[argpos+1], "null")) {
-				output_type = OUTPUT_TYPE_NULL;
-			} else if (!strcmp(argv[argpos+1], "file")) {
-				output_type = OUTPUT_TYPE_FILE;
-				if ((argc - argpos) < 3)
-					usage();
-				outfile = argv[argpos+2];
-				argpos++;
-			} else if ((!strcmp(argv[argpos+1], "udp")) ||
-				   (!strcmp(argv[argpos+1], "rtp"))) {
-				output_type = OUTPUT_TYPE_UDP;
-				if ((argc - argpos) < 4)
-					usage();
-
-				if (!strcmp(argv[argpos+1], "rtp"))
-					usertp = 1;
-
-				outaddr.sin_family = AF_INET;
-				if (!inet_aton(argv[argpos+2], &outaddr.sin_addr))
-					usage();
-				if ((outaddr.sin_port = atoi(argv[argpos+3])) == 0)
-					usage();
-				outaddr.sin_port = htons(outaddr.sin_port);
-				argpos+=2;
-			} else if ((!strcmp(argv[argpos+1], "udpif")) ||
-				   (!strcmp(argv[argpos+1], "rtpif"))) {
-				output_type = OUTPUT_TYPE_UDP;
-				if ((argc - argpos) < 5)
-					usage();
-
-				if (!strcmp(argv[argpos+1], "rtpif"))
-					usertp = 1;
-
-				outaddr.sin_family = AF_INET;
-				if (!inet_aton(argv[argpos+2], &outaddr.sin_addr))
-					usage();
-				if ((outaddr.sin_port = atoi(argv[argpos+3])) == 0)
-					usage();
-				outaddr.sin_port = htons(outaddr.sin_port);
-				outif = argv[argpos+4];
-				argpos+=3;
-			} else {
-				usage();
-			}
-			argpos+=2;
-		} else if (!strcmp(argv[argpos], "-timeout")) {
-			if ((argc - argpos) < 2)
-				usage();
-			if (sscanf(argv[argpos+1], "%i", &timeout) != 1)
-				usage();
-			argpos+=2;
 		} else if (!strcmp(argv[argpos], "-nomoveca")) {
 			moveca = 0;
-			argpos++;
-		} else if (!strcmp(argv[argpos], "-cammenu")) {
-			cammenu = 1;
 			argpos++;
 		} else {
 			if ((argc - argpos) != 1)
@@ -224,7 +131,7 @@ int main(int argc, char *argv[])
 	}
 
 	// the user didn't select anything!
-	if ((channel_name == NULL) && (!cammenu))
+	if (channel_name == NULL)
 		usage();
 
 	// setup any signals
@@ -234,78 +141,47 @@ int main(int argc, char *argv[])
 	// start the CA stuff
 	zap_ca_params.adapter_id = adapter_id;
 	zap_ca_params.caslot_num = caslot_num;
-	zap_ca_params.cammenu = cammenu;
 	zap_ca_params.moveca = moveca;
 	zap_ca_start(&zap_ca_params);
 
-	// frontend setup if a channel name was supplied
-	if ((!cammenu) && (channel_name != NULL)) {
-		// find the requested channel
-		if (dvbcfg_zapchannel_find(chanfile, channel_name, &zap_dvb_params.channel)) {
-			fprintf(stderr, "Unable to find requested channel %s\n", channel_name);
-			exit(1);
-		}
-
-		// default SEC with a DVBS card
-		if ((secid == NULL) && (zap_dvb_params.channel.fe_type == DVBFE_TYPE_DVBS))
-			secid = "UNIVERSAL";
-
-		// look it up if one were supplied
-		zap_dvb_params.valid_sec = 0;
-		if (secid != NULL) {
-			if (dvbcfg_sec_find(secfile, secid,
-					&zap_dvb_params.sec)) {
-				fprintf(stderr, "Unable to find suitable sec/lnb configuration for channel\n");
-				exit(1);
-			}
-			zap_dvb_params.valid_sec = 1;
-		}
-
-		// open the frontend
-		zap_dvb_params.fe = dvbfe_open(adapter_id, frontend_id, 0);
-		if (zap_dvb_params.fe == NULL) {
-			fprintf(stderr, "Failed to open frontend\n");
-			exit(1);
-		}
-
-		// failover decoder to dvr output if decoder not available
-		if ((output_type == OUTPUT_TYPE_DECODER) ||
-		    (output_type == OUTPUT_TYPE_DECODER_ABYPASS)) {
-			ffaudiofd = dvbaudio_open(adapter_id, 0);
-			if (ffaudiofd < 0) {
-				fprintf(stderr, "Cannot open decoder; defaulting to dvr output\n");
-				output_type = OUTPUT_TYPE_DVR;
-			}
-		}
-
-		// start the DVB stuff
-		zap_dvb_params.adapter_id = adapter_id;
-		zap_dvb_params.frontend_id = frontend_id;
-		zap_dvb_params.demux_id = demux_id;
-		zap_dvb_params.output_type = output_type;
-		zap_dvb_start(&zap_dvb_params);
-
-		// start the data stuff
-		zap_data_start(output_type, ffaudiofd, adapter_id, demux_id, outfile, outif, outaddr, usertp);
+	// find the requested channel
+	if (dvbcfg_zapchannel_find(chanfile, channel_name, &zap_dvb_params.channel)) {
+		fprintf(stderr, "Unable to find requested channel %s\n", channel_name);
+		exit(1);
 	}
+
+	// default SEC with a DVBS card
+	if ((secid == NULL) && (zap_dvb_params.channel.fe_type == DVBFE_TYPE_DVBS))
+		secid = "UNIVERSAL";
+
+	// look it up if one were supplied
+	zap_dvb_params.valid_sec = 0;
+	if (secid != NULL) {
+		if (dvbcfg_sec_find(secfile, secid,
+				&zap_dvb_params.sec)) {
+			fprintf(stderr, "Unable to find suitable sec/lnb configuration for channel\n");
+			exit(1);
+		}
+		zap_dvb_params.valid_sec = 1;
+	}
+
+	// open the frontend
+	zap_dvb_params.fe = dvbfe_open(adapter_id, frontend_id, 0);
+	if (zap_dvb_params.fe == NULL) {
+		fprintf(stderr, "Failed to open frontend\n");
+		exit(1);
+	}
+
+	// start the DVB stuff
+	zap_dvb_params.adapter_id = adapter_id;
+	zap_dvb_params.frontend_id = frontend_id;
+	zap_dvb_params.demux_id = demux_id;
+	zap_dvb_start(&zap_dvb_params);
 
 	// the UI
-	time_t start = time(NULL);
 	while(!quit_app) {
-		// the timeout
-		if (timeout != -1) {
-			if ((time(NULL) - start) >= timeout)
-				break;
-		}
-
-		if (cammenu)
-			zap_ca_ui();
-		else
-			usleep(1);
+		sleep(1);
 	}
-
-	// stop data handling
-	zap_data_stop();
 
 	// shutdown DVB stuff
 	if (channel_name != NULL)

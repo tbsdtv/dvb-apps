@@ -31,9 +31,7 @@
 #include <libucsi/section.h>
 #include <libucsi/mpeg/section.h>
 #include <libucsi/dvb/section.h>
-#include "zap.h"
 #include "zap_dvb.h"
-#include "zap_data.h"
 #include "zap_ca.h"
 
 #define FE_STATUS_PARAMS (DVBFE_INFO_LOCKSTATUS|DVBFE_INFO_SIGNAL_STRENGTH|DVBFE_INFO_BER|DVBFE_INFO_SNR|DVBFE_INFO_UNCORRECTED_BLOCKS)
@@ -43,7 +41,6 @@ static pthread_t dvbthread;
 
 static int pat_version = -1;
 static int ca_pmt_version = -1;
-static int data_pmt_version = -1;
 
 static void *dvbthread_func(void* arg);
 
@@ -234,10 +231,7 @@ static void process_pat(int pat_fd, struct zap_dvb_params *params, int *pmt_fd, 
 			pollfd->fd = *pmt_fd;
 			pollfd->events = POLLIN|POLLPRI|POLLERR;
 
-			zap_data_new_pat(cur_program->pid);
-
 			// we have a new PMT pid
-			data_pmt_version = -1;
 			ca_pmt_version = -1;
 			break;
 		}
@@ -294,8 +288,7 @@ static void process_pmt(int pmt_fd)
 	if (section_ext == NULL) {
 		return;
 	}
-	if ((section_ext->version_number == data_pmt_version) &&
-	    (section_ext->version_number == ca_pmt_version)) {
+	if (section_ext->version_number == ca_pmt_version) {
 		return;
 	}
 
@@ -304,10 +297,6 @@ static void process_pmt(int pmt_fd)
 	if (pmt == NULL) {
 		return;
 	}
-
-	// do data handling
-	if (zap_data_new_pmt(pmt) == 1)
-		data_pmt_version = pmt->head.version_number;
 
 	// do ca handling
 	if (zap_ca_new_pmt(pmt) == 1)
