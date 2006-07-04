@@ -1,21 +1,39 @@
 linuxtv-dvb-apps-1.?
 ======================
 
-Linux DVB API test/demo applications and utilities.
+Linux DVB API applications and utilities.
 
-You will find a README in each subdirectory explaining what the code there does.
-For beginners utils/gnutv/ and utils/scan/ are probably most useful.
+All applications support the DVB-S, DVB-C, DVB-T, and ATSC standards.
 
-szap/czap/tzap/azap are now deprecated in favour of the new unified
-application 'gnutv'. This new program can do everything the original 
-applications did. However, it adds significant new functionality, 
-such as controlling CAMs, and streaming tv in a variety of ways.
+Main User Applications:
+util/scan	- Scan for channels on your digital TV device.
+util/gnutv	- Tune, watch and stream your TV.
+
+General Utilities:
+util/dvbdate	- Set your clock from digital TV.
+util/dvbnet	- Control digital data network interfaces.
+util/dvbtraffic	- Monitor traffic on a digital device.
+util/femon	- Monitor the tuning on a digital TV device.
+util/zap	- *Just* tunes a digital device.
+
+Hardware Specific Utilities:
+util/av7110_loadkeys	- Load remote keys into an av7110 based card
+util/dib3000-watch	- Monitor DIB3000 demodulators
+util/dst-utils		- Utilities for DST based cards.
+util/ttusb_dec_reset	- Reset a TechnoTrends TTUSB DEC device.
+
+Libraries:
+lib/libdvbapi	- Userspace interface library onto digital devices.
+lib/libdvbcfg	- Library to parse/create configuration files.
+lib/libdvben50221- Complete implementation of an EN50221 CAM stack.
+lib/libucsi	- Fast SI table parsing library.
+lib/libdvbmisc	- Misc utilities used by the other libraries.
+
+Various testing applications also live in test.
 
 For convenience, dvb-apps contains a copy of the DVB API include
 files as they are contained in the linuxtv-dvb-1.? release
-and the 2.6.x Linux kernel. However, since the DVB API hasn't changed,
-the apps will still work with the old "DVB" drivers, should you decide not
-to use linuxtv-dvb-1.? (or the dvb-kernel HG).
+and the 2.6.x Linux kernel.
 
 Johannes Stezenbach <js@convergence.de>
 Andrew de Quincey <adq_dvb@lidskialf.net>
