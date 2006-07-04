@@ -23,11 +23,11 @@ util/dst-utils		- Utilities for DST based cards.
 util/ttusb_dec_reset	- Reset a TechnoTrends TTUSB DEC device.
 
 Libraries:
-lib/libdvbapi	- Userspace interface library onto digital devices.
-lib/libdvbcfg	- Library to parse/create configuration files.
-lib/libdvben50221- Complete implementation of an EN50221 CAM stack.
-lib/libucsi	- Fast SI table parsing library.
-lib/libdvbmisc	- Misc utilities used by the other libraries.
+lib/libdvbapi	- Interface library to digital TV devices.
+lib/libdvbcfg	- Library to parse/create digital TV configuration files.
+lib/libucsi	- Fast MPEG2 Transport Stream SI table parsing library.
+lib/libdvben50221- Complete implementation of a Cenelec EN 50221 CAM stack.
+lib/libdvbmisc	- Miscellaneous utilities used by the other libraries.
 
 Various testing applications also live in test.
 
