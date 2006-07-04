@@ -13,4 +13,5 @@ all clean install:
 	$(MAKE) -C scan $@
 	$(MAKE) -C szap $@
 	$(MAKE) -C ttusb_dec_reset $@
+	$(MAKE) -C gnutv $@
 	$(MAKE) -C zap $@

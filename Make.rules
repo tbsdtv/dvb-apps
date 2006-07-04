@@ -39,7 +39,7 @@ ifeq ($(V),1)
 %.a:
 	$(AR) rcs $@ $^
 clean::
-	$(RM) -f $(prerequisites) $(objects) $(libraries) $(binaries) $(removing)
+	$(RM) -f $(prerequisites) $(objects) $(libraries) $(binaries) $(removing) *~
 install::
 ifneq ($(includes),)
 	mkdir -p $(prefix)/include/$(lib_name)
@@ -71,7 +71,7 @@ else
 	@$(AR) rcs $@ $^
 clean::
 	@echo cleaning
-	@$(RM) -f $(prerequisites) $(objects) $(libraries) $(binaries) $(removing)
+	@$(RM) -f $(prerequisites) $(objects) $(libraries) $(binaries) $(removing) *~
 install::
 ifneq ($(includes),)
 	@echo installing headers
