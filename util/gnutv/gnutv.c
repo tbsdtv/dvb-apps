@@ -45,7 +45,7 @@ static int quit_app = 0;
 void usage(void)
 {
 	static const char *_usage = "\n"
-		" gnutv: A gnutvping application\n"
+		" gnutv: A digital tv utility\n"
 		" Copyright (C) 2004, 2005, 2006 Manu Abraham (manu@kromtek.com)\n"
 		" Copyright (C) 2006 Andrew de Quincey (adq_dvb@lidskialf.net)\n\n"
 		" usage: gnutv <options> as follows:\n"
