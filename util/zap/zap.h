@@ -32,7 +32,4 @@
 #define OUTPUT_TYPE_FILE 4
 #define OUTPUT_TYPE_UDP 5
 
-extern int new_dvb_pmt(struct mpeg_pmt_section *pmt);
-extern void new_dvb_time(time_t dvb_time);
-
 #endif

@@ -209,7 +209,7 @@ void zap_ca_ui(void)
 	}
 }
 
-int new_dvb_pmt(struct mpeg_pmt_section *pmt)
+int zap_ca_new_pmt(struct mpeg_pmt_section *pmt)
 {
 	uint8_t capmt[4096];
 	int size;
@@ -239,14 +239,14 @@ int new_dvb_pmt(struct mpeg_pmt_section *pmt)
 			return -1;
 		}
 
+		// we've seen this PMT
 		return 1;
 	}
 
 	return 0;
 }
 
-
-void new_dvb_time(time_t dvb_time)
+void zap_ca_new_dvbtime(time_t dvb_time)
 {
 	if (stdcam == NULL)
 		return;

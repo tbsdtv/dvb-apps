@@ -1,5 +1,5 @@
 /*
-	ZAP utility CA functions
+	ZAP utility DVB functions
 
 	Copyright (C) 2004, 2005 Manu Abraham (manu@kromtek.com)
 	Copyright (C) 2006 Andrew de Quincey (adq_dvb@lidskialf.net)
@@ -19,21 +19,22 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 */
 
-#ifndef ZAP_CA_H
-#define ZAP_CA_H 1
+#ifndef ZAP_DATA_H
+#define ZAP_DATA_H 1
 
-struct zap_ca_params {
-	int adapter_id;
-	int caslot_num;
-	int cammenu;
-	int moveca;
-};
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
-extern void zap_ca_start(struct zap_ca_params *params);
-extern void zap_ca_ui(void);
-extern void zap_ca_stop(void);
+extern void zap_data_start(int output_type,
+			   int ffaudiofd, int adapter_id, int demux_id,
+			   char *outfile,
+			   char* outif, struct sockaddr_in outaddr, int usertp);
+extern void zap_data_stop(void);
 
-extern int zap_ca_new_pmt(struct mpeg_pmt_section *pmt);
-extern void zap_ca_new_dvbtime(time_t dvb_time);
+extern void zap_data_new_pat(int pmt_pid);
+extern int zap_data_new_pmt(struct mpeg_pmt_section *pmt);
+
+
 
 #endif

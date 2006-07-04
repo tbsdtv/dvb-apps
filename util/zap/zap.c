@@ -31,9 +31,6 @@
 #include <signal.h>
 #include <pthread.h>
 #include <sys/poll.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
 #include <libdvbapi/dvbdemux.h>
 #include <libdvbapi/dvbaudio.h>
 #include <libdvbcfg/dvbcfg_zapchannel.h>
@@ -42,18 +39,12 @@
 #include "zap.h"
 #include "zap_dvb.h"
 #include "zap_ca.h"
+#include "zap_data.h"
 
 
 static void signal_handler(int _signal);
-static void *fileoutputthread_func(void* arg);
-static void *udpoutputthread_func(void* arg);
 
 static int quit_app = 0;
-static int outputthread_shutdown = 0;
-static pthread_t outputthread;
-static int dvrfd = -1;
-static int outfd = -1;
-static int usertp = 0;
 
 void usage(void)
 {
@@ -118,6 +109,7 @@ int main(int argc, char *argv[])
 	struct zap_dvb_params zap_dvb_params;
 	struct zap_ca_params zap_ca_params;
 	int ffaudiofd = -1;
+	int usertp = 0;
 
 	while(argpos != argc) {
 		if (!strcmp(argv[argpos], "-h")) {
@@ -297,58 +289,8 @@ int main(int argc, char *argv[])
 		zap_dvb_params.output_type = output_type;
 		zap_dvb_start(&zap_dvb_params);
 
-		// setup output
-		switch(output_type) {
-		case OUTPUT_TYPE_DECODER:
-		case OUTPUT_TYPE_DECODER_ABYPASS:
-			dvbaudio_set_bypass(ffaudiofd, (output_type == OUTPUT_TYPE_DECODER_ABYPASS) ? 1 : 0);
-			close(ffaudiofd);
-			break;
-
-		case OUTPUT_TYPE_FILE:
-			// open output file
-			outfd = open(outfile, O_WRONLY|O_CREAT|O_LARGEFILE, 0644);
-			if (outfd < 0) {
-				fprintf(stderr, "Failed to open output file\n");
-				exit(1);
-			}
-
-			// open dvr device
-			dvrfd = dvbdemux_open_dvr(adapter_id, 0, 1, 0);
-			if (dvrfd < 0) {
-				fprintf(stderr, "Failed to open DVR device\n");
-				exit(1);
-			}
-
-			pthread_create(&outputthread, NULL, fileoutputthread_func, NULL);
-			break;
-
-		case OUTPUT_TYPE_UDP:
-			// open output socket
-			outfd = socket(PF_INET, SOCK_DGRAM, 0);
-			if (outfd < 0) {
-				fprintf(stderr, "Failed to open output socket\n");
-				exit(1);
-			}
-
-			// bind to local interface if requested
-			if (outif != NULL) {
-				if (setsockopt(outfd, SOL_SOCKET, SO_BINDTODEVICE, outif, strlen(outif)) < 0) {
-					fprintf(stderr, "Failed to bind to interface %s\n", outif);
-					exit(1);
-				}
-			}
-
-			// open dvr device
-			dvrfd = dvbdemux_open_dvr(adapter_id, 0, 1, 0);
-			if (dvrfd < 0) {
-				fprintf(stderr, "Failed to open DVR device\n");
-				exit(1);
-			}
-
-			pthread_create(&outputthread, NULL, udpoutputthread_func, &outaddr);
-			break;
-		}
+		// start the data stuff
+		zap_data_start(output_type, ffaudiofd, adapter_id, demux_id, outfile, outif, outaddr, usertp);
 	}
 
 	// the UI
@@ -366,11 +308,8 @@ int main(int argc, char *argv[])
 			usleep(1);
 	}
 
-	// shutdown output thread if necessary
-	if (dvrfd != -1) {
-		outputthread_shutdown = 1;
-		pthread_join(outputthread, NULL);
-	}
+	// stop data handling
+	zap_data_stop();
 
 	// shutdown DVB stuff
 	if (channel_name != NULL)
@@ -391,110 +330,4 @@ static void signal_handler(int _signal)
 		printf("Shutting down..\n");
 		quit_app = 1;
 	}
-}
-
-static void *fileoutputthread_func(void* arg)
-{
-	(void)arg;
-	uint8_t buf[4096];
-	struct pollfd pollfd;
-
-	pollfd.fd = dvrfd;
-	pollfd.events = POLLIN|POLLPRI|POLLERR;
-
-	while(!outputthread_shutdown) {
-		if (poll(&pollfd, 1, 1000) != 1)
-			continue;
-		if (pollfd.revents & POLLERR) {
-			fprintf(stderr, "DVR device read failure\n");
-			return 0;
-		}
-
-		int size = read(dvrfd, buf, sizeof(buf));
-		if (size < 0) {
-			fprintf(stderr, "DVR device read failure\n");
-			return 0;
-		}
-
-		write(outfd, buf, size);
-	}
-
-	return 0;
-}
-
-#define TS_PAYLOAD_SIZE (188*7)
-
-static void *udpoutputthread_func(void* arg)
-{
-	(void)arg;
-	uint8_t buf[12 + TS_PAYLOAD_SIZE];
-	struct pollfd pollfd;
-	int bufsize = 0;
-	int bufbase = 0;
-	int readsize;
-	struct sockaddr_in *outaddr = (struct sockaddr_in*) arg;
-	uint16_t rtpseq = 0;
-
-	pollfd.fd = dvrfd;
-	pollfd.events = POLLIN|POLLPRI|POLLERR;
-
-	if (usertp) {
-		srandom(time(NULL));
-		int ssrc = random();
-		rtpseq = random();
-		buf[0x0] = 0x80;
-		buf[0x1] = 0x21;
-		buf[0x4] = 0x00; // }
-		buf[0x5] = 0x00; // } FIXME: should really be a valid stamp
-		buf[0x6] = 0x00; // }
-		buf[0x7] = 0x00; // }
-		buf[0x8] = ssrc >> 24;
-		buf[0x9] = ssrc >> 16;
-		buf[0xa] = ssrc >> 8;
-		buf[0xb] = ssrc;
-		bufbase = 12;
-	}
-
-	while(!outputthread_shutdown) {
-		if (poll(&pollfd, 1, 1000) != 1)
-			continue;
-		if (pollfd.revents & POLLERR) {
-			fprintf(stderr, "DVR device read failure\n");
-			return 0;
-		}
-
-		readsize = TS_PAYLOAD_SIZE - bufsize;
-		readsize = read(dvrfd, buf + bufbase + bufsize, readsize);
-		if (readsize < 0) {
-			fprintf(stderr, "DVR device read failure\n");
-			return 0;
-		}
-		bufsize += readsize;
-
-		if (bufsize == TS_PAYLOAD_SIZE) {
-			if (usertp) {
-				buf[2] = rtpseq >> 8;
-				buf[3] = rtpseq;
-			}
-			if (sendto(outfd, buf, bufbase + bufsize, 0, (struct sockaddr*) outaddr, sizeof(struct sockaddr_in)) < 0) {
-				fprintf(stderr, "Socket send failure\n");
-				return 0;
-			}
-			rtpseq++;
-			bufsize = 0;
-		}
-	}
-
-	if (bufsize) {
-		if (usertp) {
-			buf[2] = rtpseq >> 8;
-			buf[3] = rtpseq;
-		}
-		if (sendto(outfd, buf, bufbase + bufsize, 0, (struct sockaddr*) outaddr, sizeof(struct sockaddr_in)) < 0) {
-			fprintf(stderr, "Socket send failure\n");
-			return 0;
-		}
-	}
-
-	return 0;
 }
