@@ -26,6 +26,7 @@
 #include <string.h>
 #include <signal.h>
 #include <pthread.h>
+#include <errno.h>
 #include <sys/poll.h>
 #include <libdvbcfg/dvbcfg_zapchannel.h>
 #include <libdvbapi/dvbdemux.h>
@@ -154,7 +155,8 @@ static void *dvbthread_func(void* arg)
 		// is there SI data?
 		int count = poll(pollfds, 3, 100);
 		if (count < 0) {
-			fprintf(stderr, "Poll error\n");
+			if (errno != EINTR)
+				fprintf(stderr, "Poll error: %m\n");
 			break;
 		}
 		if (count == 0) {

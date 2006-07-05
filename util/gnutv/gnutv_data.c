@@ -31,6 +31,7 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <pthread.h>
+#include <errno.h>
 #include <sys/poll.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -221,18 +222,23 @@ static void *fileoutputthread_func(void* arg)
 		if (poll(&pollfd, 1, 1000) != 1)
 			continue;
 		if (pollfd.revents & POLLERR) {
+			if (errno == EINTR)
+				continue;
 			fprintf(stderr, "DVR device read failure\n");
 			return 0;
 		}
 
 		int size = read(dvrfd, buf, sizeof(buf));
 		if (size < 0) {
+			if (errno == EINTR)
+				continue;
 			fprintf(stderr, "DVR device read failure\n");
 			return 0;
 		}
 
 		if (write(outfd, buf, size) != size) {
-			fprintf(stderr, "Write problem: %m\n");
+			if (errno != EINTR)
+				fprintf(stderr, "Write problem: %m\n");
 		}
 	}
 
@@ -275,6 +281,8 @@ static void *udpoutputthread_func(void* arg)
 		if (poll(&pollfd, 1, 1000) != 1)
 			continue;
 		if (pollfd.revents & POLLERR) {
+			if (errno == EINTR)
+				continue;
 			fprintf(stderr, "DVR device read failure\n");
 			return 0;
 		}
@@ -282,6 +290,8 @@ static void *udpoutputthread_func(void* arg)
 		readsize = TS_PAYLOAD_SIZE - bufsize;
 		readsize = read(dvrfd, buf + bufbase + bufsize, readsize);
 		if (readsize < 0) {
+			if (errno == EINTR)
+				continue;
 			fprintf(stderr, "DVR device read failure\n");
 			return 0;
 		}
@@ -293,8 +303,10 @@ static void *udpoutputthread_func(void* arg)
 				buf[3] = rtpseq;
 			}
 			if (sendto(outfd, buf, bufbase + bufsize, 0, outaddrs->ai_addr, outaddrs->ai_addrlen) < 0) {
-				fprintf(stderr, "Socket send failure: %m\n");
-				return 0;
+				if (errno != EINTR) {
+					fprintf(stderr, "Socket send failure: %m\n");
+					return 0;
+				}
 			}
 			rtpseq++;
 			bufsize = 0;
@@ -307,8 +319,8 @@ static void *udpoutputthread_func(void* arg)
 			buf[3] = rtpseq;
 		}
 		if (sendto(outfd, buf, bufbase + bufsize, 0, outaddrs->ai_addr, outaddrs->ai_addrlen) < 0) {
-			fprintf(stderr, "Socket send failure: %m\n");
-			return 0;
+			if (errno != EINTR)
+				fprintf(stderr, "Socket send failure: %m\n");
 		}
 	}
 
