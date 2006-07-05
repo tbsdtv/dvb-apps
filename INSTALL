@@ -1,15 +1,16 @@
 Requirements:
 
-- ttusb_dec_reset depends on libusb; to build it
-  you have to specify ttusb_dec_reset=1 (see below)
+For ttusb_dec_reset, you will need libusb.
 
 Building:
 
-simply type
+Simply type
 $ make
 
-to also build ttusb_dec_reset type
-$ make ttusb_dec_reset=1
+Build options
+  static=1		- Build all applications statically.
+  V=1			- Verbose output during build.
+  ttusb_dec_reset=1	- Build the optional ttusb_dec_reset.
 
 Installing:
 
