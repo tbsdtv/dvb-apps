@@ -24,7 +24,7 @@ prerequisites = $(subst .o,.d,$(objects)) $(addsuffix .d,$(binaries))
 .PHONY: clean install
 
 ifeq ($(static),1)
-LDFLAGS ?= -static
+LDFLAGS += -static
 endif
 
 ifeq ($(prefix),)
