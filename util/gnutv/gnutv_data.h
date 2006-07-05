@@ -22,14 +22,12 @@
 #ifndef gnutv_DATA_H
 #define gnutv_DATA_H 1
 
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
+#include <netdb.h>
 
 extern void gnutv_data_start(int output_type,
 			   int ffaudiofd, int adapter_id, int demux_id,
 			   char *outfile,
-			   char* outif, struct sockaddr_in outaddr, int usertp);
+			   char* outif, struct addrinfo *outaddrs, int usertp);
 extern void gnutv_data_stop(void);
 
 extern void gnutv_data_new_pat(int pmt_pid);

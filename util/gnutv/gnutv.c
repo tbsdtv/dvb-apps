@@ -71,11 +71,14 @@ void usage(void)
 		"      dvr		Output stream to dvr device\n"
 		"      null		Do not output anything\n"
 		"      file <filename>	Output stream to file\n"
-		"      udp <ip> <port>	Output stream to ip:port using udp\n"
-		"      udpif <ip> <port> <interface> Output stream to ip:port using udp forcing the specified interface\n"
-		"      rtp <ip> <port>	Output stream to ip:port using udp-rtp\n"
-		"      rtpif <ip> <port> <interface> Output stream to ip:port using udp-rtp forcing the specified interface\n"
-		" -timeout <secs>	Number of seconds to output channel for (0=>exit immediately after successful tuning, default is to output forever)\n"
+		"      udp <address> <port>			Output stream to address:port using udp\n"
+		"      udpif <address> <port> <interface> 	Output stream to address:port using udp\n"
+		"							forcing the specified interface\n"
+		"      rtp <address> <port>			Output stream to address:port using udp-rtp\n"
+		"      rtpif <address> <port> <interface> 	Output stream to address:port using udp-rtp\n"
+		"							forcing the specified interface\n"
+		" -timeout <secs>	Number of seconds to output channel for\n"
+		"				(0=>exit immediately after successful tuning, default is to output forever)\n"
 		" -cammenu		Show the CAM menu\n"
 		" -nomoveca		Do not attempt to move CA descriptors from stream to programme level\n"
 		" <channel name>\n";
@@ -96,8 +99,10 @@ int main(int argc, char *argv[])
 	char *channel_name = NULL;
 	int output_type = OUTPUT_TYPE_DECODER;
 	char *outfile = NULL;
-	struct sockaddr_in outaddr;
+	char *outhost = NULL;
+	char *outport = NULL;
 	char *outif = NULL;
+	struct addrinfo *outaddrs = NULL;
 	int timeout = -1;
 	int moveca = 1;
 	int cammenu = 0;
@@ -174,13 +179,8 @@ int main(int argc, char *argv[])
 
 				if (!strcmp(argv[argpos+1], "rtp"))
 					usertp = 1;
-
-				outaddr.sin_family = AF_INET;
-				if (!inet_aton(argv[argpos+2], &outaddr.sin_addr))
-					usage();
-				if ((outaddr.sin_port = atoi(argv[argpos+3])) == 0)
-					usage();
-				outaddr.sin_port = htons(outaddr.sin_port);
+				outhost = argv[argpos+2];
+				outport = argv[argpos+3];
 				argpos+=2;
 			} else if ((!strcmp(argv[argpos+1], "udpif")) ||
 				   (!strcmp(argv[argpos+1], "rtpif"))) {
@@ -190,13 +190,8 @@ int main(int argc, char *argv[])
 
 				if (!strcmp(argv[argpos+1], "rtpif"))
 					usertp = 1;
-
-				outaddr.sin_family = AF_INET;
-				if (!inet_aton(argv[argpos+2], &outaddr.sin_addr))
-					usage();
-				if ((outaddr.sin_port = atoi(argv[argpos+3])) == 0)
-					usage();
-				outaddr.sin_port = htons(outaddr.sin_port);
+				outhost = argv[argpos+2];
+				outport = argv[argpos+3];
 				outif = argv[argpos+4];
 				argpos+=3;
 			} else {
@@ -226,6 +221,19 @@ int main(int argc, char *argv[])
 	// the user didn't select anything!
 	if ((channel_name == NULL) && (!cammenu))
 		usage();
+
+	// resolve host/port
+	if ((outhost != NULL) && (outport != NULL)) {
+		int res;
+		struct addrinfo hints;
+		memset(&hints, 0, sizeof(hints));
+		hints.ai_flags = AI_ADDRCONFIG;
+		hints.ai_socktype = SOCK_DGRAM;
+		if ((res = getaddrinfo(outhost, outport, &hints, &outaddrs)) < 0) {
+			fprintf(stderr, "Unable to resolve requested address: %s", gai_strerror(res));
+			exit(1);
+		}
+	}
 
 	// setup any signals
 	signal(SIGINT, signal_handler);
@@ -286,7 +294,10 @@ int main(int argc, char *argv[])
 		gnutv_dvb_start(&gnutv_dvb_params);
 
 		// start the data stuff
-		gnutv_data_start(output_type, ffaudiofd, adapter_id, demux_id, outfile, outif, outaddr, usertp);
+		gnutv_data_start(output_type, ffaudiofd, adapter_id, demux_id, outfile, outif, outaddrs, usertp);
+		if (outaddrs) {
+			freeaddrinfo(outaddrs);
+		}
 	}
 
 	// the UI

@@ -65,6 +65,8 @@ static int usertp = 0;
 static int adapter_id = -1;
 static int demux_id = -1;
 static int output_type = 0;
+static struct sockaddr *outaddr = NULL;
+static int outaddr_len = 0;
 
 struct pid_fd {
 	int pid;
@@ -76,7 +78,7 @@ static int pid_fds_count = 0;
 void gnutv_data_start(int _output_type,
 		    int ffaudiofd, int _adapter_id, int _demux_id,
 		    char *outfile,
-		    char* outif, struct sockaddr_in outaddr, int _usertp)
+		    char* outif, struct addrinfo *outaddrs, int _usertp)
 {
 	usertp = _usertp;
 	demux_id = _demux_id;
@@ -132,7 +134,16 @@ void gnutv_data_start(int _output_type,
 			exit(1);
 		}
 
-		pthread_create(&outputthread, NULL, udpoutputthread_func, &outaddr);
+		// copy the address to send to
+		outaddr = (struct sockaddr*) malloc(outaddrs->ai_addrlen);
+		if (outaddr == NULL) {
+			fprintf(stderr, "Out of memory\n");
+			exit(1);
+		}
+		memcpy(outaddr, outaddrs->ai_addr, outaddrs->ai_addrlen);
+		outaddr_len = outaddrs->ai_addrlen;
+
+		pthread_create(&outputthread, NULL, udpoutputthread_func, NULL);
 		break;
 	}
 
@@ -157,6 +168,8 @@ void gnutv_data_stop()
 		close(pat_fd_dvrout);
 	if (pmt_fd_dvrout != -1)
 		close(pmt_fd_dvrout);
+	if (outaddr)
+		free(outaddr);
 }
 
 void gnutv_data_new_pat(int pmt_pid)
@@ -233,7 +246,6 @@ static void *udpoutputthread_func(void* arg)
 	int bufsize = 0;
 	int bufbase = 0;
 	int readsize;
-	struct sockaddr_in *outaddr = (struct sockaddr_in*) arg;
 	uint16_t rtpseq = 0;
 
 	pollfd.fd = dvrfd;
@@ -277,7 +289,7 @@ static void *udpoutputthread_func(void* arg)
 				buf[2] = rtpseq >> 8;
 				buf[3] = rtpseq;
 			}
-			if (sendto(outfd, buf, bufbase + bufsize, 0, (struct sockaddr*) outaddr, sizeof(struct sockaddr_in)) < 0) {
+			if (sendto(outfd, buf, bufbase + bufsize, 0, outaddr, outaddr_len) < 0) {
 				fprintf(stderr, "Socket send failure\n");
 				return 0;
 			}
@@ -291,7 +303,7 @@ static void *udpoutputthread_func(void* arg)
 			buf[2] = rtpseq >> 8;
 			buf[3] = rtpseq;
 		}
-		if (sendto(outfd, buf, bufbase + bufsize, 0, (struct sockaddr*) outaddr, sizeof(struct sockaddr_in)) < 0) {
+		if (sendto(outfd, buf, bufbase + bufsize, 0, outaddr, outaddr_len) < 0) {
 			fprintf(stderr, "Socket send failure\n");
 			return 0;
 		}
