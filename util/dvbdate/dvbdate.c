@@ -42,8 +42,10 @@
 #include <errno.h>
 #include <getopt.h>
 #include <stdarg.h>
+#include <libdvbapi/dvbfe.h>
 #include <libdvbapi/dvbdemux.h>
 #include <libucsi/dvb/section.h>
+#include <libucsi/atsc/section.h>
 
 /* How many seconds can the system clock be out before we get warned? */
 #define ALLOWABLE_DELTA 30*60
@@ -168,10 +170,9 @@ int do_options(int arg_count, char **arg_strings)
 }
 
 /*
- * Get the next UTC date packet from the TDT multiplex
+ * Get the next UTC date packet from the TDT section
  */
-
-int scan_date(time_t *dvb_time, unsigned int to)
+int dvb_scan_date(time_t *rx_time, unsigned int to)
 {
 	int tdt_fd;
 	uint8_t filter[18];
@@ -224,8 +225,80 @@ int scan_date(time_t *dvb_time, unsigned int to)
 	}
 
 	// done
-	*dvb_time = dvbdate_to_unixtime(tdt->utc_time);
+	*rx_time = dvbdate_to_unixtime(tdt->utc_time);
 	close(tdt_fd);
+	return 0;
+}
+
+
+/*
+ * Get the next date packet from the STT section
+ */
+int atsc_scan_date(time_t *rx_time, unsigned int to)
+{
+	int stt_fd;
+	uint8_t filter[18];
+	uint8_t mask[18];
+	unsigned char sibuf[4096];
+	int size;
+
+	// open the demuxer
+	if ((stt_fd = dvbdemux_open_demux(adapter, 0, 0)) < 0) {
+		return -1;
+	}
+
+	// create a section filter for the STT
+	memset(filter, 0, sizeof(filter));
+	memset(mask, 0, sizeof(mask));
+	filter[0] = stag_atsc_system_time;
+	mask[0] = 0xFF;
+	if (dvbdemux_set_section_filter(stt_fd, ATSC_BASE_PID, filter, mask, 1, 1)) {
+		close(stt_fd);
+		return -1;
+	}
+
+	// poll for data
+	struct pollfd pollfd;
+	pollfd.fd = stt_fd;
+	pollfd.events = POLLIN|POLLERR|POLLPRI;
+	if (poll(&pollfd, 1, to * 1000) != 1) {
+		close(stt_fd);
+		return -1;
+	}
+
+	// read it
+	if ((size = read(stt_fd, sibuf, sizeof(sibuf))) < 0) {
+		close(stt_fd);
+		return -1;
+	}
+
+	// parse section
+	struct section *section = section_codec(sibuf, size);
+	if (section == NULL) {
+		close(stt_fd);
+		return -1;
+	}
+	struct section_ext *section_ext = section_ext_decode(section, 0);
+	if (section_ext == NULL) {
+		close(stt_fd);
+		return -1;
+	}
+	struct atsc_section_psip *psip = atsc_section_psip_decode(section_ext);
+	if (psip == NULL) {
+		close(stt_fd);
+		return -1;
+	}
+
+	// parse STT
+	struct atsc_stt_section *stt = atsc_stt_section_codec(psip);
+	if (stt == NULL) {
+		close(stt_fd);
+		return -1;
+	}
+
+	// done
+	*rx_time = atsctime_to_unixtime(stt->system_time);
+	close(stt_fd);
 	return 0;
 }
 
@@ -245,10 +318,12 @@ int set_time(time_t * new_time)
 
 int main(int argc, char **argv)
 {
-	time_t dvb_time;
+	time_t rx_time;
 	time_t real_time;
 	time_t offset;
 	int ret;
+	struct dvbfe_handle *fe;
+	struct dvbfe_info fe_info;
 
 	do_print = 0;
 	do_force = 0;
@@ -264,27 +339,51 @@ int main(int argc, char **argv)
 		errmsg("quiet and print options are mutually exclusive.\n");
 		exit(1);
 	}
+
 /*
- * Get the date from the currently tuned TDT multiplex
+ * Find the frontend type
  */
-	ret = scan_date(&dvb_time, timeout);
+	if ((fe = dvbfe_open(adapter, 0, 1)) == NULL) {
+		errmsg("Unable to open frontend.\n");
+		exit(1);
+	}
+	dvbfe_get_info(fe, 0, &fe_info);
+
+/*
+ * Get the date from the currently tuned multiplex
+ */
+	switch(fe_info.type) {
+	case DVBFE_TYPE_DVBS:
+	case DVBFE_TYPE_DVBC:
+	case DVBFE_TYPE_DVBT:
+		ret = dvb_scan_date(&rx_time, timeout);
+		break;
+
+	case DVBFE_TYPE_ATSC:
+		ret = atsc_scan_date(&rx_time, timeout);
+		break;
+
+	default:
+		errmsg("Unsupported frontend type.\n");
+		exit(1);
+	}
 	if (ret != 0) {
 		errmsg("Unable to get time from multiplex.\n");
 		exit(1);
 	}
 	time(&real_time);
-	offset = dvb_time - real_time;
+	offset = rx_time - real_time;
 	if (do_print) {
 		fprintf(stdout, "System time: %s", ctime(&real_time));
-		fprintf(stdout, "   TDT time: %s", ctime(&dvb_time));
+		fprintf(stdout, "    RX time: %s", ctime(&rx_time));
 		fprintf(stdout, "     Offset: %ld seconds\n", offset);
 	} else if (!do_quiet) {
-		fprintf(stdout, "%s", ctime(&dvb_time));
+		fprintf(stdout, "%s", ctime(&rx_time));
 	}
 	if (do_set) {
 		if (labs(offset) > ALLOWABLE_DELTA) {
 			if (do_force) {
-				if (0 != set_time(&dvb_time)) {
+				if (0 != set_time(&rx_time)) {
 					errmsg("setting the time failed\n");
 				}
 			} else {
@@ -293,7 +392,7 @@ int main(int argc, char **argv)
 				exit(1);
 			}
 		} else {
-			set_time(&dvb_time);
+			set_time(&rx_time);
 		}
 	}			/* #end if (do_set) */
 	return (0);
