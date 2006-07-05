@@ -290,7 +290,7 @@ static void *udpoutputthread_func(void* arg)
 				buf[3] = rtpseq;
 			}
 			if (sendto(outfd, buf, bufbase + bufsize, 0, outaddr, outaddr_len) < 0) {
-				fprintf(stderr, "Socket send failure\n");
+				fprintf(stderr, "Socket send failure: %m\n");
 				return 0;
 			}
 			rtpseq++;
@@ -304,7 +304,7 @@ static void *udpoutputthread_func(void* arg)
 			buf[3] = rtpseq;
 		}
 		if (sendto(outfd, buf, bufbase + bufsize, 0, outaddr, outaddr_len) < 0) {
-			fprintf(stderr, "Socket send failure\n");
+			fprintf(stderr, "Socket send failure: %m\n");
 			return 0;
 		}
 	}

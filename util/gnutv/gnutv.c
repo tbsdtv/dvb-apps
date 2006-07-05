@@ -230,7 +230,7 @@ int main(int argc, char *argv[])
 		hints.ai_flags = AI_ADDRCONFIG;
 		hints.ai_socktype = SOCK_DGRAM;
 		if ((res = getaddrinfo(outhost, outport, &hints, &outaddrs)) < 0) {
-			fprintf(stderr, "Unable to resolve requested address: %s", gai_strerror(res));
+			fprintf(stderr, "Unable to resolve requested address: %s\n", gai_strerror(res));
 			exit(1);
 		}
 	}
