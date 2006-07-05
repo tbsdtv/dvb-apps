@@ -93,12 +93,17 @@ void gnutv_data_start(int _output_type,
 		close(ffaudiofd);
 		break;
 
+	case OUTPUT_TYPE_STDOUT:
 	case OUTPUT_TYPE_FILE:
-		// open output file
-		outfd = open(outfile, O_WRONLY|O_CREAT|O_LARGEFILE, 0644);
-		if (outfd < 0) {
-			fprintf(stderr, "Failed to open output file\n");
-			exit(1);
+		if (output_type == OUTPUT_TYPE_FILE) {
+			// open output file
+			outfd = open(outfile, O_WRONLY|O_CREAT|O_LARGEFILE, 0644);
+			if (outfd < 0) {
+				fprintf(stderr, "Failed to open output file\n");
+				exit(1);
+			}
+		} else {
+			outfd = STDOUT_FILENO;
 		}
 
 		// open dvr device
@@ -144,6 +149,7 @@ void gnutv_data_start(int _output_type,
 	switch(output_type) {
 	case OUTPUT_TYPE_DVR:
 	case OUTPUT_TYPE_FILE:
+	case OUTPUT_TYPE_STDOUT:
 	case OUTPUT_TYPE_UDP:
 		pat_fd_dvrout = gnutv_data_create_dvr_filter(adapter_id, demux_id, TRANSPORT_PAT_PID);
 	}
@@ -171,6 +177,7 @@ void gnutv_data_new_pat(int pmt_pid)
 	switch(output_type) {
 	case OUTPUT_TYPE_DVR:
 	case OUTPUT_TYPE_FILE:
+	case OUTPUT_TYPE_STDOUT:
 	case OUTPUT_TYPE_UDP:
 		if (pmt_fd_dvrout != -1)
 			close(pmt_fd_dvrout);
@@ -192,6 +199,7 @@ int gnutv_data_new_pmt(struct mpeg_pmt_section *pmt)
 
 	case OUTPUT_TYPE_DVR:
 	case OUTPUT_TYPE_FILE:
+	case OUTPUT_TYPE_STDOUT:
 	case OUTPUT_TYPE_UDP:
 		gnutv_data_dvr_pmt(pmt);
 		break;
@@ -223,7 +231,9 @@ static void *fileoutputthread_func(void* arg)
 			return 0;
 		}
 
-		write(outfd, buf, size);
+		if (write(outfd, buf, size) != size) {
+			fprintf(stderr, "Write problem: %m\n");
+		}
 	}
 
 	return 0;

@@ -282,10 +282,10 @@ static int gnutv_ai_callback(void *arg, uint8_t slot_id, uint16_t session_number
 	(void) slot_id;
 	(void) session_number;
 
-	printf("CAM Application type: %02x\n", application_type);
-	printf("CAM Application manufacturer: %04x\n", application_manufacturer);
-	printf("CAM Manufacturer code: %04x\n", manufacturer_code);
-	printf("CAM Menu string: %.*s\n", menu_string_length, menu_string);
+	fprintf(stderr, "CAM Application type: %02x\n", application_type);
+	fprintf(stderr, "CAM Application manufacturer: %04x\n", application_manufacturer);
+	fprintf(stderr, "CAM Manufacturer code: %04x\n", manufacturer_code);
+	fprintf(stderr, "CAM Menu string: %.*s\n", menu_string_length, menu_string);
 
 	return 0;
 }
@@ -296,10 +296,10 @@ static int gnutv_ca_info_callback(void *arg, uint8_t slot_id, uint16_t session_n
 	(void) slot_id;
 	(void) session_number;
 
-	printf("CAM supports the following ca system ids:\n");
+	fprintf(stderr, "CAM supports the following ca system ids:\n");
 	uint32_t i;
 	for(i=0; i< ca_id_count; i++) {
-		printf("  0x%04x\n", ca_ids[i]);
+		fprintf(stderr, "  0x%04x\n", ca_ids[i]);
 	}
 	ca_resource_connected = 1;
 	return 0;
@@ -356,7 +356,7 @@ static int gnutv_mmi_enq_callback(void *arg, uint8_t slot_id, uint16_t session_n
 	(void) slot_id;
 	(void) session_number;
 
-	printf("%.*s: ", text_size, text);
+	fprintf(stderr, "%.*s: ", text_size, text);
 	fflush(stdout);
 
 	mmi_enq_blind = blind_answer;
@@ -378,25 +378,25 @@ static int gnutv_mmi_menu_callback(void *arg, uint8_t slot_id, uint16_t session_
 	(void) item_raw_length;
 	(void) items_raw;
 
-	printf("------------------------------\n");
+	fprintf(stderr, "------------------------------\n");
 
 	if (title->text_length) {
-		printf("%.*s\n", title->text_length, title->text);
+		fprintf(stderr, "%.*s\n", title->text_length, title->text);
 	}
 	if (sub_title->text_length) {
-		printf("%.*s\n", sub_title->text_length, sub_title->text);
+		fprintf(stderr, "%.*s\n", sub_title->text_length, sub_title->text);
 	}
 
 	uint32_t i;
-	printf("0. Quit menu\n");
+	fprintf(stderr, "0. Quit menu\n");
 	for(i=0; i< item_count; i++) {
-		printf("%i. %.*s\n", i+1, items[i].text_length, items[i].text);
+		fprintf(stderr, "%i. %.*s\n", i+1, items[i].text_length, items[i].text);
 	}
 
 	if (bottom->text_length) {
-		printf("%.*s\n", bottom->text_length, bottom->text);
+		fprintf(stderr, "%.*s\n", bottom->text_length, bottom->text);
 	}
-	printf("Enter option: ");
+	fprintf(stderr, "Enter option: ");
 	fflush(stdout);
 
 	mmi_state = MMI_STATE_MENU;

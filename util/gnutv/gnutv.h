@@ -32,5 +32,6 @@
 #define OUTPUT_TYPE_NULL 3
 #define OUTPUT_TYPE_FILE 4
 #define OUTPUT_TYPE_UDP 5
+#define OUTPUT_TYPE_STDOUT 6
 
 #endif

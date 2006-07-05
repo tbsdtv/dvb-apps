@@ -71,6 +71,7 @@ void usage(void)
 		"      decoderabypass	Output to hardware decoder using audio bypass\n"
 		"      dvr		Output stream to dvr device\n"
 		"      null		Do not output anything\n"
+		"      stdout		Output to stdout\n"
 		"      file <filename>	Output stream to file\n"
 		"      udp <address> <port>			Output stream to address:port using udp\n"
 		"      udpif <address> <port> <interface> 	Output stream to address:port using udp\n"
@@ -166,6 +167,8 @@ int main(int argc, char *argv[])
 				output_type = OUTPUT_TYPE_DVR;
 			} else if (!strcmp(argv[argpos+1], "null")) {
 				output_type = OUTPUT_TYPE_NULL;
+			} else if (!strcmp(argv[argpos+1], "stdout")) {
+				output_type = OUTPUT_TYPE_STDOUT;
 			} else if (!strcmp(argv[argpos+1], "file")) {
 				output_type = OUTPUT_TYPE_FILE;
 				if ((argc - argpos) < 3)
@@ -332,7 +335,7 @@ static void signal_handler(int _signal)
 	(void) _signal;
 
 	if (!quit_app) {
-		printf("Shutting down..\n");
+		fprintf(stderr, "Shutting down..\n");
 		quit_app = 1;
 	}
 }
