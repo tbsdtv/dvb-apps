@@ -65,8 +65,7 @@ static int usertp = 0;
 static int adapter_id = -1;
 static int demux_id = -1;
 static int output_type = 0;
-static struct sockaddr *outaddr = NULL;
-static int outaddr_len = 0;
+static struct addrinfo *outaddrs = NULL;
 
 struct pid_fd {
 	int pid;
@@ -78,7 +77,7 @@ static int pid_fds_count = 0;
 void gnutv_data_start(int _output_type,
 		    int ffaudiofd, int _adapter_id, int _demux_id,
 		    char *outfile,
-		    char* outif, struct addrinfo *outaddrs, int _usertp)
+		    char* outif, struct addrinfo *_outaddrs, int _usertp)
 {
 	usertp = _usertp;
 	demux_id = _demux_id;
@@ -112,8 +111,10 @@ void gnutv_data_start(int _output_type,
 		break;
 
 	case OUTPUT_TYPE_UDP:
+		outaddrs = _outaddrs;
+
 		// open output socket
-		outfd = socket(PF_INET, SOCK_DGRAM, 0);
+		outfd = socket(outaddrs->ai_family, outaddrs->ai_socktype, outaddrs->ai_protocol);
 		if (outfd < 0) {
 			fprintf(stderr, "Failed to open output socket\n");
 			exit(1);
@@ -133,15 +134,6 @@ void gnutv_data_start(int _output_type,
 			fprintf(stderr, "Failed to open DVR device\n");
 			exit(1);
 		}
-
-		// copy the address to send to
-		outaddr = (struct sockaddr*) malloc(outaddrs->ai_addrlen);
-		if (outaddr == NULL) {
-			fprintf(stderr, "Out of memory\n");
-			exit(1);
-		}
-		memcpy(outaddr, outaddrs->ai_addr, outaddrs->ai_addrlen);
-		outaddr_len = outaddrs->ai_addrlen;
 
 		pthread_create(&outputthread, NULL, udpoutputthread_func, NULL);
 		break;
@@ -168,8 +160,8 @@ void gnutv_data_stop()
 		close(pat_fd_dvrout);
 	if (pmt_fd_dvrout != -1)
 		close(pmt_fd_dvrout);
-	if (outaddr)
-		free(outaddr);
+	if (outaddrs)
+		freeaddrinfo(outaddrs);
 }
 
 void gnutv_data_new_pat(int pmt_pid)
@@ -289,7 +281,7 @@ static void *udpoutputthread_func(void* arg)
 				buf[2] = rtpseq >> 8;
 				buf[3] = rtpseq;
 			}
-			if (sendto(outfd, buf, bufbase + bufsize, 0, outaddr, outaddr_len) < 0) {
+			if (sendto(outfd, buf, bufbase + bufsize, 0, outaddrs->ai_addr, outaddrs->ai_addrlen) < 0) {
 				fprintf(stderr, "Socket send failure: %m\n");
 				return 0;
 			}
@@ -303,7 +295,7 @@ static void *udpoutputthread_func(void* arg)
 			buf[2] = rtpseq >> 8;
 			buf[3] = rtpseq;
 		}
-		if (sendto(outfd, buf, bufbase + bufsize, 0, outaddr, outaddr_len) < 0) {
+		if (sendto(outfd, buf, bufbase + bufsize, 0, outaddrs->ai_addr, outaddrs->ai_addrlen) < 0) {
 			fprintf(stderr, "Socket send failure: %m\n");
 			return 0;
 		}

@@ -229,7 +229,7 @@ int main(int argc, char *argv[])
 		memset(&hints, 0, sizeof(hints));
 		hints.ai_flags = AI_ADDRCONFIG;
 		hints.ai_socktype = SOCK_DGRAM;
-		if ((res = getaddrinfo(outhost, outport, &hints, &outaddrs)) < 0) {
+		if ((res = getaddrinfo(outhost, outport, &hints, &outaddrs)) != 0) {
 			fprintf(stderr, "Unable to resolve requested address: %s\n", gai_strerror(res));
 			exit(1);
 		}
@@ -295,9 +295,6 @@ int main(int argc, char *argv[])
 
 		// start the data stuff
 		gnutv_data_start(output_type, ffaudiofd, adapter_id, demux_id, outfile, outif, outaddrs, usertp);
-		if (outaddrs) {
-			freeaddrinfo(outaddrs);
-		}
 	}
 
 	// the UI
