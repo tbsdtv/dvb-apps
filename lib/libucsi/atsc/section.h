@@ -38,6 +38,8 @@ extern "C"
 {
 #endif
 
+#define ATSC_BASE_PID 0x1ffb
+
 /**
  * Enumeration of ATSC section tags.
  */
