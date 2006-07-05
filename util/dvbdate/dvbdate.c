@@ -9,7 +9,8 @@
    Revamped by Johannes Stezenbach <js@convergence.de>
    and Michael Hunold <hunold@convergence.de>
 
-   Ported to use the standard dvb libraries Andrew de Quincey <adq_dvb@lidskialf.net>
+   Ported to use the standard dvb libraries and add ATSC STT
+   support Andrew de Quincey <adq_dvb@lidskialf.net>
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License
@@ -80,8 +81,8 @@ void help(void)
 		"\nhelp:\n"
 		"%s [-a] [-p] [-s] [-f] [-q] [-h] [-t n]\n"
 		"  --adapter	(adapter to use, default: 0)\n"
-		"  --print	(print current time, TDT time and delta)\n"
-		"  --set	(set the system clock to TDT time)\n"
+		"  --print	(print current time, received time and delta)\n"
+		"  --set	(set the system clock to received time)\n"
 		"  --force	(force the setting of the clock)\n"
 		"  --quiet	(be silent)\n"
 		"  --help	(display this message)\n"
