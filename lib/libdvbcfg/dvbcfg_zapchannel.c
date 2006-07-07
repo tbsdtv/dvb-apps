@@ -190,21 +190,24 @@ static int dvbcfg_parse_setting(char **text, const struct dvbcfg_setting *settin
 	return -1;
 }
 
-static void dvbcfg_parse_string(char **text, char *dest, int size)
+static void dvbcfg_parse_string(char **text, char *dest, unsigned long size)
 {
 	char *start = *text;
 	char *stop = *text;
+	unsigned long length;
 
 	while ((*stop != '\0') && (*stop != ':'))
 		stop++;
 
-	if ((stop - start) < size) {
+	length = (stop - start) + 1;
+
+	if (length <= size) {
 		if (*stop == ':') {
 			*stop = '\0';
 			*text = stop + 1;
 		} else
 			*text = stop;
-		memcpy(dest, start, (stop - start) + 1);
+		memcpy(dest, start, length);
 		return;
 	}
 
