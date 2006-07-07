@@ -254,7 +254,7 @@ extern int dvbfe_get_info(struct dvbfe_handle *fehandle,
 
 			ok = 1;
 			if (poll(&pollfd, 1, timeout) < 0)
-				ok = 0;;
+				ok = 0;
 			if (pollfd.revents & POLLERR)
 				ok = 0;
 			if (!(pollfd.revents & POLLIN))
