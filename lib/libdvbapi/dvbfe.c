@@ -456,10 +456,10 @@ int dvbfe_set_22k_tone(struct dvbfe_handle *fehandle, enum dvbfe_sec_tone_mode t
 
 	switch (tone) {
 	case DVBFE_SEC_TONE_OFF:
-		ret = ioctl(fehandle->fd, FE_SET_TONE, DVBFE_SEC_TONE_OFF);
+		ret = ioctl(fehandle->fd, FE_SET_TONE, SEC_TONE_OFF);
 		break;
 	case DVBFE_SEC_TONE_ON:
-		ret = ioctl(fehandle->fd, FE_SET_TONE, DVBFE_SEC_TONE_ON);
+		ret = ioctl(fehandle->fd, FE_SET_TONE, SEC_TONE_ON);
 		break;
 	default:
 		print(verbose, ERROR, 1, "Invalid command !");
@@ -477,10 +477,10 @@ int dvbfe_set_tone_data_burst(struct dvbfe_handle *fehandle, enum dvbfe_sec_mini
 
 	switch (minicmd) {
 	case DVBFE_SEC_MINI_A:
-		ret = ioctl(fehandle->fd, FE_DISEQC_SEND_BURST, DVBFE_SEC_MINI_A);
+		ret = ioctl(fehandle->fd, FE_DISEQC_SEND_BURST, SEC_MINI_A);
 		break;
 	case DVBFE_SEC_MINI_B:
-		ret = ioctl(fehandle->fd, FE_DISEQC_SEND_BURST, DVBFE_SEC_MINI_B);
+		ret = ioctl(fehandle->fd, FE_DISEQC_SEND_BURST, SEC_MINI_B);
 		break;
 	default:
 		print(verbose, ERROR, 1, "Invalid command");
@@ -497,11 +497,14 @@ int dvbfe_set_voltage(struct dvbfe_handle *fehandle, enum dvbfe_sec_voltage volt
 	int ret = 0;
 
 	switch (voltage) {
+	case DVBFE_SEC_VOLTAGE_OFF:
+		ret = ioctl(fehandle->fd, FE_SET_VOLTAGE, SEC_VOLTAGE_OFF);
+		break;
 	case DVBFE_SEC_VOLTAGE_13:
-		ret = ioctl(fehandle->fd, FE_SET_VOLTAGE, DVBFE_SEC_VOLTAGE_13);
+		ret = ioctl(fehandle->fd, FE_SET_VOLTAGE, SEC_VOLTAGE_13);
 		break;
 	case DVBFE_SEC_VOLTAGE_18:
-		ret = ioctl(fehandle->fd, FE_SET_VOLTAGE, DVBFE_SEC_VOLTAGE_18);
+		ret = ioctl(fehandle->fd, FE_SET_VOLTAGE, SEC_VOLTAGE_18);
 		break;
 	default:
 		print(verbose, ERROR, 1, "Invalid command");
