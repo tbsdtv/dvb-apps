@@ -108,10 +108,7 @@ int main(int argc, char *argv[])
 		perror("open frontend");
 		exit(1);
 	}
-	if (dvbfe_get_info(fe, 0, &feinfo)) {
-		perror("get feinfo");
-		exit(1);
-	}
+	dvbfe_get_info(fe, 0, &feinfo, DVBFE_INFO_QUERYTYPE_IMMEDIATE, 0);
 	int data_type = DATA_TYPE_MPEG;
 	switch(feinfo.type) {
 	case DVBFE_TYPE_DVBS:

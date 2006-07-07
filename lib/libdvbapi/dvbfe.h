@@ -196,6 +196,19 @@ struct dvbfe_info {
 };
 
 /**
+ * Possible types of query used in dvbfe_get_info.
+ *
+ * DVBFE_INFO_QUERYTYPE_IMMEDIATE  - interrogate frontend for most up to date values.
+ * DVBFE_INFO_QUERYTYPE_LOCKCHANGE - return details from the queued lock status
+ * 				     change events, or wait for one to occur.
+ */
+enum dvbfe_info_querytype {
+	DVBFE_INFO_QUERYTYPE_IMMEDIATE,
+	DVBFE_INFO_QUERYTYPE_LOCKCHANGE,
+};
+
+
+/**
  * Frontend handle datatype.
  */
 struct dvbfe_handle;
@@ -240,9 +253,23 @@ extern int dvbfe_set(struct dvbfe_handle *fehandle,
  * @param fehandle Handle opened with dvbfe_open().
  * @param querymask ORed bitmask of desired DVBFE_INFO_* values.
  * @param result Where to put the retrieved results.
+ * @param querytype Type of query requested.
+ * @param timeout Timeout in ms to use if querytype==lockchange (0=>no timeout, <0=> wait forever).
  * @return ORed bitmask of DVBFE_INFO_* indicating which values were read successfully.
  */
-extern int dvbfe_get_info(struct dvbfe_handle *fehandle, enum dvbfe_info_mask querymask, struct dvbfe_info *result);
+extern int dvbfe_get_info(struct dvbfe_handle *fehandle,
+			  enum dvbfe_info_mask querymask,
+			  struct dvbfe_info *result,
+			  enum dvbfe_info_querytype querytype,
+			  int timeout);
+
+/**
+ * Get a file descriptor for polling for lock status changes.
+ *
+ * @param fehandle Handle opened with dvbfe_open().
+ * @return FD for polling.
+ */
+extern int dvbfe_get_pollfd(struct dvbfe_handle *handle);
 
 /**
  *	Tone/Data Burst control

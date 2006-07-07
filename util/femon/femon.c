@@ -59,7 +59,11 @@ int check_frontend (struct dvbfe_handle *fe, int human_readable)
 	struct dvbfe_info fe_info;
 
 	do {
-		dvbfe_get_info(fe, FE_STATUS_PARAMS, &fe_info);
+		if (dvbfe_get_info(fe, FE_STATUS_PARAMS, &fe_info, DVBFE_INFO_QUERYTYPE_IMMEDIATE, 0) != FE_STATUS_PARAMS) {
+			fprintf(stderr, "Problem retrieving frontend information: %m\n");
+		}
+
+
 
 		if (human_readable) {
 			printf ("status %c%c%c%c%c | signal %04x | snr %04x | ber %08x | unc %08x | ",
@@ -111,11 +115,7 @@ int do_mon(unsigned int adapter, unsigned int frontend, int human_readable)
 		return 0;
 	}
 
-	if (dvbfe_get_info(fe, 0, &fe_info)) {
-		perror("ioctl FE_GET_INFO failed");
-		dvbfe_close(fe);
-		return 0;
-	}
+	dvbfe_get_info(fe, 0, &fe_info, DVBFE_INFO_QUERYTYPE_IMMEDIATE, 0);
 	switch(fe_info.type) {
 	case DVBFE_TYPE_DVBS:
 		fe_type = "DVBS";

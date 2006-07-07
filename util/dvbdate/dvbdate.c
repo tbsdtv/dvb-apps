@@ -348,7 +348,7 @@ int main(int argc, char **argv)
 		errmsg("Unable to open frontend.\n");
 		exit(1);
 	}
-	dvbfe_get_info(fe, 0, &fe_info);
+	dvbfe_get_info(fe, 0, &fe_info, DVBFE_INFO_QUERYTYPE_IMMEDIATE, 0);
 
 /*
  * Get the date from the currently tuned multiplex

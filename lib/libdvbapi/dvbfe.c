@@ -27,6 +27,7 @@
 #include <sys/param.h>
 #include <sys/ioctl.h>
 #include <sys/time.h>
+#include <sys/poll.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <ctype.h>
@@ -130,10 +131,6 @@ static int dvbfe_dvbt_hierarchy_to_kapi[][2] =
 	{ -1, -1 }
 };
 
-struct diseqc_cmd {
-	uint8_t message[6];
-	uint8_t length;
-};
 
 static int lookupval(int val, int reverse, int table[][2])
 {
@@ -225,80 +222,117 @@ void dvbfe_close(struct dvbfe_handle *fehandle)
 	free(fehandle);
 }
 
-int dvbfe_get_info(struct dvbfe_handle *fehandle, enum dvbfe_info_mask querymask, struct dvbfe_info *result)
+extern int dvbfe_get_info(struct dvbfe_handle *fehandle,
+			  enum dvbfe_info_mask querymask,
+			  struct dvbfe_info *result,
+			  enum dvbfe_info_querytype querytype,
+			  int timeout)
 {
 	int returnval = 0;
-	fe_status_t status;
-	struct dvb_frontend_parameters kparams;
+	struct dvb_frontend_event kevent;
+	int ok = 0;
 
-	// retrieve the requested values
-	memset(result, 0, sizeof(result));
-	result->type = fehandle->type;
-	result->name = fehandle->name;
-	if (querymask & DVBFE_INFO_LOCKSTATUS) {
-		if (!ioctl(fehandle->fd, FE_READ_STATUS, &status)) {
-			returnval |= DVBFE_INFO_LOCKSTATUS;
-			if (status & FE_HAS_SIGNAL)
-				result->signal = 1;
-
-			if (status & FE_HAS_CARRIER)
-				result->carrier = 1;
-
-			if (status & FE_HAS_VITERBI)
-				result->viterbi = 1;
-
-			if (status & FE_HAS_SYNC)
-				result->sync = 1;
-
-			if (status & FE_HAS_LOCK)
-				result->lock = 1;
-		}
-	}
-	if (querymask & DVBFE_INFO_FEPARAMS) {
-		if (!ioctl(fehandle->fd, FE_GET_FRONTEND, &kparams)) {
-			returnval |= DVBFE_INFO_FEPARAMS;
-			result->feparams.frequency = kparams.frequency;
-			result->feparams.inversion = lookupval(kparams.inversion, 1, dvbfe_spectral_inversion_to_kapi);
-			switch(fehandle->type) {
-			case FE_QPSK:
-				result->feparams.u.dvbs.symbol_rate = kparams.u.qpsk.symbol_rate;
-				result->feparams.u.dvbs.fec_inner =
-					lookupval(kparams.u.qpsk.fec_inner, 1, dvbfe_code_rate_to_kapi);
-				break;
-
-			case FE_QAM:
-				result->feparams.u.dvbc.symbol_rate = kparams.u.qam.symbol_rate;
-				result->feparams.u.dvbc.fec_inner =
-					lookupval(kparams.u.qam.fec_inner, 1, dvbfe_code_rate_to_kapi);
-				result->feparams.u.dvbc.modulation =
-					lookupval(kparams.u.qam.modulation, 1, dvbfe_dvbc_mod_to_kapi);
-				break;
-
-			case FE_OFDM:
-				result->feparams.u.dvbt.bandwidth =
-					lookupval(kparams.u.ofdm.bandwidth, 1, dvbfe_dvbt_bandwidth_to_kapi);
-				result->feparams.u.dvbt.code_rate_HP =
-					lookupval(kparams.u.ofdm.code_rate_HP, 1, dvbfe_code_rate_to_kapi);
-				result->feparams.u.dvbt.code_rate_LP =
-					lookupval(kparams.u.ofdm.code_rate_LP, 1, dvbfe_code_rate_to_kapi);
-				result->feparams.u.dvbt.constellation =
-					lookupval(kparams.u.ofdm.constellation, 1, dvbfe_dvbt_const_to_kapi);
-				result->feparams.u.dvbt.transmission_mode =
-					lookupval(kparams.u.ofdm.transmission_mode, 1, dvbfe_dvbt_transmit_mode_to_kapi);
-				result->feparams.u.dvbt.guard_interval =
-					lookupval(kparams.u.ofdm.guard_interval, 1, dvbfe_dvbt_guard_interval_to_kapi);
-				result->feparams.u.dvbt.hierarchy_information =
-					lookupval(kparams.u.ofdm.hierarchy_information, 1, dvbfe_dvbt_hierarchy_to_kapi);
-				break;
-
-			case FE_ATSC:
-				result->feparams.u.atsc.modulation =
-					lookupval(kparams.u.vsb.modulation, 1, dvbfe_atsc_mod_to_kapi);
-				break;
+	switch(querytype) {
+	case DVBFE_INFO_QUERYTYPE_IMMEDIATE:
+		if (querymask & DVBFE_INFO_LOCKSTATUS) {
+			if (!ioctl(fehandle->fd, FE_READ_STATUS, &kevent.status)) {
+				returnval |= DVBFE_INFO_LOCKSTATUS;
 			}
 		}
+		if (querymask & DVBFE_INFO_FEPARAMS) {
+			if (!ioctl(fehandle->fd, FE_GET_FRONTEND, &kevent.parameters)) {
+				returnval |= DVBFE_INFO_FEPARAMS;
+			}
+		}
+		break;
 
+	case DVBFE_INFO_QUERYTYPE_LOCKCHANGE:
+		if (timeout) {
+			struct pollfd pollfd;
+			pollfd.fd = fehandle->fd;
+			pollfd.events = POLLIN | POLLERR;
+
+			ok = 1;
+			if (poll(&pollfd, 1, timeout) < 0)
+				ok = 0;;
+			if (pollfd.revents & POLLERR)
+				ok = 0;
+			if (!(pollfd.revents & POLLIN))
+				ok = 0;
+		}
+
+		if (ok &&
+		    ((querymask & DVBFE_INFO_LOCKSTATUS) ||
+		     (querymask & DVBFE_INFO_FEPARAMS))) {
+			if (!ioctl(fehandle->fd, FE_GET_EVENT, &kevent)) {
+				if (querymask & DVBFE_INFO_LOCKSTATUS)
+					returnval |= DVBFE_INFO_LOCKSTATUS;
+				if (querymask & DVBFE_INFO_FEPARAMS)
+					returnval |= DVBFE_INFO_FEPARAMS;
+			}
+		}
+		break;
 	}
+
+	if (returnval & DVBFE_INFO_LOCKSTATUS) {
+		if (kevent.status & FE_HAS_SIGNAL)
+			result->signal = 1;
+
+		if (kevent.status & FE_HAS_CARRIER)
+			result->carrier = 1;
+
+		if (kevent.status & FE_HAS_VITERBI)
+			result->viterbi = 1;
+
+		if (kevent.status & FE_HAS_SYNC)
+			result->sync = 1;
+
+		if (kevent.status & FE_HAS_LOCK)
+			result->lock = 1;
+	}
+
+	if (returnval & DVBFE_INFO_FEPARAMS) {
+		result->feparams.frequency = kevent.parameters.frequency;
+		result->feparams.inversion = lookupval(kevent.parameters.inversion, 1, dvbfe_spectral_inversion_to_kapi);
+		switch(fehandle->type) {
+		case FE_QPSK:
+			result->feparams.u.dvbs.symbol_rate = kevent.parameters.u.qpsk.symbol_rate;
+			result->feparams.u.dvbs.fec_inner =
+				lookupval(kevent.parameters.u.qpsk.fec_inner, 1, dvbfe_code_rate_to_kapi);
+			break;
+
+		case FE_QAM:
+			result->feparams.u.dvbc.symbol_rate = kevent.parameters.u.qam.symbol_rate;
+			result->feparams.u.dvbc.fec_inner =
+				lookupval(kevent.parameters.u.qam.fec_inner, 1, dvbfe_code_rate_to_kapi);
+			result->feparams.u.dvbc.modulation =
+				lookupval(kevent.parameters.u.qam.modulation, 1, dvbfe_dvbc_mod_to_kapi);
+			break;
+
+		case FE_OFDM:
+			result->feparams.u.dvbt.bandwidth =
+				lookupval(kevent.parameters.u.ofdm.bandwidth, 1, dvbfe_dvbt_bandwidth_to_kapi);
+			result->feparams.u.dvbt.code_rate_HP =
+				lookupval(kevent.parameters.u.ofdm.code_rate_HP, 1, dvbfe_code_rate_to_kapi);
+			result->feparams.u.dvbt.code_rate_LP =
+				lookupval(kevent.parameters.u.ofdm.code_rate_LP, 1, dvbfe_code_rate_to_kapi);
+			result->feparams.u.dvbt.constellation =
+				lookupval(kevent.parameters.u.ofdm.constellation, 1, dvbfe_dvbt_const_to_kapi);
+			result->feparams.u.dvbt.transmission_mode =
+				lookupval(kevent.parameters.u.ofdm.transmission_mode, 1, dvbfe_dvbt_transmit_mode_to_kapi);
+			result->feparams.u.dvbt.guard_interval =
+				lookupval(kevent.parameters.u.ofdm.guard_interval, 1, dvbfe_dvbt_guard_interval_to_kapi);
+			result->feparams.u.dvbt.hierarchy_information =
+				lookupval(kevent.parameters.u.ofdm.hierarchy_information, 1, dvbfe_dvbt_hierarchy_to_kapi);
+			break;
+
+		case FE_ATSC:
+			result->feparams.u.atsc.modulation =
+				lookupval(kevent.parameters.u.vsb.modulation, 1, dvbfe_atsc_mod_to_kapi);
+			break;
+		}
+	}
+
 	if (querymask & DVBFE_INFO_BER) {
 		if (!ioctl(fehandle->fd, FE_READ_BER, &result->ber))
 			returnval |= DVBFE_INFO_BER;
@@ -409,6 +443,11 @@ int dvbfe_set(struct dvbfe_handle *fehandle,
 	if (status & FE_HAS_LOCK)
 		return 0;
 	return -ETIMEDOUT;
+}
+
+int dvbfe_get_pollfd(struct dvbfe_handle *handle)
+{
+	return handle->fd;
 }
 
 int dvbfe_set_22k_tone(struct dvbfe_handle *fehandle, enum dvbfe_sec_tone_mode tone)
