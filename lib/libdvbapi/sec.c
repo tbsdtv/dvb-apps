@@ -258,7 +258,7 @@ int dvbfe_diseqc_set_committed_switches(struct dvbfe_handle *fe,
 		data[3] |= 0x10;
 		break;
 	case DISEQC_OSCILLATOR_HIGH:
-		data[3] |= 0x01;
+		data[3] |= 0x11;
 		break;
 	case DISEQC_OSCILLATOR_UNCHANGED:
 		break;
@@ -270,7 +270,7 @@ int dvbfe_diseqc_set_committed_switches(struct dvbfe_handle *fe,
 		break;
 	case DISEQC_POLARIZATION_H:
 	case DISEQC_POLARIZATION_L:
-		data[3] |= 0x02;
+		data[3] |= 0x22;
 		break;
 	default:
 		break;
@@ -280,7 +280,7 @@ int dvbfe_diseqc_set_committed_switches(struct dvbfe_handle *fe,
 		data[3] |= 0x40;
 		break;
 	case DISEQC_SWITCH_B:
-		data[3] |= 0x04;
+		data[3] |= 0x44;
 		break;
 	case DISEQC_SWITCH_UNCHANGED:
 		break;
@@ -290,7 +290,7 @@ int dvbfe_diseqc_set_committed_switches(struct dvbfe_handle *fe,
 		data[3] |= 0x80;
 		break;
 	case DISEQC_SWITCH_B:
-		data[3] |= 0x08;
+		data[3] |= 0x88;
 		break;
 	case DISEQC_SWITCH_UNCHANGED:
 		break;
@@ -316,7 +316,7 @@ int dvbfe_diseqc_set_uncommitted_switches(struct dvbfe_handle *fe,
 		data[3] |= 0x10;
 		break;
 	case DISEQC_SWITCH_B:
-		data[3] |= 0x01;
+		data[3] |= 0x11;
 		break;
 	case DISEQC_SWITCH_UNCHANGED:
 		break;
@@ -326,7 +326,7 @@ int dvbfe_diseqc_set_uncommitted_switches(struct dvbfe_handle *fe,
 		data[3] |= 0x20;
 		break;
 	case DISEQC_SWITCH_B:
-		data[3] |= 0x02;
+		data[3] |= 0x22;
 		break;
 	case DISEQC_SWITCH_UNCHANGED:
 		break;
@@ -336,7 +336,7 @@ int dvbfe_diseqc_set_uncommitted_switches(struct dvbfe_handle *fe,
 		data[3] |= 0x40;
 		break;
 	case DISEQC_SWITCH_B:
-		data[3] |= 0x04;
+		data[3] |= 0x44;
 		break;
 	case DISEQC_SWITCH_UNCHANGED:
 		break;
@@ -346,7 +346,7 @@ int dvbfe_diseqc_set_uncommitted_switches(struct dvbfe_handle *fe,
 		data[3] |= 0x80;
 		break;
 	case DISEQC_SWITCH_B:
-		data[3] |= 0x08;
+		data[3] |= 0x88;
 		break;
 	case DISEQC_SWITCH_UNCHANGED:
 		break;
