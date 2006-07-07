@@ -1,5 +1,5 @@
 /**
- * dvbcfg_sec (i.e. linuxtv SEC format) configuration file support.
+ * dvbsec_cfg (i.e. linuxtv SEC format) configuration file support.
  *
  * Copyright (c) 2006 by Andrew de Quincey <adq_dvb@lidskialf.net>
  *
@@ -138,8 +138,8 @@
  *	DISEQC_ADDRESS_OEM_BASE			= 0xf0
  */
 
-#ifndef DVBCFG_SEC_H
-#define DVBCFG_SEC_H 1
+#ifndef dvbsec_cfg_H
+#define dvbsec_cfg_H 1
 
 #ifdef __cplusplus
 extern "C"
@@ -148,17 +148,16 @@ extern "C"
 
 #include <stdio.h>
 #include <stdint.h>
-#include <libdvbapi/dvbfe.h>
-#include <libdvbapi/sec.h>
+#include <libdvbsec/dvbsec_api.h>
 
 /**
- * Callback function used in dvbcfg_sec_load().
+ * Callback function used in dvbsec_cfg_load().
  *
  * @param private Private information to caller.
  * @param channel The current channel details.
  * @return 0 to continue, 1 to stop loading.
  */
-typedef int (*dvbcfg_sec_callback)(void *private, struct dvbfe_sec_config *sec);
+typedef int (*dvbsec_cfg_callback)(void *private, struct dvbsec_config *sec);
 
 /**
  * Load an SEC file.
@@ -168,8 +167,8 @@ typedef int (*dvbcfg_sec_callback)(void *private, struct dvbfe_sec_config *sec);
  * @param cb Callback function called for each sec loaded from the file.
  * @return 0 on success, or nonzero error code on failure.
  */
-extern int dvbcfg_sec_load(FILE *f, void *private,
-			   dvbcfg_sec_callback cb);
+extern int dvbsec_cfg_load(FILE *f, void *private,
+			   dvbsec_cfg_callback cb);
 
 /**
  * Convenience function to parse an SEC config file. This will also consult the set
@@ -181,9 +180,9 @@ extern int dvbcfg_sec_load(FILE *f, void *private,
  * @param sec Where to put the details if found.
  * @return 0 on success, nonzero on error.
  */
-extern int dvbcfg_sec_find(const char *config_file,
+extern int dvbsec_cfg_find(const char *config_file,
 			   const char *sec_id,
-			   struct dvbfe_sec_config *sec);
+			   struct dvbsec_config *sec);
 
 /**
  * Save SEC format config file.
@@ -193,8 +192,8 @@ extern int dvbcfg_sec_find(const char *config_file,
  * @param count Number of entries in the above array.
  * @return 0 on success, or nonzero error code on failure.
  */
-extern int dvbcfg_sec_save(FILE *f,
-			   struct dvbfe_sec_config *secs,
+extern int dvbsec_cfg_save(FILE *f,
+			   struct dvbsec_config *secs,
 			   int count);
 
 #ifdef __cplusplus

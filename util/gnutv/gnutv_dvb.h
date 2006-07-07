@@ -24,14 +24,14 @@
 #define gnutv_DVB_H 1
 
 #include <libdvbcfg/dvbcfg_zapchannel.h>
-#include <libdvbcfg/dvbcfg_sec.h>
+#include <libdvbsec/dvbsec_api.h>
 
 struct gnutv_dvb_params {
 	int adapter_id;
 	int frontend_id;
 	int demux_id;
 	struct dvbcfg_zapchannel channel;
-	struct dvbfe_sec_config sec;
+	struct dvbsec_config sec;
 	int valid_sec;
 	int output_type;
 	struct dvbfe_handle *fe;

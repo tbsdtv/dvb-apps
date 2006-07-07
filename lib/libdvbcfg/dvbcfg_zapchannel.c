@@ -25,6 +25,7 @@
 #include <malloc.h>
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "dvbcfg_zapchannel.h"
 
@@ -37,18 +38,6 @@ static const struct dvbcfg_setting dvbcfg_inversion_list[] = {
 	{ "INVERSION_ON",   DVBFE_INVERSION_ON   },
 	{ "INVERSION_OFF",  DVBFE_INVERSION_OFF  },
 	{ "INVERSION_AUTO", DVBFE_INVERSION_AUTO },
-	{ NULL, 0 }
-};
-
-static const struct dvbcfg_setting dvbcfg_polarization_list[] = {
-	{ "h", DISEQC_POLARIZATION_H },
-	{ "H", DISEQC_POLARIZATION_H },
-	{ "v", DISEQC_POLARIZATION_V },
-	{ "V", DISEQC_POLARIZATION_V },
-	{ "l", DISEQC_POLARIZATION_L },
-	{ "L", DISEQC_POLARIZATION_L },
-	{ "r", DISEQC_POLARIZATION_R },
-	{ "R", DISEQC_POLARIZATION_R },
 	{ NULL, 0 }
 };
 
@@ -143,6 +132,30 @@ static int dvbcfg_parse_int(char **text)
 	}
 
 	if (sscanf(start, "%i", &value) == 1) {
+		*text = stop;
+		return value;
+	}
+
+	*text = NULL;
+	return -1;
+}
+
+static int dvbcfg_parse_char(char **text)
+{
+	char *start = *text;
+	char *stop = *text;
+	char value;
+
+	while (*stop != '\0') {
+		if (*stop == ':') {
+			*stop = '\0';
+			stop++;
+			break;
+		}
+		stop++;
+	}
+
+	if (sscanf(start, "%c", &value) == 1) {
 		*text = stop;
 		return value;
 	}
@@ -302,8 +315,7 @@ int dvbcfg_zapchannel_parse(FILE *file, dvbcfg_zapcallback callback, void *priva
 			tmp.fe_params.u.dvbs.fec_inner = DVBFE_FEC_AUTO;
 
 			/* polarization */
-			tmp.polarization =
-			    dvbcfg_parse_setting(&line_pos, dvbcfg_polarization_list);
+			tmp.polarization = tolower(dvbcfg_parse_char(&line_pos));
 			if (!line_pos)
 				continue;
 
@@ -433,10 +445,9 @@ int dvbcfg_zapchannel_save(FILE *file, dvbcfg_zapcallback callback, void *privat
 			break;
 
 		case DVBFE_TYPE_DVBS:
-			if ((ret_val = fprintf(file, "%i:%s:%i:%i:",
+			if ((ret_val = fprintf(file, "%i:%c:%i:%i:",
 			    tmp.fe_params.frequency / 1000,
-			    dvbcfg_lookup_setting(tmp.polarization,
-						  dvbcfg_polarization_list),
+			    tmp.polarization,
 			    tmp.diseqc_switch,
 			    tmp.fe_params.u.dvbs.symbol_rate / 1000)) < 0)
 				return ret_val;

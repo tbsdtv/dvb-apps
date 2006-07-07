@@ -28,7 +28,6 @@ extern "C" {
 #endif
 
 #include <libdvbapi/dvbfe.h>
-#include <libdvbapi/sec.h>
 #include <stdio.h>
 
 struct dvbcfg_zapchannel {
@@ -38,7 +37,7 @@ struct dvbcfg_zapchannel {
 	int service_id;
 	enum dvbfe_type fe_type;
 	struct dvbfe_parameters fe_params;
-	enum dvbfe_diseqc_polarization polarization; /* only used for dvb-s */
+	char polarization; /* l,r,v,h - only used for dvb-s */
 	int diseqc_switch; /* only used for dvb-s */
 };
 

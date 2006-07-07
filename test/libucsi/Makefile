@@ -3,7 +3,8 @@
 binaries = testucsi
 
 CPPFLAGS += -I../../lib
-LDLIBS   += ../../lib/libdvbapi/libdvbapi.a ../../lib/libdvbcfg/libdvbcfg.a ../../lib/libucsi/libucsi.a
+LDLIBS   += ../../lib/libdvbapi/libdvbapi.a ../../lib/libdvbcfg/libdvbcfg.a \
+	    ../../lib/libdvbsec/libdvbsec.a  ../../lib/libucsi/libucsi.a
 
 .PHONY: all
 

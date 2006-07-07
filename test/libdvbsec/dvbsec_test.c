@@ -1,5 +1,5 @@
 /**
- * dvbcfg testing.
+ * dvbsec testing.
  *
  * Copyright (c) 2005 by Andrew de Quincey <adq_dvb@lidskialf.net>
  *
@@ -21,16 +21,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <libdvbcfg/dvbcfg_zapchannel.h>
+#include <libdvbsec/dvbsec_cfg.h>
 
 void syntax(void);
 
-struct dvbcfg_zapchannel *channels = NULL;
-int zapcount = 0;
-int zappos = 0;
+struct dvbsec_config *secconfigs = NULL;
+int seccount = 0;
 
-int zapload_callback(struct dvbcfg_zapchannel *channel, void *private);
-int zapsave_callback(struct dvbcfg_zapchannel *channel, void *private);
+int secload_callback(void *private, struct dvbsec_config *sec);
 
 int main(int argc, char *argv[])
 {
@@ -38,14 +36,14 @@ int main(int argc, char *argv[])
                 syntax();
         }
 
-	if (!strcmp(argv[1], "-zapchannel")) {
+	if (!strcmp(argv[1], "-sec")) {
 
 		FILE *f = fopen(argv[2], "r");
 		if (!f) {
 			fprintf(stderr, "Unable to load %s\n", argv[2]);
 			exit(1);
 		}
-		dvbcfg_zapchannel_parse(f, zapload_callback, NULL);
+		dvbsec_cfg_load(f, NULL, secload_callback);
 		fclose(f);
 
 		f = fopen(argv[3], "w");
@@ -53,7 +51,7 @@ int main(int argc, char *argv[])
 			fprintf(stderr, "Unable to write %s\n", argv[3]);
 			exit(1);
 		}
-		dvbcfg_zapchannel_save(f, zapsave_callback, NULL);
+		dvbsec_cfg_save(f, secconfigs, seccount);
 		fclose(f);
 
 	} else {
@@ -63,31 +61,18 @@ int main(int argc, char *argv[])
         exit(0);
 }
 
-int zapload_callback(struct dvbcfg_zapchannel *channel, void *private)
+int secload_callback(void *private, struct dvbsec_config *sec)
 {
 	(void) private;
 
-	struct dvbcfg_zapchannel *tmp = realloc(channels, (zapcount+1) * sizeof(struct dvbcfg_zapchannel));
+	struct dvbsec_config *tmp = realloc(secconfigs, (seccount+1) * sizeof(struct dvbsec_config));
 	if (tmp == NULL) {
 		fprintf(stderr, "Out of memory\n");
 		exit(1);
 	}
-	channels = tmp;
+	secconfigs = tmp;
 
-	memcpy(&channels[zapcount++], channel, sizeof(struct dvbcfg_zapchannel));
-
-	return 0;
-}
-
-int zapsave_callback(struct dvbcfg_zapchannel *channel, void *private)
-{
-	(void) private;
-
-	if (zappos >= zapcount)
-		return 1;
-
-	memcpy(channel, channels + zappos, sizeof(struct dvbcfg_zapchannel));
-	zappos++;
+	memcpy(&secconfigs[seccount++], sec, sizeof(struct dvbsec_config));
 
 	return 0;
 }
@@ -95,6 +80,6 @@ int zapsave_callback(struct dvbcfg_zapchannel *channel, void *private)
 void syntax()
 {
         fprintf(stderr,
-                "Syntax: dvbcfg_test <-zapchannel> <input filename> <output filename>\n");
+                "Syntax: dvbcfg_test <-zapchannel|-sec> <input filename> <output filename>\n");
         exit(1);
 }

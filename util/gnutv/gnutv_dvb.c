@@ -107,12 +107,12 @@ static void *dvbthread_func(void* arg)
 			dvbfe_get_info(params->fe, 0, &result);
 
 			// do we have a valid SEC configuration?
-			struct dvbfe_sec_config *sec = NULL;
+			struct dvbsec_config *sec = NULL;
 			if (params->valid_sec)
 				sec = &params->sec;
 
 			// tune!
-			if (dvbfe_sec_set(params->fe,
+			if (dvbsec_set(params->fe,
 			    		  sec,
 					  params->channel.polarization,
 					  (params->channel.diseqc_switch & 0x01) ? DISEQC_SWITCH_B : DISEQC_SWITCH_A,

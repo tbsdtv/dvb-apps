@@ -1,5 +1,5 @@
 /*
-	libdvbfe - a DVB frontend library
+	libdvbsec - an SEC library
 
 	Copyright (C) 2005 Manu Abraham <manu@kromtek.com>
 	Copyright (C) 2006 Andrew de Quincey <adq_dvb@lidskialf.net>
@@ -17,12 +17,15 @@
 	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 
-#ifndef DVBFE_SEC_H
-#define DVBFE_SEC_H 1
+#ifndef DVBSEC_API_H
+#define DVBSEC_API_H 1
 
 #include <stdint.h>
 
-enum dvbfe_diseqc_framing {
+struct dvbfe_handle;
+struct dvbfe_parameters;
+
+enum dvbsec_diseqc_framing {
 	DISEQC_FRAMING_MASTER_NOREPLY		= 0xE0,
 	DISEQC_FRAMING_MASTER_NOREPLY_REPEAT	= 0xE1,
 	DISEQC_FRAMING_MASTER_REPLY		= 0xE2,
@@ -33,7 +36,7 @@ enum dvbfe_diseqc_framing {
 	DISEQC_FRAMING_SLAVE_UNRECOGNISED 	= 0xE7,
 };
 
-enum dvbfe_diseqc_address {
+enum dvbsec_diseqc_address {
 	DISEQC_ADDRESS_ANY_DEVICE		= 0x00,
 
 	DISEQC_ADDRESS_ANY_LNB_SWITCHER_SMATV	= 0x10,
@@ -60,67 +63,67 @@ enum dvbfe_diseqc_address {
 	DISEQC_ADDRESS_OEM_BASE			= 0xf0,
 };
 
-enum dvbfe_diseqc_reset {
+enum dvbsec_diseqc_reset {
 	DISEQC_RESET,
 	DISEQC_RESET_CLEAR,
 };
 
-enum dvbfe_diseqc_power {
+enum dvbsec_diseqc_power {
 	DISEQC_POWER_OFF,
 	DISEQC_POWER_ON,
 };
 
-enum dvbfe_diseqc_listen {
+enum dvbsec_diseqc_listen {
 	DISEQC_LISTEN_SLEEP,
 	DISEQC_LISTEN_AWAKE,
 };
 
-enum dvbfe_diseqc_polarization {
+enum dvbsec_diseqc_polarization {
 	DISEQC_POLARIZATION_UNCHANGED = 0,
-	DISEQC_POLARIZATION_H,
-	DISEQC_POLARIZATION_V,
-	DISEQC_POLARIZATION_L,
-	DISEQC_POLARIZATION_R,
+	DISEQC_POLARIZATION_H = 'h',
+	DISEQC_POLARIZATION_V = 'v',
+	DISEQC_POLARIZATION_L = 'l',
+	DISEQC_POLARIZATION_R = 'r',
 };
 
-enum dvbfe_diseqc_oscillator {
+enum dvbsec_diseqc_oscillator {
 	DISEQC_OSCILLATOR_UNCHANGED = 0,
 	DISEQC_OSCILLATOR_LOW,
 	DISEQC_OSCILLATOR_HIGH,
 };
 
-enum dvbfe_diseqc_switch {
+enum dvbsec_diseqc_switch {
 	DISEQC_SWITCH_UNCHANGED = 0,
 	DISEQC_SWITCH_A,
 	DISEQC_SWITCH_B,
 };
 
-enum dvbfe_diseqc_analog_id {
+enum dvbsec_diseqc_analog_id {
 	DISEQC_ANALOG_ID_A0,
 	DISEQC_ANALOG_ID_A1,
 };
 
-enum dvbfe_diseqc_drive_mode {
+enum dvbsec_diseqc_drive_mode {
 	DISEQC_DRIVE_MODE_STEPS,
 	DISEQC_DRIVE_MODE_TIMEOUT,
 };
 
-enum dvbfe_diseqc_direction {
+enum dvbsec_diseqc_direction {
 	DISEQC_DIRECTION_EAST,
 	DISEQC_DIRECTION_WEST,
 };
 
-enum dvbfe_sec_config_type {
-	DVBFE_SEC_CONFIG_NONE = 0,
-	DVBFE_SEC_CONFIG_POWER,
-	DVBFE_SEC_CONFIG_STANDARD,
-	DVBFE_SEC_CONFIG_ADVANCED,
+enum dvbsec_config_type {
+	DVBSEC_CONFIG_NONE = 0,
+	DVBSEC_CONFIG_POWER,
+	DVBSEC_CONFIG_STANDARD,
+	DVBSEC_CONFIG_ADVANCED,
 };
 
 
 #define MAX_SEC_CMD_LEN 100
 
-struct dvbfe_sec_config
+struct dvbsec_config
 {
 	char id[32]; /* ID of this SEC config structure */
 	uint32_t switch_frequency; /* switching frequency - supply 0 for none. */
@@ -145,9 +148,9 @@ struct dvbfe_sec_config
 	 * ADVANCED - SEC strings are supplied by the user describing the exact sequence
 	 * of operations to use.
 	 */
-	enum dvbfe_sec_config_type config_type;
+	enum dvbsec_config_type config_type;
 
-	/* stuff for type == DVBFE_SEC_CONFIG_ADVANCED */
+	/* stuff for type == dvbsec_config_ADVANCED */
 	char adv_cmd_lo_h[MAX_SEC_CMD_LEN];			/* ADVANCED SEC command to use for LOW/H. */
 	char adv_cmd_lo_v[MAX_SEC_CMD_LEN];			/* ADVANCED SEC command to use for LOW/V. */
 	char adv_cmd_lo_l[MAX_SEC_CMD_LEN];			/* ADVANCED SEC command to use for LOW/L. */
@@ -165,7 +168,7 @@ struct dvbfe_sec_config
  *
  * Note: Since the SEC configuration structure can be set to disable any SEC
  * operations, this function can be reused for ALL DVB style devices (just
- * set all LOF=0,type=DVBFE_SEC_CONFIG_NONE for devices which do not require
+ * set all LOF=0,type=dvbsec_config_NONE for devices which do not require
  * SEC control).
  *
  * The sec configuration structures can be looked up using the dvbcfg_sec library.
@@ -181,11 +184,11 @@ struct dvbfe_sec_config
  * @return 0 on locked (or if timeout==0 and everything else worked), or
  * nonzero on failure (including no lock).
  */
-extern int dvbfe_sec_set(struct dvbfe_handle *fe,
-			  struct dvbfe_sec_config *sec_config,
-			  enum dvbfe_diseqc_polarization polarization,
-			  enum dvbfe_diseqc_switch sat_pos,
-			  enum dvbfe_diseqc_switch switch_option,
+extern int dvbsec_set(struct dvbfe_handle *fe,
+			  struct dvbsec_config *sec_config,
+			  enum dvbsec_diseqc_polarization polarization,
+			  enum dvbsec_diseqc_switch sat_pos,
+			  enum dvbsec_diseqc_switch switch_option,
 			  struct dvbfe_parameters *params,
 			  int timeout);
 
@@ -202,21 +205,21 @@ extern int dvbfe_sec_set(struct dvbfe_handle *fe,
  * @param switch_option Value to set the "swtch option" switch to.
  * @return 0 on success, or nonzero on error.
  */
-extern int dvbfe_sec_std_sequence(struct dvbfe_handle *fe,
-				  enum dvbfe_diseqc_oscillator oscillator,
-				  enum dvbfe_diseqc_polarization polarization,
-				  enum dvbfe_diseqc_switch sat_pos,
-				  enum dvbfe_diseqc_switch switch_option);
+extern int dvbsec_std_sequence(struct dvbfe_handle *fe,
+				  enum dvbsec_diseqc_oscillator oscillator,
+				  enum dvbsec_diseqc_polarization polarization,
+				  enum dvbsec_diseqc_switch sat_pos,
+				  enum dvbsec_diseqc_switch switch_option);
 
 /**
  * Execute an SEC command string on the provided frontend. Please see the documentation
- * in dvbcfg_sec.h on the command format,
+ * in dvbsec_cfg.h on the command format,
  *
  * @param fe Frontend concerned.
  * @param command The command to execute.
  * @return 0 on success, or nonzero on error.
  */
-extern int dvbfe_sec_command(struct dvbfe_handle *fe, char *command);
+extern int dvbsec_command(struct dvbfe_handle *fe, char *command);
 
 /**
  * Control the reset status of an attached DISEQC device.
@@ -226,9 +229,9 @@ extern int dvbfe_sec_command(struct dvbfe_handle *fe, char *command);
  * @param state The state to set.
  * @return 0 on success, or nonzero on error.
  */
-extern int dvbfe_diseqc_set_reset(struct dvbfe_handle *fe,
-				  enum dvbfe_diseqc_address address,
-				  enum dvbfe_diseqc_reset state);
+extern int dvbsec_diseqc_set_reset(struct dvbfe_handle *fe,
+				  enum dvbsec_diseqc_address address,
+				  enum dvbsec_diseqc_reset state);
 
 /**
  * Control the power status of an attached DISEQC peripheral.
@@ -238,9 +241,9 @@ extern int dvbfe_diseqc_set_reset(struct dvbfe_handle *fe,
  * @param state The state to set.
  * @return 0 on success, or nonzero on error.
  */
-extern int dvbfe_diseqc_set_power(struct dvbfe_handle *fe,
-				  enum dvbfe_diseqc_address address,
-				  enum dvbfe_diseqc_power state);
+extern int dvbsec_diseqc_set_power(struct dvbfe_handle *fe,
+				  enum dvbsec_diseqc_address address,
+				  enum dvbsec_diseqc_power state);
 
 /**
  * Control the listening status of an attached DISEQC peripheral.
@@ -250,9 +253,9 @@ extern int dvbfe_diseqc_set_power(struct dvbfe_handle *fe,
  * @param state The state to set.
  * @return 0 on success, or nonzero on error.
  */
-extern int dvbfe_diseqc_set_listen(struct dvbfe_handle *fe,
-				   enum dvbfe_diseqc_address address,
-				   enum dvbfe_diseqc_listen state);
+extern int dvbsec_diseqc_set_listen(struct dvbfe_handle *fe,
+				   enum dvbsec_diseqc_address address,
+				   enum dvbsec_diseqc_listen state);
 
 /**
  * Set the state of the committed switches of a DISEQC device.
@@ -266,12 +269,12 @@ extern int dvbfe_diseqc_set_listen(struct dvbfe_handle *fe,
  * @param switch_option Value to set the switch option switch to.
  * @return 0 on success, or nonzero on error.
  */
-extern int dvbfe_diseqc_set_committed_switches(struct dvbfe_handle *fe,
-					       enum dvbfe_diseqc_address address,
-					       enum dvbfe_diseqc_oscillator oscillator,
-					       enum dvbfe_diseqc_polarization polarization,
-					       enum dvbfe_diseqc_switch sat_pos,
-					       enum dvbfe_diseqc_switch switch_option);
+extern int dvbsec_diseqc_set_committed_switches(struct dvbfe_handle *fe,
+					       enum dvbsec_diseqc_address address,
+					       enum dvbsec_diseqc_oscillator oscillator,
+					       enum dvbsec_diseqc_polarization polarization,
+					       enum dvbsec_diseqc_switch sat_pos,
+					       enum dvbsec_diseqc_switch switch_option);
 
 /**
  * Set the state of the uncommitted switches of a DISEQC device.
@@ -285,12 +288,12 @@ extern int dvbfe_diseqc_set_committed_switches(struct dvbfe_handle *fe,
  * @param s3 Value to set the S4 switch to.
  * @return 0 on success, or nonzero on error.
  */
-extern int dvbfe_diseqc_set_uncommitted_switches(struct dvbfe_handle *fe,
-						 enum dvbfe_diseqc_address address,
-						 enum dvbfe_diseqc_switch s1,
-						 enum dvbfe_diseqc_switch s2,
-						 enum dvbfe_diseqc_switch s3,
-						 enum dvbfe_diseqc_switch s4);
+extern int dvbsec_diseqc_set_uncommitted_switches(struct dvbfe_handle *fe,
+						 enum dvbsec_diseqc_address address,
+						 enum dvbsec_diseqc_switch s1,
+						 enum dvbsec_diseqc_switch s2,
+						 enum dvbsec_diseqc_switch s3,
+						 enum dvbsec_diseqc_switch s4);
 
 /**
  * Set an analogue value.
@@ -301,9 +304,9 @@ extern int dvbfe_diseqc_set_uncommitted_switches(struct dvbfe_handle *fe,
  * @param value The value to set.
  * @return 0 on success, or nonzero on error.
  */
-extern int dvbfe_diseqc_set_analog_value(struct dvbfe_handle *fe,
-					 enum dvbfe_diseqc_address address,
-					 enum dvbfe_diseqc_analog_id id,
+extern int dvbsec_diseqc_set_analog_value(struct dvbfe_handle *fe,
+					 enum dvbsec_diseqc_address address,
+					 enum dvbsec_diseqc_analog_id id,
 					 uint8_t value);
 
 /**
@@ -314,8 +317,8 @@ extern int dvbfe_diseqc_set_analog_value(struct dvbfe_handle *fe,
  * @param frequency The frequency to set in GHz.
  * @return 0 on success, or nonzero on error.
  */
-extern int dvbfe_diseqc_set_frequency(struct dvbfe_handle *fe,
-				      enum dvbfe_diseqc_address address,
+extern int dvbsec_diseqc_set_frequency(struct dvbfe_handle *fe,
+				      enum dvbsec_diseqc_address address,
 				      uint32_t frequency);
 
 /**
@@ -326,8 +329,8 @@ extern int dvbfe_diseqc_set_frequency(struct dvbfe_handle *fe,
  * @param channel ID of the channel to set.
  * @return 0 on success, or nonzero on error.
  */
-extern int dvbfe_diseqc_set_channel(struct dvbfe_handle *fe,
-				    enum dvbfe_diseqc_address address,
+extern int dvbsec_diseqc_set_channel(struct dvbfe_handle *fe,
+				    enum dvbsec_diseqc_address address,
 				    uint16_t channel);
 
 /**
@@ -337,8 +340,8 @@ extern int dvbfe_diseqc_set_channel(struct dvbfe_handle *fe,
  * @param address Address of the device.
  * @return 0 on success, or nonzero on error.
  */
-extern int dvbfe_diseqc_halt_satpos(struct dvbfe_handle *fe,
-				    enum dvbfe_diseqc_address address);
+extern int dvbsec_diseqc_halt_satpos(struct dvbfe_handle *fe,
+				    enum dvbsec_diseqc_address address);
 
 /**
  * Disable satellite positioner limits.
@@ -347,8 +350,8 @@ extern int dvbfe_diseqc_halt_satpos(struct dvbfe_handle *fe,
  * @param address Address of the device.
  * @return 0 on success, or nonzero on error.
  */
-extern int dvbfe_diseqc_disable_satpos_limits(struct dvbfe_handle *fe,
-					      enum dvbfe_diseqc_address address);
+extern int dvbsec_diseqc_disable_satpos_limits(struct dvbfe_handle *fe,
+					      enum dvbsec_diseqc_address address);
 
 /**
  * Set satellite positioner limits.
@@ -357,9 +360,9 @@ extern int dvbfe_diseqc_disable_satpos_limits(struct dvbfe_handle *fe,
  * @param address Address of the device.
  * @return 0 on success, or nonzero on error.
  */
-extern int dvbfe_diseqc_set_satpos_limit(struct dvbfe_handle *fe,
-					 enum dvbfe_diseqc_address address,
-					 enum dvbfe_diseqc_direction direction);
+extern int dvbsec_diseqc_set_satpos_limit(struct dvbfe_handle *fe,
+					 enum dvbsec_diseqc_address address,
+					 enum dvbsec_diseqc_direction direction);
 
 /**
  * Drive satellite positioner motor.
@@ -372,10 +375,10 @@ extern int dvbfe_diseqc_set_satpos_limit(struct dvbfe_handle *fe,
  * @param value Value associated with the drive mode (range 0->127)
  * @return 0 on success, or nonzero on error.
  */
-extern int dvbfe_diseqc_drive_satpos_motor(struct dvbfe_handle *fe,
-					   enum dvbfe_diseqc_address address,
-					   enum dvbfe_diseqc_direction direction,
-					   enum dvbfe_diseqc_drive_mode mode,
+extern int dvbsec_diseqc_drive_satpos_motor(struct dvbfe_handle *fe,
+					   enum dvbsec_diseqc_address address,
+					   enum dvbsec_diseqc_direction direction,
+					   enum dvbsec_diseqc_drive_mode mode,
 					   uint8_t value);
 
 /**
@@ -386,8 +389,8 @@ extern int dvbfe_diseqc_drive_satpos_motor(struct dvbfe_handle *fe,
  * @param id ID of the preset.
  * @return 0 on success, or nonzero on error.
  */
-extern int dvbfe_diseqc_store_satpos_preset(struct dvbfe_handle *fe,
-					    enum dvbfe_diseqc_address address,
+extern int dvbsec_diseqc_store_satpos_preset(struct dvbfe_handle *fe,
+					    enum dvbsec_diseqc_address address,
 					    uint8_t id);
 
 /**
@@ -398,8 +401,8 @@ extern int dvbfe_diseqc_store_satpos_preset(struct dvbfe_handle *fe,
  * @param id ID of the preset.
  * @return 0 on success, or nonzero on error.
  */
-extern int dvbfe_diseqc_goto_satpos_preset(struct dvbfe_handle *fe,
-					   enum dvbfe_diseqc_address address,
+extern int dvbsec_diseqc_goto_satpos_preset(struct dvbfe_handle *fe,
+					   enum dvbsec_diseqc_address address,
 					   uint8_t id);
 
 /**
@@ -412,8 +415,8 @@ extern int dvbfe_diseqc_goto_satpos_preset(struct dvbfe_handle *fe,
  * @param val2 value2 (range 0->255, pass -1 to ignore).
  * @return 0 on success, or nonzero on error.
  */
-extern int dvbfe_diseqc_recalculate_satpos_positions(struct dvbfe_handle *fe,
-						     enum dvbfe_diseqc_address address,
+extern int dvbsec_diseqc_recalculate_satpos_positions(struct dvbfe_handle *fe,
+						     enum dvbsec_diseqc_address address,
 						     int val1,
 						     int val2);
 
@@ -426,8 +429,8 @@ extern int dvbfe_diseqc_recalculate_satpos_positions(struct dvbfe_handle *fe,
  * @param angle Angle to rotate to (-256.0 -> 512.0)
  * @return 0 on success, or nonzero on error.
  */
-extern int dvbfe_diseqc_goto_rotator_bearing(struct dvbfe_handle *fe,
-					     enum dvbfe_diseqc_address address,
+extern int dvbsec_diseqc_goto_rotator_bearing(struct dvbfe_handle *fe,
+					     enum dvbsec_diseqc_address address,
 					     float angle);
 
 #endif

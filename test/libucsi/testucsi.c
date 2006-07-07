@@ -30,6 +30,7 @@
 #include <libdvbapi/dvbdemux.h>
 #include <libdvbapi/dvbfe.h>
 #include <libdvbcfg/dvbcfg_zapchannel.h>
+#include <libdvbsec/dvbsec_api.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <errno.h>
@@ -179,7 +180,7 @@ int channels_cb(struct dvbcfg_zapchannel *channel, void *private)
 
 		char *diseqc = NULL;
 		switch(channel->polarization) {
-		case DISEQC_POLARIZATION_H:
+		case 'h':
 			if (channel->fe_params.frequency < 11700000) {
 				freqadjust = 9750000;
 				diseqc = diseqc_h_low;
@@ -189,7 +190,7 @@ int channels_cb(struct dvbcfg_zapchannel *channel, void *private)
 			}
 			break;
 
-		case DISEQC_POLARIZATION_V:
+		case 'v':
 			if (channel->fe_params.frequency < 11700000) {
 				freqadjust = 9750000;
 				diseqc = diseqc_v_low;
@@ -204,7 +205,7 @@ int channels_cb(struct dvbcfg_zapchannel *channel, void *private)
 		}
 
 		if (diseqc)
-			dvbfe_sec_command(fe, diseqc);
+			dvbsec_command(fe, diseqc);
         }
 
 	channel->fe_params.frequency -= freqadjust;

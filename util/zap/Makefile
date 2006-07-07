@@ -8,8 +8,8 @@ binaries = zap
 inst_bin = $(binaries)
 
 CPPFLAGS += -I../../lib
-LDFLAGS  += -L../../lib/libdvbapi -L../../lib/libdvbcfg -L../../lib/libdvben50221 -L../../lib/libucsi
-LDLIBS   += -ldvbcfg -ldvben50221 -ldvbapi -lucsi -lpthread
+LDFLAGS  += -L../../lib/libdvbapi -L../../lib/libdvbsec  -L../../lib/libdvbcfg -L../../lib/libdvben50221 -L../../lib/libucsi
+LDLIBS   += -ldvbcfg -ldvben50221 -ldvbsec -ldvbapi -lucsi -lpthread
 
 .PHONY: all
 

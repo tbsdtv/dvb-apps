@@ -1,5 +1,5 @@
 /**
- * dvbcfg_sec (i.e. linuxtv sec format) configuration file support.
+ * dvbsec_cfg (i.e. linuxtv sec format) configuration file support.
  *
  * Copyright (c) 2005 by Andrew de Quincey <adq_dvb@lidskialf.net>
  *
@@ -25,7 +25,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <errno.h>
-#include "dvbcfg_sec.h"
+#include "dvbsec_cfg.h"
 
 int dvbcfg_issection(char* line, char* sectionname)
 {
@@ -74,11 +74,11 @@ char* dvbcfg_iskey(char* line, char* keyname)
 	return line;
 }
 
-int dvbcfg_sec_load(FILE *f,
+int dvbsec_cfg_load(FILE *f,
 		    void *private,
-		    dvbcfg_sec_callback cb)
+		    dvbsec_cfg_callback cb)
 {
-	struct dvbfe_sec_config tmpsec;
+	struct dvbsec_config tmpsec;
 	char *linebuf = NULL;
 	size_t line_size = 0;
 	int len;
@@ -136,13 +136,13 @@ int dvbcfg_sec_load(FILE *f,
 			tmpsec.lof_hi_r = atoi(value);
 		} else if ((value = dvbcfg_iskey(line, "config-type")) != NULL) {
 			if (!strcasecmp(value, "none")) {
-				tmpsec.config_type = DVBFE_SEC_CONFIG_NONE;
+				tmpsec.config_type = DVBSEC_CONFIG_NONE;
 			} else if (!strcasecmp(value, "power")) {
-				tmpsec.config_type = DVBFE_SEC_CONFIG_POWER;
+				tmpsec.config_type = DVBSEC_CONFIG_POWER;
 			} else if (!strcasecmp(value, "standard")) {
-				tmpsec.config_type = DVBFE_SEC_CONFIG_STANDARD;
+				tmpsec.config_type = DVBSEC_CONFIG_STANDARD;
 			} else if (!strcasecmp(value, "advanced")) {
-				tmpsec.config_type = DVBFE_SEC_CONFIG_ADVANCED;
+				tmpsec.config_type = DVBSEC_CONFIG_ADVANCED;
 			} else {
 				insection = 0;
 			}
@@ -178,22 +178,22 @@ int dvbcfg_sec_load(FILE *f,
 	return 0;
 }
 
-static int dvbcfg_sec_find_callback(void *private, struct dvbfe_sec_config *sec);
-static int dvbcfg_sec_find_default(const char *sec_id, struct dvbfe_sec_config *sec);
+static int dvbsec_cfg_find_callback(void *private, struct dvbsec_config *sec);
+static int dvbsec_cfg_find_default(const char *sec_id, struct dvbsec_config *sec);
 
 struct findparams {
 	const char *sec_id;
-	struct dvbfe_sec_config *sec_dest;
+	struct dvbsec_config *sec_dest;
 };
 
-int dvbcfg_sec_find(const char *config_file,
+int dvbsec_cfg_find(const char *config_file,
 		    const char *sec_id,
-		    struct dvbfe_sec_config *sec)
+		    struct dvbsec_config *sec)
 {
 	struct findparams findp;
 
 	// clear the structure
-	memset(sec, 0, sizeof(struct dvbfe_sec_config));
+	memset(sec, 0, sizeof(struct dvbsec_config));
 
 	// open the file
 	if (config_file != NULL) {
@@ -204,7 +204,7 @@ int dvbcfg_sec_find(const char *config_file,
 		// parse each entry
 		findp.sec_id = sec_id;
 		findp.sec_dest = sec;
-		dvbcfg_sec_load(f, &findp, dvbcfg_sec_find_callback);
+		dvbsec_cfg_load(f, &findp, dvbsec_cfg_find_callback);
 
 		// done
 		fclose(f);
@@ -214,22 +214,22 @@ int dvbcfg_sec_find(const char *config_file,
 			return 0;
 	}
 
-	return dvbcfg_sec_find_default(sec_id, sec);
+	return dvbsec_cfg_find_default(sec_id, sec);
 }
 
-static int dvbcfg_sec_find_callback(void *private, struct dvbfe_sec_config *sec)
+static int dvbsec_cfg_find_callback(void *private, struct dvbsec_config *sec)
 {
 	struct findparams *findp = private;
 
 	if (strcmp(findp->sec_id, sec->id))
 		return 0;
 
-	memcpy(findp->sec_dest, sec, sizeof(struct dvbfe_sec_config));
+	memcpy(findp->sec_dest, sec, sizeof(struct dvbsec_config));
 	return 1;
 }
 
-int dvbcfg_sec_save(FILE *f,
-		    struct dvbfe_sec_config *secs,
+int dvbsec_cfg_save(FILE *f,
+		    struct dvbsec_config *secs,
 		    int count)
 {
 	int i;
@@ -237,16 +237,16 @@ int dvbcfg_sec_save(FILE *f,
 	for(i=0; i<count; i++) {
 		char *config_type = "";
 		switch(secs[i].config_type) {
-		case DVBFE_SEC_CONFIG_NONE:
+		case DVBSEC_CONFIG_NONE:
 			config_type = "none";
 			break;
-		case DVBFE_SEC_CONFIG_POWER:
+		case DVBSEC_CONFIG_POWER:
 			config_type = "power";
 			break;
-		case DVBFE_SEC_CONFIG_STANDARD:
+		case DVBSEC_CONFIG_STANDARD:
 			config_type = "standard";
 			break;
-		case DVBFE_SEC_CONFIG_ADVANCED:
+		case DVBSEC_CONFIG_ADVANCED:
 			config_type = "advanced";
 			break;
 		}
@@ -271,7 +271,7 @@ int dvbcfg_sec_save(FILE *f,
 			fprintf(f, "lof-hi-r=%i\n", secs[i].lof_hi_r);
 		fprintf(f, "config-type=%s\n", config_type);
 
-		if (secs[i].config_type == DVBFE_SEC_CONFIG_ADVANCED) {
+		if (secs[i].config_type == DVBSEC_CONFIG_ADVANCED) {
 			if (secs[i].adv_cmd_lo_h[0])
 				fprintf(f, "cmd-lo-h=%s\n", secs[i].adv_cmd_lo_h);
 			if (secs[i].adv_cmd_lo_v[0])
@@ -296,11 +296,11 @@ int dvbcfg_sec_save(FILE *f,
 	return 0;
 }
 
-static struct dvbfe_sec_config defaults[] = {
+static struct dvbsec_config defaults[] = {
 
 	{
 		.id = "NULL",
-		.config_type = DVBFE_SEC_CONFIG_STANDARD,
+		.config_type = DVBSEC_CONFIG_STANDARD,
 	},
 	{
 		.id = "UNIVERSAL",
@@ -309,54 +309,54 @@ static struct dvbfe_sec_config defaults[] = {
 		.lof_lo_h = 9750000,
 		.lof_hi_v = 10600000,
 		.lof_hi_h = 10600000,
-		.config_type = DVBFE_SEC_CONFIG_STANDARD,
+		.config_type = DVBSEC_CONFIG_STANDARD,
 	},
 	{
 		.id = "DBS",
 		.switch_frequency = 0,
 		.lof_lo_v = 11250000,
 		.lof_lo_h = 11250000,
-		.config_type = DVBFE_SEC_CONFIG_STANDARD,
+		.config_type = DVBSEC_CONFIG_STANDARD,
 	},
 	{
 		.id = "STANDARD",
 		.switch_frequency = 0,
 		.lof_lo_v = 10000000,
 		.lof_lo_h = 10000000,
-		.config_type = DVBFE_SEC_CONFIG_STANDARD,
+		.config_type = DVBSEC_CONFIG_STANDARD,
 	},
 	{
 		.id = "ENHANCED",
 		.switch_frequency = 0,
 		.lof_lo_v = 9750000,
 		.lof_lo_h = 9750000,
-		.config_type = DVBFE_SEC_CONFIG_STANDARD,
+		.config_type = DVBSEC_CONFIG_STANDARD,
 	},
 	{
 		.id = "C-BAND",
 		.switch_frequency = 0,
 		.lof_lo_v = 5150000,
 		.lof_lo_h = 5150000,
-		.config_type = DVBFE_SEC_CONFIG_POWER,
+		.config_type = DVBSEC_CONFIG_POWER,
 	},
 	{
 		.id = "C-MULTI",
 		.switch_frequency = 0,
 		.lof_lo_v = 5150000,
 		.lof_lo_h = 5750000,
-		.config_type = DVBFE_SEC_CONFIG_POWER,
+		.config_type = DVBSEC_CONFIG_POWER,
 	},
 };
-#define defaults_count (sizeof(defaults) / sizeof(struct dvbfe_sec_config))
+#define defaults_count (sizeof(defaults) / sizeof(struct dvbsec_config))
 
-static int dvbcfg_sec_find_default(const char *sec_id,
-				   struct dvbfe_sec_config *sec)
+static int dvbsec_cfg_find_default(const char *sec_id,
+				   struct dvbsec_config *sec)
 {
 	unsigned int i;
 
 	for(i=0; i< defaults_count; i++) {
 		if (!strncmp(sec_id, defaults[i].id, sizeof(defaults[i].id))) {
-			memcpy(sec, &defaults[i], sizeof(struct dvbfe_sec_config));
+			memcpy(sec, &defaults[i], sizeof(struct dvbsec_config));
 			return 0;
 		}
 	}

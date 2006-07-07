@@ -30,7 +30,7 @@
 #include <sys/poll.h>
 #include <libdvbapi/dvbdemux.h>
 #include <libdvbapi/dvbaudio.h>
-#include <libdvbcfg/dvbcfg_sec.h>
+#include <libdvbsec/dvbsec_cfg.h>
 #include <libucsi/mpeg/section.h>
 #include "gnutv.h"
 #include "gnutv_dvb.h"
@@ -287,7 +287,7 @@ int main(int argc, char *argv[])
 		// look it up if one were supplied
 		gnutv_dvb_params.valid_sec = 0;
 		if (secid != NULL) {
-			if (dvbcfg_sec_find(secfile, secid,
+			if (dvbsec_cfg_find(secfile, secid,
 					&gnutv_dvb_params.sec)) {
 				fprintf(stderr, "Unable to find suitable sec/lnb configuration for channel\n");
 				exit(1);

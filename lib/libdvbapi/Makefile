@@ -5,16 +5,14 @@ includes = dvbaudio.h \
            dvbdemux.h \
            dvbfe.h    \
            dvbnet.h   \
-           dvbvideo.h \
-           sec.h
+           dvbvideo.h
 
 objects  = dvbaudio.o \
            dvbca.o    \
            dvbdemux.o \
            dvbfe.o    \
            dvbnet.o   \
-           dvbvideo.o \
-           sec.o
+           dvbvideo.o
 
 lib_name = libdvbapi
 

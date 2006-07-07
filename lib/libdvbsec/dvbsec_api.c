@@ -1,20 +1,39 @@
+/*
+	libdvbsec - an SEC library
+
+	Copyright (C) 2005 Manu Abraham <manu@kromtek.com>
+	Copyright (C) 2006 Andrew de Quincey <adq_dvb@lidskialf.net>
+
+	This library is free software; you can redistribute it and/or
+	modify it under the terms of the GNU Lesser General Public
+	License as published by the Free Software Foundation; either
+	version 2.1 of the License, or (at your option) any later version.
+	This library is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+	Lesser General Public License for more details.
+	You should have received a copy of the GNU Lesser General Public
+	License along with this library; if not, write to the Free Software
+	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+*/
+
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
 #include <stdio.h>
 #include <ctype.h>
-#include "dvbfe.h"
-#include "sec.h"
+#include <libdvbapi/dvbfe.h>
+#include "dvbsec_api.h"
 
-// uncomment this to make dvbfe_sec_command print out debug instead of talking to a frontend
+// uncomment this to make dvbsec_command print out debug instead of talking to a frontend
 // #define TEST_SEC_COMMAND 1
 
-int dvbfe_sec_set(struct dvbfe_handle *fe,
-		   struct dvbfe_sec_config *sec_config,
-		   enum dvbfe_diseqc_polarization polarization,
-		   enum dvbfe_diseqc_switch sat_pos,
-		   enum dvbfe_diseqc_switch switch_option,
+int dvbsec_set(struct dvbfe_handle *fe,
+		   struct dvbsec_config *sec_config,
+		   enum dvbsec_diseqc_polarization polarization,
+		   enum dvbsec_diseqc_switch sat_pos,
+		   enum dvbsec_diseqc_switch switch_option,
 		   struct dvbfe_parameters *params,
 		   int timeout)
 {
@@ -25,21 +44,21 @@ int dvbfe_sec_set(struct dvbfe_handle *fe,
 	// perform SEC
 	if (sec_config != NULL) {
 		switch(sec_config->config_type) {
-		case DVBFE_SEC_CONFIG_NONE:
+		case DVBSEC_CONFIG_NONE:
 			break;
 
-		case DVBFE_SEC_CONFIG_POWER:
+		case DVBSEC_CONFIG_POWER:
 			dvbfe_set_voltage(fe, DVBFE_SEC_VOLTAGE_13);
 			break;
 
-		case DVBFE_SEC_CONFIG_STANDARD:
+		case DVBSEC_CONFIG_STANDARD:
 		{
 			// calculate the correct oscillator value
-			enum dvbfe_diseqc_oscillator osc = DISEQC_OSCILLATOR_LOW;
+			enum dvbsec_diseqc_oscillator osc = DISEQC_OSCILLATOR_LOW;
 			if (sec_config->switch_frequency && (sec_config->switch_frequency < params->frequency))
 				osc = DISEQC_OSCILLATOR_HIGH;
 
-			if ((tmp = dvbfe_sec_std_sequence(fe,
+			if ((tmp = dvbsec_std_sequence(fe,
 			     				  osc,
 							  polarization,
 							  sat_pos,
@@ -48,7 +67,7 @@ int dvbfe_sec_set(struct dvbfe_handle *fe,
 			break;
 		}
 
-		case DVBFE_SEC_CONFIG_ADVANCED:
+		case DVBSEC_CONFIG_ADVANCED:
 		{
 			// are we high or not?
 			int high = 0;
@@ -88,7 +107,7 @@ int dvbfe_sec_set(struct dvbfe_handle *fe,
 
 			// do it
 			if (cmd)
-				if ((tmp = dvbfe_sec_command(fe, cmd)) < 0)
+				if ((tmp = dvbsec_command(fe, cmd)) < 0)
 					return tmp;
 			break;
 		}
@@ -150,11 +169,11 @@ int dvbfe_sec_set(struct dvbfe_handle *fe,
 	return dvbfe_set(fe, topass, timeout);
 }
 
-int dvbfe_sec_std_sequence(struct dvbfe_handle *fe,
-			   enum dvbfe_diseqc_oscillator oscillator,
-			   enum dvbfe_diseqc_polarization polarization,
-			   enum dvbfe_diseqc_switch sat_pos,
-			   enum dvbfe_diseqc_switch switch_option)
+int dvbsec_std_sequence(struct dvbfe_handle *fe,
+			   enum dvbsec_diseqc_oscillator oscillator,
+			   enum dvbsec_diseqc_polarization polarization,
+			   enum dvbsec_diseqc_switch sat_pos,
+			   enum dvbsec_diseqc_switch switch_option)
 {
 	dvbfe_set_22k_tone(fe, DVBFE_SEC_TONE_OFF);
 
@@ -171,7 +190,7 @@ int dvbfe_sec_std_sequence(struct dvbfe_handle *fe,
 		return -EINVAL;
 	}
 
-	dvbfe_diseqc_set_committed_switches(fe,
+	dvbsec_diseqc_set_committed_switches(fe,
 					    DISEQC_ADDRESS_ANY_DEVICE,
 					    oscillator,
 					    polarization,
@@ -208,9 +227,9 @@ int dvbfe_sec_std_sequence(struct dvbfe_handle *fe,
 	return 0;
 }
 
-int dvbfe_diseqc_set_reset(struct dvbfe_handle *fe,
-			   enum dvbfe_diseqc_address address,
-			   enum dvbfe_diseqc_reset state)
+int dvbsec_diseqc_set_reset(struct dvbfe_handle *fe,
+			   enum dvbsec_diseqc_address address,
+			   enum dvbsec_diseqc_reset state)
 {
 	uint8_t data[] = { DISEQC_FRAMING_MASTER_NOREPLY, address, 0x00 };
 
@@ -220,9 +239,9 @@ int dvbfe_diseqc_set_reset(struct dvbfe_handle *fe,
 	return dvbfe_do_diseqc_command(fe, data, sizeof(data));
 }
 
-int dvbfe_diseqc_set_power(struct dvbfe_handle *fe,
-			   enum dvbfe_diseqc_address address,
-			   enum dvbfe_diseqc_power state)
+int dvbsec_diseqc_set_power(struct dvbfe_handle *fe,
+			   enum dvbsec_diseqc_address address,
+			   enum dvbsec_diseqc_power state)
 {
 	uint8_t data[] = { DISEQC_FRAMING_MASTER_NOREPLY, address, 0x02 };
 
@@ -232,9 +251,9 @@ int dvbfe_diseqc_set_power(struct dvbfe_handle *fe,
 	return dvbfe_do_diseqc_command(fe, data, sizeof(data));
 }
 
-int dvbfe_diseqc_set_listen(struct dvbfe_handle *fe,
-			    enum dvbfe_diseqc_address address,
-			    enum dvbfe_diseqc_listen state)
+int dvbsec_diseqc_set_listen(struct dvbfe_handle *fe,
+			    enum dvbsec_diseqc_address address,
+			    enum dvbsec_diseqc_listen state)
 {
 	uint8_t data[] = { DISEQC_FRAMING_MASTER_NOREPLY, address, 0x30 };
 
@@ -244,12 +263,12 @@ int dvbfe_diseqc_set_listen(struct dvbfe_handle *fe,
 	return dvbfe_do_diseqc_command(fe, data, sizeof(data));
 }
 
-int dvbfe_diseqc_set_committed_switches(struct dvbfe_handle *fe,
-					enum dvbfe_diseqc_address address,
-					enum dvbfe_diseqc_oscillator oscillator,
-					enum dvbfe_diseqc_polarization polarization,
-					enum dvbfe_diseqc_switch sat_pos,
-					enum dvbfe_diseqc_switch switch_option)
+int dvbsec_diseqc_set_committed_switches(struct dvbfe_handle *fe,
+					enum dvbsec_diseqc_address address,
+					enum dvbsec_diseqc_oscillator oscillator,
+					enum dvbsec_diseqc_polarization polarization,
+					enum dvbsec_diseqc_switch sat_pos,
+					enum dvbsec_diseqc_switch switch_option)
 {
 	uint8_t data[] = { DISEQC_FRAMING_MASTER_NOREPLY, address, 0x38, 0x00 };
 
@@ -302,12 +321,12 @@ int dvbfe_diseqc_set_committed_switches(struct dvbfe_handle *fe,
 	return dvbfe_do_diseqc_command(fe, data, sizeof(data));
 }
 
-int dvbfe_diseqc_set_uncommitted_switches(struct dvbfe_handle *fe,
-					  enum dvbfe_diseqc_address address,
-					  enum dvbfe_diseqc_switch s1,
-					  enum dvbfe_diseqc_switch s2,
-					  enum dvbfe_diseqc_switch s3,
-					  enum dvbfe_diseqc_switch s4)
+int dvbsec_diseqc_set_uncommitted_switches(struct dvbfe_handle *fe,
+					  enum dvbsec_diseqc_address address,
+					  enum dvbsec_diseqc_switch s1,
+					  enum dvbsec_diseqc_switch s2,
+					  enum dvbsec_diseqc_switch s3,
+					  enum dvbsec_diseqc_switch s4)
 {
 	uint8_t data[] = { DISEQC_FRAMING_MASTER_NOREPLY, address, 0x39, 0x00 };
 
@@ -358,9 +377,9 @@ int dvbfe_diseqc_set_uncommitted_switches(struct dvbfe_handle *fe,
 	return dvbfe_do_diseqc_command(fe, data, sizeof(data));
 }
 
-int dvbfe_diseqc_set_analog_value(struct dvbfe_handle *fe,
-				  enum dvbfe_diseqc_address address,
-				  enum dvbfe_diseqc_analog_id id,
+int dvbsec_diseqc_set_analog_value(struct dvbfe_handle *fe,
+				  enum dvbsec_diseqc_address address,
+				  enum dvbsec_diseqc_analog_id id,
 				  uint8_t value)
 {
 	uint8_t data[] = { DISEQC_FRAMING_MASTER_NOREPLY, address, 0x48, value };
@@ -371,8 +390,8 @@ int dvbfe_diseqc_set_analog_value(struct dvbfe_handle *fe,
 	return dvbfe_do_diseqc_command(fe, data, sizeof(data));
 }
 
-int dvbfe_diseqc_set_frequency(struct dvbfe_handle *fe,
-			       enum dvbfe_diseqc_address address,
+int dvbsec_diseqc_set_frequency(struct dvbfe_handle *fe,
+			       enum dvbsec_diseqc_address address,
 			       uint32_t frequency)
 {
 	uint8_t data[] = { DISEQC_FRAMING_MASTER_NOREPLY, address, 0x58, 0x00, 0x00, 0x00 };
@@ -395,8 +414,8 @@ int dvbfe_diseqc_set_frequency(struct dvbfe_handle *fe,
 	return dvbfe_do_diseqc_command(fe, data, len);
 }
 
-int dvbfe_diseqc_set_channel(struct dvbfe_handle *fe,
-			     enum dvbfe_diseqc_address address,
+int dvbsec_diseqc_set_channel(struct dvbfe_handle *fe,
+			     enum dvbsec_diseqc_address address,
 			     uint16_t channel)
 {
 	uint8_t data[] = { DISEQC_FRAMING_MASTER_NOREPLY, address, 0x59, 0x00, 0x00};
@@ -407,25 +426,25 @@ int dvbfe_diseqc_set_channel(struct dvbfe_handle *fe,
 	return dvbfe_do_diseqc_command(fe, data, sizeof(data));
 }
 
-int dvbfe_diseqc_halt_satpos(struct dvbfe_handle *fe,
-			     enum dvbfe_diseqc_address address)
+int dvbsec_diseqc_halt_satpos(struct dvbfe_handle *fe,
+			     enum dvbsec_diseqc_address address)
 {
 	uint8_t data[] = { DISEQC_FRAMING_MASTER_NOREPLY, address, 0x60};
 
 	return dvbfe_do_diseqc_command(fe, data, sizeof(data));
 }
 
-int dvbfe_diseqc_disable_satpos_limits(struct dvbfe_handle *fe,
-				       enum dvbfe_diseqc_address address)
+int dvbsec_diseqc_disable_satpos_limits(struct dvbfe_handle *fe,
+				       enum dvbsec_diseqc_address address)
 {
 	uint8_t data[] = { DISEQC_FRAMING_MASTER_NOREPLY, address, 0x63};
 
 	return dvbfe_do_diseqc_command(fe, data, sizeof(data));
 }
 
-int dvbfe_diseqc_set_satpos_limit(struct dvbfe_handle *fe,
-				  enum dvbfe_diseqc_address address,
-				  enum dvbfe_diseqc_direction direction)
+int dvbsec_diseqc_set_satpos_limit(struct dvbfe_handle *fe,
+				  enum dvbsec_diseqc_address address,
+				  enum dvbsec_diseqc_direction direction)
 {
 	uint8_t data[] = { DISEQC_FRAMING_MASTER_NOREPLY, address, 0x66};
 
@@ -435,10 +454,10 @@ int dvbfe_diseqc_set_satpos_limit(struct dvbfe_handle *fe,
 	return dvbfe_do_diseqc_command(fe, data, sizeof(data));
 }
 
-int dvbfe_diseqc_drive_satpos_motor(struct dvbfe_handle *fe,
-				    enum dvbfe_diseqc_address address,
-				    enum dvbfe_diseqc_direction direction,
-				    enum dvbfe_diseqc_drive_mode mode,
+int dvbsec_diseqc_drive_satpos_motor(struct dvbfe_handle *fe,
+				    enum dvbsec_diseqc_address address,
+				    enum dvbsec_diseqc_direction direction,
+				    enum dvbsec_diseqc_drive_mode mode,
 				    uint8_t value)
 {
 	uint8_t data[] = { DISEQC_FRAMING_MASTER_NOREPLY, address, 0x68, 0x00};
@@ -458,8 +477,8 @@ int dvbfe_diseqc_drive_satpos_motor(struct dvbfe_handle *fe,
 	return dvbfe_do_diseqc_command(fe, data, sizeof(data));
 }
 
-int dvbfe_diseqc_store_satpos_preset(struct dvbfe_handle *fe,
-				     enum dvbfe_diseqc_address address,
+int dvbsec_diseqc_store_satpos_preset(struct dvbfe_handle *fe,
+				     enum dvbsec_diseqc_address address,
 				     uint8_t id)
 {
 	uint8_t data[] = { DISEQC_FRAMING_MASTER_NOREPLY, address, 0x6A, id};
@@ -467,8 +486,8 @@ int dvbfe_diseqc_store_satpos_preset(struct dvbfe_handle *fe,
 	return dvbfe_do_diseqc_command(fe, data, sizeof(data));
 }
 
-int dvbfe_diseqc_goto_satpos_preset(struct dvbfe_handle *fe,
-				    enum dvbfe_diseqc_address address,
+int dvbsec_diseqc_goto_satpos_preset(struct dvbfe_handle *fe,
+				    enum dvbsec_diseqc_address address,
 				    uint8_t id)
 {
 	uint8_t data[] = { DISEQC_FRAMING_MASTER_NOREPLY, address, 0x6B, id};
@@ -476,8 +495,8 @@ int dvbfe_diseqc_goto_satpos_preset(struct dvbfe_handle *fe,
 	return dvbfe_do_diseqc_command(fe, data, sizeof(data));
 }
 
-int dvbfe_diseqc_recalculate_satpos_positions(struct dvbfe_handle *fe,
-					      enum dvbfe_diseqc_address address,
+int dvbsec_diseqc_recalculate_satpos_positions(struct dvbfe_handle *fe,
+					      enum dvbsec_diseqc_address address,
 					      int val1,
 					      int val2)
 {
@@ -496,8 +515,8 @@ int dvbfe_diseqc_recalculate_satpos_positions(struct dvbfe_handle *fe,
 	return dvbfe_do_diseqc_command(fe, data, len);
 }
 
-int dvbfe_diseqc_goto_rotator_bearing(struct dvbfe_handle *fe,
-				      enum dvbfe_diseqc_address address,
+int dvbsec_diseqc_goto_rotator_bearing(struct dvbfe_handle *fe,
+				      enum dvbsec_diseqc_address address,
 				      float angle)
 {
 	int integer = (int) angle;
@@ -663,7 +682,7 @@ static int parsefloatarg(char **args, char *argsend, float *result)
 	return 0;
 }
 
-static enum dvbfe_diseqc_switch parse_switch(int c)
+static enum dvbsec_diseqc_switch parse_switch(int c)
 {
 	switch(toupper(c)) {
 	case 'A':
@@ -675,7 +694,7 @@ static enum dvbfe_diseqc_switch parse_switch(int c)
 	}
 }
 
-int dvbfe_sec_command(struct dvbfe_handle *fe, char *command)
+int dvbsec_command(struct dvbfe_handle *fe, char *command)
 {
 	char *name;
 	char *args;
@@ -776,9 +795,9 @@ int dvbfe_sec_command(struct dvbfe_handle *fe, char *command)
 			printf("Dreset: %i %i\n", address, iarg);
 #else
 			if (iarg) {
-				dvbfe_diseqc_set_reset(fe, address, DISEQC_RESET);
+				dvbsec_diseqc_set_reset(fe, address, DISEQC_RESET);
 			} else {
-				dvbfe_diseqc_set_reset(fe, address, DISEQC_RESET_CLEAR);
+				dvbsec_diseqc_set_reset(fe, address, DISEQC_RESET_CLEAR);
 			}
 #endif
 		} else if (!strncasecmp(name, "Dpower", namelen)) {
@@ -791,9 +810,9 @@ int dvbfe_sec_command(struct dvbfe_handle *fe, char *command)
 			printf("Dpower: %i %i\n", address, iarg);
 #else
 			if (iarg) {
-				dvbfe_diseqc_set_power(fe, address, DISEQC_POWER_ON);
+				dvbsec_diseqc_set_power(fe, address, DISEQC_POWER_ON);
 			} else {
-				dvbfe_diseqc_set_power(fe, address, DISEQC_POWER_OFF);
+				dvbsec_diseqc_set_power(fe, address, DISEQC_POWER_OFF);
 			}
 #endif
 		} else if (!strncasecmp(name, "Dcommitted", namelen)) {
@@ -808,7 +827,7 @@ int dvbfe_sec_command(struct dvbfe_handle *fe, char *command)
 			if (parsechararg(&args, argsend, &iarg4))
 				return -1;
 
-			enum dvbfe_diseqc_oscillator oscillator;
+			enum dvbsec_diseqc_oscillator oscillator;
 			switch(toupper(iarg)) {
 			case 'H':
 				oscillator = DISEQC_OSCILLATOR_HIGH;
@@ -847,7 +866,7 @@ int dvbfe_sec_command(struct dvbfe_handle *fe, char *command)
 			       parse_switch(iarg3),
 			       parse_switch(iarg4));
 #else
-			dvbfe_diseqc_set_committed_switches(fe, address,
+			dvbsec_diseqc_set_committed_switches(fe, address,
 							    oscillator,
 							    polarization,
 							    parse_switch(iarg3),
@@ -872,7 +891,7 @@ int dvbfe_sec_command(struct dvbfe_handle *fe, char *command)
 			       parse_switch(iarg3),
 			       parse_switch(iarg4));
 #else
-			dvbfe_diseqc_set_uncommitted_switches(fe, address,
+			dvbsec_diseqc_set_uncommitted_switches(fe, address,
 					parse_switch(iarg),
 					parse_switch(iarg2),
 					parse_switch(iarg3),
@@ -887,7 +906,7 @@ int dvbfe_sec_command(struct dvbfe_handle *fe, char *command)
 #ifdef TEST_SEC_COMMAND
 			printf("Dfrequency: %i %i\n", address, iarg);
 #else
-			dvbfe_diseqc_set_frequency(fe, address, iarg);
+			dvbsec_diseqc_set_frequency(fe, address, iarg);
 #endif
 		} else if (!strncasecmp(name, "Dchannel", namelen)) {
 			if (parseintarg(&args, argsend, &address))
@@ -898,7 +917,7 @@ int dvbfe_sec_command(struct dvbfe_handle *fe, char *command)
 #ifdef TEST_SEC_COMMAND
 			printf("Dchannel: %i %i\n", address, iarg);
 #else
-			dvbfe_diseqc_set_channel(fe, address, iarg);
+			dvbsec_diseqc_set_channel(fe, address, iarg);
 #endif
 		} else if (!strncasecmp(name, "Dgotopreset", namelen)) {
 			if (parseintarg(&args, argsend, &address))
@@ -909,7 +928,7 @@ int dvbfe_sec_command(struct dvbfe_handle *fe, char *command)
 #ifdef TEST_SEC_COMMAND
 			printf("Dgotopreset: %i %i\n", address, iarg);
 #else
-			dvbfe_diseqc_goto_satpos_preset(fe, address, iarg);
+			dvbsec_diseqc_goto_satpos_preset(fe, address, iarg);
 #endif
 		} else if (!strncasecmp(name, "Dgotobearing", namelen)) {
 			if (parseintarg(&args, argsend, &address))
@@ -920,7 +939,7 @@ int dvbfe_sec_command(struct dvbfe_handle *fe, char *command)
 #ifdef TEST_SEC_COMMAND
 			printf("Dgotobearing: %i %f\n", address, farg);
 #else
-			dvbfe_diseqc_goto_rotator_bearing(fe, address, farg);
+			dvbsec_diseqc_goto_rotator_bearing(fe, address, farg);
 #endif
 		} else {
 			return -1;
