@@ -138,8 +138,8 @@
  *	DISEQC_ADDRESS_OEM_BASE			= 0xf0
  */
 
-#ifndef dvbsec_cfg_H
-#define dvbsec_cfg_H 1
+#ifndef DVBSEC_CFG_H
+#define DVBSEC_CFG_H 1
 
 #ifdef __cplusplus
 extern "C"
