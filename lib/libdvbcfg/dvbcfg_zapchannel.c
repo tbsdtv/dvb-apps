@@ -1,467 +1,480 @@
-/**
- * dvbcfg_zapchannel (i.e. linuxtv *zap format) configuration file support.
+/*
+ * dvbcfg - support for linuxtv configuration files
+ * zap channel file support
  *
- * Copyright (c) 2005 by Andrew de Quincey <adq_dvb@lidskialf.net>
+ * Copyright (C) 2006 Christoph Pfister <christophpfister@gmail.com>
+ * Copyright (C) 2005 Andrew de Quincey <adq_dvb@lidskialf.net>
  *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- * This library is free software; you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
 #define _GNU_SOURCE
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <errno.h>
-#include "dvbcfg_zapchannel.h"
-#include "dvbcfg_utils.h"
 
-static const struct dvbcfg_setting bandwidth_list [] = {
+#include <malloc.h>
+#include <stdio.h>
+#include <string.h>
+
+#include "dvbcfg_zapchannel.h"
+
+struct dvbcfg_setting {
+	const char *name;
+	unsigned int value;
+};
+
+static const struct dvbcfg_setting dvbcfg_inversion_list[] = {
+	{ "INVERSION_ON",   DVBFE_INVERSION_ON   },
+	{ "INVERSION_OFF",  DVBFE_INVERSION_OFF  },
+	{ "INVERSION_AUTO", DVBFE_INVERSION_AUTO },
+	{ NULL, 0 }
+};
+
+static const struct dvbcfg_setting dvbcfg_polarization_list[] = {
+	{ "h", DISEQC_POLARIZATION_H },
+	{ "H", DISEQC_POLARIZATION_H },
+	{ "v", DISEQC_POLARIZATION_V },
+	{ "V", DISEQC_POLARIZATION_V },
+	{ "l", DISEQC_POLARIZATION_L },
+	{ "L", DISEQC_POLARIZATION_L },
+	{ "r", DISEQC_POLARIZATION_R },
+	{ "R", DISEQC_POLARIZATION_R },
+	{ NULL, 0 }
+};
+
+static const struct dvbcfg_setting dvbcfg_fec_list[] = {
+	{ "FEC_1_2",  DVBFE_FEC_1_2  },
+	{ "FEC_2_3",  DVBFE_FEC_2_3  },
+	{ "FEC_3_4",  DVBFE_FEC_3_4  },
+	{ "FEC_4_5",  DVBFE_FEC_4_5  },
+	{ "FEC_5_6",  DVBFE_FEC_5_6  },
+	{ "FEC_6_7",  DVBFE_FEC_6_7  },
+	{ "FEC_7_8",  DVBFE_FEC_7_8  },
+	{ "FEC_8_9",  DVBFE_FEC_8_9  },
+	{ "FEC_AUTO", DVBFE_FEC_AUTO },
+	{ "FEC_NONE", DVBFE_FEC_NONE },
+	{ NULL, 0 }
+};
+
+static const struct dvbcfg_setting dvbcfg_dvbc_modulation_list[] = {
+	{ "QAM_16",   DVBFE_DVBC_MOD_QAM_16  },
+	{ "QAM_32",   DVBFE_DVBC_MOD_QAM_32  },
+	{ "QAM_64",   DVBFE_DVBC_MOD_QAM_64  },
+	{ "QAM_128",  DVBFE_DVBC_MOD_QAM_128 },
+	{ "QAM_256",  DVBFE_DVBC_MOD_QAM_256 },
+	{ "QAM_AUTO", DVBFE_DVBC_MOD_AUTO    },
+	{ NULL, 0 }
+};
+
+static const struct dvbcfg_setting dvbcfg_bandwidth_list[] = {
 	{ "BANDWIDTH_6_MHZ", DVBFE_DVBT_BANDWIDTH_6_MHZ },
 	{ "BANDWIDTH_7_MHZ", DVBFE_DVBT_BANDWIDTH_7_MHZ },
 	{ "BANDWIDTH_8_MHZ", DVBFE_DVBT_BANDWIDTH_8_MHZ },
-        { NULL, -1 },
+	{ "BANDWIDTH_AUTO",  DVBFE_DVBT_BANDWIDTH_AUTO  },
+	{ NULL, 0 }
 };
 
-static const struct dvbcfg_setting guard_interval_list [] = {
-	{"GUARD_INTERVAL_1_16", DVBFE_DVBT_GUARD_INTERVAL_1_16},
-	{"GUARD_INTERVAL_1_32", DVBFE_DVBT_GUARD_INTERVAL_1_32},
-	{"GUARD_INTERVAL_1_4", DVBFE_DVBT_GUARD_INTERVAL_1_4},
-	{"GUARD_INTERVAL_1_8", DVBFE_DVBT_GUARD_INTERVAL_1_8},
-        { NULL, -1 },
-};
-
-static const struct dvbcfg_setting hierarchy_list [] = {
-	{ "HIERARCHY_1", DVBFE_DVBT_HIERARCHY_1 },
-	{ "HIERARCHY_2", DVBFE_DVBT_HIERARCHY_2 },
-	{ "HIERARCHY_4", DVBFE_DVBT_HIERARCHY_4 },
-	{ "HIERARCHY_NONE", DVBFE_DVBT_HIERARCHY_NONE },
-        { NULL, -1 },
-};
-
-static const struct dvbcfg_setting constellation_list [] = {
-	{ "QPSK", DVBFE_DVBT_CONST_QPSK },
+static const struct dvbcfg_setting dvbcfg_constellation_list[] = {
+	{ "QAM_16",  DVBFE_DVBT_CONST_QAM_16  },
+	{ "QAM_32",  DVBFE_DVBT_CONST_QAM_32  },
+	{ "QAM_64",  DVBFE_DVBT_CONST_QAM_64  },
 	{ "QAM_128", DVBFE_DVBT_CONST_QAM_128 },
-	{ "QAM_16", DVBFE_DVBT_CONST_QAM_16 },
 	{ "QAM_256", DVBFE_DVBT_CONST_QAM_256 },
-	{ "QAM_32", DVBFE_DVBT_CONST_QAM_32 },
-	{ "QAM_64", DVBFE_DVBT_CONST_QAM_64 },
-        { NULL, -1 },
+	{ "QPSK",    DVBFE_DVBT_CONST_QPSK    },
+	{ NULL, 0 }
 };
 
-static const struct dvbcfg_setting transmission_mode_list [] = {
-	{ "TRANSMISSION_MODE_2K", DVBFE_DVBT_TRANSMISSION_MODE_2K },
-	{ "TRANSMISSION_MODE_8K", DVBFE_DVBT_TRANSMISSION_MODE_8K },
-        { NULL, -1 },
+static const struct dvbcfg_setting dvbcfg_transmission_mode_list[] = {
+	{ "TRANSMISSION_MODE_2K",   DVBFE_DVBT_TRANSMISSION_MODE_2K   },
+	{ "TRANSMISSION_MODE_8K",   DVBFE_DVBT_TRANSMISSION_MODE_8K   },
+	{ "TRANSMISSION_MODE_AUTO", DVBFE_DVBT_TRANSMISSION_MODE_AUTO },
+	{ NULL, 0 }
 };
 
-static const struct dvbcfg_setting inversion_list[] = {
-	{ "INVERSION_OFF", DVBFE_INVERSION_OFF },
-	{ "INVERSION_ON", DVBFE_INVERSION_ON },
-	{ "INVERSION_AUTO", DVBFE_INVERSION_AUTO },
-        { NULL, -1 },
+static const struct dvbcfg_setting dvbcfg_guard_interval_list[] = {
+	{ "GUARD_INTERVAL_1_32", DVBFE_DVBT_GUARD_INTERVAL_1_32 },
+	{ "GUARD_INTERVAL_1_16", DVBFE_DVBT_GUARD_INTERVAL_1_16 },
+	{ "GUARD_INTERVAL_1_8",  DVBFE_DVBT_GUARD_INTERVAL_1_8  },
+	{ "GUARD_INTERVAL_1_4",  DVBFE_DVBT_GUARD_INTERVAL_1_4  },
+	{ "GUARD_INTERVAL_AUTO", DVBFE_DVBT_GUARD_INTERVAL_AUTO },
+	{ NULL, 0 }
 };
 
-static const struct dvbcfg_setting fec_list[] = {
-	{ "FEC_1_2", DVBFE_FEC_1_2 },
-	{ "FEC_2_3", DVBFE_FEC_2_3 },
-	{ "FEC_3_4", DVBFE_FEC_3_4 },
-	{ "FEC_4_5", DVBFE_FEC_4_5 },
-	{ "FEC_5_6", DVBFE_FEC_5_6 },
-	{ "FEC_6_7", DVBFE_FEC_6_7 },
-	{ "FEC_7_8", DVBFE_FEC_7_8 },
-	{ "FEC_8_9", DVBFE_FEC_8_9 },
-	{ "FEC_AUTO", DVBFE_FEC_AUTO },
-	{ "FEC_NONE", DVBFE_FEC_NONE },
-        { NULL, -1 },
+static const struct dvbcfg_setting dvbcfg_hierarchy_list[] = {
+	{ "HIERARCHY_1",    DVBFE_DVBT_HIERARCHY_1    },
+	{ "HIERARCHY_2",    DVBFE_DVBT_HIERARCHY_2    },
+	{ "HIERARCHY_4",    DVBFE_DVBT_HIERARCHY_4    },
+	{ "HIERARCHY_AUTO", DVBFE_DVBT_HIERARCHY_AUTO },
+	{ "HIERARCHY_NONE", DVBFE_DVBT_HIERARCHY_NONE },
+	{ NULL, 0 }
 };
 
-static const struct dvbcfg_setting qam_modulation_list[] = {
-	{ "QAM_16", DVBFE_DVBC_MOD_QAM_16 },
-	{ "QAM_32", DVBFE_DVBC_MOD_QAM_32 },
-	{ "QAM_64", DVBFE_DVBC_MOD_QAM_64 },
-	{ "QAM_128", DVBFE_DVBC_MOD_QAM_128 },
-	{ "QAM_256", DVBFE_DVBC_MOD_QAM_256 },
-	{ "QAM_AUTO", DVBFE_DVBC_MOD_AUTO },
-        { NULL, -1 },
-};
-
-static const struct dvbcfg_setting atsc_modulation_list[] = {
-	{ "8VSB", DVBFE_ATSC_MOD_VSB_8 },
-	{ "16VSB", DVBFE_ATSC_MOD_VSB_16 },
-	{ "QAM_64", DVBFE_ATSC_MOD_QAM_64 },
+static const struct dvbcfg_setting dvbcfg_atsc_modulation_list[] = {
+	{ "8VSB",    DVBFE_ATSC_MOD_VSB_8   },
+	{ "16VSB",   DVBFE_ATSC_MOD_VSB_16  },
+	{ "QAM_64",  DVBFE_ATSC_MOD_QAM_64  },
 	{ "QAM_256", DVBFE_ATSC_MOD_QAM_256 },
-        { NULL, -1 },
+	{ NULL, 0 }
 };
 
-int dvbcfg_zapchannel_load(FILE *f,
-			   void *private,
-			   dvbcfg_zapchannel_callback cb)
+static int dvbcfg_parse_int(char **text)
 {
-	struct dvbcfg_zapchannel tmpzapchannel;
-	char *linebuf = NULL;
-	char satid[32];
-	int isatid;
+	char *start = *text;
+	char *stop = *text;
+	int value;
+
+	while (*stop != '\0') {
+		if (*stop == ':') {
+			*stop = '\0';
+			stop++;
+			break;
+		}
+		stop++;
+	}
+
+	if (sscanf(start, "%i", &value) == 1) {
+		*text = stop;
+		return value;
+	}
+
+	*text = NULL;
+	return -1;
+}
+
+static int dvbcfg_parse_setting(char **text, const struct dvbcfg_setting *settings)
+{
+	char *start = *text;
+	char *stop = *text;
+
+	while (*stop != '\0') {
+		if (*stop == ':') {
+			*stop = '\0';
+			stop++;
+			break;
+		}
+		stop++;
+	}
+
+	while (settings->name) {
+		if (strcmp(start, settings->name) == 0) {
+			*text = stop;
+			return settings->value;
+		}
+		settings++;
+	}
+
+	*text = NULL;
+	return -1;
+}
+
+static void dvbcfg_parse_string(char **text, char *dest, int size)
+{
+	char *start = *text;
+	char *stop = *text;
+
+	while ((*stop != '\0') && (*stop != ':'))
+		stop++;
+
+	if ((stop - start) < size) {
+		if (*stop == ':') {
+			*stop = '\0';
+			*text = stop + 1;
+		} else
+			*text = stop;
+		memcpy(dest, start, (stop - start) + 1);
+		return;
+	}
+
+	*text = NULL;
+	return;
+}
+
+static const char *dvbcfg_lookup_setting(unsigned int setting,
+					 const struct dvbcfg_setting *settings)
+{
+	while (settings->name) {
+		if (setting == settings->value)
+			return settings->name;
+		settings++;
+	}
+
+	return NULL;
+}
+
+int dvbcfg_zapchannel_parse(FILE *file, dvbcfg_zapcallback callback, void *private_data)
+{
+	char *line_buf = NULL;
 	size_t line_size = 0;
-	int len;
-	int val;
+	int line_len = 0;
+	int ret_val = 0;
 
-	/* process each line */
-	while((len = getline(&linebuf, &line_size, f)) > 0) {
-		char *line = linebuf;
+	while ((line_len = getline(&line_buf, &line_size, file)) > 0) {
+		char *line_tmp = line_buf;
+		char *line_pos = line_buf;
+		struct dvbcfg_zapchannel tmp;
 
-		/* chop any comments */
-		char *hashpos = strchr(line, '#');
-		if (hashpos)
-			*hashpos = 0;
-		char *lineend = line + strlen(line);
+		/* remove newline and comments (started with hashes) */
+		while ((*line_tmp != '\0') && (*line_tmp != '\n') && (*line_tmp != '#'))
+			line_tmp++;
+		*line_tmp = '\0';
 
-		/* trim the line */
-		while(*line && isspace(*line))
-			line++;
-		while((lineend != line) && isspace(*(lineend-1)))
-			lineend--;
-		*lineend = 0;
-
-		/* skip blank lines */
-		if (*line == 0)
+		/* parse name */
+		dvbcfg_parse_string(&line_pos, tmp.name, sizeof(tmp.name));
+		if (!line_pos)
 			continue;
-		memset(&tmpzapchannel, 0, sizeof(tmpzapchannel));
 
-		/* determine frontend type */
-		if (strstr(line, ":FEC_")) {
-			if (strstr(line, ":HIERARCHY_")) {
-				tmpzapchannel.fe_type = DVBFE_TYPE_DVBT;
-			} else {
-				tmpzapchannel.fe_type = DVBFE_TYPE_DVBC;
-			}
+		/* parse frequency */
+		tmp.fe_params.frequency = dvbcfg_parse_int(&line_pos);
+		if (!line_pos)
+			continue;
+
+		/* try to determine frontend type */
+		if (strstr(line_pos, ":FEC_")) {
+			if (strstr(line_pos, ":HIERARCHY_"))
+				tmp.fe_type = DVBFE_TYPE_DVBT;
+			else
+				tmp.fe_type = DVBFE_TYPE_DVBC;
 		} else {
-			if (strstr(line, "VSB:") || strstr(line, ":QAM_")) {
-				tmpzapchannel.fe_type = DVBFE_TYPE_ATSC;
-			} else {
-				tmpzapchannel.fe_type = DVBFE_TYPE_DVBS;
-			}
+			if (strstr(line_pos, "VSB:") || strstr(line_pos, ":QAM_"))
+				tmp.fe_type = DVBFE_TYPE_ATSC;
+			else
+				tmp.fe_type = DVBFE_TYPE_DVBS;
 		}
 
-		/* get the name */
-		dvbcfg_curtoken(tmpzapchannel.name, sizeof(tmpzapchannel.name), line, ':');
-		if ((line = dvbcfg_nexttoken(line, ':')) == NULL)
-			continue;
-
-		/* the frequency */
-		if (sscanf(line, "%i", &tmpzapchannel.fe_params.frequency) != 1)
-			continue;
-		if ((line = dvbcfg_nexttoken(line, ':')) == NULL)
-			continue;
-
-		/* the frontend settings */
-		switch(tmpzapchannel.fe_type) {
-		case DVBFE_TYPE_DVBT:
+		/* parse frontend specific settings */
+		switch (tmp.fe_type) {
+		case DVBFE_TYPE_ATSC:
 			/* inversion */
-			if ((val = dvbcfg_parsesetting(line, inversion_list)) < 0)
-				continue;
-			tmpzapchannel.fe_params.inversion = val;
-			if ((line = dvbcfg_nexttoken(line, ':')) == NULL)
+			tmp.fe_params.inversion = DVBFE_INVERSION_AUTO;
+
+			/* modulation */
+			tmp.fe_params.u.atsc.modulation =
+			    dvbcfg_parse_setting(&line_pos, dvbcfg_atsc_modulation_list);
+			if (!line_pos)
 				continue;
 
-			/* bandwidth */
-			if ((val = dvbcfg_parsesetting(line, bandwidth_list)) < 0)
-				continue;
-			tmpzapchannel.fe_params.u.dvbt.bandwidth = val;
-			if ((line = dvbcfg_nexttoken(line, ':')) == NULL)
-				continue;
-
-			/* FEC HP */
-			if ((val = dvbcfg_parsesetting(line, fec_list)) < 0)
-				continue;
-			tmpzapchannel.fe_params.u.dvbt.code_rate_HP = val;
-			if ((line = dvbcfg_nexttoken(line, ':')) == NULL)
-				continue;
-
-			/* FEC LP */
-			if ((val = dvbcfg_parsesetting(line, fec_list)) < 0)
-				continue;
-			tmpzapchannel.fe_params.u.dvbt.code_rate_LP = val;
-			if ((line = dvbcfg_nexttoken(line, ':')) == NULL)
-				continue;
-
-			/* Constellation */
-			if ((val = dvbcfg_parsesetting(line, constellation_list)) < 0)
-				continue;
-			tmpzapchannel.fe_params.u.dvbt.constellation = val;
-			if ((line = dvbcfg_nexttoken(line, ':')) == NULL)
-				continue;
-
-			/* Transmit mode */
-			if ((val = dvbcfg_parsesetting(line, transmission_mode_list)) < 0)
-				continue;
-			tmpzapchannel.fe_params.u.dvbt.transmission_mode = val;
-			if ((line = dvbcfg_nexttoken(line, ':')) == NULL)
-				continue;
-
-			/* Guard interval */
-			if ((val = dvbcfg_parsesetting(line, guard_interval_list)) < 0)
-				continue;
-			tmpzapchannel.fe_params.u.dvbt.guard_interval = val;
-			if ((line = dvbcfg_nexttoken(line, ':')) == NULL)
-				continue;
-
-			/* hierarchy */
-			if ((val = dvbcfg_parsesetting(line, hierarchy_list)) < 0)
-				continue;
-			tmpzapchannel.fe_params.u.dvbt.hierarchy_information = val;
-			if ((line = dvbcfg_nexttoken(line, ':')) == NULL)
-				continue;
 			break;
 
 		case DVBFE_TYPE_DVBC:
 			/* inversion */
-			if ((val = dvbcfg_parsesetting(line, inversion_list)) < 0)
-				continue;
-			tmpzapchannel.fe_params.inversion = val;
-			if ((line = dvbcfg_nexttoken(line, ':')) == NULL)
-				continue;
-
-			/* symrate */
-			if (sscanf(line, "%i", &val) != 1)
-				continue;
-			tmpzapchannel.fe_params.u.dvbc.symbol_rate = val;
-			if ((line = dvbcfg_nexttoken(line, ':')) == NULL)
+			tmp.fe_params.inversion =
+			    dvbcfg_parse_setting(&line_pos, dvbcfg_inversion_list);
+			if (!line_pos)
 				continue;
 
-			/* FEC */
-			if ((val = dvbcfg_parsesetting(line, fec_list)) < 0)
+			/* symbol rate */
+			tmp.fe_params.u.dvbc.symbol_rate = dvbcfg_parse_int(&line_pos);
+			if (!line_pos)
 				continue;
-			tmpzapchannel.fe_params.u.dvbc.fec_inner = val;
-			if ((line = dvbcfg_nexttoken(line, ':')) == NULL)
+
+			/* fec */
+			tmp.fe_params.u.dvbc.fec_inner =
+			    dvbcfg_parse_setting(&line_pos, dvbcfg_fec_list);
+			if (!line_pos)
 				continue;
 
 			/* modulation */
-			if ((val = dvbcfg_parsesetting(line, qam_modulation_list)) < 0)
+			tmp.fe_params.u.dvbc.modulation =
+			    dvbcfg_parse_setting(&line_pos, dvbcfg_dvbc_modulation_list);
+			if (!line_pos)
 				continue;
-			tmpzapchannel.fe_params.u.dvbc.modulation = val;
-			if ((line = dvbcfg_nexttoken(line, ':')) == NULL)
-				continue;
+
 			break;
 
 		case DVBFE_TYPE_DVBS:
 			/* adjust frequency */
-			tmpzapchannel.fe_params.frequency *= 1000;
+			tmp.fe_params.frequency *= 1000;
 
 			/* inversion */
-			tmpzapchannel.fe_params.inversion = DVBFE_INVERSION_AUTO;
+			tmp.fe_params.inversion = DVBFE_INVERSION_AUTO;
 
 			/* fec */
-			tmpzapchannel.fe_params.u.dvbs.fec_inner = DVBFE_FEC_AUTO;
+			tmp.fe_params.u.dvbs.fec_inner = DVBFE_FEC_AUTO;
 
 			/* polarization */
-			if (toupper(line[0]) == 'H')
-				tmpzapchannel.polarization = DISEQC_POLARIZATION_H;
-			else if (toupper(line[0]) == 'V')
-				tmpzapchannel.polarization = DISEQC_POLARIZATION_V;
-			else if (toupper(line[0]) == 'L')
-				tmpzapchannel.polarization = DISEQC_POLARIZATION_L;
-			else if (toupper(line[0]) == 'R')
-				tmpzapchannel.polarization = DISEQC_POLARIZATION_R;
-			else
-				continue;
-			if ((line = dvbcfg_nexttoken(line, ':')) == NULL)
+			tmp.polarization =
+			    dvbcfg_parse_setting(&line_pos, dvbcfg_polarization_list);
+			if (!line_pos)
 				continue;
 
-			/* satellite switch position/satellite_id */
-			dvbcfg_curtoken(satid, sizeof(satid), line, ':');
-			isatid = -1;
-			sscanf(satid, "%i", &isatid);
-			tmpzapchannel.sat_pos = DISEQC_SWITCH_A;
-			tmpzapchannel.switch_option = DISEQC_SWITCH_A;
-			if (isatid & 0x01)
-				tmpzapchannel.sat_pos = DISEQC_SWITCH_B;
-			if (isatid & 0x02)
-				tmpzapchannel.switch_option = DISEQC_SWITCH_B;
-			if ((line = dvbcfg_nexttoken(line, ':')) == NULL)
+			/* satellite switch position */
+			tmp.diseqc_switch = dvbcfg_parse_int(&line_pos);
+			if (!line_pos)
 				continue;
 
-			/* symrate */
-			if (sscanf(line, "%i", &val) != 1)
+			/* symbol rate */
+			tmp.fe_params.u.dvbs.symbol_rate =
+			    dvbcfg_parse_int(&line_pos) * 1000;
+			if (!line_pos)
 				continue;
-			tmpzapchannel.fe_params.u.dvbs.symbol_rate = val;
-			tmpzapchannel.fe_params.u.dvbs.symbol_rate *= 1000;
-			if ((line = dvbcfg_nexttoken(line, ':')) == NULL)
-				continue;
+
 			break;
 
-		case DVBFE_TYPE_ATSC:
+		case DVBFE_TYPE_DVBT:
 			/* inversion */
-			tmpzapchannel.fe_params.inversion = DVBFE_INVERSION_AUTO;
-
-			/* Modulation */
-			if ((val = dvbcfg_parsesetting(line, atsc_modulation_list)) < 0)
+			tmp.fe_params.inversion =
+			    dvbcfg_parse_setting(&line_pos, dvbcfg_inversion_list);
+			if (!line_pos)
 				continue;
-			tmpzapchannel.fe_params.u.atsc.modulation = val;
-			if ((line = dvbcfg_nexttoken(line, ':')) == NULL)
+
+			/* bandwidth */
+			tmp.fe_params.u.dvbt.bandwidth =
+			    dvbcfg_parse_setting(&line_pos, dvbcfg_bandwidth_list);
+			if (!line_pos)
+				continue;
+
+			/* fec hp */
+			tmp.fe_params.u.dvbt.code_rate_HP =
+			    dvbcfg_parse_setting(&line_pos, dvbcfg_fec_list);
+			if (!line_pos)
+				continue;
+
+			/* fec lp */
+			tmp.fe_params.u.dvbt.code_rate_LP =
+			    dvbcfg_parse_setting(&line_pos, dvbcfg_fec_list);
+			if (!line_pos)
+				continue;
+
+			/* constellation */
+			tmp.fe_params.u.dvbt.constellation =
+			    dvbcfg_parse_setting(&line_pos, dvbcfg_constellation_list);
+			if (!line_pos)
+				continue;
+
+			/* transmission mode */
+			tmp.fe_params.u.dvbt.transmission_mode =
+			    dvbcfg_parse_setting(&line_pos, dvbcfg_transmission_mode_list);
+			if (!line_pos)
+				continue;
+
+			/* guard interval */
+			tmp.fe_params.u.dvbt.guard_interval =
+			    dvbcfg_parse_setting(&line_pos, dvbcfg_guard_interval_list);
+			if (!line_pos)
+				continue;
+
+			/* hierarchy */
+			tmp.fe_params.u.dvbt.hierarchy_information =
+			    dvbcfg_parse_setting(&line_pos, dvbcfg_hierarchy_list);
+			if (!line_pos)
 				continue;
 
 			break;
 		}
 
-		/* finally, read in the PIDs */
-		if (sscanf(line, "%i", &tmpzapchannel.video_pid) != 1)
+		/* parse video and audio pids and service id */
+		tmp.video_pid = dvbcfg_parse_int(&line_pos);
+		if (!line_pos)
 			continue;
-		if ((line = dvbcfg_nexttoken(line, ':')) == NULL)
+		tmp.audio_pid = dvbcfg_parse_int(&line_pos);
+		if (!line_pos)
 			continue;
-		if (sscanf(line, "%i", &tmpzapchannel.audio_pid) != 1)
-			continue;
+		tmp.service_id = dvbcfg_parse_int(&line_pos);
+		if (!line_pos) /* old files don't have a service id */
+			tmp.service_id = 0;
 
-		/* this one may not be present in all config files */
-		if ((line = dvbcfg_nexttoken(line, ':')) != NULL) {
-			if (sscanf(line, "%i", &tmpzapchannel.channel_number) != 1)
-				continue;
-		}
-
-		// tell caller
-		if (cb(private, &tmpzapchannel))
+		/* invoke callback */
+		if ((ret_val = callback(&tmp, private_data)) != 0) {
+			if (ret_val < 0)
+				ret_val = 0;
 			break;
+		}
 	}
 
-	if (linebuf)
-		free(linebuf);
-	return 0;
+	if (line_buf)
+		free(line_buf);
+
+	return ret_val;
 }
 
-static int dvbcfg_zapchannel_find_callback(void *private, struct dvbcfg_zapchannel *channel);
-
-struct findparams {
-	char *channel_name;
-	struct dvbcfg_zapchannel *channel_dest;
-};
-
-int dvbcfg_zapchannel_find(const char *config_file,
-			   char *channel_name,
-			   struct dvbcfg_zapchannel *channel)
+int dvbcfg_zapchannel_save(FILE *file, dvbcfg_zapcallback callback, void *private_data)
 {
-	struct findparams findp;
+	int ret_val = 0;
+	struct dvbcfg_zapchannel tmp;
 
-	// open the file
-	FILE *f = fopen(config_file, "r");
-	if (f == NULL)
-		return -EIO;
+	while ((ret_val = callback(&tmp, private_data)) == 0) {
+		/* name */
+		if ((ret_val = fprintf(file, "%s:", tmp.name)) < 0)
+			return ret_val;
 
-	// parse each entry
-	memset(channel, 0, sizeof(struct dvbcfg_zapchannel));
-	findp.channel_name = channel_name;
-	findp.channel_dest = channel;
-	dvbcfg_zapchannel_load(f, &findp, dvbcfg_zapchannel_find_callback);
+		/* frontend specific settings */
+		switch (tmp.fe_type) {
+		case DVBFE_TYPE_ATSC:
+			if ((ret_val = fprintf(file, "%i:%s:",
+			    tmp.fe_params.frequency,
+			    dvbcfg_lookup_setting(tmp.fe_params.u.atsc.modulation,
+						  dvbcfg_atsc_modulation_list))) < 0)
+				return ret_val;
 
-	// done
-	fclose(f);
-	if (channel->name[0])
-		return 0;
-	return -1;
-}
-
-static int dvbcfg_zapchannel_find_callback(void *private, struct dvbcfg_zapchannel *channel)
-{
-	struct findparams *findp = private;
-
-	if (strcmp(findp->channel_name, channel->name))
-		return 0;
-
-	memcpy(findp->channel_dest, channel, sizeof(struct dvbcfg_zapchannel));
-	return 1;
-}
-
-int dvbcfg_zapchannel_save(FILE *f,
-			   struct dvbcfg_zapchannel *channels,
-			   int count)
-{
-	int i;
-	char polarization = ' ';
-
-	for(i=0; i<count; i++) {
-		fprintf(f,  "%s:", channels[i].name);
-
-		switch(channels[i].fe_type) {
-		case DVBFE_TYPE_DVBT:
-			fprintf(f,  "%i:%s:%s:%s:%s:%s:%s:%s:%s:",
-				channels[i].fe_params.frequency,
-				dvbcfg_lookupsetting(channels[i].fe_params.inversion, inversion_list),
-				dvbcfg_lookupsetting(channels[i].fe_params.u.dvbt.bandwidth, bandwidth_list),
-				dvbcfg_lookupsetting(channels[i].fe_params.u.dvbt.code_rate_HP, fec_list),
-				dvbcfg_lookupsetting(channels[i].fe_params.u.dvbt.code_rate_LP, fec_list),
-				dvbcfg_lookupsetting(channels[i].fe_params.u.dvbt.constellation, constellation_list),
-				dvbcfg_lookupsetting(channels[i].fe_params.u.dvbt.transmission_mode, transmission_mode_list),
-				dvbcfg_lookupsetting(channels[i].fe_params.u.dvbt.guard_interval, guard_interval_list),
-				dvbcfg_lookupsetting(channels[i].fe_params.u.dvbt.hierarchy_information, hierarchy_list));
 			break;
 
 		case DVBFE_TYPE_DVBC:
-			fprintf(f,  "%i:%s:%i:%s:%s:",
-				channels[i].fe_params.frequency,
-				dvbcfg_lookupsetting(channels[i].fe_params.inversion, inversion_list),
-				channels[i].fe_params.u.dvbc.symbol_rate,
-				dvbcfg_lookupsetting(channels[i].fe_params.u.dvbc.fec_inner, fec_list),
-				dvbcfg_lookupsetting(channels[i].fe_params.u.dvbc.modulation, qam_modulation_list));
+			if ((ret_val = fprintf(file, "%i:%s:%i:%s:%s:",
+			    tmp.fe_params.frequency,
+			    dvbcfg_lookup_setting(tmp.fe_params.inversion,
+						  dvbcfg_inversion_list),
+			    tmp.fe_params.u.dvbc.symbol_rate,
+			    dvbcfg_lookup_setting(tmp.fe_params.u.dvbc.fec_inner,
+						  dvbcfg_fec_list),
+			    dvbcfg_lookup_setting(tmp.fe_params.u.dvbc.modulation,
+						  dvbcfg_dvbc_modulation_list))) < 0)
+				return ret_val;
+
 			break;
 
 		case DVBFE_TYPE_DVBS:
-			switch(channels[i].polarization) {
-			case DISEQC_POLARIZATION_H:
-				polarization = 'h';
-				break;
+			if ((ret_val = fprintf(file, "%i:%s:%i:%i:",
+			    tmp.fe_params.frequency / 1000,
+			    dvbcfg_lookup_setting(tmp.polarization,
+						  dvbcfg_polarization_list),
+			    tmp.diseqc_switch,
+			    tmp.fe_params.u.dvbs.symbol_rate / 1000)) < 0)
+				return ret_val;
 
-			case DISEQC_POLARIZATION_V:
-				polarization = 'v';
-				break;
-
-			case DISEQC_POLARIZATION_L:
-				polarization = 'l';
-				break;
-
-			case DISEQC_POLARIZATION_R:
-				polarization = 'r';
-				break;
-
-			default:
-				polarization = '?';
-				break;
-			}
-
-			int isatid = 0;
-			if (channels[i].sat_pos == DISEQC_SWITCH_B)
-				isatid |= 1;
-			if (channels[i].switch_option == DISEQC_SWITCH_B)
-				isatid |= 2;
-
-			fprintf(f,  "%i:%c:%i:%i:",
-				channels[i].fe_params.frequency / 1000,
-				polarization,
-				isatid,
-				channels[i].fe_params.u.dvbs.symbol_rate / 1000);
 			break;
+		case DVBFE_TYPE_DVBT:
+			if ((ret_val = fprintf(file, "%i:%s:%s:%s:%s:%s:%s:%s:%s:",
+			    tmp.fe_params.frequency,
+			    dvbcfg_lookup_setting(tmp.fe_params.inversion,
+						  dvbcfg_inversion_list),
+			    dvbcfg_lookup_setting(tmp.fe_params.u.dvbt.bandwidth,
+						  dvbcfg_bandwidth_list),
+			    dvbcfg_lookup_setting(tmp.fe_params.u.dvbt.code_rate_HP,
+						  dvbcfg_fec_list),
+			    dvbcfg_lookup_setting(tmp.fe_params.u.dvbt.code_rate_LP,
+						  dvbcfg_fec_list),
+			    dvbcfg_lookup_setting(tmp.fe_params.u.dvbt.constellation,
+						  dvbcfg_constellation_list),
+			    dvbcfg_lookup_setting(tmp.fe_params.u.dvbt.transmission_mode,
+						  dvbcfg_transmission_mode_list),
+			    dvbcfg_lookup_setting(tmp.fe_params.u.dvbt.guard_interval,
+						  dvbcfg_guard_interval_list),
+			    dvbcfg_lookup_setting(tmp.fe_params.u.dvbt.hierarchy_information,
+						  dvbcfg_hierarchy_list))) < 0)
+				return ret_val;
 
-		case DVBFE_TYPE_ATSC:
-			fprintf(f,  "%i:%s:",
-				channels[i].fe_params.frequency,
-				dvbcfg_lookupsetting(channels[i].fe_params.u.atsc.modulation, atsc_modulation_list));
 			break;
 		}
-		fprintf(f,  "%i:%i", channels[i].video_pid, channels[i].audio_pid);
-		if (channels[i].channel_number)
-			fprintf(f,  ":%i", channels[i].channel_number);
-		fprintf(f,  "\n");
+
+		/* video and audio pids and service id */
+		if ((ret_val = fprintf(file, "%i:%i:%i\n",
+		    tmp.video_pid, tmp.audio_pid, tmp.service_id)) < 0)
+			return ret_val;
+
 	}
 
-	return 0;
+	if (ret_val < 0)
+		ret_val = 0;
+
+	return ret_val;
 }

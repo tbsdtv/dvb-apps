@@ -28,7 +28,6 @@
 #include <pthread.h>
 #include <errno.h>
 #include <sys/poll.h>
-#include <libdvbcfg/dvbcfg_zapchannel.h>
 #include <libdvbapi/dvbdemux.h>
 #include <libucsi/section.h>
 #include <libucsi/mpeg/section.h>
@@ -116,8 +115,8 @@ static void *dvbthread_func(void* arg)
 			if (dvbfe_sec_set(params->fe,
 			    		  sec,
 					  params->channel.polarization,
-					  params->channel.sat_pos,
-					  params->channel.switch_option,
+					  (params->channel.diseqc_switch & 0x01) ? DISEQC_SWITCH_B : DISEQC_SWITCH_A,
+					  (params->channel.diseqc_switch & 0x02) ? DISEQC_SWITCH_B : DISEQC_SWITCH_A,
 					  &params->channel.fe_params,
 					  0)) {
 				fprintf(stderr, "Failed to set frontend\n");
@@ -224,7 +223,7 @@ static void process_pat(int pat_fd, struct gnutv_dvb_params *params, int *pmt_fd
 	// try and find the requested program
 	struct mpeg_pat_program *cur_program;
 	mpeg_pat_section_programs_for_each(pat, cur_program) {
-		if (cur_program->program_number == params->channel.channel_number) {
+		if (cur_program->program_number == params->channel.service_id) {
 			// close old PMT fd
 			if (*pmt_fd != -1)
 				close(*pmt_fd);

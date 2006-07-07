@@ -26,7 +26,53 @@
 #include <ctype.h>
 #include <errno.h>
 #include "dvbcfg_sec.h"
-#include "dvbcfg_utils.h"
+
+int dvbcfg_issection(char* line, char* sectionname)
+{
+	int len;
+
+	len = strlen(line);
+	if (len < 2)
+		return 0;
+
+	if ((line[0] != '[') || (line[len-1] != ']'))
+		return 0;
+
+	line++;
+	while(isspace(*line))
+		line++;
+
+	if (strncmp(line, sectionname, strlen(sectionname)))
+		return 0;
+
+	return 1;
+}
+
+char* dvbcfg_iskey(char* line, char* keyname)
+{
+	int len = strlen(keyname);
+
+	/* does the key match? */
+	if (strncmp(line, keyname, len))
+		return NULL;
+
+	/* skip keyname & any whitespace */
+	line += len;
+	while(isspace(*line))
+		line++;
+
+	/* should be the '=' sign */
+	if (*line != '=')
+		return 0;
+
+	/* more whitespace skipping */
+	line++;
+	while(isspace(*line))
+		line++;
+
+	/* finally, return the value */
+	return line;
+}
 
 int dvbcfg_sec_load(FILE *f,
 		    void *private,

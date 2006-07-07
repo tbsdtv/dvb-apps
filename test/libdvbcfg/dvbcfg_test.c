@@ -26,13 +26,15 @@
 
 void syntax(void);
 
-struct dvbcfg_zapchannel *zapchannels = NULL;
+struct dvbcfg_zapchannel *channels = NULL;
 int zapcount = 0;
+int zappos = 0;
 
 struct dvbfe_sec_config *secconfigs = NULL;
 int seccount = 0;
 
-int zapload_callback(void *private, struct dvbcfg_zapchannel *channel);
+int zapload_callback(struct dvbcfg_zapchannel *channel, void *private);
+int zapsave_callback(struct dvbcfg_zapchannel *channel, void *private);
 int secload_callback(void *private, struct dvbfe_sec_config *sec);
 
 int main(int argc, char *argv[])
@@ -48,7 +50,7 @@ int main(int argc, char *argv[])
 			fprintf(stderr, "Unable to load %s\n", argv[2]);
 			exit(1);
 		}
-		dvbcfg_zapchannel_load(f, NULL, zapload_callback);
+		dvbcfg_zapchannel_parse(f, zapload_callback, NULL);
 		fclose(f);
 
 		f = fopen(argv[3], "w");
@@ -56,7 +58,7 @@ int main(int argc, char *argv[])
 			fprintf(stderr, "Unable to write %s\n", argv[3]);
 			exit(1);
 		}
-		dvbcfg_zapchannel_save(f, zapchannels, zapcount);
+		dvbcfg_zapchannel_save(f, zapsave_callback, NULL);
 		fclose(f);
 
 	} else if (!strcmp(argv[1], "-sec")) {
@@ -84,18 +86,31 @@ int main(int argc, char *argv[])
         exit(0);
 }
 
-int zapload_callback(void *private, struct dvbcfg_zapchannel *channel)
+int zapload_callback(struct dvbcfg_zapchannel *channel, void *private)
 {
 	(void) private;
 
-	struct dvbcfg_zapchannel *tmp = realloc(zapchannels, (zapcount+1) * sizeof(struct dvbcfg_zapchannel));
+	struct dvbcfg_zapchannel *tmp = realloc(channels, (zapcount+1) * sizeof(struct dvbcfg_zapchannel));
 	if (tmp == NULL) {
 		fprintf(stderr, "Out of memory\n");
 		exit(1);
 	}
-	zapchannels = tmp;
+	channels = tmp;
 
-	memcpy(&zapchannels[zapcount++], channel, sizeof(struct dvbcfg_zapchannel));
+	memcpy(&channels[zapcount++], channel, sizeof(struct dvbcfg_zapchannel));
+
+	return 0;
+}
+
+int zapsave_callback(struct dvbcfg_zapchannel *channel, void *private)
+{
+	(void) private;
+
+	if (zappos >= zapcount)
+		return 1;
+
+	memcpy(channel, channels + zappos, sizeof(struct dvbcfg_zapchannel));
+	zappos++;
 
 	return 0;
 }

@@ -46,7 +46,7 @@ void parse_atsc_descriptor(struct descriptor *d, int indent, int data_type);
 void iprintf(int indent, char *fmt, ...);
 void hexdump(int indent, char *prefix, uint8_t *buf, int buflen);
 void atsctextdump(char *header, int indent, struct atsc_text *atext, int len);
-int zapchannels_cb(void *private, struct dvbcfg_zapchannel *channel);
+int channels_cb(struct dvbcfg_zapchannel *channel, void *private);
 void ts_from_file(char *filename, int data_type);
 
 #define TIME_CHECK_VAL 1131835761
@@ -152,7 +152,7 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "Unable to open %s\n", channelsfile);
 		exit(1);
 	}
-	dvbcfg_zapchannel_load(channels, (void*) (long) data_type, zapchannels_cb);
+	dvbcfg_zapchannel_parse(channels, channels_cb, (void*) (long) data_type);
         return 0;
 }
 
@@ -165,7 +165,7 @@ void ts_from_file(char *filename, int data_type) {
 	receive_data(fd, 1000000000, data_type);
 }
 
-int zapchannels_cb(void *private, struct dvbcfg_zapchannel *channel)
+int channels_cb(struct dvbcfg_zapchannel *channel, void *private)
 {
 	long data_type = (long) private;
 

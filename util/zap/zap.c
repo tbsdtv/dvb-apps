@@ -29,7 +29,6 @@
 #include <sys/poll.h>
 #include <libdvbapi/dvbdemux.h>
 #include <libdvbapi/dvbaudio.h>
-#include <libdvbcfg/dvbcfg_zapchannel.h>
 #include <libdvbcfg/dvbcfg_sec.h>
 #include <libucsi/mpeg/section.h>
 #include "zap_dvb.h"
@@ -60,6 +59,18 @@ void usage(void)
 	fprintf(stderr, "%s\n", _usage);
 
 	exit(1);
+}
+
+int find_channel(struct dvbcfg_zapchannel *channel, void *private_data)
+{
+	struct dvbcfg_zapchannel *tmpchannel = private_data;
+
+	if (strcmp(channel->name, tmpchannel->name) == 0) {
+		memcpy(tmpchannel, channel, sizeof(struct dvbcfg_zapchannel));
+		return 1;
+	}
+
+	return 0;
 }
 
 int main(int argc, char *argv[])
@@ -145,10 +156,21 @@ int main(int argc, char *argv[])
 	zap_ca_start(&zap_ca_params);
 
 	// find the requested channel
-	if (dvbcfg_zapchannel_find(chanfile, channel_name, &zap_dvb_params.channel)) {
+	if (strlen(channel_name) >= sizeof(zap_dvb_params.channel.name)) {
+		fprintf(stderr, "Channel name is too long %s\n", channel_name);
+		exit(1);
+	}
+	FILE *channel_file = fopen(chanfile, "r");
+	if (channel_file == NULL) {
+		fprintf(stderr, "Could open channel file %s\n", chanfile);
+		exit(1);
+	}
+	memcpy(zap_dvb_params.channel.name, channel_name, strlen(channel_name) + 1);
+	if (dvbcfg_zapchannel_parse(channel_file, find_channel, &zap_dvb_params.channel) != 1) {
 		fprintf(stderr, "Unable to find requested channel %s\n", channel_name);
 		exit(1);
 	}
+	fclose(channel_file);
 
 	// default SEC with a DVBS card
 	if ((secid == NULL) && (zap_dvb_params.channel.fe_type == DVBFE_TYPE_DVBS))
