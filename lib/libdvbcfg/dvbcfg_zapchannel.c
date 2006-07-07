@@ -318,6 +318,11 @@ int dvbcfg_zapchannel_parse(FILE *file, dvbcfg_zapcallback callback, void *priva
 			tmp.polarization = tolower(dvbcfg_parse_char(&line_pos));
 			if (!line_pos)
 				continue;
+			if ((tmp.polarization != 'h') &&
+			    (tmp.polarization != 'v') &&
+			    (tmp.polarization != 'l') &&
+			    (tmp.polarization != 'r'))
+				continue;
 
 			/* satellite switch position */
 			tmp.diseqc_switch = dvbcfg_parse_int(&line_pos);
@@ -447,7 +452,7 @@ int dvbcfg_zapchannel_save(FILE *file, dvbcfg_zapcallback callback, void *privat
 		case DVBFE_TYPE_DVBS:
 			if ((ret_val = fprintf(file, "%i:%c:%i:%i:",
 			    tmp.fe_params.frequency / 1000,
-			    tmp.polarization,
+			    tolower(tmp.polarization),
 			    tmp.diseqc_switch,
 			    tmp.fe_params.u.dvbs.symbol_rate / 1000)) < 0)
 				return ret_val;
