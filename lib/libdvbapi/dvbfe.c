@@ -232,6 +232,9 @@ extern int dvbfe_get_info(struct dvbfe_handle *fehandle,
 	struct dvb_frontend_event kevent;
 	int ok = 0;
 
+	result->name = fehandle->name;
+	result->type = fehandle->type;
+
 	switch(querytype) {
 	case DVBFE_INFO_QUERYTYPE_IMMEDIATE:
 		if (querymask & DVBFE_INFO_LOCKSTATUS) {
