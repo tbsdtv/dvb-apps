@@ -199,8 +199,9 @@ struct dvbfe_info {
  * Possible types of query used in dvbfe_get_info.
  *
  * DVBFE_INFO_QUERYTYPE_IMMEDIATE  - interrogate frontend for most up to date values.
- * DVBFE_INFO_QUERYTYPE_LOCKCHANGE - return details from the queued lock status
- * 				     change events, or wait for one to occur.
+ * DVBFE_INFO_QUERYTYPE_LOCKCHANGE - return details from queued lock status
+ * 				     change events, or wait for one to occur
+ * 				     if none are queued.
  */
 enum dvbfe_info_querytype {
 	DVBFE_INFO_QUERYTYPE_IMMEDIATE,
