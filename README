@@ -24,7 +24,8 @@ util/ttusb_dec_reset	- Reset a TechnoTrends TTUSB DEC device.
 
 Libraries:
 lib/libdvbapi	- Interface library to digital TV devices.
-lib/libdvbcfg	- Library to parse/create digital TV configuration files.
+lib/libdvbcfg	- Library to parse/create digital TV channel configuration files.
+lib/libdvbsec	- Library for Satellite Equipment Control operations.
 lib/libucsi	- Fast MPEG2 Transport Stream SI table parsing library.
 lib/libdvben50221- Complete implementation of a Cenelec EN 50221 CAM stack.
 lib/libdvbmisc	- Miscellaneous utilities used by the other libraries.
