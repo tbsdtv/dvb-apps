@@ -516,11 +516,10 @@ int dvbfe_do_diseqc_command(struct dvbfe_handle *fehandle, uint8_t *data, uint8_
 	return ret;
 }
 
-int dvbfe_diseqc_read(struct dvbfe_handle *_fehandle, int timeout, unsigned char *buf, unsigned int len)
+int dvbfe_diseqc_read(struct dvbfe_handle *fehandle, int timeout, unsigned char *buf, unsigned int len)
 {
 	struct dvb_diseqc_slave_reply reply;
 	int result;
-	struct dvbfe_handle *fehandle = (struct dvbfe_handle*) _fehandle;
 
 	if (len > 4)
 		len = 4;
