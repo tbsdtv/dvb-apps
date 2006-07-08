@@ -221,7 +221,6 @@ static void signal_handler(int _signal)
 	(void) _signal;
 
 	if (!quit_app) {
-		printf("Shutting down..\n");
 		quit_app = 1;
 	}
 }

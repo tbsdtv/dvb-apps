@@ -103,8 +103,27 @@ static void *dvbthread_func(void* arg)
 		if (tune_state == 0) {
 			// get the type of frontend
 			struct dvbfe_info result;
+			char *types;
 			memset(&result, 0, sizeof(result));
 			dvbfe_get_info(params->fe, 0, &result, DVBFE_INFO_QUERYTYPE_IMMEDIATE, 0);
+			dvbfe_get_info(params->fe, 0, &result, DVBFE_INFO_QUERYTYPE_IMMEDIATE, 0);
+			switch(result.type) {
+				case DVBFE_TYPE_DVBS:
+					types = "DVB-S";
+					break;
+				case DVBFE_TYPE_DVBC:
+					types = "DVB-C";
+					break;
+				case DVBFE_TYPE_DVBT:
+					types = "DVB-T";
+					break;
+				case DVBFE_TYPE_ATSC:
+					types = "ATSC";
+					break;
+				default:
+					types = "Unknown";
+			}
+			fprintf(stderr, "Using frontend \"%s\", type %s\n", result.name, types);
 
 			// do we have a valid SEC configuration?
 			struct dvbsec_config *sec = NULL;
