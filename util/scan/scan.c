@@ -130,6 +130,7 @@ struct transponder {
 	struct list_head list;
 	struct list_head services;
 	int network_id;
+	int original_network_id;
 	int transport_stream_id;
 	enum fe_type type;
 	struct dvb_frontend_parameters param;
@@ -236,6 +237,7 @@ static struct transponder *find_transponder(uint32_t frequency)
 static void copy_transponder(struct transponder *d, struct transponder *s)
 {
 	d->network_id = s->network_id;
+	d->original_network_id = s->original_network_id;
 	d->transport_stream_id = s->transport_stream_id;
 	d->type = s->type;
 	memcpy(&d->param, &s->param, sizeof(d->param));
@@ -860,6 +862,7 @@ static void parse_nit (const unsigned char *buf, int section_length, int network
 		memset(&tn, 0, sizeof(tn));
 		tn.type = -1;
 		tn.network_id = network_id;
+		tn.original_network_id = (buf[2] << 8) | buf[3];
 		tn.transport_stream_id = transport_stream_id;
 
 		parse_descriptors (NIT, buf + 6, descriptors_loop_len, &tn);
@@ -1991,7 +1994,7 @@ static void dump_lists (void)
 						    //FIXME: s->subtitling_pid
 						    s->ac3_pid,
 						    s->service_id,
-						    t->network_id,
+						    t->original_network_id,
 						    s->transport_stream_id,
 						    t->orbital_pos,
 						    t->we_flag,
