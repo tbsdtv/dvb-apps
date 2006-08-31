@@ -145,13 +145,11 @@ static void *dvbthread_func(void* arg)
 		} else if (tune_state == 1) {
 			struct dvbfe_info result;
 			memset(&result, 0, sizeof(result));
-			if (dvbfe_get_info(params->fe,
-			    		   FE_STATUS_PARAMS,
-					   &result,
-					   DVBFE_INFO_QUERYTYPE_IMMEDIATE,
-					   0) != FE_STATUS_PARAMS) {
-				fprintf(stderr, "Problem retrieving frontend information: %m\n");
-			}
+			dvbfe_get_info(params->fe,
+				       FE_STATUS_PARAMS,
+				       &result,
+				       DVBFE_INFO_QUERYTYPE_IMMEDIATE,
+				       0);
 
 			fprintf(stderr, "status %c%c%c%c%c | signal %04x | snr %04x | ber %08x | unc %08x | %s\r",
 				result.signal ? 'S' : ' ',
