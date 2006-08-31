@@ -56,7 +56,7 @@ extern int dvbnet_open(int adapter, int netdeviceid);
  * @param fd FD opened with libdvbnet_open().
  * @param pid PID of the stream containing the network data.
  * @param encapsulation Encapsulation type of the stream (one of DVBNET_ENCAP_*).
- * @return 0 on success, nonzero on failure.
+ * @return Index of new interface on success, < 0 on failure.
  */
 extern int dvbnet_add_interface(int fd, uint16_t pid, enum dvbnet_encap encapsulation);
 

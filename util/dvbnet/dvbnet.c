@@ -87,7 +87,7 @@ int main(int argc, char **argv)
 		break;
 
 	case ADD_INTERFACE:
-		if (dvbnet_add_interface(fd_net, pid, encapsulation))
+		if ((ifnum = dvbnet_add_interface(fd_net, pid, encapsulation)) < 0)
 			fprintf(stderr,
 				"Error: couldn't add interface for pid %d: %d %m.\n",
 				pid, errno);
