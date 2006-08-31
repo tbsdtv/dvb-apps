@@ -330,12 +330,16 @@ static void process_pmt(int pmt_fd)
 	}
 
 	// do data handling
-	if (gnutv_data_new_pmt(pmt) == 1)
-		data_pmt_version = pmt->head.version_number;
+	if (section_ext->version_number != data_pmt_version) {
+		if (gnutv_data_new_pmt(pmt) == 1)
+			data_pmt_version = pmt->head.version_number;
+	}
 
 	// do ca handling
-	if (gnutv_ca_new_pmt(pmt) == 1)
-		ca_pmt_version = pmt->head.version_number;
+	if (section_ext->version_number != ca_pmt_version) {
+		if (gnutv_ca_new_pmt(pmt) == 1)
+			ca_pmt_version = pmt->head.version_number;
+	}
 }
 
 static int create_section_filter(int adapter, int demux, uint16_t pid, uint8_t table_id)

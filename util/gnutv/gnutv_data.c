@@ -393,11 +393,11 @@ static void gnutv_data_decoder_pmt(struct mpeg_pmt_section *pmt)
 		}
 	}
 	if (video_pid != -1) {
-		int fd = gnutv_data_create_decoder_filter(adapter_id, demux_id, audio_pid, DVBDEMUX_PESTYPE_VIDEO);
+		int fd = gnutv_data_create_decoder_filter(adapter_id, demux_id, video_pid, DVBDEMUX_PESTYPE_VIDEO);
 		if (fd < 0) {
-			fprintf(stderr, "Unable to create dvr filter for PID %i\n", audio_pid);
+			fprintf(stderr, "Unable to create dvr filter for PID %i\n", video_pid);
 		} else {
-			gnutv_data_append_pid_fd(audio_pid, fd);
+			gnutv_data_append_pid_fd(video_pid, fd);
 		}
 	}
 	int fd = gnutv_data_create_decoder_filter(adapter_id, demux_id, pmt->pcr_pid, DVBDEMUX_PESTYPE_PCR);
