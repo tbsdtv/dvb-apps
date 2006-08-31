@@ -39,7 +39,7 @@ ifeq ($(V),1)
 %: %.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) -MMD $(LDFLAGS) -o $@ $< $(filter-out %.h %.c,$^) $(LOADLIBES) $(LDLIBS)
 %.so:
-	$(LD) -shared -o $@ $^
+	$(CC) -shared -o $@ $^
 %.a:
 	$(AR) rcs $@ $^
 clean::
@@ -68,8 +68,8 @@ else
 	@echo CC $@
 	@$(CC) $(CPPFLAGS) $(CFLAGS) -MMD $(LDFLAGS) -o $@ $< $(filter-out %.h %.c,$^) $(LOADLIBES) $(LDLIBS)
 %.so:
-	@echo LD $@
-	@$(LD) -shared -o $@ $^
+	@echo CC $@
+	@$(CC) -shared -o $@ $^
 %.a:
 	@echo AR $@
 	@$(AR) rcs $@ $^
