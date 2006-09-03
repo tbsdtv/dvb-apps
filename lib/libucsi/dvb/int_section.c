@@ -34,7 +34,7 @@ struct dvb_int_section * dvb_int_section_codec(struct section_ext *ext)
 
 	bswap32(buf+8);
 	bswap16(buf+12);
-	pos += 9;
+	pos += 6;
 
 	if (len - pos < in->platform_descriptors_length)
 		return NULL;

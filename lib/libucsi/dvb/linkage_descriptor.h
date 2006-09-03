@@ -104,7 +104,7 @@ struct dvb_linkage_data_0b {
  */
 struct dvb_platform_id {
   EBIT2(uint32_t platform_id			: 24; ,
-	uint32_t platform_name_loop_length	: 8;  );
+	uint8_t platform_name_loop_length	: 8;  );
 	/* struct platform_name names[] */
 } __ucsi_packed;
 
@@ -187,6 +187,8 @@ static inline struct dvb_linkage_descriptor*
 			return NULL;
 
 		while (pos2 < l_0b->platform_id_data_length) {
+			bswap32(buf + pos + pos2);
+
 			struct dvb_platform_id *p_id = (struct dvb_platform_id *) (buf + pos + pos2);
 			if ((len - pos - pos2) < p_id->platform_name_loop_length)
 				return NULL;
@@ -359,7 +361,7 @@ static inline struct dvb_linkage_data_0b *
  * @param linkage dvb_linkage_data_0b pointer.
  * @param pos Variable containing a pointer to the current dvb_platform_id.
  */
-#define dvb_dvb_linkage_data_0b_platform_id_for_each(linkage, pos) \
+#define dvb_linkage_data_0b_platform_id_for_each(linkage, pos) \
 	for ((pos) = dvb_platform_id_first(linkage); \
 	     (pos); \
 	     (pos) = dvb_platform_id_next(linkage, pos))
