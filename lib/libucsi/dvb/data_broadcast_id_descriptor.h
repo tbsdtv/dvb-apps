@@ -174,7 +174,7 @@ static inline uint8_t *
 	if (dvb_id_selector_byte_000b_private_data_length(d, i) <= 0)
 		return NULL;
 
-	return (uint8_t *) i + i->platform_id_data_length + sizeof(dvb_id_selector_byte_000b);
+	return (uint8_t *) i + i->platform_id_data_length + sizeof(struct dvb_id_selector_byte_000b);
 }
 
 

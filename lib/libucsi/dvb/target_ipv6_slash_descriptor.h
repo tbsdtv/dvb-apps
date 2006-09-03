@@ -57,7 +57,6 @@ struct dvb_ipv6_slash {
 static inline struct dvb_target_ipv6_slash_descriptor*
 	dvb_target_ipv6_slash_descriptor_codec(struct descriptor* d)
 {
-	uint8_t* buf = (uint8_t*) d + 2;
 	uint32_t len = d->len;
 
 	if (len % sizeof(struct dvb_ipv6_slash))

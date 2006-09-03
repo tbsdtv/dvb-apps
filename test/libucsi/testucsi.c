@@ -2067,7 +2067,7 @@ void parse_dvb_descriptor(struct descriptor *d, int indent, int data_type)
 			struct dvb_platform_id *platid;
 			struct dvb_platform_name *curplatname;
 
-			dvb_dvb_linkage_data_0b_platform_id_for_each(data, platid) {
+			dvb_linkage_data_0b_platform_id_for_each(data, platid) {
 				iprintf(indent+1, "DSC platform_id:0x%06x\n", platid->platform_id);
 				dvb_platform_id_platform_name_for_each(platid, curplatname) {
 					iprintf(indent+2, "DSC language_code:%.3s platform_name:%.*s\n",
