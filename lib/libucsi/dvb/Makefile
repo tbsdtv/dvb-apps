@@ -54,6 +54,9 @@ includes = ac3_descriptor.h                                    \
            extended_event_descriptor.h                         \
            frequency_list_descriptor.h                         \
            int_section.h                                       \
+           ip_mac_platform_name_descriptor.h                   \
+           ip_mac_platform_provider_name_descriptor.h          \
+           ip_mac_stream_location_descriptor.h                 \
            linkage_descriptor.h                                \
            local_time_offset_descriptor.h                      \
            mhp_data_broadcast_id_descriptor.h                  \
@@ -91,6 +94,12 @@ includes = ac3_descriptor.h                                    \
            stream_identifier_descriptor.h                      \
            stuffing_descriptor.h                               \
            subtitling_descriptor.h                             \
+           target_ip_address_descriptor.h                      \
+           target_ipv6_address_descriptor.h                    \
+           target_ip_slash_descriptor.h                        \
+           target_ip_source_slash_descriptor.h                 \
+           target_ipv6_slash_descriptor.h                      \
+           target_ipv6_source_slash_descriptor.h               \
            tdt_section.h                                       \
            telephone_descriptor.h                              \
            teletext_descriptor.h                               \

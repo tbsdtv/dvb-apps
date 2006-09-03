@@ -47,6 +47,9 @@ extern "C"
 #include <libucsi/dvb/dsng_descriptor.h>
 #include <libucsi/dvb/extended_event_descriptor.h>
 #include <libucsi/dvb/frequency_list_descriptor.h>
+#include <libucsi/dvb/ip_mac_platform_name_descriptor.h>
+#include <libucsi/dvb/ip_mac_platform_provider_name_descriptor.h>
+#include <libucsi/dvb/ip_mac_stream_location_descriptor.h>
 #include <libucsi/dvb/linkage_descriptor.h>
 #include <libucsi/dvb/local_time_offset_descriptor.h>
 #include <libucsi/dvb/mosaic_descriptor.h>
@@ -74,6 +77,12 @@ extern "C"
 #include <libucsi/dvb/stream_identifier_descriptor.h>
 #include <libucsi/dvb/stuffing_descriptor.h>
 #include <libucsi/dvb/subtitling_descriptor.h>
+#include <libucsi/dvb/target_ip_address_descriptor.h>
+#include <libucsi/dvb/target_ipv6_address_descriptor.h>
+#include <libucsi/dvb/target_ip_slash_descriptor.h>
+#include <libucsi/dvb/target_ip_source_slash_descriptor.h>
+#include <libucsi/dvb/target_ipv6_slash_descriptor.h>
+#include <libucsi/dvb/target_ipv6_source_slash_descriptor.h>
 #include <libucsi/dvb/telephone_descriptor.h>
 #include <libucsi/dvb/teletext_descriptor.h>
 #include <libucsi/dvb/terrestrial_delivery_descriptor.h>
@@ -195,6 +204,18 @@ enum dvb_descriptor_tag {
 	dtag_dvb_ait_prefetch			= 0x0c,
 	dtag_dvb_ait_dii_location		= 0x0d,
 	dtag_dvb_ait_ip_signalling		= 0x11,
+
+	/* descriptors which may only appear in INT */
+	dtag_dvb_target_ip_address		= 0x09,
+	dtag_dvb_target_ipv6_address		= 0x0a,
+	dtag_dvb_ip_mac_platform_name		= 0x0c,
+	dtag_dvb_ip_mac_platform_provider_name	= 0x0d,
+	dtag_dvb_target_ip_slash		= 0x0f,
+	dtag_dvb_target_ip_source_slash		= 0x10,
+	dtag_dvb_target_ipv6_slash		= 0x11,
+	dtag_dvb_target_ipv6_source_slash	= 0x12,
+	dtag_dvb_ip_mac_stream_location		= 0x13,
+
 } __ucsi_packed;
 
 #ifdef __cplusplus
