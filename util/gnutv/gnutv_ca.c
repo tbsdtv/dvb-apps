@@ -142,15 +142,15 @@ void gnutv_ca_stop(void)
 	camthread_shutdown = 1;
 	pthread_join(camthread, NULL);
 
+	// destroy the stdcam
+	if (stdcam->destroy)
+		stdcam->destroy(stdcam, 1);
+
 	// destroy session layer
 	en50221_sl_destroy(sl);
 
 	// destroy transport layer
 	en50221_tl_destroy(tl);
-
-	// destroy the stdcam
-	if (stdcam->destroy)
-		stdcam->destroy(stdcam, 1);
 }
 
 void gnutv_ca_ui(void)
@@ -219,7 +219,7 @@ int gnutv_ca_new_pmt(struct mpeg_pmt_section *pmt)
 		return -1;
 
 	if (ca_resource_connected) {
-		fprintf(stderr, "Recieved new PMT - sending to CAM...\n");
+		fprintf(stderr, "Received new PMT - sending to CAM...\n");
 
 		// translate it into a CA PMT
 		int listmgmt = CA_LIST_MANAGEMENT_ONLY;

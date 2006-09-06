@@ -285,6 +285,8 @@ static void llci_cam_in_reset(struct en50221_stdcam_llci *llci)
 		en50221_tl_destroy_slot(llci->tl, llci->tl_slot_id);
 		return;
 	}
+
+	llci->state = EN50221_STDCAM_CAM_OK;
 }
 
 static void llci_cam_removed(struct en50221_stdcam_llci *llci)

@@ -261,7 +261,7 @@ int dvbcfg_zapchannel_parse(FILE *file, dvbcfg_zapcallback callback, void *priva
 			else
 				tmp.fe_type = DVBFE_TYPE_DVBC;
 		} else {
-			if (strstr(line_pos, "VSB:") || strstr(line_pos, ":QAM_"))
+			if (strstr(line_pos, "VSB:") || strstr(line_pos, "QAM_"))
 				tmp.fe_type = DVBFE_TYPE_ATSC;
 			else
 				tmp.fe_type = DVBFE_TYPE_DVBS;

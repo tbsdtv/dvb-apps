@@ -117,7 +117,7 @@ int zap_ca_new_pmt(struct mpeg_pmt_section *pmt)
 		return -1;
 
 	if (ca_resource_connected) {
-		fprintf(stderr, "Recieved new PMT - sending to CAM...\n");
+		fprintf(stderr, "Received new PMT - sending to CAM...\n");
 
 		// translate it into a CA PMT
 		int listmgmt = CA_LIST_MANAGEMENT_ONLY;
