@@ -31,6 +31,7 @@
 #include <libdvbapi/dvbfe.h>
 #include <libdvbcfg/dvbcfg_zapchannel.h>
 #include <libdvbsec/dvbsec_api.h>
+#include <libdvbsec/dvbsec_cfg.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <errno.h>
@@ -166,47 +167,20 @@ void ts_from_file(char *filename, int data_type) {
 int channels_cb(struct dvbcfg_zapchannel *channel, void *private)
 {
 	long data_type = (long) private;
+	struct dvbsec_config sec;
 
-	// FIXME: use the diseqc stuff here!
-	uint32_t freqadjust = 0;
-        if (feinfo.type == DVBFE_TYPE_DVBS) {
-		char *diseqc_h_low = "t V W15 .D(E0 10 38 F2) W15 A W15 t";
-		char *diseqc_h_high = "t V W15 .D(E0 10 38 F3) W15 A W15 T";
-		char *diseqc_v_low = "t v W15 .D(E0 10 38 F0) W15 A W15 t";
-		char *diseqc_v_high = "t v W15 .D(E0 10 38 F1) W15 A W15 T";
+	if (dvbsec_cfg_find(NULL, "UNIVERSAL", &sec)) {
+		fprintf(stderr, "Unable to find SEC id\n");
+		exit(1);
+	}
 
-		char *diseqc = NULL;
-		switch(channel->polarization) {
-		case 'h':
-			if (channel->fe_params.frequency < 11700000) {
-				freqadjust = 9750000;
-				diseqc = diseqc_h_low;
-			} else {
-				freqadjust = 10600000;
-				diseqc = diseqc_h_high;
-			}
-			break;
-
-		case 'v':
-			if (channel->fe_params.frequency < 11700000) {
-				freqadjust = 9750000;
-				diseqc = diseqc_v_low;
-			} else {
-				freqadjust = 10600000;
-				diseqc = diseqc_v_high;
-			}
-			break;
-
-		default:
-			break;
-		}
-
-		if (diseqc)
-			dvbsec_command(fe, diseqc);
-        }
-
-	channel->fe_params.frequency -= freqadjust;
-        if (dvbfe_set(fe, &channel->fe_params, MAX_TUNE_TIME)) {
+	if (dvbsec_set(fe,
+			&sec,
+			channel->polarization,
+			DISEQC_SWITCH_UNCHANGED,
+			DISEQC_SWITCH_UNCHANGED,
+			&channel->fe_params,
+			MAX_TUNE_TIME)) {
                 fprintf(stderr, "Failed to lock!\n");
         } else {
                 printf("Tuned successfully!\n");
