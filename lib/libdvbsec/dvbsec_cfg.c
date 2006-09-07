@@ -75,7 +75,7 @@ char* dvbcfg_iskey(char* line, char* keyname)
 }
 
 int dvbsec_cfg_load(FILE *f,
-		    void *private,
+		    void *arg,
 		    dvbsec_cfg_callback cb)
 {
 	struct dvbsec_config tmpsec;
@@ -108,7 +108,7 @@ int dvbsec_cfg_load(FILE *f,
 
 		if (dvbcfg_issection(line, "sec")) {
 			if (insection) {
-				if (cb(private, &tmpsec))
+				if (cb(arg, &tmpsec))
 					return 0;
 			}
 			insection = 1;
@@ -169,7 +169,7 @@ int dvbsec_cfg_load(FILE *f,
 
 	// output the final section if there is one
 	if (insection) {
-		if (cb(private, &tmpsec))
+		if (cb(arg, &tmpsec))
 			return 0;
 	}
 
@@ -178,7 +178,7 @@ int dvbsec_cfg_load(FILE *f,
 	return 0;
 }
 
-static int dvbsec_cfg_find_callback(void *private, struct dvbsec_config *sec);
+static int dvbsec_cfg_find_callback(void *arg, struct dvbsec_config *sec);
 static int dvbsec_cfg_find_default(const char *sec_id, struct dvbsec_config *sec);
 
 struct findparams {
@@ -217,9 +217,9 @@ int dvbsec_cfg_find(const char *config_file,
 	return dvbsec_cfg_find_default(sec_id, sec);
 }
 
-static int dvbsec_cfg_find_callback(void *private, struct dvbsec_config *sec)
+static int dvbsec_cfg_find_callback(void *arg, struct dvbsec_config *sec)
 {
-	struct findparams *findp = private;
+	struct findparams *findp = arg;
 
 	if (strcmp(findp->sec_id, sec->id))
 		return 0;

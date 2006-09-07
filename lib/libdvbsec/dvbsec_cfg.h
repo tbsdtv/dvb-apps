@@ -153,21 +153,21 @@ extern "C"
 /**
  * Callback function used in dvbsec_cfg_load().
  *
- * @param private Private information to caller.
+ * @param arg Private information to caller.
  * @param channel The current channel details.
  * @return 0 to continue, 1 to stop loading.
  */
-typedef int (*dvbsec_cfg_callback)(void *private, struct dvbsec_config *sec);
+typedef int (*dvbsec_cfg_callback)(void *arg, struct dvbsec_config *sec);
 
 /**
  * Load an SEC file.
  *
  * @param f File to load from.
- * @param private Value to pass to 'private' in callback above.
+ * @param arg Value to pass to 'arg' in callback above.
  * @param cb Callback function called for each sec loaded from the file.
  * @return 0 on success, or nonzero error code on failure.
  */
-extern int dvbsec_cfg_load(FILE *f, void *private,
+extern int dvbsec_cfg_load(FILE *f, void *arg,
 			   dvbsec_cfg_callback cb);
 
 /**
