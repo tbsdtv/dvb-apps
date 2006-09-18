@@ -241,11 +241,13 @@ static void *fileoutputthread_func(void* arg)
 		while(written < size) {
 			int tmp = write(outfd, buf + written, size - written);
 			if (tmp == -1) {
-				if (errno != EINTR)
+				if (errno != EINTR) {
 					fprintf(stderr, "Write error: %m\n");
-				break;
+					break;
+				}
+			} else {
+				written += tmp;
 			}
-			written += tmp;
 		}
 	}
 
