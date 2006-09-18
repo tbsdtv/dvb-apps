@@ -162,7 +162,9 @@ char *sounds[SND_MAX + 1] = { "Bell", "Click" };
 char **names[EV_MAX + 1] = { syncs, keys, relatives, absolutes, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 NULL, NULL, leds, sounds, NULL, repeats, NULL, NULL, NULL };
 
+#ifndef BITS_PER_LONG
 #define BITS_PER_LONG (sizeof(long) * 8)
+#endif
 #define NBITS(x) ((((x)-1)/BITS_PER_LONG)+1)
 #define OFF(x)  ((x)%BITS_PER_LONG)
 #define BIT(x)  (1UL<<OFF(x))

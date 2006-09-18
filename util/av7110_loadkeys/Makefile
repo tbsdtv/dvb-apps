@@ -1,7 +1,6 @@
 # Makefile for linuxtv.org dvb-apps/util/av7110_loadkeys
 
-binaries = av7110_loadkeys \
-           evtest
+binaries = av7110_loadkeys
 
 inst_bin = $(binaries)
 
