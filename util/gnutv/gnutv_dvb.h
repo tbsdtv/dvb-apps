@@ -39,5 +39,6 @@ struct gnutv_dvb_params {
 
 extern int gnutv_dvb_start(struct gnutv_dvb_params *params);
 extern void gnutv_dvb_stop(void);
+extern int gnutv_dvb_locked(void);
 
 #endif

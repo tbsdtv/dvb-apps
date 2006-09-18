@@ -41,6 +41,7 @@
 
 static int dvbthread_shutdown = 0;
 static pthread_t dvbthread;
+static int tune_state = 0;
 
 static int pat_version = -1;
 static int ca_pmt_version = -1;
@@ -66,15 +67,21 @@ void gnutv_dvb_stop(void)
 	pthread_join(dvbthread, NULL);
 }
 
+int gnutv_dvb_locked(void)
+{
+	return tune_state == 2;
+}
+
 static void *dvbthread_func(void* arg)
 {
-	int tune_state = 0;
 	int pat_fd = -1;
 	int pmt_fd = -1;
 	int tdt_fd = -1;
 	struct pollfd pollfds[3];
 
 	struct gnutv_dvb_params *params = (struct gnutv_dvb_params *) arg;
+   
+	tune_state = 0;
 
 	// create PAT filter
 	if ((pat_fd = create_section_filter(params->adapter_id, params->demux_id,
