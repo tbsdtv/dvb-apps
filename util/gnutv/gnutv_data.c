@@ -240,8 +240,9 @@ static void *fileoutputthread_func(void* arg)
 		written = 0;
 		while(written < size) {
 			int tmp = write(outfd, buf + written, size - written);
-			if ((tmp == -1) && (errno != EINTR)) {
-				fprintf(stderr, "Write problem: %m\n");
+			if (tmp == -1) {
+				if (errno != EINTR)
+					fprintf(stderr, "Write error: %m\n");
 				break;
 			}
 			written += tmp;
