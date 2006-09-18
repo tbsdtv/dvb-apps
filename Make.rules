@@ -27,8 +27,10 @@ ifeq ($(static),1)
 LDFLAGS += -static
 endif
 
-ifeq ($(prefix),)
-prefix = /usr
+prefix ?= /usr
+
+ifneq ($(DESTDIR),)
+prefix := $(DESTDIR)$(prefix)
 endif
 
 ifeq ($(V),1)

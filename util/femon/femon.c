@@ -41,7 +41,7 @@
 
 static char *usage_str =
     "\nusage: femon [options]\n"
-    "     -r        : human readable output\n"
+    "     -h        : human readable output\n"
     "     -a number : use given adapter (default 0)\n"
     "     -f number : use given frontend (default 0)\n\n";
 
@@ -66,7 +66,7 @@ int check_frontend (struct dvbfe_handle *fe, int human_readable)
 
 
 		if (human_readable) {
-			printf ("status %c%c%c%c%c | signal %04x | snr %04x | ber %08x | unc %08x | ",
+                       printf ("status %c%c%c%c%c | signal %3u%% | snr %3u%% | ber %08x | unc %08x | ",
 				fe_info.signal ? 'S' : ' ',
 				fe_info.carrier ? 'C' : ' ',
 				fe_info.viterbi ? 'V' : ' ',
@@ -145,11 +145,9 @@ int main(int argc, char *argv[])
 	int human_readable = 0;
 	int opt;
 
-	while ((opt = getopt(argc, argv, "hra:f:")) != -1) {
+       while ((opt = getopt(argc, argv, "ha:f:")) != -1) {
 		switch (opt)
 		{
-		case '?':
-		case 'h':
 		default:
 			usage();
 			break;
@@ -159,7 +157,7 @@ int main(int argc, char *argv[])
 		case 'f':
 			frontend = strtoul(optarg, NULL, 0);
 			break;
-		case 'r':
+		case 'h':
 			human_readable = 1;
 			break;
 		}

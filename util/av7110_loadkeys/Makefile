@@ -17,3 +17,8 @@ input_keynames.h:
 	$(SHELL) generate-keynames.sh $@
 
 include ../../Make.rules
+
+install::
+	@echo installing av7110 keymaps
+	@mkdir -p $(prefix)/share/dvb/av7110_loadkeys
+	@install -m 644 *.rc5 *.rcmm $(prefix)/share/dvb/av7110_loadkeys/
