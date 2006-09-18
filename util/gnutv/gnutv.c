@@ -330,7 +330,7 @@ int main(int argc, char *argv[])
 			start = time(NULL);
 
 		// the timeout
-		if (timeout != -1) {
+		if ((timeout != -1) && (start != 0)) {
 			if ((time(NULL) - start) >= timeout)
 				break;
 		}
