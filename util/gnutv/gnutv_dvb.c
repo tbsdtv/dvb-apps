@@ -50,7 +50,7 @@ static void *dvbthread_func(void* arg);
 
 static void process_pat(int pat_fd, struct gnutv_dvb_params *params, int *pmt_fd, struct pollfd *pollfd);
 static void process_tdt(int tdt_fd);
-static void process_pmt(int pmt_fd);
+static void process_pmt(int pmt_fd, struct gnutv_dvb_params *params);
 static int create_section_filter(int adapter, int demux, uint16_t pid, uint8_t table_id);
 
 
@@ -196,7 +196,7 @@ static void *dvbthread_func(void* arg)
 
 		//  PMT
 		if (pollfds[2].revents & (POLLIN|POLLPRI)) {
-			process_pmt(pmt_fd);
+			process_pmt(pmt_fd, params);
 		}
 	}
 
@@ -297,7 +297,7 @@ static void process_tdt(int tdt_fd)
 	gnutv_ca_new_dvbtime(dvbdate_to_unixtime(tdt->utc_time));
 }
 
-static void process_pmt(int pmt_fd)
+static void process_pmt(int pmt_fd, struct gnutv_dvb_params *params)
 {
 	int size;
 	uint8_t sibuf[4096];
@@ -318,8 +318,9 @@ static void process_pmt(int pmt_fd)
 	if (section_ext == NULL) {
 		return;
 	}
-	if ((section_ext->version_number == data_pmt_version) &&
-	    (section_ext->version_number == ca_pmt_version)) {
+	if ((section_ext->table_id_ext != params->channel.service_id) ||
+	    ((section_ext->version_number == data_pmt_version) &&
+	     (section_ext->version_number == ca_pmt_version))) {
 		return;
 	}
 
