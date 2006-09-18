@@ -98,7 +98,7 @@ void gnutv_data_start(int _output_type,
 	case OUTPUT_TYPE_FILE:
 		if (output_type == OUTPUT_TYPE_FILE) {
 			// open output file
-			outfd = open(outfile, O_WRONLY|O_CREAT|O_LARGEFILE, 0644);
+			outfd = open(outfile, O_WRONLY|O_CREAT|O_LARGEFILE|O_TRUNC, 0644);
 			if (outfd < 0) {
 				fprintf(stderr, "Failed to open output file\n");
 				exit(1);
