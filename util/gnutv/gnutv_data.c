@@ -214,6 +214,7 @@ static void *fileoutputthread_func(void* arg)
 	(void)arg;
 	uint8_t buf[4096];
 	struct pollfd pollfd;
+	int written;
 
 	pollfd.fd = dvrfd;
 	pollfd.events = POLLIN|POLLPRI|POLLERR;
@@ -236,9 +237,14 @@ static void *fileoutputthread_func(void* arg)
 			return 0;
 		}
 
-		if (write(outfd, buf, size) != size) {
-			if (errno != EINTR)
+		written = 0;
+		while(written < size) {
+			int tmp = write(outfd, buf + written, size - written);
+			if ((tmp == -1) && (errno != EINTR)) {
 				fprintf(stderr, "Write problem: %m\n");
+				break;
+			}
+			written += tmp;
 		}
 	}
 
