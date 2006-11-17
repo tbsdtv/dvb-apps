@@ -43,7 +43,8 @@ static char *usage_str =
     "\nusage: femon [options]\n"
     "     -h        : human readable output\n"
     "     -a number : use given adapter (default 0)\n"
-    "     -f number : use given frontend (default 0)\n\n";
+    "     -f number : use given frontend (default 0)\n"
+    "     -c number : samples to take (default 0 = infinite)\n\n";
 
 
 static void usage(void)
@@ -54,9 +55,10 @@ static void usage(void)
 
 
 static
-int check_frontend (struct dvbfe_handle *fe, int human_readable)
+int check_frontend (struct dvbfe_handle *fe, int human_readable, unsigned int count)
 {
 	struct dvbfe_info fe_info;
+	unsigned int samples = 0;
 
 	do {
 		if (dvbfe_get_info(fe, FE_STATUS_PARAMS, &fe_info, DVBFE_INFO_QUERYTYPE_IMMEDIATE, 0) != FE_STATUS_PARAMS) {
@@ -95,14 +97,15 @@ int check_frontend (struct dvbfe_handle *fe, int human_readable)
 		printf("\n");
 		fflush(stdout);
 		usleep(1000000);
-	} while (1);
+		samples++;
+	} while ((!count) || (count-samples));
 
 	return 0;
 }
 
 
 static
-int do_mon(unsigned int adapter, unsigned int frontend, int human_readable)
+int do_mon(unsigned int adapter, unsigned int frontend, int human_readable, unsigned int count)
 {
 	int result;
 	struct dvbfe_handle *fe;
@@ -132,7 +135,7 @@ int do_mon(unsigned int adapter, unsigned int frontend, int human_readable)
 	}
 	printf("FE: %s (%s)\n", fe_info.name, fe_type);
 
-	result = check_frontend (fe, human_readable);
+	result = check_frontend (fe, human_readable, count);
 
 	dvbfe_close(fe);
 
@@ -141,11 +144,11 @@ int do_mon(unsigned int adapter, unsigned int frontend, int human_readable)
 
 int main(int argc, char *argv[])
 {
-	unsigned int adapter = 0, frontend = 0;
+	unsigned int adapter = 0, frontend = 0, count = 0;
 	int human_readable = 0;
 	int opt;
 
-       while ((opt = getopt(argc, argv, "ha:f:")) != -1) {
+       while ((opt = getopt(argc, argv, "ha:f:c:")) != -1) {
 		switch (opt)
 		{
 		default:
@@ -153,6 +156,9 @@ int main(int argc, char *argv[])
 			break;
 		case 'a':
 			adapter = strtoul(optarg, NULL, 0);
+			break;
+		case 'c':
+			count = strtoul(optarg, NULL, 0);
 			break;
 		case 'f':
 			frontend = strtoul(optarg, NULL, 0);
@@ -163,7 +169,7 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	do_mon(adapter, frontend, human_readable);
+	do_mon(adapter, frontend, human_readable, count);
 
 	return 0;
 }
