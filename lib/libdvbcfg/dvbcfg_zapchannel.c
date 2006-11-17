@@ -74,12 +74,13 @@ static const struct dvbcfg_setting dvbcfg_bandwidth_list[] = {
 };
 
 static const struct dvbcfg_setting dvbcfg_constellation_list[] = {
-	{ "QAM_16",  DVBFE_DVBT_CONST_QAM_16  },
-	{ "QAM_32",  DVBFE_DVBT_CONST_QAM_32  },
-	{ "QAM_64",  DVBFE_DVBT_CONST_QAM_64  },
-	{ "QAM_128", DVBFE_DVBT_CONST_QAM_128 },
-	{ "QAM_256", DVBFE_DVBT_CONST_QAM_256 },
-	{ "QPSK",    DVBFE_DVBT_CONST_QPSK    },
+	{ "QAM_16",   DVBFE_DVBT_CONST_QAM_16  },
+	{ "QAM_32",   DVBFE_DVBT_CONST_QAM_32  },
+	{ "QAM_64",   DVBFE_DVBT_CONST_QAM_64  },
+	{ "QAM_128",  DVBFE_DVBT_CONST_QAM_128 },
+	{ "QAM_256",  DVBFE_DVBT_CONST_QAM_256 },
+	{ "QPSK",     DVBFE_DVBT_CONST_QPSK    },
+	{ "QAM_AUTO", DVBFE_DVBT_CONST_AUTO    },
 	{ NULL, 0 }
 };
 

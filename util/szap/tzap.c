@@ -93,14 +93,16 @@ static const Param guard_list [] = {
 	{"GUARD_INTERVAL_1_16", GUARD_INTERVAL_1_16},
 	{"GUARD_INTERVAL_1_32", GUARD_INTERVAL_1_32},
 	{"GUARD_INTERVAL_1_4", GUARD_INTERVAL_1_4},
-	{"GUARD_INTERVAL_1_8", GUARD_INTERVAL_1_8}
+	{"GUARD_INTERVAL_1_8", GUARD_INTERVAL_1_8},
+	{"GUARD_INTERVAL_AUTO", GUARD_INTERVAL_AUTO}
 };
 
 static const Param hierarchy_list [] = {
 	{ "HIERARCHY_1", HIERARCHY_1 },
 	{ "HIERARCHY_2", HIERARCHY_2 },
 	{ "HIERARCHY_4", HIERARCHY_4 },
-	{ "HIERARCHY_NONE", HIERARCHY_NONE }
+	{ "HIERARCHY_NONE", HIERARCHY_NONE },
+	{ "HIERARCHY_AUTO", HIERARCHY_AUTO }
 };
 
 static const Param constellation_list [] = {
@@ -109,12 +111,14 @@ static const Param constellation_list [] = {
 	{ "QAM_16", QAM_16 },
 	{ "QAM_256", QAM_256 },
 	{ "QAM_32", QAM_32 },
-	{ "QAM_64", QAM_64 }
+	{ "QAM_64", QAM_64 },
+	{ "QAM_AUTO", QAM_AUTO }
 };
 
 static const Param transmissionmode_list [] = {
 	{ "TRANSMISSION_MODE_2K", TRANSMISSION_MODE_2K },
 	{ "TRANSMISSION_MODE_8K", TRANSMISSION_MODE_8K },
+	{ "TRANSMISSION_MODE_AUTO", TRANSMISSION_MODE_AUTO }
 };
 
 #define LIST_SIZE(x) sizeof(x)/sizeof(Param)
