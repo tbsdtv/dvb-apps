@@ -55,7 +55,7 @@ static int netdev = 0;
 static void hello(void);
 static void usage(char *);
 static void parse_args(int, char **);
-static int queryInterface(int, int);
+static void queryInterface(int);
 
 int ifnum;
 int pid;
@@ -98,7 +98,7 @@ int main(int argc, char **argv)
 		break;
 
 	case LST_INTERFACE:
-		queryInterface(fd_net, 0);
+		queryInterface(fd_net);
 		break;
 
 	default:
@@ -111,9 +111,9 @@ int main(int argc, char **argv)
 }
 
 
-int queryInterface(int fd_net, int dev)
+void queryInterface(int fd_net)
 {
-	int IF, nIFaces = 0, ret = FAIL;
+	int IF, nIFaces = 0;
 	char *encap;
 
 	printf("Query DVB network interfaces:\n");
@@ -123,9 +123,6 @@ int queryInterface(int fd_net, int dev)
 		enum dvbnet_encap _encapsulation;
 		if (dvbnet_get_interface(fd_net, IF, &_pid, &_encapsulation))
 			continue;
-
-		if (dev == ifnum)
-			ret = OK;
 	   
 		encap = "???";
 		switch(_encapsulation) {
@@ -139,14 +136,13 @@ int queryInterface(int fd_net, int dev)
 
 		printf("Found device %d: interface dvb%d_%d, "
 		       "listening on PID %d, encapsulation %s\n",
-		       IF, adapter, ifnum, _pid, encap);
+		       IF, adapter, IF, _pid, encap);
 
 		nIFaces++;
 	}
 
 	printf("-----------------------------\n");
 	printf("Found %d interface(s).\n\n", nIFaces);
-	return ret;
 }
 
 
