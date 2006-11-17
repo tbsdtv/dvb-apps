@@ -1465,21 +1465,34 @@ static int __tune_to_transponder (int frontend_fd, struct transponder *t)
 	}
 
 	if (t->type == FE_QPSK) {
-		int hiband = 0;
+		if (lnb_type.high_val) {
+			if (lnb_type.switch_val) {
+				/* Voltage-controlled switch */
+				int hiband = 0;
 
-		if (lnb_type.switch_val && lnb_type.high_val &&
-			p.frequency >= lnb_type.switch_val)
-			hiband = 1;
+				if (p.frequency >= lnb_type.switch_val)
+					hiband = 1;
 
-		setup_switch (frontend_fd,
-			      switch_pos,
-			      t->polarisation == POLARISATION_VERTICAL ? 0 : 1,
-			      hiband);
-		usleep(50000);
-		if (hiband)
-			p.frequency = abs(p.frequency - lnb_type.high_val);
-		else
+				setup_switch (frontend_fd,
+					      switch_pos,
+					      t->polarisation == POLARISATION_VERTICAL ? 0 : 1,
+					      hiband);
+				usleep(50000);
+				if (hiband)
+					p.frequency = abs(p.frequency - lnb_type.high_val);
+				else
+					p.frequency = abs(p.frequency - lnb_type.low_val);
+			} else {
+				/* C-Band Multipoint LNBf */
+				p.frequency = abs(p.frequency - (t->polarisation == POLARISATION_VERTICAL ? 
+						lnb_type.low_val: lnb_type.high_val));
+			}
+		} else	{
+			/* Monopoint LNBf without switch */
 			p.frequency = abs(p.frequency - lnb_type.low_val);
+		}
+		if (verbosity >= 2)
+			dprintf(1,"DVB-S IF freq is %d\n",p.frequency);
 	}
 
 	if (ioctl(frontend_fd, FE_SET_FRONTEND, &p) == -1) {
