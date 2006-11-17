@@ -278,20 +278,11 @@ extern int dvbfe_get_info(struct dvbfe_handle *fehandle,
 	}
 
 	if (returnval & DVBFE_INFO_LOCKSTATUS) {
-		if (kevent.status & FE_HAS_SIGNAL)
-			result->signal = 1;
-
-		if (kevent.status & FE_HAS_CARRIER)
-			result->carrier = 1;
-
-		if (kevent.status & FE_HAS_VITERBI)
-			result->viterbi = 1;
-
-		if (kevent.status & FE_HAS_SYNC)
-			result->sync = 1;
-
-		if (kevent.status & FE_HAS_LOCK)
-			result->lock = 1;
+		result->signal = kevent.status & FE_HAS_SIGNAL ? 1 : 0;
+		result->carrier = kevent.status & FE_HAS_CARRIER ? 1 : 0;
+		result->viterbi = kevent.status & FE_HAS_VITERBI ? 1 : 0;
+		result->sync = kevent.status & FE_HAS_SYNC ? 1 : 0;
+		result->lock = kevent.status & FE_HAS_LOCK ? 1 : 0;
 	}
 
 	if (returnval & DVBFE_INFO_FEPARAMS) {
