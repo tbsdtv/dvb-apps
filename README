@@ -14,7 +14,7 @@ util/dvbdate	- Set your clock from digital TV.
 util/dvbnet	- Control digital data network interfaces.
 util/dvbtraffic	- Monitor traffic on a digital device.
 util/femon	- Monitor the tuning on a digital TV device.
-util/zap	- *Just* tunes a digital device.
+util/zap	- *Just* tunes a digital device - really intended for developers.
 
 Hardware Specific Utilities:
 util/av7110_loadkeys	- Load remote keys into an av7110 based card
