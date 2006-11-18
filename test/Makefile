@@ -28,6 +28,7 @@ CPPFLAGS += -I../include
 all: $(binaries)
 	make -C libdvbcfg $@
 	make -C libdvben50221 $@
+	make -C libesg $@
 	make -C libucsi $@
 
 $(binaries): $(objects)
@@ -35,6 +36,7 @@ $(binaries): $(objects)
 clean::
 	make -C libdvbcfg $@
 	make -C libdvben50221 $@
+	make -C libesg $@
 	make -C libucsi $@
 
 include ../Make.rules

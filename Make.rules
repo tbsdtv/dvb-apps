@@ -1,6 +1,6 @@
 # build rules for linuxtv.org dvb-apps
 
-CFLAGS ?= -g -O2 -Wall -W -Wshadow -Wpointer-arith -Wstrict-prototypes
+CFLAGS ?= -g -Wall -W -Wshadow -Wpointer-arith -Wstrict-prototypes
 
 ifneq ($(lib_name),)
 

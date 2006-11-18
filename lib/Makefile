@@ -7,4 +7,5 @@ all clean install:
 	$(MAKE) -C libdvbsec $@
 	$(MAKE) -C libdvbcfg $@
 	$(MAKE) -C libdvben50221 $@
+	$(MAKE) -C libesg $@
 	$(MAKE) -C libucsi $@
