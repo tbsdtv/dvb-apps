@@ -9,6 +9,7 @@ all clean install:
 	$(MAKE) -C dvbdate $@
 	$(MAKE) -C dvbnet $@
 	$(MAKE) -C dvbtraffic $@
+	$(MAKE) -C dvbscan $@
 	$(MAKE) -C femon $@
 	$(MAKE) -C scan $@
 	$(MAKE) -C szap $@
