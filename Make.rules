@@ -29,8 +29,13 @@ endif
 
 prefix ?= /usr
 
+bindir     ?= $(prefix)/bin
+includedir ?= $(prefix)/include
+libdir     ?= $(prefix)/lib
+sharedir   ?= $(prefix)/share
+
 ifneq ($(DESTDIR),)
-prefix := $(DESTDIR)$(prefix)
+DESTDIR = $(DESTDIR)/
 endif
 
 ifeq ($(V),1)
@@ -48,16 +53,16 @@ clean::
 	$(RM) -f $(prerequisites) $(objects) $(libraries) $(binaries) $(removing) *~
 install::
 ifneq ($(includes),)
-	mkdir -p $(prefix)/include/$(lib_name)
-	install -m 644 $(includes) $(prefix)/include/$(lib_name)/
+	mkdir -p $(DESTDIR)$(includedir)/$(lib_name)
+	install -m 644 $(includes) $(DESTDIR)$(includedir)/$(lib_name)/
 endif
 ifneq ($(libraries),)
-	mkdir -p $(prefix)/lib
-	install -m 644 $(libraries) $(prefix)/lib/
+	mkdir -p $(DESTDIR)$(libdir)
+	install -m 644 $(libraries) $(DESTDIR)$(libdir)/
 endif
 ifneq ($(inst_bin),)
-	mkdir -p $(prefix)/bin
-	install -m 755 $(inst_bin) $(prefix)/bin/
+	mkdir -p $(DESTDIR)$(bindir)
+	install -m 755 $(inst_bin) $(DESTDIR)$(bindir)/
 endif
 else
 %.o: %.c
@@ -81,18 +86,18 @@ clean::
 install::
 ifneq ($(includes),)
 	@echo installing headers
-	@mkdir -p $(prefix)/include/$(lib_name)
-	@install -m 644 $(includes) $(prefix)/include/$(lib_name)/
+	@mkdir -p $(DESTDIR)$(includedir)/$(lib_name)
+	@install -m 644 $(includes) $(DESTDIR)$(includedir)/$(lib_name)/
 endif
 ifneq ($(libraries),)
 	@echo installing libraries
-	@mkdir -p $(prefix)/lib
-	@install -m 644 $(libraries) $(prefix)/lib/
+	@mkdir -p $(DESTDIR)$(libdir)
+	@install -m 644 $(libraries) $(DESTDIR)$(libdir)/
 endif
 ifneq ($(inst_bin),)
 	@echo installing binaries
-	@mkdir -p $(prefix)/bin
-	@install -m 755 $(inst_bin) $(prefix)/bin/
+	@mkdir -p $(DESTDIR)$(bindir)
+	@install -m 755 $(inst_bin) $(DESTDIR)$(bindir)/
 endif
 endif
 

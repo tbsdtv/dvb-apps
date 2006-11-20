@@ -19,5 +19,5 @@ include ../../Make.rules
 
 install::
 	@echo installing av7110 keymaps
-	@mkdir -p $(prefix)/share/dvb/av7110_loadkeys
-	@install -m 644 *.rc5 *.rcmm $(prefix)/share/dvb/av7110_loadkeys/
+	@mkdir -p $(DESTDIR)$(sharedir)/dvb/av7110_loadkeys
+	@install -m 644 *.rc5 *.rcmm $(DESTDIR)$(sharedir)/dvb/av7110_loadkeys/

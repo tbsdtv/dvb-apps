@@ -31,11 +31,11 @@ include ../../Make.rules
 
 install::
 	@echo installing scan files
-	@mkdir -p $(prefix)/share/dvb/atsc
-	@mkdir -p $(prefix)/share/dvb/dvb-c
-	@mkdir -p $(prefix)/share/dvb/dvb-s
-	@mkdir -p $(prefix)/share/dvb/dvb-t
-	@install -m 664 atsc/* $(prefix)/share/dvb/atsc
-	@install -m 664 dvb-c/* $(prefix)/share/dvb/dvb-c
-	@install -m 664 dvb-s/* $(prefix)/share/dvb/dvb-s
-	@install -m 664 dvb-t/* $(prefix)/share/dvb/dvb-t
+	@mkdir -p $(DESTDIR)$(sharedir)/dvb/atsc
+	@mkdir -p $(DESTDIR)$(sharedir)/dvb/dvb-c
+	@mkdir -p $(DESTDIR)$(sharedir)/dvb/dvb-s
+	@mkdir -p $(DESTDIR)$(sharedir)/dvb/dvb-t
+	@install -m 664 atsc/* $(DESTDIR)$(sharedir)/dvb/atsc/
+	@install -m 664 dvb-c/* $(DESTDIR)$(sharedir)/dvb/dvb-c/
+	@install -m 664 dvb-s/* $(DESTDIR)$(sharedir)/dvb/dvb-s/
+	@install -m 664 dvb-t/* $(DESTDIR)$(sharedir)/dvb/dvb-t/
