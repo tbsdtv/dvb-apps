@@ -216,7 +216,7 @@ enum dvb_descriptor_tag {
 	dtag_dvb_target_ipv6_source_slash	= 0x12,
 	dtag_dvb_ip_mac_stream_location		= 0x13,
 
-} __ucsi_packed;
+};
 
 #ifdef __cplusplus
 }
