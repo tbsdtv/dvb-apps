@@ -23,16 +23,11 @@
 #define _GNU_SOURCE
 
 #include <malloc.h>
-#include <stdio.h>
 #include <string.h>
 #include <ctype.h>
 
 #include "dvbcfg_zapchannel.h"
-
-struct dvbcfg_setting {
-	const char *name;
-	unsigned int value;
-};
+#include "dvbcfg_common.h"
 
 static const struct dvbcfg_setting dvbcfg_inversion_list[] = {
 	{ "INVERSION_ON",   DVBFE_INVERSION_ON   },
@@ -116,117 +111,6 @@ static const struct dvbcfg_setting dvbcfg_atsc_modulation_list[] = {
 	{ "QAM_256", DVBFE_ATSC_MOD_QAM_256 },
 	{ NULL, 0 }
 };
-
-static int dvbcfg_parse_int(char **text)
-{
-	char *start = *text;
-	char *stop = *text;
-	int value;
-
-	while (*stop != '\0') {
-		if (*stop == ':') {
-			*stop = '\0';
-			stop++;
-			break;
-		}
-		stop++;
-	}
-
-	if (sscanf(start, "%i", &value) == 1) {
-		*text = stop;
-		return value;
-	}
-
-	*text = NULL;
-	return -1;
-}
-
-static int dvbcfg_parse_char(char **text)
-{
-	char *start = *text;
-	char *stop = *text;
-	char value;
-
-	while (*stop != '\0') {
-		if (*stop == ':') {
-			*stop = '\0';
-			stop++;
-			break;
-		}
-		stop++;
-	}
-
-	if (sscanf(start, "%c", &value) == 1) {
-		*text = stop;
-		return value;
-	}
-
-	*text = NULL;
-	return -1;
-}
-
-static int dvbcfg_parse_setting(char **text, const struct dvbcfg_setting *settings)
-{
-	char *start = *text;
-	char *stop = *text;
-
-	while (*stop != '\0') {
-		if (*stop == ':') {
-			*stop = '\0';
-			stop++;
-			break;
-		}
-		stop++;
-	}
-
-	while (settings->name) {
-		if (strcmp(start, settings->name) == 0) {
-			*text = stop;
-			return settings->value;
-		}
-		settings++;
-	}
-
-	*text = NULL;
-	return -1;
-}
-
-static void dvbcfg_parse_string(char **text, char *dest, unsigned long size)
-{
-	char *start = *text;
-	char *stop = *text;
-	unsigned long length;
-
-	while ((*stop != '\0') && (*stop != ':'))
-		stop++;
-
-	length = (stop - start) + 1;
-
-	if (length <= size) {
-		if (*stop == ':') {
-			*stop = '\0';
-			*text = stop + 1;
-		} else
-			*text = stop;
-		memcpy(dest, start, length);
-		return;
-	}
-
-	*text = NULL;
-	return;
-}
-
-static const char *dvbcfg_lookup_setting(unsigned int setting,
-					 const struct dvbcfg_setting *settings)
-{
-	while (settings->name) {
-		if (setting == settings->value)
-			return settings->name;
-		settings++;
-	}
-
-	return NULL;
-}
 
 int dvbcfg_zapchannel_parse(FILE *file, dvbcfg_zapcallback callback, void *private_data)
 {
