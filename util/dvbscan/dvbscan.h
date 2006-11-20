@@ -120,4 +120,11 @@ struct transponder
 	struct transponder *next;
 };
 
+extern void append_transponder(struct transponder *t, struct transponder **tlist, struct transponder **tlist_end);
+extern struct transponder *new_transponder(void);
+extern void free_transponder(struct transponder *t);
+extern int seen_transponder(struct transponder *t, struct transponder *checklist);
+extern void add_frequency(struct transponder *t, uint32_t frequency);
+extern struct transponder *first_transponder(struct transponder **tlist, struct transponder **tlist_end);
+
 #endif

@@ -27,10 +27,10 @@
 #include "dvbscan.h"
 
 
-#define OUTPUT_TYPE_RAW 	1
-#define OUTPUT_TYPE_CHANNELS 	2
-#define OUTPUT_TYPE_VDR12 	3
-#define OUTPUT_TYPE_VDR13 	4
+#define OUTPUT_TYPE_RAW 		1
+#define OUTPUT_TYPE_CHANNELS 		2
+#define OUTPUT_TYPE_VDR12 		3
+#define OUTPUT_TYPE_VDR13 		4
 
 #define SERVICE_FILTER_TV		1
 #define SERVICE_FILTER_RADIO		2
@@ -88,9 +88,18 @@ static void usage(void)
 	exit(1);
 }
 
-int scan_load_callback(struct dvbcfg_scanfile *channel, void *private_data)
+
+static int scan_load_callback(struct dvbcfg_scanfile *channel, void *private_data)
 {
-	// FIXME: add to toscan list
+	(void) private_data;
+
+	struct transponder *t = new_transponder();
+	append_transponder(t, &toscan, &toscan_end);
+	memcpy(&t->params, &channel->fe_params, sizeof(struct dvbfe_parameters));
+
+	t->fe_type = channel->fe_type;
+	add_frequency(t, t->params.frequency);
+	t->params.frequency = 0;
 
 	return 0;
 }
@@ -239,25 +248,29 @@ int main(int argc, char *argv[])
 
 	// main scan loop
 	while(toscan) {
-		// FIXME: have we already scanned this one?
+		// get the first item on the toscan list
+		struct transponder *tmp = first_transponder(&toscan, &toscan_end);
+
+		// have we already seen this transponder?
+		if (seen_transponder(tmp, scanned)) {
+			// destroy it!
+			free_transponder(tmp);
+			continue;
+		}
 
 		// FIXME: tune it
 
 		// FIXME: scan it
 
 		// add to scanned list.
+		append_transponder(tmp, &scanned, &scanned_end);
 		if (scanned_end == NULL) {
-			scanned = toscan;
+			scanned = tmp;
 		} else {
-			scanned_end->next = toscan;
+			scanned_end->next = tmp;
 		}
-		scanned_end = toscan;
-		toscan->next = NULL;
-
-		// remove from toscan list
-		toscan = toscan->next;
-		if (toscan == NULL)
-			toscan_end = NULL;
+		scanned_end = tmp;
+		tmp->next = NULL;
 	}
 
 	// FIXME: output the data

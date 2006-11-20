@@ -1,6 +1,7 @@
 # Makefile for linuxtv.org dvb-apps/util/dvbscan
 
 objects  = dvbscan.o  \
+	   dvbscan_structutils.o
 #           dvbscan_dvb.o \
 #           dvbscan_atsc.o
 
