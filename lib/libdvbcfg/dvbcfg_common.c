@@ -22,6 +22,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 #include "dvbcfg_common.h"
 
 int dvbcfg_parse_int(char **text)
@@ -31,7 +32,7 @@ int dvbcfg_parse_int(char **text)
 	int value;
 
 	while (*stop != '\0') {
-		if (*stop == ':') {
+		if ((*stop == ':') || isspace(*stop)) {
 			*stop = '\0';
 			stop++;
 			break;
@@ -55,7 +56,7 @@ int dvbcfg_parse_char(char **text)
 	char value;
 
 	while (*stop != '\0') {
-		if (*stop == ':') {
+		if ((*stop == ':') || isspace(*stop)) {
 			*stop = '\0';
 			stop++;
 			break;
@@ -78,7 +79,7 @@ int dvbcfg_parse_setting(char **text, const struct dvbcfg_setting *settings)
 	char *stop = *text;
 
 	while (*stop != '\0') {
-		if (*stop == ':') {
+		if ((*stop == ':') || isspace(*stop)) {
 			*stop = '\0';
 			stop++;
 			break;
@@ -104,13 +105,13 @@ void dvbcfg_parse_string(char **text, char *dest, unsigned long size)
 	char *stop = *text;
 	unsigned long length;
 
-	while ((*stop != '\0') && (*stop != ':'))
+	while ((*stop != '\0') && (*stop != ':') && (!isspace(':')))
 		stop++;
 
 	length = (stop - start) + 1;
 
 	if (length <= size) {
-		if (*stop == ':') {
+		if ((*stop == ':') || isspace(*stop)) {
 			*stop = '\0';
 			*text = stop + 1;
 		} else
