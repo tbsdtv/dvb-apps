@@ -126,4 +126,7 @@ extern int seen_transponder(struct transponder *t, struct transponder *checklist
 extern void add_frequency(struct transponder *t, uint32_t frequency);
 extern struct transponder *first_transponder(struct transponder **tlist, struct transponder **tlist_end);
 
+extern void dvbscan_scan_dvb(struct dvbfe_handle *fe);
+extern void dvbscan_scan_atsc(struct dvbfe_handle *fe);
+
 #endif

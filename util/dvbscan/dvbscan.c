@@ -275,7 +275,6 @@ int main(int argc, char *argv[])
 
 		// have we already seen this transponder?
 		if (seen_transponder(tmp, scanned)) {
-			// destroy it!
 			free_transponder(tmp);
 			continue;
 		}
@@ -320,7 +319,18 @@ int main(int argc, char *argv[])
 			continue;
 		}
 
-		// FIXME: scan it
+		// scan it
+		switch(feinfo.type) {
+		case DVBFE_TYPE_DVBS:
+		case DVBFE_TYPE_DVBC:
+		case DVBFE_TYPE_DVBT:
+			dvbscan_scan_dvb(fe);
+			break;
+
+		case DVBFE_TYPE_ATSC:
+			dvbscan_scan_atsc(fe);
+			break;
+		}
 
 		// add to scanned list.
 		append_transponder(tmp, &scanned, &scanned_end);
