@@ -25,14 +25,14 @@
 #include <ctype.h>
 #include "dvbcfg_common.h"
 
-int dvbcfg_parse_int(char **text)
+int dvbcfg_parse_int(char **text, char *tokens)
 {
 	char *start = *text;
 	char *stop = *text;
 	int value;
 
 	while (*stop != '\0') {
-		if ((*stop == ':') || isspace(*stop)) {
+		if (strchr(tokens, *stop) != NULL) {
 			*stop = '\0';
 			stop++;
 			break;
@@ -49,14 +49,14 @@ int dvbcfg_parse_int(char **text)
 	return -1;
 }
 
-int dvbcfg_parse_char(char **text)
+int dvbcfg_parse_char(char **text, char *tokens)
 {
 	char *start = *text;
 	char *stop = *text;
 	char value;
 
 	while (*stop != '\0') {
-		if ((*stop == ':') || isspace(*stop)) {
+		if (strchr(tokens, *stop) != NULL) {
 			*stop = '\0';
 			stop++;
 			break;
@@ -73,13 +73,13 @@ int dvbcfg_parse_char(char **text)
 	return -1;
 }
 
-int dvbcfg_parse_setting(char **text, const struct dvbcfg_setting *settings)
+int dvbcfg_parse_setting(char **text, char *tokens, const struct dvbcfg_setting *settings)
 {
 	char *start = *text;
 	char *stop = *text;
 
 	while (*stop != '\0') {
-		if ((*stop == ':') || isspace(*stop)) {
+		if (strchr(tokens, *stop) != NULL) {
 			*stop = '\0';
 			stop++;
 			break;
@@ -99,19 +99,19 @@ int dvbcfg_parse_setting(char **text, const struct dvbcfg_setting *settings)
 	return -1;
 }
 
-void dvbcfg_parse_string(char **text, char *dest, unsigned long size)
+void dvbcfg_parse_string(char **text, char *tokens, char *dest, unsigned long size)
 {
 	char *start = *text;
 	char *stop = *text;
 	unsigned long length;
 
-	while ((*stop != '\0') && (*stop != ':') && (!isspace(':')))
+	while ((*stop != '\0') && (strchr(tokens, *stop) == NULL))
 		stop++;
 
 	length = (stop - start) + 1;
 
 	if (length <= size) {
-		if ((*stop == ':') || isspace(*stop)) {
+		if (strchr(tokens, *stop) != NULL) {
 			*stop = '\0';
 			*text = stop + 1;
 		} else

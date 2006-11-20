@@ -28,10 +28,10 @@ struct dvbcfg_setting {
 	unsigned int value;
 };
 
-extern int dvbcfg_parse_int(char **text);
-extern int dvbcfg_parse_char(char **text);
-extern int dvbcfg_parse_setting(char **text, const struct dvbcfg_setting *settings);
-extern void dvbcfg_parse_string(char **text, char *dest, unsigned long size);
+extern int dvbcfg_parse_int(char **text, char *tokens);
+extern int dvbcfg_parse_char(char **text, char *tokens);
+extern int dvbcfg_parse_setting(char **text, char *tokens, const struct dvbcfg_setting *settings);
+extern void dvbcfg_parse_string(char **text, char *tokens, char *dest, unsigned long size);
 extern const char *dvbcfg_lookup_setting(unsigned int setting, const struct dvbcfg_setting *settings);
 
 #endif

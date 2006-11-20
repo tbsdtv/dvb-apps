@@ -125,7 +125,7 @@ int dvbcfg_scanfile_parse(FILE *file, dvbcfg_scancallback callback, void *privat
 		tmp.fe_params.inversion = DVBFE_INVERSION_AUTO;
 
 		/* parse frontend type */
-		switch(dvbcfg_parse_char(&line_pos)) {
+		switch(dvbcfg_parse_char(&line_pos, " ")) {
 		case 'T':
 			tmp.fe_type = DVBFE_TYPE_DVBT;
 			break;
@@ -147,13 +147,13 @@ int dvbcfg_scanfile_parse(FILE *file, dvbcfg_scancallback callback, void *privat
 		case DVBFE_TYPE_ATSC:
 
 			/* parse frequency */
-			tmp.fe_params.frequency = dvbcfg_parse_int(&line_pos);
+			tmp.fe_params.frequency = dvbcfg_parse_int(&line_pos, " ");
 			if (!line_pos)
 				continue;
 
 			/* modulation */
 			tmp.fe_params.u.atsc.modulation =
-			    dvbcfg_parse_setting(&line_pos, dvbcfg_atsc_modulation_list);
+				dvbcfg_parse_setting(&line_pos, " ", dvbcfg_atsc_modulation_list);
 			if (!line_pos)
 				continue;
 
@@ -162,24 +162,24 @@ int dvbcfg_scanfile_parse(FILE *file, dvbcfg_scancallback callback, void *privat
 		case DVBFE_TYPE_DVBC:
 
 			/* parse frequency */
-			tmp.fe_params.frequency = dvbcfg_parse_int(&line_pos);
+			tmp.fe_params.frequency = dvbcfg_parse_int(&line_pos, " ");
 			if (!line_pos)
 				continue;
 
 			/* symbol rate */
-			tmp.fe_params.u.dvbc.symbol_rate = dvbcfg_parse_int(&line_pos);
+			tmp.fe_params.u.dvbc.symbol_rate = dvbcfg_parse_int(&line_pos, " ");
 			if (!line_pos)
 				continue;
 
 			/* fec */
 			tmp.fe_params.u.dvbc.fec_inner =
-			    dvbcfg_parse_setting(&line_pos, dvbcfg_fec_list);
+				dvbcfg_parse_setting(&line_pos, " ", dvbcfg_fec_list);
 			if (!line_pos)
 				continue;
 
 			/* modulation */
 			tmp.fe_params.u.dvbc.modulation =
-			    dvbcfg_parse_setting(&line_pos, dvbcfg_dvbc_modulation_list);
+				dvbcfg_parse_setting(&line_pos, " ", dvbcfg_dvbc_modulation_list);
 			if (!line_pos)
 				continue;
 
@@ -188,12 +188,12 @@ int dvbcfg_scanfile_parse(FILE *file, dvbcfg_scancallback callback, void *privat
 		case DVBFE_TYPE_DVBS:
 
 			/* parse frequency */
-			tmp.fe_params.frequency = dvbcfg_parse_int(&line_pos);
+			tmp.fe_params.frequency = dvbcfg_parse_int(&line_pos, " ");
 			if (!line_pos)
 				continue;
 
 			/* polarization */
-			tmp.polarization = tolower(dvbcfg_parse_char(&line_pos));
+			tmp.polarization = tolower(dvbcfg_parse_char(&line_pos, " "));
 			if (!line_pos)
 				continue;
 			if ((tmp.polarization != 'h') &&
@@ -203,13 +203,13 @@ int dvbcfg_scanfile_parse(FILE *file, dvbcfg_scancallback callback, void *privat
 				continue;
 
 			/* symbol rate */
-			tmp.fe_params.u.dvbs.symbol_rate = dvbcfg_parse_int(&line_pos);
+			tmp.fe_params.u.dvbs.symbol_rate = dvbcfg_parse_int(&line_pos, " ");
 			if (!line_pos)
 				continue;
 
 			/* fec */
 			tmp.fe_params.u.dvbc.fec_inner =
-				dvbcfg_parse_setting(&line_pos, dvbcfg_fec_list);
+				dvbcfg_parse_setting(&line_pos, " ", dvbcfg_fec_list);
 			if (!line_pos)
 				continue;
 
@@ -218,49 +218,49 @@ int dvbcfg_scanfile_parse(FILE *file, dvbcfg_scancallback callback, void *privat
 		case DVBFE_TYPE_DVBT:
 
 			/* parse frequency */
-			tmp.fe_params.frequency = dvbcfg_parse_int(&line_pos);
+			tmp.fe_params.frequency = dvbcfg_parse_int(&line_pos, " ");
 			if (!line_pos)
 				continue;
 
 			/* bandwidth */
 			tmp.fe_params.u.dvbt.bandwidth =
-			    dvbcfg_parse_setting(&line_pos, dvbcfg_bandwidth_list);
+				dvbcfg_parse_setting(&line_pos, " ", dvbcfg_bandwidth_list);
 			if (!line_pos)
 				continue;
 
 			/* fec hp */
 			tmp.fe_params.u.dvbt.code_rate_HP =
-			    dvbcfg_parse_setting(&line_pos, dvbcfg_fec_list);
+				dvbcfg_parse_setting(&line_pos, " ", dvbcfg_fec_list);
 			if (!line_pos)
 				continue;
 
 			/* fec lp */
 			tmp.fe_params.u.dvbt.code_rate_LP =
-			    dvbcfg_parse_setting(&line_pos, dvbcfg_fec_list);
+				dvbcfg_parse_setting(&line_pos, " ", dvbcfg_fec_list);
 			if (!line_pos)
 				continue;
 
 			/* constellation */
 			tmp.fe_params.u.dvbt.constellation =
-			    dvbcfg_parse_setting(&line_pos, dvbcfg_constellation_list);
+				dvbcfg_parse_setting(&line_pos, " ", dvbcfg_constellation_list);
 			if (!line_pos)
 				continue;
 
 			/* transmission mode */
 			tmp.fe_params.u.dvbt.transmission_mode =
-			    dvbcfg_parse_setting(&line_pos, dvbcfg_transmission_mode_list);
+				dvbcfg_parse_setting(&line_pos, " ", dvbcfg_transmission_mode_list);
 			if (!line_pos)
 				continue;
 
 			/* guard interval */
 			tmp.fe_params.u.dvbt.guard_interval =
-			    dvbcfg_parse_setting(&line_pos, dvbcfg_guard_interval_list);
+				dvbcfg_parse_setting(&line_pos, " ", dvbcfg_guard_interval_list);
 			if (!line_pos)
 				continue;
 
 			/* hierarchy */
 			tmp.fe_params.u.dvbt.hierarchy_information =
-			    dvbcfg_parse_setting(&line_pos, dvbcfg_hierarchy_list);
+				dvbcfg_parse_setting(&line_pos, " ", dvbcfg_hierarchy_list);
 			if (!line_pos)
 				continue;
 

@@ -130,12 +130,12 @@ int dvbcfg_zapchannel_parse(FILE *file, dvbcfg_zapcallback callback, void *priva
 		*line_tmp = '\0';
 
 		/* parse name */
-		dvbcfg_parse_string(&line_pos, tmp.name, sizeof(tmp.name));
+		dvbcfg_parse_string(&line_pos, ":", tmp.name, sizeof(tmp.name));
 		if (!line_pos)
 			continue;
 
 		/* parse frequency */
-		tmp.fe_params.frequency = dvbcfg_parse_int(&line_pos);
+		tmp.fe_params.frequency = dvbcfg_parse_int(&line_pos, ":");
 		if (!line_pos)
 			continue;
 
@@ -160,7 +160,7 @@ int dvbcfg_zapchannel_parse(FILE *file, dvbcfg_zapcallback callback, void *priva
 
 			/* modulation */
 			tmp.fe_params.u.atsc.modulation =
-			    dvbcfg_parse_setting(&line_pos, dvbcfg_atsc_modulation_list);
+				dvbcfg_parse_setting(&line_pos, ":", dvbcfg_atsc_modulation_list);
 			if (!line_pos)
 				continue;
 
@@ -169,24 +169,24 @@ int dvbcfg_zapchannel_parse(FILE *file, dvbcfg_zapcallback callback, void *priva
 		case DVBFE_TYPE_DVBC:
 			/* inversion */
 			tmp.fe_params.inversion =
-			    dvbcfg_parse_setting(&line_pos, dvbcfg_inversion_list);
+				dvbcfg_parse_setting(&line_pos, ":", dvbcfg_inversion_list);
 			if (!line_pos)
 				continue;
 
 			/* symbol rate */
-			tmp.fe_params.u.dvbc.symbol_rate = dvbcfg_parse_int(&line_pos);
+			tmp.fe_params.u.dvbc.symbol_rate = dvbcfg_parse_int(&line_pos, ":");
 			if (!line_pos)
 				continue;
 
 			/* fec */
 			tmp.fe_params.u.dvbc.fec_inner =
-			    dvbcfg_parse_setting(&line_pos, dvbcfg_fec_list);
+				dvbcfg_parse_setting(&line_pos, ":", dvbcfg_fec_list);
 			if (!line_pos)
 				continue;
 
 			/* modulation */
 			tmp.fe_params.u.dvbc.modulation =
-			    dvbcfg_parse_setting(&line_pos, dvbcfg_dvbc_modulation_list);
+				dvbcfg_parse_setting(&line_pos, ":", dvbcfg_dvbc_modulation_list);
 			if (!line_pos)
 				continue;
 
@@ -203,7 +203,7 @@ int dvbcfg_zapchannel_parse(FILE *file, dvbcfg_zapcallback callback, void *priva
 			tmp.fe_params.u.dvbs.fec_inner = DVBFE_FEC_AUTO;
 
 			/* polarization */
-			tmp.polarization = tolower(dvbcfg_parse_char(&line_pos));
+			tmp.polarization = tolower(dvbcfg_parse_char(&line_pos, ":"));
 			if (!line_pos)
 				continue;
 			if ((tmp.polarization != 'h') &&
@@ -213,13 +213,13 @@ int dvbcfg_zapchannel_parse(FILE *file, dvbcfg_zapcallback callback, void *priva
 				continue;
 
 			/* satellite switch position */
-			tmp.diseqc_switch = dvbcfg_parse_int(&line_pos);
+			tmp.diseqc_switch = dvbcfg_parse_int(&line_pos, ":");
 			if (!line_pos)
 				continue;
 
 			/* symbol rate */
 			tmp.fe_params.u.dvbs.symbol_rate =
-			    dvbcfg_parse_int(&line_pos) * 1000;
+				dvbcfg_parse_int(&line_pos, ":") * 1000;
 			if (!line_pos)
 				continue;
 
@@ -228,49 +228,49 @@ int dvbcfg_zapchannel_parse(FILE *file, dvbcfg_zapcallback callback, void *priva
 		case DVBFE_TYPE_DVBT:
 			/* inversion */
 			tmp.fe_params.inversion =
-			    dvbcfg_parse_setting(&line_pos, dvbcfg_inversion_list);
+				dvbcfg_parse_setting(&line_pos, ":", dvbcfg_inversion_list);
 			if (!line_pos)
 				continue;
 
 			/* bandwidth */
 			tmp.fe_params.u.dvbt.bandwidth =
-			    dvbcfg_parse_setting(&line_pos, dvbcfg_bandwidth_list);
+				dvbcfg_parse_setting(&line_pos, ":", dvbcfg_bandwidth_list);
 			if (!line_pos)
 				continue;
 
 			/* fec hp */
 			tmp.fe_params.u.dvbt.code_rate_HP =
-			    dvbcfg_parse_setting(&line_pos, dvbcfg_fec_list);
+				dvbcfg_parse_setting(&line_pos, ":", dvbcfg_fec_list);
 			if (!line_pos)
 				continue;
 
 			/* fec lp */
 			tmp.fe_params.u.dvbt.code_rate_LP =
-			    dvbcfg_parse_setting(&line_pos, dvbcfg_fec_list);
+				dvbcfg_parse_setting(&line_pos, ":", dvbcfg_fec_list);
 			if (!line_pos)
 				continue;
 
 			/* constellation */
 			tmp.fe_params.u.dvbt.constellation =
-			    dvbcfg_parse_setting(&line_pos, dvbcfg_constellation_list);
+				dvbcfg_parse_setting(&line_pos, ":", dvbcfg_constellation_list);
 			if (!line_pos)
 				continue;
 
 			/* transmission mode */
 			tmp.fe_params.u.dvbt.transmission_mode =
-			    dvbcfg_parse_setting(&line_pos, dvbcfg_transmission_mode_list);
+				dvbcfg_parse_setting(&line_pos, ":", dvbcfg_transmission_mode_list);
 			if (!line_pos)
 				continue;
 
 			/* guard interval */
 			tmp.fe_params.u.dvbt.guard_interval =
-			    dvbcfg_parse_setting(&line_pos, dvbcfg_guard_interval_list);
+				dvbcfg_parse_setting(&line_pos, ":", dvbcfg_guard_interval_list);
 			if (!line_pos)
 				continue;
 
 			/* hierarchy */
 			tmp.fe_params.u.dvbt.hierarchy_information =
-			    dvbcfg_parse_setting(&line_pos, dvbcfg_hierarchy_list);
+				dvbcfg_parse_setting(&line_pos, ":", dvbcfg_hierarchy_list);
 			if (!line_pos)
 				continue;
 
@@ -278,13 +278,13 @@ int dvbcfg_zapchannel_parse(FILE *file, dvbcfg_zapcallback callback, void *priva
 		}
 
 		/* parse video and audio pids and service id */
-		tmp.video_pid = dvbcfg_parse_int(&line_pos);
+		tmp.video_pid = dvbcfg_parse_int(&line_pos, ":");
 		if (!line_pos)
 			continue;
-		tmp.audio_pid = dvbcfg_parse_int(&line_pos);
+		tmp.audio_pid = dvbcfg_parse_int(&line_pos, ":");
 		if (!line_pos)
 			continue;
-		tmp.service_id = dvbcfg_parse_int(&line_pos);
+		tmp.service_id = dvbcfg_parse_int(&line_pos, ":");
 		if (!line_pos) /* old files don't have a service id */
 			tmp.service_id = 0;
 
