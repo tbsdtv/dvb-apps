@@ -22,6 +22,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <libdvbsec/dvbsec_cfg.h>
+#include <libdvbcfg/dvbcfg_scanfile.h>
 #include "dvbscan.h"
 
 
@@ -86,6 +88,13 @@ static void usage(void)
 	exit(1);
 }
 
+int scan_load_callback(struct dvbcfg_scanfile *channel, void *private_data)
+{
+	// FIXME: add to toscan list
+
+	return 0;
+}
+
 int main(int argc, char *argv[])
 {
 	int argpos = 1;
@@ -93,7 +102,7 @@ int main(int argc, char *argv[])
 	int frontend_id = 0;
 	int demux_id = 0;
 	char *secfile = NULL;
-	char *secid = NULL;
+	char *secid = "UNIVERSAL";
 	int switchpos = -1;
 	enum dvbfe_spectral_inversion inversion = DVBFE_INVERSION_AUTO;
 	int service_filter = -1;
@@ -102,7 +111,8 @@ int main(int argc, char *argv[])
 	int output_type = OUTPUT_TYPE_RAW;
 	char *output_filename = NULL;
 	char *scan_filename = NULL;
-
+	struct dvbsec_config sec;
+	int valid_sec = 0;
 
 	while(argpos != argc) {
 		if (!strcmp(argv[argpos], "-h")) {
@@ -206,9 +216,26 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	// FIXME: post-parsing checks etc.
+	// look up SECID if one was supplied
+	if (secid != NULL) {
+		if (dvbsec_cfg_find(secfile, secid, &sec)) {
+			fprintf(stderr, "Unable to find suitable sec/lnb configuration for channel\n");
+			exit(1);
+		}
+		valid_sec = 1;
+	}
 
-	// FIXME: load the initial scan file
+	// load the initial scan file
+	FILE *scan_file = fopen(scan_filename, "r");
+	if (scan_file == NULL) {
+		fprintf(stderr, "Could open scan file %s\n", scan_filename);
+		exit(1);
+	}
+	if (dvbcfg_scanfile_parse(scan_file, scan_load_callback, NULL) < 0) {
+		fprintf(stderr, "Could parse scan file %s\n", scan_filename);
+		exit(1);
+	}
+	fclose(scan_file);
 
 	// main scan loop
 	while(toscan) {
