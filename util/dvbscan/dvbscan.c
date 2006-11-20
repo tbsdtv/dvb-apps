@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 #include <libdvbsec/dvbsec_cfg.h>
 #include <libdvbcfg/dvbcfg_scanfile.h>
 #include "dvbscan.h"
@@ -36,6 +37,8 @@
 #define SERVICE_FILTER_RADIO		2
 #define SERVICE_FILTER_OTHER		4
 #define SERVICE_FILTER_ENCRYPTED	8
+
+#define TIMEOUT_WAIT_LOCK		2
 
 
 // transponders we have yet to scan
@@ -256,11 +259,11 @@ int main(int argc, char *argv[])
 	// load the initial scan file
 	FILE *scan_file = fopen(scan_filename, "r");
 	if (scan_file == NULL) {
-		fprintf(stderr, "Could open scan file %s\n", scan_filename);
+		fprintf(stderr, "Could not open scan file %s\n", scan_filename);
 		exit(1);
 	}
 	if (dvbcfg_scanfile_parse(scan_file, scan_load_callback, &feinfo) < 0) {
-		fprintf(stderr, "Could parse scan file %s\n", scan_filename);
+		fprintf(stderr, "Could not parse scan file %s\n", scan_filename);
 		exit(1);
 	}
 	fclose(scan_file);
@@ -284,20 +287,33 @@ int main(int argc, char *argv[])
 
 		// tune it
 		int tuned_ok = 0;
-		for(i=0; i < toscan->frequency_count; i++) {
-			toscan->params.frequency = toscan->frequencies[i];
+		for(i=0; i < tmp->frequency_count; i++) {
+			tmp->params.frequency = tmp->frequencies[i];
 			if (dvbsec_set(fe,
 					psec,
-					toscan->polarization,
+					tmp->polarization,
 					(satpos & 0x01) ? DISEQC_SWITCH_B : DISEQC_SWITCH_A,
 					(satpos & 0x02) ? DISEQC_SWITCH_B : DISEQC_SWITCH_A,
-					&toscan->params,
+					&tmp->params,
 					0)) {
 				fprintf(stderr, "Failed to set frontend\n");
 				exit(1);
 			}
 
-			// FIXME: wait for lock
+			// wait for lock
+			time_t starttime = time(NULL);
+			while((time(NULL) - starttime) < TIMEOUT_WAIT_LOCK) {
+				if (dvbfe_get_info(fe, DVBFE_INFO_LOCKSTATUS, &feinfo,
+				    			DVBFE_INFO_QUERYTYPE_IMMEDIATE, 0) !=
+					DVBFE_INFO_QUERYTYPE_IMMEDIATE) {
+					fprintf(stderr, "Unable to query frontend status\n");
+					exit(1);
+				}
+				if (feinfo.lock) {
+					tuned_ok = 1;
+					break;
+				}
+			}
 		}
 		if (!tuned_ok) {
 			free_transponder(tmp);
