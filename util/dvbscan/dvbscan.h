@@ -94,7 +94,6 @@ struct transponder
 	 * The rest of the tuning parameters.
 	 */
 	struct dvbfe_parameters params;
-	enum dvbfe_type fe_type;
 
 	/**
 	 * DVBS specific parameters

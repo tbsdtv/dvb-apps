@@ -68,7 +68,7 @@ static void usage(void)
 		"			 * C-MULTI - Big Dish - Multipoint LNBf, 3700 to 4200 MHz,\n"
 		"						Dual LO, H:5150MHz, V:5750MHz.\n"
 		"			 * One of the sec definitions from the secfile if supplied\n"
-		" -switchpos <position>	Specify DISEQC switch position for DVB-S.\n"
+		" -satpos <position>	Specify DISEQC switch position for DVB-S.\n"
 		" -inversion <on|off|auto> Specify inversion (default: auto).\n"
 		" -uk-ordering 		Use UK DVB-T channel ordering if present.\n"
 		" -timeout <secs>	Specify filter timeout to use (standard specced values will be used by default)\n"
@@ -91,13 +91,15 @@ static void usage(void)
 
 static int scan_load_callback(struct dvbcfg_scanfile *channel, void *private_data)
 {
-	(void) private_data;
+	struct dvbfe_info *feinfo = (struct dvbfe_info *) private_data;
+
+	if (channel->fe_type != feinfo->type)
+		return 0;
 
 	struct transponder *t = new_transponder();
 	append_transponder(t, &toscan, &toscan_end);
 	memcpy(&t->params, &channel->fe_params, sizeof(struct dvbfe_parameters));
 
-	t->fe_type = channel->fe_type;
 	add_frequency(t, t->params.frequency);
 	t->params.frequency = 0;
 
@@ -106,13 +108,14 @@ static int scan_load_callback(struct dvbcfg_scanfile *channel, void *private_dat
 
 int main(int argc, char *argv[])
 {
+	uint32_t i;
 	int argpos = 1;
 	int adapter_id = 0;
 	int frontend_id = 0;
 	int demux_id = 0;
 	char *secfile = NULL;
-	char *secid = "UNIVERSAL";
-	int switchpos = -1;
+	char *secid = NULL;
+	int satpos = 0;
 	enum dvbfe_spectral_inversion inversion = DVBFE_INVERSION_AUTO;
 	int service_filter = -1;
 	int uk_ordering = 0;
@@ -154,10 +157,10 @@ int main(int argc, char *argv[])
 				usage();
 			secid = argv[argpos+1];
 			argpos+=2;
-		} else if (!strcmp(argv[argpos], "-switchpos")) {
+		} else if (!strcmp(argv[argpos], "-satpos")) {
 			if ((argc - argpos) < 2)
 				usage();
-			if (sscanf(argv[argpos+1], "%i", &switchpos) != 1)
+			if (sscanf(argv[argpos+1], "%i", &satpos) != 1)
 				usage();
 			argpos+=2;
 		} else if (!strcmp(argv[argpos], "-inversion")) {
@@ -225,6 +228,22 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	// open the frontend & get its type
+	struct dvbfe_handle *fe = dvbfe_open(adapter_id, frontend_id, 0);
+	if (fe == NULL) {
+		fprintf(stderr, "Failed to open frontend\n");
+		exit(1);
+	}
+	struct dvbfe_info feinfo;
+	if (dvbfe_get_info(fe, 0, &feinfo, DVBFE_INFO_QUERYTYPE_IMMEDIATE, 0) != 0) {
+		fprintf(stderr, "Failed to query frontend\n");
+		exit(1);
+	}
+
+	// default SEC with a DVBS card
+	if ((secid == NULL) && (feinfo.type == DVBFE_TYPE_DVBS))
+		secid = "UNIVERSAL";
+
 	// look up SECID if one was supplied
 	if (secid != NULL) {
 		if (dvbsec_cfg_find(secfile, secid, &sec)) {
@@ -240,7 +259,7 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "Could open scan file %s\n", scan_filename);
 		exit(1);
 	}
-	if (dvbcfg_scanfile_parse(scan_file, scan_load_callback, NULL) < 0) {
+	if (dvbcfg_scanfile_parse(scan_file, scan_load_callback, &feinfo) < 0) {
 		fprintf(stderr, "Could parse scan file %s\n", scan_filename);
 		exit(1);
 	}
@@ -258,19 +277,37 @@ int main(int argc, char *argv[])
 			continue;
 		}
 
-		// FIXME: tune it
+		// do we have a valid SEC configuration?
+		struct dvbsec_config *psec = NULL;
+		if (valid_sec)
+			psec = &sec;
+
+		// tune it
+		int tuned_ok = 0;
+		for(i=0; i < toscan->frequency_count; i++) {
+			toscan->params.frequency = toscan->frequencies[i];
+			if (dvbsec_set(fe,
+					psec,
+					toscan->polarization,
+					(satpos & 0x01) ? DISEQC_SWITCH_B : DISEQC_SWITCH_A,
+					(satpos & 0x02) ? DISEQC_SWITCH_B : DISEQC_SWITCH_A,
+					&toscan->params,
+					0)) {
+				fprintf(stderr, "Failed to set frontend\n");
+				exit(1);
+			}
+
+			// FIXME: wait for lock
+		}
+		if (!tuned_ok) {
+			free_transponder(tmp);
+			continue;
+		}
 
 		// FIXME: scan it
 
 		// add to scanned list.
 		append_transponder(tmp, &scanned, &scanned_end);
-		if (scanned_end == NULL) {
-			scanned = tmp;
-		} else {
-			scanned_end->next = tmp;
-		}
-		scanned_end = tmp;
-		tmp->next = NULL;
 	}
 
 	// FIXME: output the data
