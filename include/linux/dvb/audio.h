@@ -32,39 +32,39 @@
 
 
 typedef enum {
-        AUDIO_SOURCE_DEMUX, /* Select the demux as the main source */
+	AUDIO_SOURCE_DEMUX, /* Select the demux as the main source */
 	AUDIO_SOURCE_MEMORY /* Select internal memory as the main source */
 } audio_stream_source_t;
 
 
 typedef enum {
 	AUDIO_STOPPED,      /* Device is stopped */
-        AUDIO_PLAYING,      /* Device is currently playing */
+	AUDIO_PLAYING,      /* Device is currently playing */
 	AUDIO_PAUSED        /* Device is paused */
 } audio_play_state_t;
 
 
 typedef enum {
-        AUDIO_STEREO,
-        AUDIO_MONO_LEFT,
+	AUDIO_STEREO,
+	AUDIO_MONO_LEFT,
 	AUDIO_MONO_RIGHT
 } audio_channel_select_t;
 
 
 typedef struct audio_mixer {
-        unsigned int volume_left;
-        unsigned int volume_right;
+	unsigned int volume_left;
+	unsigned int volume_right;
   // what else do we need? bass, pass-through, ...
 } audio_mixer_t;
 
 
 typedef struct audio_status {
-        int                    AV_sync_state;  /* sync audio and video? */
-        int                    mute_state;     /* audio is muted */
-        audio_play_state_t     play_state;     /* current playback state */
-        audio_stream_source_t  stream_source;  /* current stream source */
-        audio_channel_select_t channel_select; /* currently selected channel */
-        int                    bypass_mode;    /* pass on audio data to */
+	int                    AV_sync_state;  /* sync audio and video? */
+	int                    mute_state;     /* audio is muted */
+	audio_play_state_t     play_state;     /* current playback state */
+	audio_stream_source_t  stream_source;  /* current stream source */
+	audio_channel_select_t channel_select; /* currently selected channel */
+	int                    bypass_mode;    /* pass on audio data to */
 	audio_mixer_t	       mixer_state;    /* current mixer state */
 } audio_status_t;                              /* separate decoder hardware */
 
@@ -74,8 +74,8 @@ struct audio_karaoke{  /* if Vocal1 or Vocal2 are non-zero, they get mixed  */
 	int vocal1;    /* into left and right t at 70% each */
 	int vocal2;    /* if both, Vocal1 and Vocal2 are non-zero, Vocal1 gets*/
 	int melody;    /* mixed into the left channel and */
-                       /* Vocal2 into the right channel at 100% each. */
-                       /* if Melody is non-zero, the melody channel gets mixed*/
+		       /* Vocal2 into the right channel at 100% each. */
+		       /* if Melody is non-zero, the melody channel gets mixed*/
 } audio_karaoke_t;     /* into left and right  */
 
 
@@ -120,5 +120,18 @@ typedef uint16_t audio_attributes_t;
 #define AUDIO_SET_EXT_ID           _IO('o', 16)
 #define AUDIO_SET_ATTRIBUTES       _IOW('o', 17, audio_attributes_t)
 #define AUDIO_SET_KARAOKE          _IOW('o', 18, audio_karaoke_t)
+
+/**
+ * AUDIO_GET_PTS
+ *
+ * Read the 33 bit presentation time stamp as defined
+ * in ITU T-REC-H.222.0 / ISO/IEC 13818-1.
+ *
+ * The PTS should belong to the currently played
+ * frame if possible, but may also be a value close to it
+ * like the PTS of the last decoded frame or the last PTS
+ * extracted by the PES parser.
+ */
+#define AUDIO_GET_PTS              _IOR('o', 19, __u64)
 
 #endif /* _DVBAUDIO_H_ */
