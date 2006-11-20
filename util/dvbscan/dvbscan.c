@@ -312,6 +312,7 @@ int main(int argc, char *argv[])
 					tuned_ok = 1;
 					break;
 				}
+				usleep(100000);
 			}
 		}
 		if (!tuned_ok) {
@@ -339,4 +340,29 @@ int main(int argc, char *argv[])
 	// FIXME: output the data
 
 	return 0;
+}
+
+int create_section_filter(int adapter, int demux, uint16_t pid, uint8_t table_id)
+{
+	int demux_fd = -1;
+	uint8_t filter[18];
+	uint8_t mask[18];
+
+	// open the demuxer
+	if ((demux_fd = dvbdemux_open_demux(adapter, demux, 0)) < 0) {
+		return -1;
+	}
+
+	// create a section filter
+	memset(filter, 0, sizeof(filter));
+	memset(mask, 0, sizeof(mask));
+	filter[0] = table_id;
+	mask[0] = 0xFF;
+	if (dvbdemux_set_section_filter(demux_fd, pid, filter, mask, 1, 1)) {
+		close(demux_fd);
+		return -1;
+	}
+
+	// done
+	return demux_fd;
 }

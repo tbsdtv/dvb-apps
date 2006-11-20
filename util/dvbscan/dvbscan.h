@@ -33,6 +33,8 @@ struct stream
 {
 	uint8_t stream_type;
 	iso639lang_t language;
+
+	struct stream *next;
 };
 
 /**
@@ -69,6 +71,7 @@ struct service
 	 * Streams composing this service.
 	 */
 	struct stream *streams;
+	struct stream *streams_end;
 
 	/**
 	 * Next service in list.
@@ -81,11 +84,10 @@ struct service
  */
 struct transponder
 {
-
 	/**
 	 * we need to have a seperate list of frequencies since the
 	 * DVB standard allows a frequency list descriptor of alternate
-	 * frequencies to be supplied. Only one should be valid however.
+	 * frequencies to be supplied.
 	 */
 	uint32_t *frequencies;
 	uint32_t frequency_count;
@@ -112,6 +114,7 @@ struct transponder
 	 * Services detected on this transponder.
 	 */
 	struct service *services;
+	struct service *services_end;
 
 	/**
 	 * Next item in list.
@@ -126,6 +129,7 @@ extern int seen_transponder(struct transponder *t, struct transponder *checklist
 extern void add_frequency(struct transponder *t, uint32_t frequency);
 extern struct transponder *first_transponder(struct transponder **tlist, struct transponder **tlist_end);
 
+extern int create_section_filter(int adapter, int demux, uint16_t pid, uint8_t table_id);
 extern void dvbscan_scan_dvb(struct dvbfe_handle *fe);
 extern void dvbscan_scan_atsc(struct dvbfe_handle *fe);
 
