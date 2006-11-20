@@ -20,11 +20,13 @@
 */
 
 #include <stdlib.h>
+#include <unistd.h>
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
 #include <libdvbsec/dvbsec_cfg.h>
 #include <libdvbcfg/dvbcfg_scanfile.h>
+#include <libdvbapi/dvbdemux.h>
 #include "dvbscan.h"
 
 
