@@ -6,7 +6,7 @@
  *
  * or more advanced using netpbm and mpeg2enc (not mpeg2encode) :
  *   $ cat image.jpg | jpegtopnm | pnmscale -xsize=704 -ysize=576 |\
- *      ppmntsc --pal | ppmtoy4m  -F 25:1 -A 4:3 |\
+ *      ppmntsc --pal | ppmtoy4m  -F 25:1 -A 4:3 -S 420mpeg2 |\
  *      mpeg2enc -f 7 -T 90 -F 3 -np -a 2 -o "image.mpg"
  *
  */
