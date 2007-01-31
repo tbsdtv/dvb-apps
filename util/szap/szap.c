@@ -215,7 +215,7 @@ static int diseqc(int secfd, int sat_no, int pol_vert, int hi_band)
        { {{0xe0, 0x10, 0x38, 0xf0, 0x00, 0x00}, 4}, 0 };
 
    /* param: high nibble: reset bits, low nibble set bits,
-    * bits are: option, position, polarizaion, band
+    * bits are: option, position, polarization, band
     */
    cmd.cmd.msg[3] =
        0xf0 | (((sat_no * 4) & 0x0f) | (hi_band ? 1 : 0) | (pol_vert ? 0 : 2));
