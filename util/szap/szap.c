@@ -222,7 +222,7 @@ static int diseqc(int secfd, int sat_no, int pol_vert, int hi_band)
 
    diseqc_send_msg(secfd, pol_vert ? SEC_VOLTAGE_13 : SEC_VOLTAGE_18,
 		   &cmd, hi_band ? SEC_TONE_ON : SEC_TONE_OFF,
-		   (sat_no / 4) % 2 ? SEC_MINI_B : SEC_MINI_A);
+		   sat_no % 2 ? SEC_MINI_B : SEC_MINI_A);
 
    return TRUE;
 }
