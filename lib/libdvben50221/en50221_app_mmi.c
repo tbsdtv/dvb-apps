@@ -367,7 +367,7 @@ int en50221_app_mmi_close(struct en50221_app_mmi *mmi,
 int en50221_app_mmi_display_reply(struct en50221_app_mmi *mmi,
 				  uint16_t session_number,
 				  uint8_t reply_id,
-				  struct en502221_app_mmi_display_reply_details *details)
+				  struct en50221_app_mmi_display_reply_details *details)
 {
 	uint8_t data[32];
 	struct iovec iov[2];

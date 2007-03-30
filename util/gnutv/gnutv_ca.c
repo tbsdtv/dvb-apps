@@ -322,7 +322,7 @@ static int gnutv_mmi_close_callback(void *arg, uint8_t slot_id, uint16_t session
 static int gnutv_mmi_display_control_callback(void *arg, uint8_t slot_id, uint16_t session_number,
 					      uint8_t cmd_id, uint8_t mmi_mode)
 {
-	struct en502221_app_mmi_display_reply_details reply;
+	struct en50221_app_mmi_display_reply_details reply;
 	(void) arg;
 	(void) slot_id;
 

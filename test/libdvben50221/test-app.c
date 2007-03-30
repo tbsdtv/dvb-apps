@@ -561,7 +561,7 @@ int test_mmi_display_control_callback(void *arg, uint8_t slot_id, uint16_t sessi
     printf("  mode: %02x\n", mmi_mode);
 
     if (cmd_id == MMI_DISPLAY_CONTROL_CMD_ID_SET_MMI_MODE) {
-        struct en502221_app_mmi_display_reply_details details;
+        struct en50221_app_mmi_display_reply_details details;
 
         details.u.mode_ack.mmi_mode = mmi_mode;
         if (en50221_app_mmi_display_reply(mmi_resource, session_number, MMI_DISPLAY_REPLY_ID_MMI_MODE_ACK, &details)) {

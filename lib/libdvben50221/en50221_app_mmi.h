@@ -95,7 +95,7 @@ struct en50221_app_mmi_pixel_depth {
 /**
  * Details returned with a display_reply
  */
-struct en502221_app_mmi_display_reply_details {
+struct en50221_app_mmi_display_reply_details {
 	union {
 		struct {
 			uint16_t width;
@@ -510,7 +510,7 @@ extern int en50221_app_mmi_close(struct en50221_app_mmi *mmi,
 extern int en50221_app_mmi_display_reply(struct en50221_app_mmi *mmi,
 					 uint16_t session_number,
 					 uint8_t reply_id,
-					 struct en502221_app_mmi_display_reply_details *details);
+					 struct en50221_app_mmi_display_reply_details *details);
 
 /**
  * Send a keypress to the cam.
