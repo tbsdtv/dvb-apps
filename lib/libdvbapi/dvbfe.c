@@ -250,7 +250,7 @@ extern int dvbfe_get_info(struct dvbfe_handle *fehandle,
 		break;
 
 	case DVBFE_INFO_QUERYTYPE_LOCKCHANGE:
-		if (timeout) {
+		{
 			struct pollfd pollfd;
 			pollfd.fd = fehandle->fd;
 			pollfd.events = POLLIN | POLLERR;
