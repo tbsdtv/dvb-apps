@@ -2,7 +2,7 @@
 	DST-TEST utility
 	an implementation for the High Level Common Interface
 
-	Copyright (C) 2004, 2005 Manu Abraham (manu@kromtek.com)
+	Copyright (C) 2004, 2005 Manu Abraham <abraham.manu@gmail.com>
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU Lesser General Public License as

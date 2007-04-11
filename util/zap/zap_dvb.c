@@ -1,7 +1,7 @@
 /*
 	ZAP utility DVB functions
 
-	Copyright (C) 2004, 2005 Manu Abraham (manu@kromtek.com)
+	Copyright (C) 2004, 2005 Manu Abraham <abraham.manu@gmail.com>
 	Copyright (C) 2006 Andrew de Quincey (adq_dvb@lidskialf.net)
 
 	This program is free software; you can redistribute it and/or modify

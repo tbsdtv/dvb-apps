@@ -2,8 +2,8 @@
 	ASN.1 routines, implementation for libdvben50221
 	an implementation for the High Level Common Interface
 
-	Copyright (C) 2004, 2005 Manu Abraham (manu@kromtek.com)
-    Copyright (C) 2006 Andrew de Quincey (adq_dvb@lidskialf.net)
+	Copyright (C) 2004, 2005 Manu Abraham <abraham.manu@gmail.com>
+	Copyright (C) 2006 Andrew de Quincey (adq_dvb@lidskialf.net)
 
 	This library is free software; you can redistribute it and/or modify
 	it under the terms of the GNU Lesser General Public License as

@@ -2,7 +2,7 @@
  * libdvbfe - a DVB frontend library
  *
  * Copyright (C) 2005 Andrew de Quincey (adq_dvb@lidskialf.net)
- * Copyright (C) 2005 Manu Abraham <manu@kromtek.com>
+ * Copyright (C) 2005 Manu Abraham <abraham.manu@gmail.com>
  * Copyright (C) 2005 Kenneth Aafloy (kenneth@linuxtv.org)
  *
  * This library is free software; you can redistribute it and/or

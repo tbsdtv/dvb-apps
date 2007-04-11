@@ -2,7 +2,7 @@
     en50221 encoder An implementation for libdvb
     an implementation for the en50221 session layer
 
-    Copyright (C) 2004, 2005 Manu Abraham (manu@kromtek.com)
+    Copyright (C) 2004, 2005 Manu Abraham <abraham.manu@gmail.com>
     Copyright (C) 2005 Julian Scheel (julian@jusst.de)
     Copyright (C) 2006 Andrew de Quincey (adq_dvb@lidskialf.net)
 

@@ -2,7 +2,7 @@
     en50221 encoder An implementation for libdvb
     an implementation for the en50221 transport layer
 
-    Copyright (C) 2004, 2005 Manu Abraham (manu@kromtek.com)
+    Copyright (C) 2004, 2005 Manu Abraham <abraham.manu@gmail.com>
     Copyright (C) 2005 Julian Scheel (julian at jusst dot de)
 
     This library is free software; you can redistribute it and/or modify
