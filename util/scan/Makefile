@@ -14,7 +14,7 @@ inst_bin = $(binaries)
 
 removing = atsc_psip_section.c atsc_psip_section.h
 
-CPPFLAGS += -I../../include -DDATADIR=\"$(prefix)/share\"
+CPPFLAGS += -DDATADIR=\"$(prefix)/share\"
 
 .PHONY: all
 

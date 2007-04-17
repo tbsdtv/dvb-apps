@@ -9,8 +9,6 @@ binaries = azap  \
 
 inst_bin = $(binaries)
 
-CPPFLAGS += -I../../include
-
 .PHONY: all
 
 all: $(binaries)

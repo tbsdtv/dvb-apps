@@ -21,8 +21,6 @@ binaries = diseqc          \
 	   evtest	   \
            video
 
-CPPFLAGS += -I../include
-
 .PHONY: all
 
 all: $(binaries)

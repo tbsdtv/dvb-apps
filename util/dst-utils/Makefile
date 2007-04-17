@@ -4,7 +4,7 @@ binaries = dst_test
 
 inst_bin = $(binaries)
 
-CPPFLAGS += -I../../include -I../../lib
+CPPFLAGS += -I../../lib
 
 .PHONY: all
 

@@ -16,7 +16,7 @@ objects  = dvbaudio.o \
 
 lib_name = libdvbapi
 
-CPPFLAGS += -I../../include -I../../lib
+CPPFLAGS += -I../../lib
 
 .PHONY: all
 
