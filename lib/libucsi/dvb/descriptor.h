@@ -184,6 +184,10 @@ enum dvb_descriptor_tag {
 	dtag_dvb_time_slice_fec_identifier	= 0x77,
 	dtag_dvb_ecm_repetition_rate		= 0x78,
 	dtag_dvb_s2_satellite_delivery_descriptor= 0x79,
+	dtag_dvb_enhanced_ac3_descriptor	= 0x7a,
+	dtag_dvb_dts_descriptor			= 0x7b,
+	dtag_dvb_aac_descriptor			= 0x7c,
+	dtag_dvb_extension_descriptor		= 0x7f,
 
 	/* descriptors which may only appear in an RNT */
 	dtag_dvb_rnt_rar_over_dvb_stream	= 0x40,
