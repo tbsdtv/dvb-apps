@@ -123,4 +123,3 @@ void zap_dump_service_parameter_set (FILE *f,
 	fprintf (f, ":%i:%i:%i", video_pid, audio_pid[0], service_id);
 	fprintf (f, "\n");
 }
-

@@ -60,4 +60,3 @@ void hex_dump(uint8_t data[], int bytes)
 	}
 	printf("\n");
 }
-

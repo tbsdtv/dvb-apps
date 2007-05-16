@@ -34,7 +34,7 @@ extern "C"
 struct esg_any_attribute {
 	uint8_t version_id;
 	uint8_t *extension;
-	
+
 	struct esg_any_attribure *_next;
 };
 

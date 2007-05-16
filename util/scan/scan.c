@@ -1484,7 +1484,7 @@ static int __tune_to_transponder (int frontend_fd, struct transponder *t)
 					p.frequency = abs(p.frequency - lnb_type.low_val);
 			} else {
 				/* C-Band Multipoint LNBf */
-				p.frequency = abs(p.frequency - (t->polarisation == POLARISATION_VERTICAL ? 
+				p.frequency = abs(p.frequency - (t->polarisation == POLARISATION_VERTICAL ?
 						lnb_type.low_val: lnb_type.high_val));
 			}
 		} else	{

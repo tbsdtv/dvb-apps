@@ -1,4 +1,4 @@
-/* 
+/*
  * test_audio.c - Test program for new API
  *
  * Copyright (C) 2000 Ralph  Metzler <ralph@convergence.de>
@@ -179,7 +179,7 @@ int audioGetStatus(int fd)
 		printf("unknown (%d)\n",stat.play_state);
 		break;
 	}
-	
+
 	printf("  Stream Source       : ");
 	switch((int)stat.stream_source){
 	case AUDIO_SOURCE_DEMUX:
@@ -227,7 +227,7 @@ play_file_audio(int filefd, int fd)
 	int stopped = 0;
 	boolean mute = false;
 	boolean sync = false;
-	
+
 	pfd[0].fd = STDIN_FILENO;
 	pfd[0].events = POLLIN;
 
@@ -257,7 +257,7 @@ play_file_audio(int filefd, int fd)
 						printf("playback stopped\n");
 						stopped = 1;
 						break;
-						
+
 					case 'c':
 						audioContinue(fd);
 						printf("playback continued\n");
@@ -291,7 +291,7 @@ play_file_audio(int filefd, int fd)
 						break;
 					}
 				}
-				
+
 			}
 		}
 	}
@@ -312,7 +312,7 @@ main(int argc, char **argv)
 		perror("File open:");
 		return -1;
 	}
-	    
+
 	if ((fd = open("/dev/ost/audio",O_RDWR|O_NONBLOCK)) < 0){
 		perror("AUDIO DEVICE: ");
 		return -1;
@@ -334,7 +334,7 @@ main(int argc, char **argv)
 	//audioChannelSelect(fd,AUDIO_STEREO);
 	//audioSetAVSync(fd,sync);
 	audioGetStatus(fd);
-	
+
 	play_file_audio(filefd,fd);
 
 	close(fd);
@@ -342,4 +342,3 @@ main(int argc, char **argv)
 
 
 }
-

@@ -71,7 +71,7 @@ struct dvb_bat_section *dvb_bat_section_codec(struct section_ext *section);
 
 /**
  * Accessor for the bouquet_id field of a BAT.
- * 
+ *
  * @param bat BAT pointer.
  * @return The bouquet_id.
  */

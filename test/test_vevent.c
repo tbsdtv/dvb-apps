@@ -1,4 +1,4 @@
-/* 
+/*
  * test_vevent.c - Test VIDEO_GET_EVENT and poll(9 for video events
  *
  * Copyright (C) 2003 convergence GmbH
@@ -122,4 +122,3 @@ int main(void)
 	close(vfd);
 	return 0;
 }
-

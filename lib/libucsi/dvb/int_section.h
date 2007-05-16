@@ -72,7 +72,7 @@ extern struct dvb_int_section * dvb_int_section_codec(struct section_ext *sectio
 
 /**
  * Accessor for the action_type field of an INT.
- * 
+ *
  * @param intp INT pointer.
  * @return The action_type.
  */
@@ -83,7 +83,7 @@ static inline uint8_t dvb_int_section_action_type(struct dvb_int_section *intp)
 
 /**
  * Accessor for the platform_id_hash field of an INT.
- * 
+ *
  * @param intp INT pointer.
  * @return The platform_id_hash.
  */

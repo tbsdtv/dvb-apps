@@ -26,7 +26,7 @@ struct dvb_eit_section *dvb_eit_section_codec(struct section_ext * ext)
 	uint8_t * buf = (uint8_t *) ext;
 	size_t pos = sizeof(struct section_ext);
 	size_t len = section_ext_length(ext);
-   
+
 	if (len < sizeof(struct dvb_eit_section))
 		return NULL;
 
@@ -34,14 +34,14 @@ struct dvb_eit_section *dvb_eit_section_codec(struct section_ext * ext)
 	pos += 2;
 	bswap16(buf + pos);
 	pos += 4;
-   
+
 	while (pos < len) {
 		struct dvb_eit_event * event =
 			(struct dvb_eit_event *) (buf + pos);
 
 		if ((pos + sizeof(struct dvb_eit_event)) > len)
 			return NULL;
-	   
+
 		bswap16(buf + pos);
 		bswap16(buf + pos + 10);
 

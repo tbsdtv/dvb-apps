@@ -123,7 +123,7 @@ void queryInterface(int fd_net)
 		enum dvbnet_encap _encapsulation;
 		if (dvbnet_get_interface(fd_net, IF, &_pid, &_encapsulation))
 			continue;
-	   
+
 		encap = "???";
 		switch(_encapsulation) {
 		case DVBNET_ENCAP_MPE:

@@ -67,4 +67,3 @@ struct dvb_sit_section * dvb_sit_section_codec(struct section_ext * ext)
 
 	return ret;
 }
-

@@ -32,4 +32,3 @@ struct mpeg_tsdt_section * mpeg_tsdt_section_codec(struct section_ext * ext)
 
 	return (struct mpeg_tsdt_section *)ext;
 }
-

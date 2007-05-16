@@ -1,7 +1,7 @@
 /*
  * adapted from different kernel headers
- * "this is the current way of doing things."-Greg K-H 
- * 
+ * "this is the current way of doing things."-Greg K-H
+ *
  * everything copied from linux kernel 2.6.10 source
  */
 

@@ -176,7 +176,7 @@ struct esg_container *esg_container_decode(uint8_t *buffer, uint32_t size) {
 	container->structure_body_ptr = pos;
 	container->structure_body_length = size - pos;
 	container->structure_body = (uint8_t *) malloc(size - pos);
-	memcpy(container->structure_body, buffer + pos, size - pos); 
+	memcpy(container->structure_body, buffer + pos, size - pos);
 
 	return container;
 }

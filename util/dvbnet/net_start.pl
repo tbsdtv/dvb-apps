@@ -22,4 +22,3 @@ sub dvbnet
 
   system("/sbin/ifconfig $DEV_NAME");
 }
-

@@ -36,4 +36,3 @@ void vdr_dump_service_parameter_set (FILE *f,
 				 int channel_num);
 
 #endif
-

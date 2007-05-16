@@ -1,4 +1,3 @@
-
 struct lnb_types_st {
 	char	*name;
 	char	**desc;
@@ -21,4 +20,3 @@ lnb_enum(int curno);
 
 int
 lnb_decode(char *str, struct lnb_types_st *lnbp);
-

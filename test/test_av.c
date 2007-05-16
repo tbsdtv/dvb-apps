@@ -571,4 +571,3 @@ int main(void)
 	close(afd);
 	return 0;
 }
-

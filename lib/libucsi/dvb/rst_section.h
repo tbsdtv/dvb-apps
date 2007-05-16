@@ -108,4 +108,3 @@ static inline struct dvb_rst_status *
 #endif
 
 #endif
-

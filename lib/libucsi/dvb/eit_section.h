@@ -67,7 +67,7 @@ struct dvb_eit_section *dvb_eit_section_codec(struct section_ext *section);
 
 /**
  * Accessor for the service_id field of an EIT.
- * 
+ *
  * @param eit EIT pointer.
  * @return The service_id.
  */

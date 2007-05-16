@@ -80,7 +80,7 @@ static void *dvbthread_func(void* arg)
 	struct pollfd pollfds[3];
 
 	struct gnutv_dvb_params *params = (struct gnutv_dvb_params *) arg;
-   
+
 	tune_state = 0;
 
 	// create PAT filter

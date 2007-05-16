@@ -154,7 +154,7 @@ static inline uint8_t
 	dvb_id_selector_byte_000b_private_data_length(struct descriptor *d,
 			    struct dvb_id_selector_byte_000b *i)
 {
-	return (uint8_t) (d->len - 
+	return (uint8_t) (d->len -
 	     sizeof(struct descriptor) -
 	     i->platform_id_data_length -
 	     sizeof(struct dvb_id_selector_byte_000b));

@@ -25,4 +25,3 @@ struct mpeg_metadata_section * mpeg_metadata_section_codec(struct section_ext * 
 {
 	return (struct mpeg_metadata_section *)ext;
 }
-

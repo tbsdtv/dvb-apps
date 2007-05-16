@@ -2,7 +2,7 @@
 
 # Angel Li sent me this script to help in setting up a
 # ~/.azap/channels.conf file automagicly.  This probbably
-# isn't the final version 
+# isn't the final version
 
  use LWP;
  use HTML::Form;

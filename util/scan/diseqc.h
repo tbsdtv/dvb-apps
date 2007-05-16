@@ -22,4 +22,3 @@ extern int setup_switch (int frontend_fd, int switch_pos, int voltage_18, int fr
 
 
 #endif
-

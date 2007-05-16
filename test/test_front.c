@@ -1,4 +1,4 @@
-/* 
+/*
  * test_front.c - Test program for new API
  *
  * Copyright (C) 2000 Ralph  Metzler <ralph@convergence.de>
@@ -261,7 +261,7 @@ int SecGetStatus (int fd, struct secStatus *state)
 		break;
 	}
 
-	
+
 	switch (state->selVolt){
 	case SEC_VOLTAGE_OFF:
 		printf("SEC VOLTAGE:  OFF (%d)\n",state->selVolt);
@@ -325,4 +325,3 @@ main(int argc, char **argv)
 	close(fd);
 	close(fd_sec);
 }
-

@@ -33,8 +33,8 @@ test_vevent	: Test VIDEO_GET_EVENT and poll() for video events
 test_stc	: Test DMX_GET_STC.
 
 test_stillimage : Display single iframes as stillimages
-		  iframes can be created with the 'convert' tool from 
-		  imagemagick and mpeg2encode from ftp.mpeg.org, and must 
+		  iframes can be created with the 'convert' tool from
+		  imagemagick and mpeg2encode from ftp.mpeg.org, and must
 		  have a supported size, e.g. 702x576
 		  ($ convert -sample 702x576\! test.jpg test.mpg)
 
@@ -48,4 +48,3 @@ test_dvr	:
 test_front	:
 test_switch	:
 test_video	:
-

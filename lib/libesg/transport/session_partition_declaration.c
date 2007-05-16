@@ -171,7 +171,7 @@ struct esg_session_partition_declaration *esg_session_partition_declaration_deco
 
 					ip_stream_field->end_field_value->string = field_buffer;
 					pos += field_length;
-					
+
 					break;
 				}
 				case 0x0101: {
@@ -189,7 +189,7 @@ struct esg_session_partition_declaration *esg_session_partition_declaration_deco
 
 					ip_stream_field->end_field_value->unsigned_short = (buffer[pos] << 8) | buffer[pos+1];
 					pos += field_length;
-					
+
 					break;
 				}
 				default: {

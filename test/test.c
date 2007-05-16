@@ -1,4 +1,4 @@
-/* 
+/*
  * test.c - Test program for new API
  *
  * Copyright (C) 2000 Ralph  Metzler <ralph@convergence.de>
@@ -58,7 +58,7 @@ inline t2a(uint8_t c)
   c=reverse[c]&0x7f;
   if (c<0x20)
     c=0x20;
- 
+
   return c;
 }
 
@@ -68,16 +68,16 @@ void testpesfilter(void)
 	int i,j;
 	int len;
 	int fd=open("/dev/ost/demux1", O_RDWR);
-	struct dmx_pes_filter_params pesFilterParams; 
-	
-	pesFilterParams.input = DMX_IN_FRONTEND; 
-	pesFilterParams.output = DMX_OUT_TS_TAP; 
-	pesFilterParams.pes_type = DMX_PES_TELETEXT; 
+	struct dmx_pes_filter_params pesFilterParams;
+
+	pesFilterParams.input = DMX_IN_FRONTEND;
+	pesFilterParams.output = DMX_OUT_TS_TAP;
+	pesFilterParams.pes_type = DMX_PES_TELETEXT;
 	pesFilterParams.flags = DMX_IMMEDIATE_START;
-  
+
 	pesFilterParams.pid = 0x2c ;
 	if (ioctl(fd, DMX_SET_PES_FILTER, &pesFilterParams) < 0) {
-	        printf("Could not set PES filter\n"); 
+	        printf("Could not set PES filter\n");
 		close(fd);
 		return;
 	}
@@ -85,7 +85,7 @@ void testpesfilter(void)
 /*
 	pesFilterParams.pid = 54;
 	if (ioctl(fd, DMX_SET_PES_FILTER, &pesFilterParams) < 0) {
-	        printf("Could not set PES filter\n"); 
+	        printf("Could not set PES filter\n");
 		close(fd);
 		return;
 	}
@@ -93,7 +93,7 @@ void testpesfilter(void)
 
 	pesFilterParams.pid = 55;
 	if (ioctl(fd, DMX_SET_PES_FILTER, &pesFilterParams) < 0) {
-	        printf("Could not set PES filter\n"); 
+	        printf("Could not set PES filter\n");
 		close(fd);
 		return;
 	}
@@ -103,7 +103,7 @@ void testpesfilter(void)
 		if (len>0) write(1, buf, len);
 	}
 
-	do { 
+	do {
 	        read(fd, buf, 4);
 		if (htonl(*(uint32_t *)buf)!=0x00001bd)
 		        continue;
@@ -112,10 +112,10 @@ void testpesfilter(void)
 	        read(fd, buf+6, len);
 		fprintf(stderr,"read %d bytes PES\n", len);
 		write (1, buf, len+6);
-		
+
 		id=buf[45];
 		fprintf(stderr,"id=%02x\n", id);
-		
+
 		for (i=0; i<(len+6-46)/46; i++) {
 		  for (j=6; j<46; j++) {
 		    fprintf(stderr,"%c", t2a(buf[i*46+46+j]));
@@ -128,11 +128,11 @@ void testpesfilter(void)
 
 	/*
 	pesFilterParams.pid = 55;
-	pesFilterParams.input = DMX_IN_FRONTEND; 
-	pesFilterParams.output = DMX_OUT_DECODER; 
-	pesFilterParams.pes_type = DMX_PES_TELETEXT; 
+	pesFilterParams.input = DMX_IN_FRONTEND;
+	pesFilterParams.output = DMX_OUT_DECODER;
+	pesFilterParams.pes_type = DMX_PES_TELETEXT;
 	pesFilterParams.flags = DMX_IMMEDIATE_START;
-  
+
 	ioctl(fd, DMX_SET_PES_FILTER, &pesFilterParams);
 	close(fd);
 	*/
@@ -145,8 +145,8 @@ senf()
   int len;
   struct secCommand scmd;
   struct secCmdSequence scmds;
-  struct dmx_pes_filter_params pesFilterParams; 
-  struct dmx_sct_filter_params secFilterParams; 
+  struct dmx_pes_filter_params pesFilterParams;
+  struct dmx_sct_filter_params secFilterParams;
   FrontendParameters frp;
   uint8_t buf[4096];
 
@@ -173,7 +173,7 @@ senf()
   scmd.u.diseqc.cmd=0x38;
   scmd.u.diseqc.numParams=1;
   scmd.u.diseqc.params[0]=0xf0;
-  
+
   scmds.voltage=SEC_VOLTAGE_13;
   scmds.miniCommand=SEC_MINI_NONE;
   scmds.continuousTone=SEC_TONE_ON;
@@ -195,31 +195,31 @@ senf()
     if (ret<0)
       perror("DMX_SET_BUFFER_SIZE\n");
   printf("Audio filter size OK\n");
-  pesFilterParams.pid = 0x60; 
-  pesFilterParams.input = DMX_IN_FRONTEND; 
-  pesFilterParams.output = DMX_OUT_DECODER; 
-  pesFilterParams.pes_type = DMX_PES_AUDIO; 
+  pesFilterParams.pid = 0x60;
+  pesFilterParams.input = DMX_IN_FRONTEND;
+  pesFilterParams.output = DMX_OUT_DECODER;
+  pesFilterParams.pes_type = DMX_PES_AUDIO;
   pesFilterParams.flags = DMX_IMMEDIATE_START;
-  
-  if (ioctl(fd_demux2, DMX_SET_PES_FILTER, &pesFilterParams) < 0)   return(1); 
+
+  if (ioctl(fd_demux2, DMX_SET_PES_FILTER, &pesFilterParams) < 0)   return(1);
   printf("Audio filter OK\n");
-  
-  if (ioctl(fd_demux, DMX_SET_BUFFER_SIZE, 64*1024) < 0)  return(1); 
+
+  if (ioctl(fd_demux, DMX_SET_BUFFER_SIZE, 64*1024) < 0)  return(1);
   pesFilterParams.pid = 0xa2;
-  pesFilterParams.input = DMX_IN_FRONTEND; 
-  pesFilterParams.output = DMX_OUT_DECODER; 
-  pesFilterParams.pes_type = DMX_PES_VIDEO; 
+  pesFilterParams.input = DMX_IN_FRONTEND;
+  pesFilterParams.output = DMX_OUT_DECODER;
+  pesFilterParams.pes_type = DMX_PES_VIDEO;
   pesFilterParams.flags = DMX_IMMEDIATE_START;
-  if (ioctl(fd_demux, DMX_SET_PES_FILTER, &pesFilterParams) < 0)  return(1); 
+  if (ioctl(fd_demux, DMX_SET_PES_FILTER, &pesFilterParams) < 0)  return(1);
   printf("Video filter OK\n");
 #endif
   /*
   pesFilterParams.pid = 56;
-  pesFilterParams.input = DMX_IN_FRONTEND; 
-  pesFilterParams.output = DMX_OUT_DECODER; 
-  pesFilterParams.pes_type = DMX_PES_TELETEXT; 
+  pesFilterParams.input = DMX_IN_FRONTEND;
+  pesFilterParams.output = DMX_OUT_DECODER;
+  pesFilterParams.pes_type = DMX_PES_TELETEXT;
   pesFilterParams.flags = DMX_IMMEDIATE_START;
-  if (ioctl(fd_tt, DMX_SET_PES_FILTER, &pesFilterParams) < 0)  return(1); 
+  if (ioctl(fd_tt, DMX_SET_PES_FILTER, &pesFilterParams) < 0)  return(1);
   printf("TT filter OK\n");
   */
   //while (1);
@@ -250,7 +250,7 @@ senf()
     int32_t snr, str;
     ioctl(fd_frontend, FE_READ_SNR, &snr);
     ioctl(fd_frontend, FE_READ_SIGNAL_STRENGTH, &str);
-    
+
     printf("snr=%d, str=%d\n", snr, str);
   }
   */
@@ -260,7 +260,7 @@ senf()
   if (ioctl(fd_section, DMX_SET_FILTER, &secFilterParams) < 0)  return;
   //if (ioctl(fd_section2, DMX_SET_FILTER, &secFilterParams) < 0)  return;
   //close(fd_section2);
-  //while (1) 
+  //while (1)
 {
     len=read(fd_section, buf, 4096);
     if (len>0) write(1, buf, len);
@@ -270,7 +270,7 @@ senf()
     //if (len>0) write(1,buf,len);
     //printf("read section with length %d\n", len);
   }
-  
+
 }
 
 main()
@@ -278,4 +278,3 @@ main()
 	//senf();
   testpesfilter();
 }
-

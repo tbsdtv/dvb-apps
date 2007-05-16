@@ -17,4 +17,3 @@ extern void zap_dump_service_parameter_set (FILE *f,
 				 uint16_t service_id);
 
 #endif
-

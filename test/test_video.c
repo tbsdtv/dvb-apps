@@ -1,4 +1,4 @@
-/* 
+/*
  * test_video.c - Test program for new API
  *
  * Copyright (C) 2000 Ralph  Metzler <ralph@convergence.de>
@@ -164,7 +164,7 @@ int videoGetStatus(int fd)
 		printf("unknown (%d)\n",stat.play_state);
 		break;
 	}
-	
+
 	printf("  Stream Source        : ");
 	switch((int)stat.stream_source){
 	case VIDEO_SOURCE_DEMUX:
@@ -234,17 +234,17 @@ void play_file_video(int filefd, int fd)
 
 	pfd[0].fd = STDIN_FILENO;
 	pfd[0].events = POLLIN;
-	
+
 	pfd[1].fd = fd;
 	pfd[1].events = POLLOUT;
-	
+
 	videoSelectSource(fd,VIDEO_SOURCE_MEMORY);
 	videoPlay(fd);
-	
-	
+
+
 	count = read(filefd,buf,BUFFY);
 	write(fd,buf,count);
-	
+
 	while ( (count = read(filefd,buf,BUFFY)) >= 0  ){
 		written = 0;
 		while(written < count){
@@ -267,7 +267,7 @@ void play_file_video(int filefd, int fd)
 						printf("playback stopped\n");
 						stopped = 1;
 						break;
-						
+
 					case 'c':
 						videoContinue(fd);
 						printf("playback continued\n");
@@ -298,7 +298,7 @@ void play_file_video(int filefd, int fd)
 						break;
 					}
 				}
-				
+
 			}
 		}
 	}
@@ -310,11 +310,11 @@ void load_iframe(int filefd, int fd)
 	struct video_still_picture sp;
 
 	fstat(filefd, &st);
-	
+
 	sp.iFrame = (char *) malloc(st.st_size);
 	sp.size = st.st_size;
 	printf("I-frame size: %d\n", sp.size);
-	
+
 	if (!sp.iFrame) {
 		printf("No memory for I-Frame\n");
 		return;
@@ -342,8 +342,8 @@ main(int argc, char **argv)
 		perror("VIDEO DEVICE: ");
 		return -1;
 	}
-	    
-	
+
+
 
 
 //	videoSetBlank(fd,false);
@@ -365,4 +365,3 @@ main(int argc, char **argv)
 
 
 }
-

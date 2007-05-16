@@ -162,4 +162,3 @@ int main(int argc, char *argv[])
 	close(dmxfd);
 	return 0;
 }
-

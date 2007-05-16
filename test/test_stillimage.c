@@ -99,5 +99,3 @@ next_pic:
 
 	return 0;
 }
-
-

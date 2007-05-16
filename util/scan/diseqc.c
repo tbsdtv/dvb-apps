@@ -101,5 +101,3 @@ int setup_switch (int frontend_fd, int switch_pos, int voltage_18, int hiband)
 				(i/2) % 2 ? SEC_TONE_ON : SEC_TONE_OFF,
 				(i/4) % 2 ? SEC_MINI_B : SEC_MINI_A);
 }
-
-

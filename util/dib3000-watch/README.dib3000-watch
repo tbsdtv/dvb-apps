@@ -9,7 +9,7 @@ If your distribution hasn't create the /dev/i2c-*-nodes you can use the
 make-i2c-dev-script located its source directory.
 
 It is not yet completed, but works fine for all dib3000mb-demods (all of the
-USB1.1 dibusb-devices are equipped with it). 
+USB1.1 dibusb-devices are equipped with it).
 Having a CSV output would certainly be useful, when you want to make range
 tests by driving around with your car and check the signal. Nevertheless,
 this isn't written yet, but should be easy-going. Each line then should
@@ -24,6 +24,6 @@ calculate frequencies from the demod values.
 Patrick Boettcher <patrick.boettcher@desy.de>
 
 PS: Please feel free to modify the source to fullfil your wishes. But please
-remember, it is released under the GPL, thus please send back patches to the 
+remember, it is released under the GPL, thus please send back patches to the
 author or to the linux-dvb mailing list, so other users can have benefit from
 it.

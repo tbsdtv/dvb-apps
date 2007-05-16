@@ -178,7 +178,7 @@ int main(int argc, char *argv[])
                 fprintf(stderr, "0x%.2x ", mask[filter_idx]);
 
         fprintf(stderr, "\n");
-        
+
 	if ((dmxfd = open(dmxdev, O_RDWR)) < 0){
 		perror("open");
 		return 1;
@@ -194,4 +194,3 @@ int main(int argc, char *argv[])
 	close(dmxfd);
 	return 0;
 }
-

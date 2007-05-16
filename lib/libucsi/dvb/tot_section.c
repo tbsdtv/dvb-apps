@@ -34,7 +34,7 @@ struct dvb_tot_section *dvb_tot_section_codec(struct section *section)
 	pos += 5;
 	bswap16(buf + pos);
 	pos += 2;
-   
+
 	if ((pos + ret->descriptors_loop_length) > len)
 		return NULL;
 

@@ -56,7 +56,7 @@ int init_fb (void)
 	}
 
 	write( vt_fd, blankoff_str, strlen(blankoff_str) );
-	
+
 	if (ioctl (fd, FBIOGET_VSCREENINFO, &fb_var) < 0) {
 		perror("Could not get variable screen information (fb_var)\n");
 		return 1;
@@ -78,14 +78,14 @@ int init_video (int stop)
 	struct video_capability vcap;
 
 	if ((fd = open (video_devname, O_RDWR)) < 0) {
-		fprintf (stderr, 
+		fprintf (stderr,
 			 "%s: Could not open %s, please check permissions\n",
 			 __FUNCTION__, video_devname);
 		return -1;
 	}
 
 	ioctl(fd, VIDIOCGCAP, &vcap);
-	
+
 	if (ioctl(fd, VIDIOCCAPTURE, &zero) < 0) {
 		perror("Could not stop capturing (VIDIOCCAPTURE failed)\n");
 		return -2;
@@ -93,7 +93,7 @@ int init_video (int stop)
 
 	if (stop)
 		return 0;
-	
+
 	{
 		struct video_buffer b;
 		b.base = (void*) fb_fix.smem_start;
@@ -106,7 +106,7 @@ int init_video (int stop)
 			return -3;
 		}
 	}
-	
+
 	{
 		struct video_picture p;
 		if (ioctl(fd, VIDIOCGPICT, &p) < 0) {
@@ -132,7 +132,7 @@ int init_video (int stop)
 			return -5;
 		}
 	}
-	
+
 	{
 		struct video_window win;
 		win.width = min((__u32) vcap.maxwidth, fb_var.xres);
@@ -148,14 +148,14 @@ int init_video (int stop)
 			return -6;
 		}
 	}
-	
+
 	if (ioctl(fd, VIDIOCCAPTURE, &one) < 0) {
 		perror("Could not start capturing (VIDIOCCAPTURE failed)\n");
 		return -7;
 	}
-	
+
 	close (fd);
-	
+
 	return 0;
 }
 
@@ -180,4 +180,3 @@ int main (int argc, char **argv)
 
 	return init_video (stop);
 }
-

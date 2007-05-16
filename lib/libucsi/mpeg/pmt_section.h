@@ -66,7 +66,7 @@ extern struct mpeg_pmt_section *mpeg_pmt_section_codec(struct section_ext *secti
 
 /**
  * Accessor for program_number field of a PMT.
- * 
+ *
  * @param pmt PMT pointer.
  * @return The program_number.
  */

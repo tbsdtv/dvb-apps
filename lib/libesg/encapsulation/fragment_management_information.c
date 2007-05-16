@@ -70,7 +70,7 @@ struct esg_encapsulation_structure *esg_encapsulation_structure_decode(uint8_t *
 
 				entry->fragment_reference->data_repository_offset = (buffer[pos] << 16) | (buffer[pos+1] << 8) | buffer[pos+2];
 				pos += 3;
-				
+
 				break;
 			}
 			default: {

@@ -180,4 +180,3 @@ void vdr_dump_service_parameter_set (FILE *f,
 		fprintf (f, "\n");
 	}
 }
-
