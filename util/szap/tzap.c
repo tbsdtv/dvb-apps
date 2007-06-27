@@ -289,53 +289,51 @@ int parse(const char *fname, const char *channel,
 
 	if ((err = try_parse_param(fd,
 				   inversion_list, LIST_SIZE(inversion_list),
-				   (int *) &frontend->inversion,
-				   "inversion")))
+				   &tmp, "inversion")))
 		return -4;
+	frontend->inversion = tmp;
 
 	if ((err = try_parse_param(fd, bw_list, LIST_SIZE(bw_list),
-				   (int *) &frontend->u.ofdm.bandwidth,
-				   "bandwidth")))
+				   &tmp, "bandwidth")))
 		return -5;
+	frontend->u.ofdm.bandwidth = tmp;
 
 	if ((err = try_parse_param(fd, fec_list, LIST_SIZE(fec_list),
-				   (int *) &frontend->u.ofdm.code_rate_HP,
-				   "code_rate_HP")))
+				   &tmp, "code_rate_HP")))
 		return -6;
+	frontend->u.ofdm.code_rate_HP = tmp;
 	if (check_fec(&frontend->u.ofdm.code_rate_HP))
 		return -6;
 
 	if ((err = try_parse_param(fd, fec_list, LIST_SIZE(fec_list),
-				   (int *) &frontend->u.ofdm.code_rate_LP,
-				   "code_rate_LP")))
+				   &tmp, "code_rate_LP")))
 		return -7;
+	frontend->u.ofdm.code_rate_LP = tmp;
 	if (check_fec(&frontend->u.ofdm.code_rate_LP))
 		return -7;
 
 	if ((err = try_parse_param(fd, constellation_list,
 				   LIST_SIZE(constellation_list),
-				   (int *) &frontend->u.ofdm.constellation,
-				   "constellation")))
+				   &tmp, "constellation")))
 		return -8;
+	frontend->u.ofdm.constellation = tmp;
 
 	if ((err = try_parse_param(fd, transmissionmode_list,
 				   LIST_SIZE(transmissionmode_list),
-				   (int *) &frontend->u.ofdm.
-				   transmission_mode,
-				   "transmission_mode")))
+				   &tmp, "transmission_mode")))
 		return -9;
+	frontend->u.ofdm.transmission_mode = tmp;
 
 	if ((err = try_parse_param(fd, guard_list, LIST_SIZE(guard_list),
-				   (int *) &frontend->u.ofdm.
-				   guard_interval, "guard_interval")))
+				   &tmp, "guard_interval")))
 		return -10;
+	frontend->u.ofdm.guard_interval = tmp;
 
 	if ((err = try_parse_param(fd, hierarchy_list,
 				   LIST_SIZE(hierarchy_list),
-				   (int *) &frontend->u.ofdm.
-				   hierarchy_information,
-				   "hierarchy_information")))
+				   &tmp, "hierarchy_information")))
 		return -11;
+	frontend->u.ofdm.hierarchy_information = tmp;
 
 	if ((err = try_parse_int(fd, vpid, "Video PID")))
 		return -12;
