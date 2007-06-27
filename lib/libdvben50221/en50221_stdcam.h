@@ -22,6 +22,10 @@
 #ifndef EN50221_STDCAM_H
 #define EN50221_STDCAM_H 1
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <libdvben50221/en50221_app_ai.h>
 #include <libdvben50221/en50221_app_ca.h>
 #include <libdvben50221/en50221_app_mmi.h>
@@ -90,5 +94,9 @@ extern struct en50221_stdcam *en50221_stdcam_hlci_create(int cafd, int slotnum);
 extern struct en50221_stdcam *en50221_stdcam_create(int adapter, int slotnum,
 						    struct en50221_transport_layer *tl,
 						    struct en50221_session_layer *sl);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
