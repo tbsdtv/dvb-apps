@@ -72,14 +72,17 @@ static const Param modulation_list[] = {
 
 
 static
-int parse_param(const char *val, const Param * plist, int list_size)
+int parse_param(const char *val, const Param * plist, int list_size, int *ok)
 {
 	int i;
 
 	for (i = 0; i < list_size; i++) {
-		if (strcasecmp(plist[i].name, val) == 0)
+		if (strcasecmp(plist[i].name, val) == 0) {
+			*ok = 1;
 			return plist[i].value;
+		}
 	}
+	*ok = 0;
 	return -1;
 }
 
@@ -120,6 +123,7 @@ int parse(const char *fname, int list_channels, int chan_no, const char *channel
 	FILE *f;
 	char *chan;
 	char *name, *inv, *fec, *mod;
+	int ok;
 
 	if ((f = fopen(fname, "r")) == NULL) {
 		PERROR("could not open file '%s'", fname);
@@ -145,19 +149,19 @@ int parse(const char *fname, int list_channels, int chan_no, const char *channel
 		ERROR("cannot parse service data");
 		return -3;
 	}
-	frontend->inversion = parse_param(inv, inversion_list, LIST_SIZE(inversion_list));
-	if ((int) frontend->inversion < 0) {
+	frontend->inversion = parse_param(inv, inversion_list, LIST_SIZE(inversion_list), &ok);
+	if (!ok) {
 		ERROR("inversion field syntax '%s'", inv);
 		return -4;
 	}
-	frontend->u.qam.fec_inner = parse_param(fec, fec_list, LIST_SIZE(fec_list));
-	if ((int) frontend->u.qam.fec_inner < 0) {
+	frontend->u.qam.fec_inner = parse_param(fec, fec_list, LIST_SIZE(fec_list), &ok);
+	if (!ok) {
 		ERROR("FEC field syntax '%s'", fec);
 		return -5;
 	}
 	frontend->u.qam.modulation = parse_param(mod, modulation_list,
-			LIST_SIZE(modulation_list));
-	if ((int) frontend->u.qam.modulation < 0) {
+			LIST_SIZE(modulation_list), &ok);
+	if (!ok) {
 		ERROR("modulation field syntax '%s'", mod);
 		return -6;
 	}

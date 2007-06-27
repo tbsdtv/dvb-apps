@@ -189,9 +189,9 @@ int parse(const char *fname, const char *channel,
 
 	if ((err = try_parse_param(fd,
 				   modulation_list, LIST_SIZE(modulation_list),
-				   (int *) &frontend->u.vsb.modulation,
-				   "modulation")))
+				   &tmp, "modulation")))
 		return -4;
+	frontend->u.vsb.modulation = tmp;
 
 	if ((err = try_parse_int(fd, vpid, "Video PID")))
 		return -5;
