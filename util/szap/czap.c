@@ -228,7 +228,7 @@ int setup_frontend(int fe_fd, struct dvb_frontend_parameters *frontend)
 
 
 static
-int check_frontend (int fe_fd)
+int check_frontend (int fe_fd, int human_readable)
 {
 	fe_status_t status;
 	uint16_t snr, signal;
@@ -241,9 +241,13 @@ int check_frontend (int fe_fd)
 		ioctl(fe_fd, FE_READ_BER, &ber);
 		ioctl(fe_fd, FE_READ_UNCORRECTED_BLOCKS, &uncorrected_blocks);
 
-		printf ("status %02x | signal %04x | snr %04x | "
-			"ber %08x | unc %08x | ",
-			status, signal, snr, ber, uncorrected_blocks);
+		if (human_readable) {
+			printf ("status %02x | signal %3u%% | snr %3u%% | ber %d | unc %d | ",
+				status, (signal * 100) / 0xffff, (snr * 100) / 0xffff, ber, uncorrected_blocks);
+		} else {
+			printf ("status %02x | signal %04x | snr %04x | ber %08x | unc %08x | ",
+				status, signal, snr, ber, uncorrected_blocks);
+		}
 
 		if (status & FE_HAS_LOCK)
 			printf("FE_HAS_LOCK");
@@ -260,7 +264,7 @@ int check_frontend (int fe_fd)
 }
 
 
-static const char *usage = "\nusage: %s [-a adapter_num] [-f frontend_id] [-d demux_id] [-c conf_file] {<channel name>| -n channel_num} [-x]\n"
+static const char *usage = "\nusage: %s [-a adapter_num] [-f frontend_id] [-d demux_id] [-c conf_file] [ -H ] {<channel name>| -n channel_num} [-x]\n"
 	"   or: %s [-c conf_file]  -l\n\n";
 
 
@@ -274,8 +278,9 @@ int main(int argc, char **argv)
 	int vpid, apid;
 	int frontend_fd, video_fd, audio_fd;
 	int opt, list_channels = 0, chan_no = 0;
+	int human_readable = 0;
 
-	while ((opt = getopt(argc, argv, "ln:hrn:a:f:d:c:x")) != -1) {
+	while ((opt = getopt(argc, argv, "Hln:hrn:a:f:d:c:x")) != -1) {
 		switch (opt) {
 		case 'a':
 			adapter = strtoul(optarg, NULL, 0);
@@ -297,6 +302,9 @@ int main(int argc, char **argv)
 			break;
 		case 'x':
 			exit_after_tuning = 1;
+			break;
+		case 'H':
+			human_readable = 1;
 			break;
 		case 'c':
 			confname = optarg;
@@ -373,7 +381,7 @@ int main(int argc, char **argv)
 	if (set_pesfilter (audio_fd, apid, DMX_PES_AUDIO, dvr) < 0)
 		return -1;
 
-	check_frontend (frontend_fd);
+	check_frontend (frontend_fd, human_readable);
 
 	close (audio_fd);
 	close (video_fd);

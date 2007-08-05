@@ -416,7 +416,7 @@ do_timeout(int x)
 }
 
 static void
-print_frontend_stats (int fe_fd)
+print_frontend_stats (int fe_fd, int human_readable)
 {
 	fe_status_t status;
 	uint16_t snr, _signal;
@@ -428,9 +428,13 @@ print_frontend_stats (int fe_fd)
 	ioctl(fe_fd, FE_READ_BER, &ber);
 	ioctl(fe_fd, FE_READ_UNCORRECTED_BLOCKS, &uncorrected_blocks);
 
-	fprintf (stderr,"status %02x | signal %04x | snr %04x | "
-		"ber %08x | unc %08x | ",
-		status, _signal, snr, ber, uncorrected_blocks);
+	if (human_readable) {
+		printf ("status %02x | signal %3u%% | snr %3u%% | ber %d | unc %d | ",
+			status, (_signal * 100) / 0xffff, (snr * 100) / 0xffff, ber, uncorrected_blocks);
+	} else {
+		fprintf (stderr, "status %02x | signal %04x | snr %04x | ber %08x | unc %08x | ",
+			status, _signal, snr, ber, uncorrected_blocks);
+	}
 
 	if (status & FE_HAS_LOCK)
 		fprintf(stderr,"FE_HAS_LOCK");
@@ -439,19 +443,19 @@ print_frontend_stats (int fe_fd)
 }
 
 static
-int check_frontend (int fe_fd)
+int check_frontend (int fe_fd, int human_readable)
 {
 	fe_status_t status;
 	do {
 	        ioctl(fe_fd, FE_READ_STATUS, &status);
 		if (!silent)
-			print_frontend_stats(fe_fd);
+			print_frontend_stats(fe_fd, human_readable);
 		if (exit_after_tuning && (status & FE_HAS_LOCK))
 			break;
 		usleep(1000000);
 	} while (!timeout_flag);
 	if (silent < 2)
-		print_frontend_stats (fe_fd);
+		print_frontend_stats (fe_fd, human_readable);
 
 	return 0;
 }
@@ -498,6 +502,7 @@ static char *usage =
     "     -r        : set up /dev/dvb/adapterX/dvr0 for TS recording\n"
     "     -s        : only print summary\n"
     "     -S        : run silently (no output)\n"
+    "     -H        : human readable output\n"
     "     -F        : set up frontend only, don't touch demux\n"
     "     -t number : timeout (seconds)\n"
     "     -o file   : output filename (use -o - for stdout)\n"
@@ -517,8 +522,9 @@ int main(int argc, char **argv)
 	int record = 0;
 	int frontend_only = 0;
 	char *filename = NULL;
+	int human_readable = 0;
 
-	while ((opt = getopt(argc, argv, "?hrxRsFSn:a:f:d:c:t:o:")) != -1) {
+	while ((opt = getopt(argc, argv, "H?hrxRsFSn:a:f:d:c:t:o:")) != -1) {
 		switch (opt) {
 		case 'a':
 			adapter = strtoul(optarg, NULL, 0);
@@ -553,6 +559,9 @@ int main(int argc, char **argv)
 			break;
 		case 'F':
 			frontend_only = 1;
+			break;
+		case 'H':
+			human_readable = 1;
 			break;
 		case '?':
 		case 'h':
@@ -670,16 +679,16 @@ int main(int argc, char **argv)
 			return -1;
 		}
 		if (silent<2)
-			print_frontend_stats (frontend_fd);
+			print_frontend_stats (frontend_fd, human_readable);
 
 		copy_to_file(dvr_fd,file_fd);
 
 		if (silent<2)
-			print_frontend_stats (frontend_fd);
+			print_frontend_stats (frontend_fd, human_readable);
 	}
 	else {
 just_the_frontend_dude:
-		check_frontend (frontend_fd);
+		check_frontend (frontend_fd, human_readable);
 	}
 
 	close (audio_fd);

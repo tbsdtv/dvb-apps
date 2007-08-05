@@ -84,6 +84,7 @@ static char *usage_str =
     "     -c file   : read channels list from 'file'\n"
     "     -b        : enable Audio Bypass (default no)\n"
     "     -x        : exit after tuning\n"
+    "     -H        : human readable output\n"
     "     -r        : set up /dev/dvb/adapterX/dvr0 for TS recording\n"
     "     -l lnb-type (DVB-S Only) (use -l help to print types) or \n"
     "     -l low[,high[,switch]] in Mhz\n"
@@ -253,7 +254,7 @@ static int do_tune(int fefd, unsigned int ifreq, unsigned int sr)
 
 
 static
-int check_frontend (int fe_fd, int dvr)
+int check_frontend (int fe_fd, int dvr, int human_readable)
 {
    (void)dvr;
    fe_status_t status;
@@ -275,8 +276,13 @@ int check_frontend (int fe_fd, int dvr)
       if (ioctl(fe_fd, FE_READ_UNCORRECTED_BLOCKS, &uncorrected_blocks) == -1)
          uncorrected_blocks = -2;
 
-      printf ("status %02x | signal %04x | snr %04x | ber %08x | unc %08x | ",
-	      status, signal, snr, ber, uncorrected_blocks);
+	if (human_readable) {
+		printf ("status %02x | signal %3u%% | snr %3u%% | ber %d | unc %d | ",
+			status, (signal * 100) / 0xffff, (snr * 100) / 0xffff, ber, uncorrected_blocks);
+	} else {
+		printf ("status %02x | signal %04x | snr %04x | ber %08x | unc %08x | ",
+			status, signal, snr, ber, uncorrected_blocks);
+	}
 
       if (status & FE_HAS_LOCK)
 	 printf("FE_HAS_LOCK");
@@ -296,7 +302,7 @@ static
 int zap_to(unsigned int adapter, unsigned int frontend, unsigned int demux,
       unsigned int sat_no, unsigned int freq, unsigned int pol,
       unsigned int sr, unsigned int vpid, unsigned int apid, int sid,
-      int dvr, int rec_psi, int bypass)
+      int dvr, int rec_psi, int bypass, int human_readable)
 {
    char fedev[128], dmxdev[128], auddev[128];
    static int fefd, dmxfda, dmxfdv, audiofd = -1, patfd, pmtfd;
@@ -405,7 +411,7 @@ int zap_to(unsigned int adapter, unsigned int frontend, unsigned int demux,
 		  }
 	       }
 
-   check_frontend (fefd, dvr);
+   check_frontend (fefd, dvr, human_readable);
 
    if (!interactive) {
       close(patfd);
@@ -425,7 +431,7 @@ static int read_channels(const char *filename, int list_channels,
 			 uint32_t chan_no, const char *chan_name,
 			 unsigned int adapter, unsigned int frontend,
 			 unsigned int demux, int dvr, int rec_psi,
-			 int bypass)
+			 int bypass, int human_readable)
 {
    FILE *cfp;
    char buf[4096];
@@ -546,7 +552,7 @@ again:
 	 fclose(cfp);
 
 	 ret = zap_to(adapter, frontend, demux, sat_no, freq * 1000,
-		      pol, sr, vpid, apid, sid, dvr, rec_psi, bypass);
+		      pol, sr, vpid, apid, sid, dvr, rec_psi, bypass, human_readable);
 	 if (interactive)
 	    goto again;
 
@@ -612,9 +618,10 @@ int main(int argc, char *argv[])
    unsigned int adapter = 0, frontend = 0, demux = 0, dvr = 0, rec_psi = 0;
    int bypass = 0;
    int opt, copt = 0;
+   int human_readable = 0;
 
    lnb_type = *lnb_enum(0);
-   while ((opt = getopt(argc, argv, "hqrpn:a:f:d:c:l:xib")) != -1) {
+   while ((opt = getopt(argc, argv, "Hhqrpn:a:f:d:c:l:xib")) != -1) {
       switch (opt)
       {
 	 case '?':
@@ -658,6 +665,9 @@ int main(int argc, char *argv[])
 	 case 'x':
 	    exit_after_tuning = 1;
 	    break;
+	case 'H':
+	    human_readable = 1;
+	    break;
 	 case 'i':
 	    interactive = 1;
 	    exit_after_tuning = 1;
@@ -699,7 +709,7 @@ int main(int argc, char *argv[])
       dvr=1;
 
    if (!read_channels(chanfile, list_channels, chan_no, chan_name,
-	    adapter, frontend, demux, dvr, rec_psi, bypass))
+	    adapter, frontend, demux, dvr, rec_psi, bypass, human_readable))
       return TRUE;
 
    return FALSE;
