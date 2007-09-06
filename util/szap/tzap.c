@@ -179,7 +179,10 @@ int parse_int(int fd, int *val)
 			return -3;	/*  to fit in 32 bit */
 	};
 
+	errno = 0;
 	*val = strtol(number, NULL, 10);
+	if (errno == ERANGE)
+		return -4;
 
 	return 0;
 }
