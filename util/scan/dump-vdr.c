@@ -138,7 +138,7 @@ void vdr_dump_service_parameter_set (FILE *f,
 {
         int i;
 
-	if ((video_pid || audio_pid[0]) && ((ca_select > 0) || ((ca_select == 0) && (scrambled == 0)))) {
+	if (video_pid || audio_pid[0]) {
 		if (vdr_version <= 2) {
 			audio_lang = NULL;
 			network_id = 0;
@@ -174,7 +174,15 @@ void vdr_dump_service_parameter_set (FILE *f,
 			if (audio_lang && audio_lang[0][0])
 				fprintf (f, "=%.4s", audio_lang[0]);
  		}
-		if (scrambled == 1) scrambled = ca_select;
+		if (scrambled == 1) {
+			if (ca_select == -1)
+				if (vdr_version <= 2)
+					scrambled = 1;
+				else
+					scrambled = 0;
+			else
+				scrambled = ca_select;
+		}
 		fprintf (f, ":%d:%d:%d:%d:%d:0", teletext_pid, scrambled,
 				service_id, network_id, transport_stream_id);
 		fprintf (f, "\n");

@@ -61,9 +61,9 @@ static int vdr_dump_provider;
 static int vdr_dump_channum;
 static int no_ATSC_PSIP;
 static int ATSC_type=1;
-static int ca_select = 1;
+static int ca_select = -1;
 static int serv_select = 7;
-static int vdr_version = 2;
+static int vdr_version = 3;
 static struct lnb_types_st lnb_type;
 static int unique_anon_services;
 
@@ -2082,14 +2082,15 @@ static const char *usage = "\n"
 	"	-5	multiply all filter timeouts by factor 5\n"
 	"		for non-DVB-compliant section repitition rates\n"
 	"	-o fmt	output format: 'zap' (default), 'vdr' or 'pids' (default with -c)\n"
-	"	-x N	Conditional Axcess, (default 1)\n"
+	"	-x N	Conditional Access, (default -1)\n"
 	"		N=0 gets only FTA channels\n"
+	"		N=-1 gets all channels\n"
 	"		N=xxx sets ca field in vdr output to :xxx:\n"
 	"	-t N	Service select, Combined bitfield parameter.\n"
 	"		1 = TV, 2 = Radio, 4 = Other, (default 7)\n"
 	"	-p	for vdr output format: dump provider name\n"
-	"	-e N	VDR version, default 2 for VDR-1.2.x\n"
-	"		ANYTHING ELSE GIVES NONZERO NIT and TID\n"
+	"	-e N	VDR version, default 3 for VDR-1.3.x and newer\n"
+	"		value 2 sets NIT and TID to zero\n"
 	"		Vdr version 1.3.x and up implies -p.\n"
 	"	-l lnb-type (DVB-S Only) (use -l help to print types) or \n"
 	"	-l low[,high[,switch]] in Mhz\n"
