@@ -6,6 +6,7 @@
 
  use LWP;
  use HTML::Form;
+ use HTTP::Cookies;
  use XML::XPath;
  use XML::XPath::XMLParser;
 
@@ -37,20 +38,24 @@
  }
 
  $ua = LWP::UserAgent->new;
+ $ua->cookie_jar({});
  push @{$ua->requests_redirectable}, 'POST';
  $response = $ua->get($WEBSITE);
  if ($response->is_success) {
  	$form = HTML::Form->parse($response);
- 	$request = $form->click;
+ 	$request = $form->click("btnStart");
 	$response2 = $ua->request($request);
  	if ($response2->is_success) {
  		$form2 = HTML::Form->parse($response2);
 		$form2->param($ZIPCODE, $zipCode);
- 		$request2 = $form2->click;
+ 		$request2 = $form2->click("btnSubmit");
  		$response3 = $ua->request($request2);
- 		if ($response3->is_success) {
-			$form3 = HTML::Form->parse($response3);
- 			$xml = $form3->value($XML);
+ 		$form3 = HTML::Form->parse($response3);
+ 		$request3 = $form3->click("btnContinue");
+ 		$response4 = $ua->request($request3);
+ 		if ($response4->is_success) {
+ 			$form4 = HTML::Form->parse($response4);
+ 			$xml = $form4->value($XML);
  			$xml =~ s/%22/"/g;
  			$xml =~ s/%2c/,/g;
  			$xml =~ s/%2f/\//g;
