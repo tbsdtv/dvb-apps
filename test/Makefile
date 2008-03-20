@@ -1,6 +1,6 @@
 # Makefile for linuxtv.org dvb-apps/test
 
-objects  = hex_dump.o
+objects  = hex_dump.o lnb.o
 
 binaries = diseqc          \
            sendburst       \
@@ -19,7 +19,8 @@ binaries = diseqc          \
            test_tt         \
            test_vevent     \
 	   evtest	   \
-           video
+	   video	   \
+	   szap2
 
 .PHONY: all
 
