@@ -676,11 +676,6 @@ int main(int argc, char **argv)
 	                PERROR("failed opening '%s'", DVR_DEV);
 	                return -1;
 	        }
-		if (ioctl(dvr_fd, DMX_SET_BUFFER_SIZE, 1024 * 1024)<0)
-		{
-			PERROR("DMX_SET_BUFFER_SIZE failed");
-			return -1;
-		}
 		if (silent<2)
 			print_frontend_stats (frontend_fd, human_readable);
 

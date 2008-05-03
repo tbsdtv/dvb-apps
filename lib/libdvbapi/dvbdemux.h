@@ -55,6 +55,7 @@ extern "C"
 #define DVBDEMUX_OUTPUT_DECODER 0
 #define DVBDEMUX_OUTPUT_DEMUX 1
 #define DVBDEMUX_OUTPUT_DVR 2
+#define DVBDEMUX_OUTPUT_TS_DEMUX 3
 
 /**
  * PES types.
@@ -64,6 +65,7 @@ extern "C"
 #define DVBDEMUX_PESTYPE_TELETEXT 2
 #define DVBDEMUX_PESTYPE_SUBTITLE 3
 #define DVBDEMUX_PESTYPE_PCR 4
+
 
 /**
  * Open a demux device. Can be called multiple times. These let you setup a
@@ -78,8 +80,8 @@ extern "C"
 extern int dvbdemux_open_demux(int adapter, int demuxdevice, int nonblocking);
 
 /**
- * Open a DVR device. May be opened for writing once, or multiple times in readonly
- * mode. It is used to either write() transport stream data to be demuxed
+ * Open a DVR device. May be opened for writing or reading once.
+ * It is used to either write() transport stream data to be demuxed
  * (if input == DVBDEMUX_INPUT_DVR), or to read() a stream of demuxed data
  * (if output == DVBDEMUX_OUTPUT_DVR).
  *
