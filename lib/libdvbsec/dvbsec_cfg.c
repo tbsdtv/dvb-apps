@@ -25,6 +25,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <errno.h>
+#include <linux/types.h>
 #include "dvbsec_cfg.h"
 
 int dvbcfg_issection(char* line, char* sectionname)

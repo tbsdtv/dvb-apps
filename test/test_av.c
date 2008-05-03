@@ -30,6 +30,7 @@
 #include <time.h>
 #include <unistd.h>
 
+#include <linux/types.h>
 #include <linux/dvb/audio.h>
 #include <linux/dvb/video.h>
 

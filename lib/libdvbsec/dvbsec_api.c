@@ -23,6 +23,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <ctype.h>
+#include <linux/types.h>
 #include <libdvbapi/dvbfe.h>
 #include "dvbsec_api.h"
 
