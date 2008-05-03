@@ -128,9 +128,11 @@ int dvbdemux_set_pes_filter(int fd, int pid,
 		filter.output = DMX_OUT_TS_TAP;
 		break;
 
+#ifdef DMX_OUT_TSDEMUX_TAP
 	case DVBDEMUX_OUTPUT_TS_DEMUX:
 		filter.output = DMX_OUT_TSDEMUX_TAP;
 		break;
+#endif
 
 	default:
 		return -EINVAL;
@@ -205,9 +207,11 @@ int dvbdemux_set_pid_filter(int fd, int pid,
 		filter.output = DMX_OUT_TS_TAP;
 		break;
 
+#ifdef DMX_OUT_TSDEMUX_TAP
 	case DVBDEMUX_OUTPUT_TS_DEMUX:
 		filter.output = DMX_OUT_TSDEMUX_TAP;
 		break;
+#endif
 
 	default:
 		return -EINVAL;
