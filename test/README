@@ -1,4 +1,4 @@
-Various small test/sample programs for the Linux DVB API Version 2
+Various small test/sample programs for the Linux DVB API Version 2/3
 
 The default devices used by the test programs are generally
 /dev/dvb/adapter0/*0, and can be overridden using environment
@@ -38,8 +38,8 @@ test_stillimage : Display single iframes as stillimages
 		  have a supported size, e.g. 702x576
 		  ($ convert -sample 702x576\! test.jpg test.mpg)
 
-(test_av_play	: Test playing MPEG TS from a file (apparently broken))
-
+test_av_play	: Test playing MPEG PES (VDR format) from a file
+test_dvr_play	: Test playing MPEG TS from a file (don't try, driver is broken)
 
 test		:
 test_audio	:

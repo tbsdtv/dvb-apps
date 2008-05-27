@@ -430,8 +430,10 @@ static int scan_file_av(int vfd, int afd, const unsigned char *buf, int buflen)
 					break;
 				case 0xC0 ... 0xDF:
 					fdc = afd;
-					if (dolby)
+					if (dolby) {
 						fdc = -1;
+						break;
+					}
 					if (except[1] != play[3]) {
 						if (except[1] == 0)
 							except[1] = play[3];
@@ -452,8 +454,10 @@ static int scan_file_av(int vfd, int afd, const unsigned char *buf, int buflen)
 					 * remux part!  2004/07/01 Werner
 					 */
 					fdc = afd;
-					if (!dolby)
+					if (!dolby) {
 						fdc = -1;
+						break;
+					}
 					if (volset) {
 						audioSetVolume(afd, 0);
 						volset = 0;
