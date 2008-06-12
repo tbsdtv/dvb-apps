@@ -350,20 +350,19 @@ int zap_to(unsigned int adapter, unsigned int frontend, unsigned int demux,
 	int pmtpid;
 	uint32_t ifreq;
 	int hiband, result;
-	struct dvbfe_info fe_info;
 	enum dvbfe_delsys delivery;
 	
 	switch (delsys) {
 	case DVBS:
-		printf("Querying info .. Delivery system=DVB-S\n");
+		printf("Delivery system=DVB-S\n");
 		delivery = DVBFE_DELSYS_DVBS;	
 		break;
 	case DSS:
-		printf("Querying info .. Delivery system=DSS\n");
+		printf("Delivery system=DSS\n");
 		delivery = DVBFE_DELSYS_DSS;
 		break;
 	case DVBS2:
-		printf("Querying info .. Delivery system=DVB-S2\n");
+		printf("Delivery system=DVB-S2\n");
 		delivery = DVBFE_DELSYS_DVBS2;
 		break;
 	default:
@@ -387,29 +386,6 @@ int zap_to(unsigned int adapter, unsigned int frontend, unsigned int demux,
 			close(fefd);
 			return FALSE;
 		}
-		result = ioctl(fefd, DVBFE_GET_INFO, &fe_info);
-		if (result < 0) {
-			perror("ioctl DVBFE_GET_INFO failed");
-			close(fefd);
-			return FALSE;
-		}
-		
-		switch (delivery) {
-		case DVBFE_DELSYS_DVBS:
-			printf("----------------------------------> Using '%s' DVB-S", fe_info.name);
-			break;
-		case DVBFE_DELSYS_DSS:
-			printf("----------------------------------> Using '%s' DSS", fe_info.name);
-			break;
-		case DVBFE_DELSYS_DVBS2:
-			printf("----------------------------------> Using '%s' DVB-S2", fe_info.name);
-			break;
-		default:
-			printf("Unsupported Delivery system (%d)!\n", delivery);
-			close(fefd);
-			return FALSE;
-		}
-		/* TODO! Must check capabilities! */
 
 		if ((dmxfdv = open(dmxdev, O_RDWR)) < 0) {
 			perror("opening video demux failed");
