@@ -61,6 +61,7 @@ includes = ac3_descriptor.h                                    \
            local_time_offset_descriptor.h                      \
            mhp_data_broadcast_id_descriptor.h                  \
            mosaic_descriptor.h                                 \
+           mpe_fec_section.h                                   \
            multilingual_bouquet_name_descriptor.h              \
            multilingual_component_descriptor.h                 \
            multilingual_network_name_descriptor.h              \
@@ -106,6 +107,7 @@ includes = ac3_descriptor.h                                    \
            terrestrial_delivery_descriptor.h                   \
            time_shifted_event_descriptor.h                     \
            time_shifted_service_descriptor.h                   \
+           time_slice_fec_identifier_descriptor.h              \
            tot_section.h                                       \
            transport_stream_descriptor.h                       \
            tva_container_section.h                             \

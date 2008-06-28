@@ -24,6 +24,7 @@ includes = audio_stream_descriptor.h                 \
            content_labelling_descriptor.h            \
            copyright_descriptor.h                    \
            data_stream_alignment_descriptor.h        \
+           datagram_section.h                        \
            descriptor.h                              \
            external_es_id_descriptor.h               \
            fmc_descriptor.h                          \

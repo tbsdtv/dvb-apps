@@ -39,6 +39,7 @@ extern "C"
 #include <libucsi/dvb/tot_section.h>
 #include <libucsi/dvb/tva_container_section.h>
 #include <libucsi/dvb/int_section.h>
+#include <libucsi/dvb/mpe_fec_section.h>
 
 /**
  * The following are not implemented just now.

@@ -88,6 +88,7 @@ extern "C"
 #include <libucsi/dvb/terrestrial_delivery_descriptor.h>
 #include <libucsi/dvb/time_shifted_event_descriptor.h>
 #include <libucsi/dvb/time_shifted_service_descriptor.h>
+#include <libucsi/dvb/time_slice_fec_identifier_descriptor.h>
 #include <libucsi/dvb/transport_stream_descriptor.h>
 #include <libucsi/dvb/tva_id_descriptor.h>
 #include <libucsi/dvb/vbi_data_descriptor.h>
