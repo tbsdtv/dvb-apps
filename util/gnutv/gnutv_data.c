@@ -220,19 +220,27 @@ static void *fileoutputthread_func(void* arg)
 	pollfd.events = POLLIN|POLLPRI|POLLERR;
 
 	while(!outputthread_shutdown) {
-		if (poll(&pollfd, 1, 1000) != 1)
-			continue;
-		if (pollfd.revents & POLLERR) {
+		if (poll(&pollfd, 1, 1000) == -1) {
 			if (errno == EINTR)
 				continue;
-			fprintf(stderr, "DVR device read failure\n");
+			fprintf(stderr, "DVR device poll failure\n");
 			return 0;
 		}
+
+		if (pollfd.revents == 0)
+			continue;
 
 		int size = read(dvrfd, buf, sizeof(buf));
 		if (size < 0) {
 			if (errno == EINTR)
 				continue;
+
+			if (errno == EOVERFLOW) {
+				// The error flag has been cleared, next read should succeed.
+				fprintf(stderr, "DVR overflow\n");
+				continue;
+			}
+
 			fprintf(stderr, "DVR device read failure\n");
 			return 0;
 		}
