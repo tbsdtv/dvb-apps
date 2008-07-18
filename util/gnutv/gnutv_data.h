@@ -26,7 +26,7 @@
 #include <netdb.h>
 
 extern void gnutv_data_start(int output_type,
-			   int ffaudiofd, int adapter_id, int demux_id,
+			   int ffaudiofd, int adapter_id, int demux_id, int buffer_size,
 			   char *outfile,
 			   char* outif, struct addrinfo *outaddrs, int usertp);
 extern void gnutv_data_stop(void);

@@ -77,7 +77,7 @@ static struct pid_fd *pid_fds = NULL;
 static int pid_fds_count = 0;
 
 void gnutv_data_start(int _output_type,
-		    int ffaudiofd, int _adapter_id, int _demux_id,
+		    int ffaudiofd, int _adapter_id, int _demux_id, int buffer_size,
 		    char *outfile,
 		    char* outif, struct addrinfo *_outaddrs, int _usertp)
 {
@@ -114,6 +114,14 @@ void gnutv_data_start(int _output_type,
 			exit(1);
 		}
 
+		// optionally set dvr buffer size
+		if (buffer_size > 0) {
+			if (dvbdemux_set_buffer(dvrfd, buffer_size) != 0) {
+				fprintf(stderr, "Failed to set DVR buffer size\n");
+				exit(1);
+			}
+		}
+
 		pthread_create(&outputthread, NULL, fileoutputthread_func, NULL);
 		break;
 
@@ -140,6 +148,14 @@ void gnutv_data_start(int _output_type,
 		if (dvrfd < 0) {
 			fprintf(stderr, "Failed to open DVR device\n");
 			exit(1);
+		}
+
+		// optionally set dvr buffer size
+		if (buffer_size > 0) {
+			if (dvbdemux_set_buffer(dvrfd, buffer_size) != 0) {
+				fprintf(stderr, "Failed to set DVR buffer size\n");
+				exit(1);
+			}
 		}
 
 		pthread_create(&outputthread, NULL, udpoutputthread_func, NULL);

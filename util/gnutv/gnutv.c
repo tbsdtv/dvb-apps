@@ -66,6 +66,7 @@ void usage(void)
 		"			 * C-MULTI - Big Dish - Multipoint LNBf, 3700 to 4200 MHz,\n"
 		"						Dual LO, H:5150MHz, V:5750MHz.\n"
 		"			 * One of the sec definitions from the secfile if supplied\n"
+		" -buffer <size>	Custom DVR buffer size\n"
 		" -out decoder		Output to hardware decoder (default)\n"
 		"      decoderabypass	Output to hardware decoder using audio bypass\n"
 		"      dvr		Output stream to dvr device\n"
@@ -124,6 +125,7 @@ int main(int argc, char *argv[])
 	struct gnutv_ca_params gnutv_ca_params;
 	int ffaudiofd = -1;
 	int usertp = 0;
+	int buffer_size = 0;
 
 	while(argpos != argc) {
 		if (!strcmp(argv[argpos], "-h")) {
@@ -166,6 +168,14 @@ int main(int argc, char *argv[])
 			if ((argc - argpos) < 2)
 				usage();
 			secid = argv[argpos+1];
+			argpos+=2;
+		} else if (!strcmp(argv[argpos], "-buffer")) {
+			if ((argc - argpos) < 2)
+				usage();
+			if (sscanf(argv[argpos+1], "%i", &buffer_size) != 1)
+				usage();
+			if (buffer_size < 0)
+				usage();
 			argpos+=2;
 		} else if (!strcmp(argv[argpos], "-out")) {
 			if ((argc - argpos) < 2)
@@ -320,7 +330,7 @@ int main(int argc, char *argv[])
 		gnutv_dvb_start(&gnutv_dvb_params);
 
 		// start the data stuff
-		gnutv_data_start(output_type, ffaudiofd, adapter_id, demux_id, outfile, outif, outaddrs, usertp);
+		gnutv_data_start(output_type, ffaudiofd, adapter_id, demux_id, buffer_size, outfile, outif, outaddrs, usertp);
 	}
 
 	// the UI
