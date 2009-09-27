@@ -35,7 +35,7 @@ libdir     ?= $(prefix)/lib
 sharedir   ?= $(prefix)/share
 
 ifneq ($(DESTDIR),)
-DESTDIR = $(DESTDIR)/
+DESTDIR := $(DESTDIR)/
 endif
 
 ifeq ($(V),1)
