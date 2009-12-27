@@ -42,10 +42,17 @@
 static char *usage_str =
     "\nusage: femon [options]\n"
     "     -H        : human readable output\n"
+    "     -A        : Acoustical mode. A sound indicates the signal quality.\n"
+    "     -r        : If 'Acoustical mode' is active it tells the application\n"
+    "                 is called remotely via ssh. The sound is heard on the 'real'\n"
+    "                 machine but. The user has to be root.\n"
     "     -a number : use given adapter (default 0)\n"
     "     -f number : use given frontend (default 0)\n"
     "     -c number : samples to take (default 0 = infinite)\n\n";
 
+int sleep_time=1000000;
+int acoustical_mode=0;
+int remote=0;
 
 static void usage(void)
 {
@@ -59,6 +66,27 @@ int check_frontend (struct dvbfe_handle *fe, int human_readable, unsigned int co
 {
 	struct dvbfe_info fe_info;
 	unsigned int samples = 0;
+	FILE *ttyFile=NULL;
+	
+	// We dont write the "beep"-codes to stdout but to /dev/tty1.
+	// This is neccessary for Thin-Client-Systems or Streaming-Boxes
+	// where the computer does not have a monitor and femon is called via ssh.
+	if(acoustical_mode)
+	{
+	    if(remote)
+	    {
+		ttyFile=fopen("/dev/tty1","w");
+	        if(!ttyFile)
+		{
+		    fprintf(stderr, "Could not open /dev/tty1. No access rights?\n");
+		    exit(-1);
+		}
+	    }
+	    else
+	    {
+		ttyFile=stdout;
+	    }
+	}
 
 	do {
 		if (dvbfe_get_info(fe, FE_STATUS_PARAMS, &fe_info, DVBFE_INFO_QUERYTYPE_IMMEDIATE, 0) != FE_STATUS_PARAMS) {
@@ -94,12 +122,24 @@ int check_frontend (struct dvbfe_handle *fe, int human_readable, unsigned int co
 		if (fe_info.lock)
 			printf("FE_HAS_LOCK");
 
+		// create beep if acoustical_mode enabled
+		if(acoustical_mode)
+		{
+		    int signal=(fe_info.signal_strength * 100) / 0xffff;
+		    fprintf( ttyFile, "\033[10;%d]\a", 500+(signal*2));
+		    // printf("Variable : %d\n", signal);
+		    fflush(ttyFile);
+		}
+
 		printf("\n");
 		fflush(stdout);
-		usleep(1000000);
+		usleep(sleep_time);
 		samples++;
 	} while ((!count) || (count-samples));
-
+	
+	if(ttyFile)
+	    fclose(ttyFile);
+	
 	return 0;
 }
 
@@ -148,7 +188,7 @@ int main(int argc, char *argv[])
 	int human_readable = 0;
 	int opt;
 
-       while ((opt = getopt(argc, argv, "Ha:f:c:")) != -1) {
+       while ((opt = getopt(argc, argv, "rAHa:f:c:")) != -1) {
 		switch (opt)
 		{
 		default:
@@ -165,6 +205,15 @@ int main(int argc, char *argv[])
 			break;
 		case 'H':
 			human_readable = 1;
+			break;
+		case 'A':
+			// Acoustical mode: we have to reduce the delay between
+			// checks in order to hear nice sound
+			sleep_time=5000;
+			acoustical_mode=1;
+			break;
+		case 'r':
+			remote=1;
 			break;
 		}
 	}
