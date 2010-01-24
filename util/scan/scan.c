@@ -236,6 +236,17 @@ static struct transponder *find_transponder(uint32_t frequency)
 
 static void copy_transponder(struct transponder *d, struct transponder *s)
 {
+	struct list_head *pos;
+	struct service *service;
+
+	if (d->transport_stream_id != s->transport_stream_id) {
+		/* propagate change to any already allocated services */
+		list_for_each(pos, &d->services) {
+			service = list_entry(pos, struct service, list);
+			service->transport_stream_id = s->transport_stream_id;
+		}
+	}
+
 	d->network_id = s->network_id;
 	d->original_network_id = s->original_network_id;
 	d->transport_stream_id = s->transport_stream_id;
