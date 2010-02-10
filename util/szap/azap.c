@@ -13,6 +13,8 @@
 #include <linux/dvb/frontend.h>
 #include <linux/dvb/dmx.h>
 
+#include "util.h"
+
 static char FRONTEND_DEV [80];
 static char DEMUX_DEV [80];
 
@@ -205,31 +207,6 @@ int parse(const char *fname, const char *channel,
 	close(fd);
 
 	return 0;
-}
-
-
-static
-int set_pesfilter (int fd, int pid, dmx_pes_type_t type, int dvr)
-{
-        struct dmx_pes_filter_params pesfilter;
-
-        if (pid <= 0 || pid >= 0x1fff)
-                return 0;
-
-        pesfilter.pid = pid;
-        pesfilter.input = DMX_IN_FRONTEND;
-        pesfilter.output = dvr ? DMX_OUT_TS_TAP : DMX_OUT_DECODER;
-        pesfilter.pes_type = type;
-        pesfilter.flags = DMX_IMMEDIATE_START;
-
-        if (ioctl(fd, DMX_SET_PES_FILTER, &pesfilter) < 0) {
-                PERROR ("ioctl(DMX_SET_PES_FILTER) for %s PID failed",
-                        type == DMX_PES_AUDIO ? "Audio" :
-                        type == DMX_PES_VIDEO ? "Video" : "??");
-                return -1;
-        }
-
-        return 0;
 }
 
 

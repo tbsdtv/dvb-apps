@@ -48,6 +48,7 @@
 #include <linux/dvb/dmx.h>
 #include <linux/dvb/audio.h>
 #include "lnb.h"
+#include "util.h"
 
 #ifndef TRUE
 #define TRUE (1==1)
@@ -91,34 +92,6 @@ static char *usage_str =
     "     -i        : run interactively, allowing you to type in channel names\n"
     "     -p        : add pat and pmt to TS recording (implies -r)\n"
     "                 or -n numbers for zapping\n";
-
-static int set_demux(int dmxfd, int pid, int pes_type, int dvr)
-{
-   struct dmx_pes_filter_params pesfilter;
-
-   if (pid < 0 || pid >= 0x1fff) /* ignore this pid to allow radio services */
-	   return TRUE;
-
-   if (dvr) {
-      int buffersize = 64 * 1024;
-      if (ioctl(dmxfd, DMX_SET_BUFFER_SIZE, buffersize) == -1)
-        perror("DMX_SET_BUFFER_SIZE failed");
-   }
-
-   pesfilter.pid = pid;
-   pesfilter.input = DMX_IN_FRONTEND;
-   pesfilter.output = dvr ? DMX_OUT_TS_TAP : DMX_OUT_DECODER;
-   pesfilter.pes_type = pes_type;
-   pesfilter.flags = DMX_IMMEDIATE_START;
-
-   if (ioctl(dmxfd, DMX_SET_PES_FILTER, &pesfilter) == -1) {
-      fprintf(stderr, "DMX_SET_PES_FILTER failed "
-	      "(PID = 0x%04x): %d %m\n", pid, errno);
-      return FALSE;
-   }
-
-   return TRUE;
-}
 
 int get_pmt_pid(char *dmxdev, int sid)
 {
@@ -390,10 +363,10 @@ int zap_to(unsigned int adapter, unsigned int frontend, unsigned int demux,
 
    if (diseqc(fefd, sat_no, pol, hiband))
       if (do_tune(fefd, ifreq, sr))
-	 if (set_demux(dmxfdv, vpid, DMX_PES_VIDEO, dvr))
+	 if (set_pesfilter(dmxfdv, vpid, DMX_PES_VIDEO, dvr))
 	    if (audiofd >= 0)
 	       (void)ioctl(audiofd, AUDIO_SET_BYPASS_MODE, bypass);
-	    if (set_demux(dmxfda, apid, DMX_PES_AUDIO, dvr)) {
+	    if (set_pesfilter(dmxfda, apid, DMX_PES_AUDIO, dvr)) {
 	       if (rec_psi) {
 	          pmtpid = get_pmt_pid(dmxdev, sid);
 		  if (pmtpid < 0) {
@@ -403,8 +376,8 @@ int zap_to(unsigned int adapter, unsigned int frontend, unsigned int demux,
 		     fprintf(stderr,"couldn't find pmt-pid for sid %04x\n",sid);
 		     result = FALSE;
 		  }
-		  if (set_demux(patfd, 0, DMX_PES_OTHER, dvr))
-	             if (set_demux(pmtfd, pmtpid, DMX_PES_OTHER, dvr))
+		  if (set_pesfilter(patfd, 0, DMX_PES_OTHER, dvr))
+	             if (set_pesfilter(pmtfd, pmtpid, DMX_PES_OTHER, dvr))
 	                result = TRUE;
 	          } else {
 		    result = TRUE;

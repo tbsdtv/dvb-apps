@@ -1,6 +1,6 @@
 # Makefile for linuxtv.org dvb-apps/util/szap
 
-objects  = lnb.o
+objects  = lnb.o util.o
 
 binaries = azap  \
            czap  \
