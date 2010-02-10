@@ -120,7 +120,7 @@ char *find_channel(FILE *f, int list_channels, int *chan_no, const char *channel
 
 
 int parse(const char *fname, int list_channels, int chan_no, const char *channel,
-	  struct dvb_frontend_parameters *frontend, int *vpid, int *apid)
+	  struct dvb_frontend_parameters *frontend, int *vpid, int *apid, int *sid)
 {
 	FILE *f;
 	char *chan;
@@ -143,10 +143,10 @@ int parse(const char *fname, int list_channels, int chan_no, const char *channel
 	}
 	printf("%3d %s", chan_no, chan);
 
-	if ((sscanf(chan, "%m[^:]:%d:%m[^:]:%d:%m[^:]:%m[^:]:%d:%d\n",
+	if ((sscanf(chan, "%m[^:]:%d:%m[^:]:%d:%m[^:]:%m[^:]:%d:%d:%d\n",
 				&name, &frontend->frequency,
 				&inv, &frontend->u.qam.symbol_rate,
-				&fec, &mod, vpid, apid) != 8)
+				&fec, &mod, vpid, apid, sid) != 9)
 			|| !name || !inv || !fec | !mod) {
 		ERROR("cannot parse service data");
 		return -3;
@@ -167,10 +167,10 @@ int parse(const char *fname, int list_channels, int chan_no, const char *channel
 		ERROR("modulation field syntax '%s'", mod);
 		return -6;
 	}
-	printf("%3d %s: f %d, s %d, i %d, fec %d, qam %d, v %#x, a %#x\n",
+	printf("%3d %s: f %d, s %d, i %d, fec %d, qam %d, v %#x, a %#x, s %#x \n",
 			chan_no, name, frontend->frequency, frontend->u.qam.symbol_rate,
 			frontend->inversion, frontend->u.qam.fec_inner,
-			frontend->u.qam.modulation, *vpid, *apid);
+			frontend->u.qam.modulation, *vpid, *apid, *sid);
 	free(name);
 	free(inv);
 	free(fec);
@@ -253,6 +253,7 @@ static const char *usage =
     "     -x        : exit after tuning\n"
     "     -H        : human readable output\n"
     "     -r        : set up /dev/dvb/adapterX/dvr0 for TS recording\n"
+    "     -p        : add pat and pmt to TS recording (implies -r)\n"
 ;
 
 int main(int argc, char **argv)
@@ -262,12 +263,12 @@ int main(int argc, char **argv)
 	char *confname = NULL;
 	char *channel = NULL;
 	int adapter = 0, frontend = 0, demux = 0, dvr = 0;
-	int vpid, apid;
-	int frontend_fd, video_fd, audio_fd;
+	int vpid, apid, sid, pmtpid = 0;
+	int frontend_fd, video_fd, audio_fd, pat_fd, pmt_fd;
 	int opt, list_channels = 0, chan_no = 0;
-	int human_readable = 0;
+	int human_readable = 0, rec_psi = 0;
 
-	while ((opt = getopt(argc, argv, "Hln:hrn:a:f:d:c:x")) != -1) {
+	while ((opt = getopt(argc, argv, "Hln:hrn:a:f:d:c:x:p")) != -1) {
 		switch (opt) {
 		case 'a':
 			adapter = strtoul(optarg, NULL, 0);
@@ -286,6 +287,9 @@ int main(int argc, char **argv)
 			break;
 		case 'n':
 			chan_no = strtoul(optarg, NULL, 0);
+			break;
+		case 'p':
+			rec_psi = 1;
 			break;
 		case 'x':
 			exit_after_tuning = 1;
@@ -339,7 +343,7 @@ int main(int argc, char **argv)
 
 	memset(&frontend_param, 0, sizeof(struct dvb_frontend_parameters));
 
-	if (parse(confname, list_channels, chan_no, channel, &frontend_param, &vpid, &apid))
+	if (parse(confname, list_channels, chan_no, channel, &frontend_param, &vpid, &apid, &sid))
 		return -1;
 	if (list_channels)
 		return 0;
@@ -351,6 +355,28 @@ int main(int argc, char **argv)
 
 	if (setup_frontend(frontend_fd, &frontend_param) < 0)
 		return -1;
+
+	if (rec_psi) {
+		pmtpid = get_pmt_pid(DEMUX_DEV, sid);
+		if (pmtpid <= 0) {
+			fprintf(stderr,"couldn't find pmt-pid for sid %04x\n",sid);
+			return -1;
+		}
+
+		if ((pat_fd = open(DEMUX_DEV, O_RDWR)) < 0) {
+			perror("opening pat demux failed");
+			return -1;
+		}
+		if (set_pesfilter(pat_fd, 0, DMX_PES_OTHER, dvr) < 0)
+			return -1;
+
+		if ((pmt_fd = open(DEMUX_DEV, O_RDWR)) < 0) {
+			perror("opening pmt demux failed");
+			return -1;
+		}
+		if (set_pesfilter(pmt_fd, pmtpid, DMX_PES_OTHER, dvr) < 0)
+			return -1;
+	}
 
 	if ((video_fd = open(DEMUX_DEV, O_RDWR)) < 0) {
 		PERROR("failed opening '%s'", DEMUX_DEV);
@@ -370,6 +396,8 @@ int main(int argc, char **argv)
 
 	check_frontend (frontend_fd, human_readable);
 
+	close (pat_fd);
+	close (pmt_fd);
 	close (audio_fd);
 	close (video_fd);
 	close (frontend_fd);
