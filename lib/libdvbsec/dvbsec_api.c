@@ -537,19 +537,12 @@ int dvbsec_diseqc_goto_rotator_bearing(struct dvbfe_handle *fe,
 	}
 
 	// generate the command
-	if (integer < -256) {
-		return -EINVAL;
-	} else if (integer < 0) {
-		integer = -integer;
-		data[3] = 0xf0;
-	} else if (integer < 256) {
-		data[3] = 0x00;
-	} else if (integer < 512) {
-		integer -= 256;
-		data[3] = 0x10;
-	} else {
-		return -EINVAL;
+	if (integer < 0.0) {
+		data[3] = 0xD0;  // West is a negative angle value
+	} else if (integer >= 0.0) {
+		data[3] = 0xE0;  // East is a positive angle value
 	}
+	integer = abs(integer);
 	data[3] |= ((integer / 16) & 0x0f);
 	integer = integer % 16;
 	data[4] |= ((integer & 0x0f) << 4) | fraction;
