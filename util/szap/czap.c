@@ -143,7 +143,7 @@ int parse(const char *fname, int list_channels, int chan_no, const char *channel
 	}
 	printf("%3d %s", chan_no, chan);
 
-	if ((sscanf(chan, "%a[^:]:%d:%a[^:]:%d:%a[^:]:%a[^:]:%d:%d\n",
+	if ((sscanf(chan, "%m[^:]:%d:%m[^:]:%d:%m[^:]:%m[^:]:%d:%d\n",
 				&name, &frontend->frequency,
 				&inv, &frontend->u.qam.symbol_rate,
 				&fec, &mod, vpid, apid) != 8)
