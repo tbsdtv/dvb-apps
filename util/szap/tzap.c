@@ -271,7 +271,8 @@ static int check_fec(fe_code_rate_t *fec)
 
 
 int parse(const char *fname, const char *channel,
-	  struct dvb_frontend_parameters *frontend, int *vpid, int *apid)
+	  struct dvb_frontend_parameters *frontend, int *vpid, int *apid,
+	  int *sid)
 {
 	int fd;
 	int err;
@@ -345,7 +346,11 @@ int parse(const char *fname, const char *channel,
 
 	if ((err = try_parse_int(fd, apid, "Audio PID")))
 		return -13;
-
+	
+	if ((err = try_parse_int(fd, sid, "Service ID")))
+	    return -14;
+	
+	
 	close(fd);
 
 	return 0;
@@ -480,6 +485,7 @@ static char *usage =
     "     -c file   : read channels list from 'file'\n"
     "     -x        : exit after tuning\n"
     "     -r        : set up /dev/dvb/adapterX/dvr0 for TS recording\n"
+    "     -p        : add pat and pmt to TS recording (implies -r)\n"
     "     -s        : only print summary\n"
     "     -S        : run silently (no output)\n"
     "     -H        : human readable output\n"
@@ -496,15 +502,16 @@ int main(int argc, char **argv)
 	char *confname = NULL;
 	char *channel = NULL;
 	int adapter = 0, frontend = 0, demux = 0, dvr = 0;
-	int vpid, apid;
+	int vpid, apid, sid, pmtpid = 0;
+	int pat_fd, pmt_fd;
 	int frontend_fd, audio_fd = 0, video_fd = 0, dvr_fd, file_fd;
 	int opt;
 	int record = 0;
 	int frontend_only = 0;
 	char *filename = NULL;
-	int human_readable = 0;
+	int human_readable = 0, rec_psi = 0;
 
-	while ((opt = getopt(argc, argv, "H?hrxRsFSn:a:f:d:c:t:o:")) != -1) {
+	while ((opt = getopt(argc, argv, "H?hrpxRsFSn:a:f:d:c:t:o:")) != -1) {
 		switch (opt) {
 		case 'a':
 			adapter = strtoul(optarg, NULL, 0);
@@ -524,6 +531,9 @@ int main(int argc, char **argv)
 			/* fall through */
 		case 'r':
 			dvr = 1;
+			break;
+		case 'p':
+			rec_psi = 1;
 			break;
 		case 'x':
 			exit_after_tuning = 1;
@@ -587,7 +597,7 @@ int main(int argc, char **argv)
 
 	memset(&frontend_param, 0, sizeof(struct dvb_frontend_parameters));
 
-	if (parse (confname, channel, &frontend_param, &vpid, &apid))
+	if (parse (confname, channel, &frontend_param, &vpid, &apid, &sid))
 		return -1;
 
 	if ((frontend_fd = open(FRONTEND_DEV, O_RDWR)) < 0) {
@@ -600,6 +610,28 @@ int main(int argc, char **argv)
 
 	if (frontend_only)
 		goto just_the_frontend_dude;
+
+	if (rec_psi) {
+	    pmtpid = get_pmt_pid(DEMUX_DEV, sid);
+	    if (pmtpid <= 0) {
+		fprintf(stderr,"couldn't find pmt-pid for sid %04x\n",sid);
+		return -1;
+	    }
+
+	    if ((pat_fd = open(DEMUX_DEV, O_RDWR)) < 0) {
+		perror("opening pat demux failed");
+		return -1;
+	    }
+	    if (set_pesfilter(pat_fd, 0, DMX_PES_OTHER, dvr) < 0)
+		return -1;
+
+	    if ((pmt_fd = open(DEMUX_DEV, O_RDWR)) < 0) {
+		perror("opening pmt demux failed");
+		return -1;
+	    }
+	    if (set_pesfilter(pmt_fd, pmtpid, DMX_PES_OTHER, dvr) < 0)
+		return -1;
+	}
 
         if ((video_fd = open(DEMUX_DEV, O_RDWR)) < 0) {
                 PERROR("failed opening '%s'", DEMUX_DEV);
@@ -666,6 +698,8 @@ just_the_frontend_dude:
 		check_frontend (frontend_fd, human_readable);
 	}
 
+	close (pat_fd);
+	close (pmt_fd);
 	close (audio_fd);
 	close (video_fd);
 	close (frontend_fd);
