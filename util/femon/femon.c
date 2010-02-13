@@ -56,7 +56,7 @@ int remote=0;
 
 static void usage(void)
 {
-	fprintf(stderr, usage_str);
+	fprintf(stderr, "%s", usage_str);
 	exit(1);
 }
 
