@@ -13,3 +13,5 @@ LDLIBS   += -ldvbsec
 .PHONY: all
 
 all: $(binaries)
+
+include ../../Make.rules
