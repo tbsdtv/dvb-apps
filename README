@@ -16,6 +16,7 @@ util/dvbtraffic	- Monitor traffic on a digital device.
 util/femon	- Monitor the tuning on a digital TV device.
 util/zap	- *Just* tunes a digital device - really intended for developers.
 util/gotox	- Simple Rotor control utility
+util/alevt	- Teletext capture and display utility
 
 Hardware Specific Utilities:
 util/av7110_loadkeys	- Load remote keys into an av7110 based card
@@ -36,6 +37,11 @@ Various testing applications also live in test.
 For convenience, dvb-apps contains a copy of the DVB API include
 files as they are contained in the linuxtv-dvb-1.? release
 and the 2.6.x Linux kernel.
+
+AleVT is not compiled by the main Makefile, because it depends on external
+libraries which might not be available in your system (see util/alevt/README for
+details). If you have the required libraries, to compile AleVT go to util/alevt/
+and type "make".
 
 Johannes Stezenbach <js@convergence.de>
 Andrew de Quincey <adq_dvb@lidskialf.net>
