@@ -18,6 +18,7 @@ binaries = diseqc          \
            test_stillimage \
            test_tt         \
            test_vevent     \
+           test_video      \
 	   evtest	   \
 	   video	   \
 	   szap2

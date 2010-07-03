@@ -23,6 +23,7 @@
 
 #include <sys/ioctl.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdint.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -31,8 +32,7 @@
 #include <unistd.h>
 
 #include <linux/dvb/dmx.h>
-#include <linux/dvb/frontend_old.h>
-#include <linux/dvb/sec.h>
+#include <linux/dvb/frontend.h>
 #include <linux/dvb/video.h>
 #include <sys/poll.h>
 
@@ -100,7 +100,7 @@ int videoSelectSource(int fd, video_stream_source_t source)
 
 
 
-int videoSetBlank(int fd, boolean state)
+int videoSetBlank(int fd, int state)
 {
 	int ans;
 
@@ -138,72 +138,72 @@ int videoSlowMotion(int fd,int nframes)
 
 int videoGetStatus(int fd)
 {
-	struct video_status stat;
+	struct video_status vstat;
 	int ans;
 
-	if ((ans = ioctl(fd,VIDEO_GET_STATUS, &stat)) < 0) {
+	if ((ans = ioctl(fd,VIDEO_GET_STATUS, &vstat)) < 0) {
 		perror("VIDEO GET STATUS: ");
 		return -1;
 	}
 
 	printf("Video Status:\n");
 	printf("  Blank State          : %s\n",
-	       (stat.video_blank ? "BLANK" : "STILL"));
+	       (vstat.video_blank ? "BLANK" : "STILL"));
 	printf("  Play State           : ");
-	switch ((int)stat.play_state){
+	switch ((int)vstat.play_state){
 	case VIDEO_STOPPED:
-		printf("STOPPED (%d)\n",stat.play_state);
+		printf("STOPPED (%d)\n",vstat.play_state);
 		break;
 	case VIDEO_PLAYING:
-		printf("PLAYING (%d)\n",stat.play_state);
+		printf("PLAYING (%d)\n",vstat.play_state);
 		break;
 	case VIDEO_FREEZED:
-		printf("FREEZED (%d)\n",stat.play_state);
+		printf("FREEZED (%d)\n",vstat.play_state);
 		break;
 	default:
-		printf("unknown (%d)\n",stat.play_state);
+		printf("unknown (%d)\n",vstat.play_state);
 		break;
 	}
 
 	printf("  Stream Source        : ");
-	switch((int)stat.stream_source){
+	switch((int)vstat.stream_source){
 	case VIDEO_SOURCE_DEMUX:
-		printf("DEMUX (%d)\n",stat.stream_source);
+		printf("DEMUX (%d)\n",vstat.stream_source);
 		break;
 	case VIDEO_SOURCE_MEMORY:
-		printf("MEMORY (%d)\n",stat.stream_source);
+		printf("MEMORY (%d)\n",vstat.stream_source);
 		break;
 	default:
-		printf("unknown (%d)\n",stat.stream_source);
+		printf("unknown (%d)\n",vstat.stream_source);
 		break;
 	}
 
 	printf("  Format (Aspect Ratio): ");
-	switch((int)stat.video_format){
+	switch((int)vstat.video_format){
 	case VIDEO_FORMAT_4_3:
-		printf("4:3 (%d)\n",stat.video_format);
+		printf("4:3 (%d)\n",vstat.video_format);
 		break;
 	case VIDEO_FORMAT_16_9:
-		printf("16:9 (%d)\n",stat.video_format);
+		printf("16:9 (%d)\n",vstat.video_format);
 		break;
 	default:
-		printf("unknown (%d)\n",stat.video_format);
+		printf("unknown (%d)\n",vstat.video_format);
 		break;
 	}
 
 	printf("  Display Format       : ");
-	switch((int)stat.display_format){
+	switch((int)vstat.display_format){
 	case VIDEO_PAN_SCAN:
-		printf("Pan&Scan (%d)\n",stat.display_format);
+		printf("Pan&Scan (%d)\n",vstat.display_format);
 		break;
 	case VIDEO_LETTER_BOX:
-		printf("Letterbox (%d)\n",stat.display_format);
+		printf("Letterbox (%d)\n",vstat.display_format);
 		break;
 	case VIDEO_CENTER_CUT_OUT:
-		printf("Center cutout (%d)\n",stat.display_format);
+		printf("Center cutout (%d)\n",vstat.display_format);
 		break;
 	default:
-		printf("unknown (%d)\n",stat.display_format);
+		printf("unknown (%d)\n",vstat.display_format);
 		break;
 	}
 	return 0;
@@ -230,7 +230,6 @@ void play_file_video(int filefd, int fd)
 	int written;
 	struct pollfd pfd[NFD];
 	int stopped = 0;
-	int ch;
 
 	pfd[0].fd = STDIN_FILENO;
 	pfd[0].events = POLLIN;
@@ -327,7 +326,7 @@ void load_iframe(int filefd, int fd)
 	videoPlay(fd);
 }
 
-main(int argc, char **argv)
+int main(int argc, char **argv)
 {
 	int fd;
 	int filefd;
@@ -338,7 +337,7 @@ main(int argc, char **argv)
 		perror("File open:");
 		return -1;
 	}
-	if ((fd = open("/dev/ost/video1",O_RDWR|O_NONBLOCK)) < 0){
+	if ((fd = open("/dev/dvb/adapter0/video0",O_RDWR|O_NONBLOCK)) < 0){
 		perror("VIDEO DEVICE: ");
 		return -1;
 	}

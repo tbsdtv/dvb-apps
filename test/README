@@ -47,4 +47,4 @@ test_dmx	:
 test_dvr	:
 test_front	:
 test_switch	:
-test_video	:
+test_video	: Play video-only file on /dev/dvb/adapter0/video0
