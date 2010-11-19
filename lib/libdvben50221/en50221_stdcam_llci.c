@@ -374,14 +374,21 @@ static int llci_session_callback(void *arg, int reason, uint8_t _slot_id, uint16
 		} else if (resource_id == EN50221_APP_MMI_RESOURCEID) {
 			llci->stdcam.mmi_session_number = session_number;
 		}
-
 		break;
-    case S_SCALLBACK_REASON_CLOSE:
-        if (resource_id == EN50221_APP_MMI_RESOURCEID) {
-            llci->stdcam.mmi_session_number = -1;
-        }
 
-        break;
+	case S_SCALLBACK_REASON_CLOSE:
+		if (resource_id == EN50221_APP_MMI_RESOURCEID) {
+			llci->stdcam.mmi_session_number = -1;
+		} else if (resource_id == EN50221_APP_DATETIME_RESOURCEID) {
+			llci->datetime_session_number = -1;
+		} else if (resource_id == EN50221_APP_AI_RESOURCEID) {
+			llci->stdcam.ai_session_number = -1;
+		} else if (resource_id == EN50221_APP_CA_RESOURCEID) {
+			llci->stdcam.ca_session_number = -1;
+		} else if (resource_id == EN50221_APP_MMI_RESOURCEID) {
+			llci->stdcam.mmi_session_number = -1;
+		}
+		break;
 	}
 	return 0;
 }
