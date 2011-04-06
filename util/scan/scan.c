@@ -34,6 +34,7 @@
 #include <glob.h>
 #include <ctype.h>
 #include <iconv.h>
+#include <langinfo.h>
 
 #include <linux/dvb/frontend.h>
 #include <linux/dvb/dmx.h>
@@ -69,7 +70,7 @@ static struct lnb_types_st lnb_type;
 static int unique_anon_services;
 
 char *default_charset = "ISO-6937";
-char *output_charset = "UTF-8";
+char *output_charset;
 #define CS_OPTIONS "//TRANSLIT"
 
 static enum fe_spectral_inversion spectral_inversion = INVERSION_AUTO;
@@ -2512,7 +2513,7 @@ static const char *usage = "\n"
 	"	-A N	check for ATSC 1=Terrestrial [default], 2=Cable or 3=both\n"
 	"	-U	Uniquely name unknown services\n"
 	"	-C cs	Override default charset for service name/provider (default = ISO-6937)\n"
-	"	-D cs	Output charset (default = UTF-8//IGNORE)\n"
+	"	-D cs	Output charset (default = %s)\n"
 	"Supported charsets by -C/-D parameters can be obtained via 'iconv -l' command\n";
 
 void
@@ -2525,7 +2526,7 @@ bad_usage(char *pname, int problem)
 	switch (problem) {
 	default:
 	case 0:
-		fprintf (stderr, usage, pname);
+		fprintf (stderr, usage, pname, output_charset);
 		break;
 	case 1:
 		i = 0;
@@ -2553,11 +2554,32 @@ int main (int argc, char **argv)
 	int frontend_fd;
 	int fe_open_mode;
 	const char *initial = NULL;
+	char *charset;
 
 	if (argc <= 1) {
 	    bad_usage(argv[0], 2);
 	    return -1;
 	}
+
+	/*
+	 * Get the environment charset, and use it as the default
+	 * output charset. In thesis, using nl_langinfo should be
+	 * enough, but, in my tests, it is not as reliable as checking
+	 * the environment vars directly.
+	 */
+	if ((charset = getenv("LC_ALL")) ||
+	    (charset = getenv("LC_CTYPE")) ||
+	    (charset = getenv ("LANG"))) {
+		while (*charset != '.' && *charset)
+			charset++;
+		if (*charset == '.')
+			charset++;
+		if (*charset)
+			output_charset = charset;
+		else
+			output_charset = nl_langinfo(CODESET);
+	} else
+		output_charset = nl_langinfo(CODESET);
 
 	/* start with default lnb type */
 	lnb_type = *lnb_enum(0);
