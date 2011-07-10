@@ -10,6 +10,7 @@ binaries = diseqc          \
            test_av         \
            test_av_play    \
            test_dvr        \
+           test_tapdmx     \
            test_dvr_play   \
            test_pes        \
            test_sec_ne     \
