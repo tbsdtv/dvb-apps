@@ -18,3 +18,4 @@ all clean install:
 	$(MAKE) -C gnutv $@
 	$(MAKE) -C gotox $@
 	$(MAKE) -C zap $@
+	$(MAKE) -C lsdvb $@
