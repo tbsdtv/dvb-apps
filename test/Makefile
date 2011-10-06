@@ -21,7 +21,8 @@ binaries = diseqc          \
            test_vevent     \
            test_video      \
 	   evtest	   \
-	   szap2
+	   szap2           \
+	   lock_s
 
 .PHONY: all
 
