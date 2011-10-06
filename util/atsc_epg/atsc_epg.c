@@ -644,6 +644,8 @@ static int parse_events(struct atsc_channel_info *curr_info,
 		}
 
 		title = atsc_eit_event_name_title_text(e);
+		if (title == NULL)
+			continue;
 		atsc_text_strings_for_each(title, str, j) {
 			struct atsc_text_string_segment *seg;
 
