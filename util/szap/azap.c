@@ -171,7 +171,7 @@ int try_parse_param(int fd, const Param * plist, int list_size, int *param,
 
 
 int parse(const char *fname, const char *channel,
-	  struct dvb_frontend_parameters *frontend, int *vpid, int *apid)
+	  struct dvb_frontend_parameters *frontend, int *vpid, int *apid, int *sid)
 {
 	int fd;
 	int err;
@@ -203,6 +203,9 @@ int parse(const char *fname, const char *channel,
 
 	if ((err = try_parse_int(fd, apid, "Audio PID")))
 		return -6;
+
+	if ((err = try_parse_int(fd, sid, "Service ID")))
+		return -7;
 
 	close(fd);
 
@@ -266,7 +269,7 @@ int check_frontend (int fe_fd)
 }
 
 
-static const char *usage = "\nusage: %s [-a adapter_num] [-f frontend_id] [-d demux_id] [-c conf_file] [-r] <channel name>\n\n";
+static const char *usage = "\nusage: %s [-a adapter_num] [-f frontend_id] [-d demux_id] [-c conf_file] [-r] [-p] <channel name>\n\n";
 
 
 int main(int argc, char **argv)
@@ -276,11 +279,13 @@ int main(int argc, char **argv)
 	char *confname = NULL;
 	char *channel = NULL;
 	int adapter = 0, frontend = 0, demux = 0, dvr = 0;
-	int vpid, apid;
+	int vpid, apid, sid, pmtpid = 0;
+	int pat_fd, pmt_fd;
 	int frontend_fd, audio_fd, video_fd;
 	int opt;
+	int rec_psi = 0;
 
-	while ((opt = getopt(argc, argv, "hrn:a:f:d:c:")) != -1) {
+	while ((opt = getopt(argc, argv, "hrpn:a:f:d:c:")) != -1) {
 		switch (opt) {
 		case 'a':
 			adapter = strtoul(optarg, NULL, 0);
@@ -293,6 +298,9 @@ int main(int argc, char **argv)
 			break;
 		case 'r':
 			dvr = 1;
+			break;
+		case 'p':
+			rec_psi = 1;
 			break;
 		case 'c':
 			confname = optarg;
@@ -333,7 +341,7 @@ int main(int argc, char **argv)
 
 	memset(&frontend_param, 0, sizeof(struct dvb_frontend_parameters));
 
-	if (parse (confname, channel, &frontend_param, &vpid, &apid))
+	if (parse (confname, channel, &frontend_param, &vpid, &apid, &sid))
 		return -1;
 
 	if ((frontend_fd = open(FRONTEND_DEV, O_RDWR)) < 0) {
@@ -343,6 +351,29 @@ int main(int argc, char **argv)
 
 	if (setup_frontend (frontend_fd, &frontend_param) < 0)
 		return -1;
+
+
+        if (rec_psi) {
+            pmtpid = get_pmt_pid(DEMUX_DEV, sid);
+            if (pmtpid <= 0) {
+                fprintf(stderr,"couldn't find pmt-pid for sid %04x\n",sid);
+                return -1;
+            }
+
+            if ((pat_fd = open(DEMUX_DEV, O_RDWR)) < 0) {
+                perror("opening pat demux failed");
+                return -1;
+            }
+            if (set_pesfilter(pat_fd, 0, DMX_PES_OTHER, dvr) < 0)
+                return -1;
+
+            if ((pmt_fd = open(DEMUX_DEV, O_RDWR)) < 0) {
+                perror("opening pmt demux failed");
+                return -1;
+            }
+            if (set_pesfilter(pmt_fd, pmtpid, DMX_PES_OTHER, dvr) < 0)
+                return -1;
+        }
 
         if ((video_fd = open(DEMUX_DEV, O_RDWR)) < 0) {
                 PERROR("failed opening '%s'", DEMUX_DEV);
@@ -363,6 +394,8 @@ int main(int argc, char **argv)
 
 	check_frontend (frontend_fd);
 
+        close (pat_fd);
+        close (pmt_fd);
 	close (audio_fd);
 	close (video_fd);
 	close (frontend_fd);
