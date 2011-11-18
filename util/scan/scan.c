@@ -822,7 +822,7 @@ struct charset_conv en300468_latin_00_to_utf8[256] = {
 static void descriptorcpy(char **dest, const unsigned char *src, size_t len)
 {
 	size_t destlen, i;
-	char *p, *type = NULL;
+	char *p, *type = default_charset;
 	unsigned char *tmp = NULL;
 	const unsigned char *s;
 	int emphasis = 0, need_conversion = 1;
@@ -876,8 +876,6 @@ static void descriptorcpy(char **dest, const unsigned char *src, size_t len)
 		}
 		src++;
 		len--;
-	} else {
-		type = default_charset;
 	}
 
 	/*
