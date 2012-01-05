@@ -1934,12 +1934,52 @@ static int __tune_to_transponder (int frontend_fd, struct transponder *t)
 	return -1;
 }
 
+static set_delivery_system(int fd, unsigned type)
+{
+	struct dtv_properties props;
+	struct dtv_property dvb_prop[1];
+	unsigned delsys;
+
+	switch (type) {
+		case FE_QPSK:
+			delsys = SYS_DVBS;
+			break;
+		case FE_QAM:
+			delsys = SYS_DVBC_ANNEX_AC;
+			break;
+		case FE_OFDM:
+			delsys = SYS_DVBT;
+			break;
+		case FE_ATSC:
+			delsys = SYS_ATSC;
+			break;
+		default:
+			return -1;
+	}
+
+	dvb_prop[0].cmd = DTV_DELIVERY_SYSTEM;
+	dvb_prop[0].u.data = delsys;
+	props.num = 1;
+	props.props = dvb_prop;
+	if (ioctl(fd, FE_SET_PROPERTY, &props) >= 0)
+		return 0;
+	return errno;
+}
+
 static int tune_to_transponder (int frontend_fd, struct transponder *t)
 {
+	int rc;
+
 	/* move TP from "new" to "scanned" list */
 	list_del_init(&t->list);
 	list_add_tail(&t->list, &scanned_transponders);
 	t->scan_done = 1;
+
+	if (t->type != fe_info.type) {
+		rc = set_delivery_system(frontend_fd, t->type);
+		if (!rc)
+			fe_info.type = t->type;
+	}
 
 	if (t->type != fe_info.type) {
 		warning("frontend type (%s) is not compatible with requested tuning type (%s)\n",
