@@ -47,18 +47,18 @@ static int exit_after_tuning;
 #define CHANNEL_FILE "channels.conf"
 
 #define ERROR(x...)                                                     \
-        do {                                                            \
-                fprintf(stderr, "ERROR: ");                             \
-                fprintf(stderr, x);                                     \
-                fprintf (stderr, "\n");                                 \
-        } while (0)
+	do {                                                            \
+		fprintf(stderr, "ERROR: ");                             \
+		fprintf(stderr, x);                                     \
+		fprintf (stderr, "\n");                                 \
+	} while (0)
 
 #define PERROR(x...)                                                    \
-        do {                                                            \
-                fprintf(stderr, "ERROR: ");                             \
-                fprintf(stderr, x);                                     \
-                fprintf (stderr, " (%s)\n", strerror(errno));		\
-        } while (0)
+	do {                                                            \
+		fprintf(stderr, "ERROR: ");                             \
+		fprintf(stderr, x);                                     \
+		fprintf (stderr, " (%s)\n", strerror(errno));		\
+	} while (0)
 
 
 typedef struct {
@@ -125,9 +125,7 @@ static const Param transmissionmode_list [] = {
 
 #define LIST_SIZE(x) sizeof(x)/sizeof(Param)
 
-
-static
-int parse_param (int fd, const Param * plist, int list_size, int *param)
+static int parse_param (int fd, const Param * plist, int list_size, int *param)
 {
 	char c;
 	int character = 0;
@@ -157,8 +155,7 @@ int parse_param (int fd, const Param * plist, int list_size, int *param)
 }
 
 
-static
-int parse_int(int fd, int *val)
+static int parse_int(int fd, int *val)
 {
 	char number[11];	/* 2^32 needs 10 digits... */
 	int character = 0;
@@ -190,8 +187,7 @@ int parse_int(int fd, int *val)
 }
 
 
-static
-int find_channel(int fd, const char *channel)
+static int find_channel(int fd, const char *channel)
 {
 	int character = 0;
 
@@ -346,13 +342,11 @@ int parse(const char *fname, const char *channel,
 
 	if ((err = try_parse_int(fd, apid, "Audio PID")))
 		return -13;
-	
+
 	if ((err = try_parse_int(fd, sid, "Service ID")))
 	    return -14;
-	
-	
-	close(fd);
 
+	close(fd);
 	return 0;
 }
 
@@ -372,7 +366,7 @@ int setup_frontend (int fe_fd, struct dvb_frontend_parameters *frontend)
 		return -1;
 	}
 
-	if (silent<2)
+	if (silent < 2)
 		fprintf (stderr,"tuning to %i Hz\n", frontend->frequency);
 
 	if (ioctl(fe_fd, FE_SET_FRONTEND, frontend) < 0) {
@@ -383,25 +377,20 @@ int setup_frontend (int fe_fd, struct dvb_frontend_parameters *frontend)
 	return 0;
 }
 
-static void
-do_timeout(int x)
+static void do_timeout(int x)
 {
 	(void)x;
-	if (timeout_flag==0)
-	{
-		timeout_flag=1;
+	if (timeout_flag == 0) {
+		timeout_flag = 1;
 		alarm(2);
 		signal(SIGALRM, do_timeout);
-	}
-	else
-	{
+	} else {
 		/* something has gone wrong ... exit */
 		exit(1);
 	}
 }
 
-static void
-print_frontend_stats (int fe_fd, int human_readable)
+static void print_frontend_stats(int fe_fd, int human_readable)
 {
 	fe_status_t status;
 	uint16_t snr, _signal;
@@ -446,14 +435,13 @@ int check_frontend (int fe_fd, int human_readable)
 }
 
 #define BUFLEN (188*256)
-static
-void copy_to_file(int in_fd, int out_fd)
+static void copy_to_file(int in_fd, int out_fd)
 {
 	char buf[BUFLEN];
 	int r;
 	long long int rc = 0LL;
-	while(timeout_flag==0)
-	{
+
+	while (timeout_flag==0) {
 		r=read(in_fd,buf,BUFLEN);
 		if (r < 0) {
 			if (errno == EOVERFLOW) {
@@ -469,36 +457,36 @@ void copy_to_file(int in_fd, int out_fd)
 		}
 		rc+=r;
 	}
-	if (silent<2)
-	{
+
+	if (silent<2) {
 		fprintf(stderr, "copied %lld bytes (%lld Kbytes/sec)\n",rc,rc/(1024*timeout));
 	}
 }
 
 static char *usage =
-    "usage:\n"
-    "       tzap [options] <channel_name>\n"
-    "         zap to channel channel_name (case insensitive)\n"
-    "     -a number : use given adapter (default 0)\n"
-    "     -f number : use given frontend (default 0)\n"
-    "     -d number : use given demux (default 0)\n"
-    "     -c file   : read channels list from 'file'\n"
-    "     -x        : exit after tuning\n"
-    "     -r        : set up /dev/dvb/adapterX/dvr0 for TS recording\n"
-    "     -p        : add pat and pmt to TS recording (implies -r)\n"
-    "     -s        : only print summary\n"
-    "     -S        : run silently (no output)\n"
-    "     -H        : human readable output\n"
-    "     -F        : set up frontend only, don't touch demux\n"
-    "     -t number : timeout (seconds)\n"
-    "     -o file   : output filename (use -o - for stdout)\n"
-    "     -h -?     : display this help and exit\n";
+	"usage:\n"
+	"       tzap [options] <channel_name>\n"
+	"         zap to channel channel_name (case insensitive)\n"
+	"     -a number : use given adapter (default 0)\n"
+	"     -f number : use given frontend (default 0)\n"
+	"     -d number : use given demux (default 0)\n"
+	"     -c file   : read channels list from 'file'\n"
+	"     -x        : exit after tuning\n"
+	"     -r        : set up /dev/dvb/adapterX/dvr0 for TS recording\n"
+	"     -p        : add pat and pmt to TS recording (implies -r)\n"
+	"     -s        : only print summary\n"
+	"     -S        : run silently (no output)\n"
+	"     -H        : human readable output\n"
+	"     -F        : set up frontend only, don't touch demux\n"
+	"     -t number : timeout (seconds)\n"
+	"     -o file   : output filename (use -o - for stdout)\n"
+	"     -h -?     : display this help and exit\n";
 
 
 int main(int argc, char **argv)
 {
 	struct dvb_frontend_parameters frontend_param;
-	char *homedir = getenv ("HOME");
+	char *homedir = getenv("HOME");
 	char *confname = NULL;
 	char *channel = NULL;
 	int adapter = 0, frontend = 0, demux = 0, dvr = 0;
@@ -569,32 +557,37 @@ int main(int argc, char **argv)
 		return -1;
 	}
 
-	snprintf (FRONTEND_DEV, sizeof(FRONTEND_DEV),
-		  "/dev/dvb/adapter%i/frontend%i", adapter, frontend);
+	snprintf(FRONTEND_DEV,
+		 sizeof(FRONTEND_DEV),
+		 "/dev/dvb/adapter%i/frontend%i",
+	  	 adapter,
+	  	 frontend);
 
-	snprintf (DEMUX_DEV, sizeof(DEMUX_DEV),
-		  "/dev/dvb/adapter%i/demux%i", adapter, demux);
+	snprintf(DEMUX_DEV,
+		 sizeof(DEMUX_DEV),
+		 "/dev/dvb/adapter%i/demux%i",
+	  	 adapter,
+	  	 demux);
 
-	snprintf (DVR_DEV, sizeof(DVR_DEV),
-		  "/dev/dvb/adapter%i/dvr%i", adapter, demux);
+	snprintf(DVR_DEV,
+		 sizeof(DVR_DEV),
+		 "/dev/dvb/adapter%i/dvr%i",
+	  	 adapter,
+	  	 demux);
 
-	if (silent<2)
+	if (silent < 2)
 		fprintf (stderr,"using '%s' and '%s'\n", FRONTEND_DEV, DEMUX_DEV);
 
-	if (!confname)
-	{
+	if (!confname) {
 		int len = strlen(homedir) + strlen(CHANNEL_FILE) + 18;
 		if (!homedir)
 			ERROR ("$HOME not set");
 		confname = malloc (len);
-		snprintf (confname, len, "%s/.tzap/%i/%s",
-			  homedir, adapter, CHANNEL_FILE);
+		snprintf(confname, len, "%s/.tzap/%i/%s", homedir, adapter, CHANNEL_FILE);
 		if (access (confname, R_OK))
-			snprintf (confname, len, "%s/.tzap/%s",
-				  homedir, CHANNEL_FILE);
+			snprintf(confname, len, "%s/.tzap/%s", homedir, CHANNEL_FILE);
 	}
 	printf("reading channels from file '%s'\n", confname);
-
 	memset(&frontend_param, 0, sizeof(struct dvb_frontend_parameters));
 
 	if (parse (confname, channel, &frontend_param, &vpid, &apid, &sid))
@@ -612,71 +605,62 @@ int main(int argc, char **argv)
 		goto just_the_frontend_dude;
 
 	if (rec_psi) {
-	    pmtpid = get_pmt_pid(DEMUX_DEV, sid);
-	    if (pmtpid <= 0) {
-		fprintf(stderr,"couldn't find pmt-pid for sid %04x\n",sid);
-		return -1;
-	    }
+	    	pmtpid = get_pmt_pid(DEMUX_DEV, sid);
+	    	if (pmtpid <= 0) {
+			fprintf(stderr,"couldn't find pmt-pid for sid %04x\n",sid);
+			return -1;
+	    	}
 
-	    if ((pat_fd = open(DEMUX_DEV, O_RDWR)) < 0) {
-		perror("opening pat demux failed");
-		return -1;
-	    }
-	    if (set_pesfilter(pat_fd, 0, DMX_PES_OTHER, dvr) < 0)
-		return -1;
+	    	if ((pat_fd = open(DEMUX_DEV, O_RDWR)) < 0) {
+			perror("opening pat demux failed");
+			return -1;
+	    	}
+	    	if (set_pesfilter(pat_fd, 0, DMX_PES_OTHER, dvr) < 0)
+			return -1;
 
-	    if ((pmt_fd = open(DEMUX_DEV, O_RDWR)) < 0) {
-		perror("opening pmt demux failed");
-		return -1;
-	    }
-	    if (set_pesfilter(pmt_fd, pmtpid, DMX_PES_OTHER, dvr) < 0)
+	    	if ((pmt_fd = open(DEMUX_DEV, O_RDWR)) < 0) {
+			perror("opening pmt demux failed");
+			return -1;
+	    	}
+	    	if (set_pesfilter(pmt_fd, pmtpid, DMX_PES_OTHER, dvr) < 0)
+			return -1;
+	}
+
+	if ((video_fd = open(DEMUX_DEV, O_RDWR)) < 0) {
+		PERROR("failed opening '%s'", DEMUX_DEV);
 		return -1;
 	}
 
-        if ((video_fd = open(DEMUX_DEV, O_RDWR)) < 0) {
-                PERROR("failed opening '%s'", DEMUX_DEV);
-                return -1;
-        }
-
 	if (silent<2)
-		fprintf (stderr,"video pid 0x%04x, audio pid 0x%04x\n", vpid, apid);
+		fprintf(stderr,"video pid 0x%04x, audio pid 0x%04x\n", vpid, apid);
 
-	if (set_pesfilter (video_fd, vpid, DMX_PES_VIDEO, dvr) < 0)
+	if (set_pesfilter(video_fd, vpid, DMX_PES_VIDEO, dvr) < 0)
 		return -1;
 
 	if ((audio_fd = open(DEMUX_DEV, O_RDWR)) < 0) {
-                PERROR("failed opening '%s'", DEMUX_DEV);
-                return -1;
-        }
+		PERROR("failed opening '%s'", DEMUX_DEV);
+		return -1;
+	}
 
-	if (set_pesfilter (audio_fd, apid, DMX_PES_AUDIO, dvr) < 0)
+	if (set_pesfilter(audio_fd, apid, DMX_PES_AUDIO, dvr) < 0)
 		return -1;
 
 	signal(SIGALRM,do_timeout);
-	if (timeout>0)
+	if (timeout > 0)
 		alarm(timeout);
 
-
-	if (record)
-	{
-		if (filename!=NULL)
-		{
-			if (strcmp(filename,"-")!=0)
-			{
-				file_fd = open (filename,O_WRONLY|O_LARGEFILE|O_CREAT,0644);
-				if (file_fd<0)
-				{
+	if (record) {
+		if (filename!=NULL) {
+			if (strcmp(filename,"-")!=0) {
+				file_fd = open(filename,O_WRONLY|O_LARGEFILE|O_CREAT,0644);
+				if (file_fd<0) {
 					PERROR("open of '%s' failed",filename);
 					return -1;
 				}
-			}
-			else
-			{
+			} else {
 				file_fd=1;
 			}
-		}
-		else
-		{
+		} else {
 			PERROR("Record mode but no filename!");
 			return -1;
 		}
@@ -686,23 +670,21 @@ int main(int argc, char **argv)
 	                return -1;
 	        }
 		if (silent<2)
-			print_frontend_stats (frontend_fd, human_readable);
+			print_frontend_stats(frontend_fd, human_readable);
 
 		copy_to_file(dvr_fd,file_fd);
 
 		if (silent<2)
-			print_frontend_stats (frontend_fd, human_readable);
-	}
-	else {
+			print_frontend_stats(frontend_fd, human_readable);
+	} else {
 just_the_frontend_dude:
-		check_frontend (frontend_fd, human_readable);
+		check_frontend(frontend_fd, human_readable);
 	}
 
-	close (pat_fd);
-	close (pmt_fd);
-	close (audio_fd);
-	close (video_fd);
-	close (frontend_fd);
-
+	close(pat_fd);
+	close(pmt_fd);
+	close(audio_fd);
+	close(video_fd);
+	close(frontend_fd);
 	return 0;
 }
