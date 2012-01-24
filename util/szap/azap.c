@@ -21,18 +21,18 @@ static char DEMUX_DEV [80];
 #define CHANNEL_FILE "/.azap/channels.conf"
 
 #define ERROR(x...)                                                     \
-        do {                                                            \
-                fprintf(stderr, "ERROR: ");                             \
-                fprintf(stderr, x);                                     \
-                fprintf (stderr, "\n");                                 \
-        } while (0)
+	do {                                                            \
+		fprintf(stderr, "ERROR: ");                             \
+		fprintf(stderr, x);                                     \
+		fprintf (stderr, "\n");                                 \
+	} while (0)
 
 #define PERROR(x...)                                                    \
-        do {                                                            \
-                fprintf(stderr, "ERROR: ");                             \
-                fprintf(stderr, x);                                     \
-                fprintf (stderr, " (%s)\n", strerror(errno));		\
-        } while (0)
+	do {                                                            \
+		fprintf(stderr, "ERROR: ");                             \
+		fprintf(stderr, x);                                     \
+		fprintf (stderr, " (%s)\n", strerror(errno));		\
+	} while (0)
 
 
 typedef struct {
@@ -353,49 +353,49 @@ int main(int argc, char **argv)
 		return -1;
 
 
-        if (rec_psi) {
-            pmtpid = get_pmt_pid(DEMUX_DEV, sid);
-            if (pmtpid <= 0) {
-                fprintf(stderr,"couldn't find pmt-pid for sid %04x\n",sid);
-                return -1;
-            }
+	if (rec_psi) {
+		pmtpid = get_pmt_pid(DEMUX_DEV, sid);
+		if (pmtpid <= 0) {
+			fprintf(stderr,"couldn't find pmt-pid for sid %04x\n",sid);
+			return -1;
+		}
 
-            if ((pat_fd = open(DEMUX_DEV, O_RDWR)) < 0) {
-                perror("opening pat demux failed");
-                return -1;
-            }
-            if (set_pesfilter(pat_fd, 0, DMX_PES_OTHER, dvr) < 0)
-                return -1;
+		if ((pat_fd = open(DEMUX_DEV, O_RDWR)) < 0) {
+			perror("opening pat demux failed");
+			return -1;
+		}
+		if (set_pesfilter(pat_fd, 0, DMX_PES_OTHER, dvr) < 0)
+			return -1;
 
-            if ((pmt_fd = open(DEMUX_DEV, O_RDWR)) < 0) {
-                perror("opening pmt demux failed");
-                return -1;
-            }
-            if (set_pesfilter(pmt_fd, pmtpid, DMX_PES_OTHER, dvr) < 0)
-                return -1;
-        }
+		if ((pmt_fd = open(DEMUX_DEV, O_RDWR)) < 0) {
+			perror("opening pmt demux failed");
+			return -1;
+		}
+		if (set_pesfilter(pmt_fd, pmtpid, DMX_PES_OTHER, dvr) < 0)
+			return -1;
+	}
 
-        if ((video_fd = open(DEMUX_DEV, O_RDWR)) < 0) {
-                PERROR("failed opening '%s'", DEMUX_DEV);
-                return -1;
-        }
+	if ((video_fd = open(DEMUX_DEV, O_RDWR)) < 0) {
+		PERROR("failed opening '%s'", DEMUX_DEV);
+		return -1;
+	}
 
 	printf ("video pid 0x%04x, audio pid 0x%04x\n", vpid, apid);
 	if (set_pesfilter (video_fd, vpid, DMX_PES_VIDEO, dvr) < 0)
 		return -1;
 
 	if ((audio_fd = open(DEMUX_DEV, O_RDWR)) < 0) {
-                PERROR("failed opening '%s'", DEMUX_DEV);
-                return -1;
-        }
+		PERROR("failed opening '%s'", DEMUX_DEV);
+		return -1;
+	}
 
 	if (set_pesfilter (audio_fd, apid, DMX_PES_AUDIO, dvr) < 0)
 		return -1;
 
 	check_frontend (frontend_fd);
 
-        close (pat_fd);
-        close (pmt_fd);
+	close (pat_fd);
+	close (pmt_fd);
 	close (audio_fd);
 	close (video_fd);
 	close (frontend_fd);
