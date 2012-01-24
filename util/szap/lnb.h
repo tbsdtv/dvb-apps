@@ -10,13 +10,11 @@ struct lnb_types_st {
  * Increment curno each time
  */
 
-struct lnb_types_st *
-lnb_enum(int curno);
+struct lnb_types_st *lnb_enum(int curno);
 
 /* Decode an lnb type, for example given on a command line
  * If alpha and standard type, e.g. "Universal" then match that
  * otherwise low[,high[,switch]]
  */
 
-int
-lnb_decode(char *str, struct lnb_types_st *lnbp);
+int lnb_decode(char *str, struct lnb_types_st *lnbp);

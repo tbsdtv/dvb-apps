@@ -44,8 +44,7 @@ static struct lnb_types_st lnbs[] = {
  * Increment curno each time
  */
 
-struct lnb_types_st *
-lnb_enum(int curno)
+struct lnb_types_st *lnb_enum(int curno)
 {
 	if (curno >= (int) (sizeof(lnbs) / sizeof(lnbs[0])))
 		return (struct lnb_types_st *)NULL;
@@ -57,16 +56,16 @@ lnb_enum(int curno)
  * otherwise low[,high[,switch]]
  */
 
-int
-lnb_decode(char *str, struct lnb_types_st *lnbp)
+int lnb_decode(char *str, struct lnb_types_st *lnbp)
 {
-int i;
-char *cp, *np;
+	int i;
+	char *cp, *np;
 
 	memset(lnbp, 0, sizeof(*lnbp));
 	cp = str;
 	while(*cp && isspace(*cp))
 		cp++;
+
 	if (isalpha(*cp)) {
 		for (i = 0; i < (int)(sizeof(lnbs) / sizeof(lnbs[0])); i++) {
 			if (!strcasecmp(lnbs[i].name, cp)) {
