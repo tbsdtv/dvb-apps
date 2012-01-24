@@ -242,19 +242,18 @@ int check_frontend (int fe_fd, int human_readable)
 
 
 static const char *usage =
-    "\nusage: %s [options]  -l\n"
-    "         list known channels\n"
-    "       %s [options] {-n channel-number|channel_name}\n"
-    "         zap to channel via number or full name (case insensitive)\n"
-    "     -a number : use given adapter (default 0)\n"
-    "     -f number : use given frontend (default 0)\n"
-    "     -d number : use given demux (default 0)\n"
-    "     -c file   : read channels list from 'file'\n"
-    "     -x        : exit after tuning\n"
-    "     -H        : human readable output\n"
-    "     -r        : set up /dev/dvb/adapterX/dvr0 for TS recording\n"
-    "     -p        : add pat and pmt to TS recording (implies -r)\n"
-;
+	"\nusage: %s [options]  -l\n"
+	"         list known channels\n"
+	"       %s [options] {-n channel-number|channel_name}\n"
+	"         zap to channel via number or full name (case insensitive)\n"
+	"     -a number : use given adapter (default 0)\n"
+	"     -f number : use given frontend (default 0)\n"
+	"     -d number : use given demux (default 0)\n"
+	"     -c file   : read channels list from 'file'\n"
+	"     -x        : exit after tuning\n"
+	"     -H        : human readable output\n"
+	"     -r        : set up /dev/dvb/adapterX/dvr0 for TS recording\n"
+	"     -p        : add pat and pmt to TS recording (implies -r)\n";
 
 int main(int argc, char **argv)
 {
