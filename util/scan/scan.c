@@ -1304,7 +1304,7 @@ static void parse_sdt (const unsigned char *buf, int section_length,
 		int descriptors_loop_len = ((buf[3] & 0x0f) << 8) | buf[4];
 		struct service *s;
 
-		if (section_length < descriptors_loop_len || !descriptors_loop_len)
+		if (section_length < descriptors_loop_len)
 		{
 			warning("section too short: service_id == 0x%02x, section_length == %i, "
 			     "descriptors_loop_len == %i\n",
