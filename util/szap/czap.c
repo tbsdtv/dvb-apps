@@ -347,7 +347,7 @@ int main(int argc, char **argv)
 	if (list_channels)
 		return 0;
 
-	if ((frontend_fd = open(FRONTEND_DEV, O_RDWR)) < 0) {
+	if ((frontend_fd = open(FRONTEND_DEV, O_RDWR | O_NONBLOCK)) < 0) {
 		PERROR("failed opening '%s'", FRONTEND_DEV);
 		return -1;
 	}
