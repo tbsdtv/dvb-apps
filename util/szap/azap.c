@@ -216,18 +216,11 @@ int parse(const char *fname, const char *channel,
 static
 int setup_frontend (int fe_fd, struct dvb_frontend_parameters *frontend)
 {
-	struct dvb_frontend_info fe_info;
-
-	if (ioctl(fe_fd, FE_GET_INFO, &fe_info) < 0) {
-		PERROR("ioctl FE_GET_INFO failed");
+	if (check_frontend(fe_fd, FE_ATSC) < 0) {
+		close(fe_fd);
 		return -1;
 	}
-
-	if (fe_info.type != FE_ATSC) {
-		ERROR ("frontend device is not an ATSC (VSB/QAM) device");
-		return -1;
-	}
-
+	/* TODO! Some frontends need to be explicit delivery system */
 	printf ("tuning to %i Hz\n", frontend->frequency);
 
 	if (ioctl(fe_fd, FE_SET_FRONTEND, frontend) < 0) {
@@ -240,7 +233,7 @@ int setup_frontend (int fe_fd, struct dvb_frontend_parameters *frontend)
 
 
 static
-int check_frontend (int fe_fd)
+int monitor_frontend (int fe_fd)
 {
 	fe_status_t status;
 	uint16_t snr, signal;
@@ -392,7 +385,7 @@ int main(int argc, char **argv)
 	if (set_pesfilter (audio_fd, apid, DMX_PES_AUDIO, dvr) < 0)
 		return -1;
 
-	check_frontend (frontend_fd);
+	monitor_frontend (frontend_fd);
 
 	close (pat_fd);
 	close (pmt_fd);

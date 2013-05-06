@@ -166,7 +166,7 @@ static int do_tune(int fefd, unsigned int ifreq, unsigned int sr)
 }
 
 
-static int check_frontend (int fe_fd, int dvr, int human_readable)
+static int monitor_frontend (int fe_fd, int dvr, int human_readable)
 {
 	(void)dvr;
 	fe_status_t status;
@@ -222,7 +222,6 @@ int zap_to(unsigned int adapter, unsigned int frontend, unsigned int demux,
 	int pmtpid;
 	uint32_t ifreq;
 	int hiband, result;
-	static struct dvb_frontend_info fe_info;
 
 	if (!fefd) {
 		snprintf(fedev, sizeof(fedev), FRONTENDDEVICE, adapter, frontend);
@@ -234,20 +233,11 @@ int zap_to(unsigned int adapter, unsigned int frontend, unsigned int demux,
 			perror("opening frontend failed");
 			return FALSE;
 		}
-
-		result = ioctl(fefd, FE_GET_INFO, &fe_info);
-		if (result < 0) {
-			perror("ioctl FE_GET_INFO failed");
+		if (check_frontend(fefd, FE_QPSK) < 0) {
 			close(fefd);
 			return FALSE;
 		}
-
-		if (fe_info.type != FE_QPSK) {
-			fprintf(stderr, "frontend device is not a QPSK (DVB-S) device!\n");
-			close(fefd);
-			return FALSE;
-		}
-
+		/* TODO! Some frontends need to be explicit delivery system */
 		if ((dmxfdv = open(dmxdev, O_RDWR)) < 0) {
 			perror("opening video demux failed");
 			close(fefd);
@@ -322,7 +312,7 @@ int zap_to(unsigned int adapter, unsigned int frontend, unsigned int demux,
 			}
 		}
 
-	check_frontend (fefd, dvr, human_readable);
+	monitor_frontend (fefd, dvr, human_readable);
 	if (!interactive) {
 		close(patfd);
 		close(pmtfd);

@@ -22,3 +22,5 @@
 int set_pesfilter(int dmxfd, int pid, int pes_type, int dvr);
 
 int get_pmt_pid(char *dmxdev, int sid);
+
+int check_frontend(int fd, enum fe_type type);
