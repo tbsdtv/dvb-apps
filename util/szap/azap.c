@@ -337,7 +337,7 @@ int main(int argc, char **argv)
 	if (parse (confname, channel, &frontend_param, &vpid, &apid, &sid))
 		return -1;
 
-	if ((frontend_fd = open(FRONTEND_DEV, O_RDWR)) < 0) {
+	if ((frontend_fd = open(FRONTEND_DEV, O_RDWR | O_NONBLOCK)) < 0) {
 		PERROR ("failed opening '%s'", FRONTEND_DEV);
 		return -1;
 	}
