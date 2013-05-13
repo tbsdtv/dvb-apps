@@ -356,7 +356,7 @@ static int setup_frontend (int fe_fd, struct dvb_frontend_parameters *frontend)
 	int ret;
 	uint32_t mstd;
 
-	if (check_frontend(fe_fd, FE_QAM, &mstd) < 0) {
+	if (check_frontend(fe_fd, FE_OFDM, &mstd) < 0) {
 		close(fe_fd);
 		return -1;
 	}
