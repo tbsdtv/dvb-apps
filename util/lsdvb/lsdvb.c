@@ -139,7 +139,7 @@ int read_device_uevent(char *uevent,
 	char line[128];
 	char *token = NULL;
 	char *tmp;
-	int i;
+	unsigned int i;
 
 	/* get uevent file */
 	sprintf(uf_name, "%s/%s", uevent, "device/uevent");
