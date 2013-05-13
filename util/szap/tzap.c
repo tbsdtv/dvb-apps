@@ -353,11 +353,18 @@ int parse(const char *fname, const char *channel,
 
 static int setup_frontend (int fe_fd, struct dvb_frontend_parameters *frontend)
 {
-	if (check_frontend(fe_fd, FE_OFDM) < 0) {
+	int ret;
+	uint32_t mstd;
+
+	if (check_frontend(fe_fd, FE_QAM, &mstd) < 0) {
 		close(fe_fd);
 		return -1;
 	}
-	/* TODO! Some frontends need to be explicit delivery system */
+	ret = dvbfe_set_delsys(fe_fd, SYS_DVBT);
+	if (ret) {
+		PERROR("SET Delsys failed");
+		return -1;
+	}
 	if (silent < 2)
 		fprintf (stderr,"tuning to %i Hz\n", frontend->frequency);
 

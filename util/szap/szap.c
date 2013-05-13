@@ -220,7 +220,7 @@ int zap_to(unsigned int adapter, unsigned int frontend, unsigned int demux,
 	char fedev[128], dmxdev[128], auddev[128];
 	static int fefd, dmxfda, dmxfdv, audiofd = -1, patfd, pmtfd;
 	int pmtpid;
-	uint32_t ifreq;
+	uint32_t ifreq, mstd;
 	int hiband, result;
 
 	if (!fefd) {
@@ -233,7 +233,7 @@ int zap_to(unsigned int adapter, unsigned int frontend, unsigned int demux,
 			perror("opening frontend failed");
 			return FALSE;
 		}
-		if (check_frontend(fefd, FE_QPSK) < 0) {
+		if (check_frontend(fefd, FE_QPSK, &mstd) < 0) {
 			close(fefd);
 			return FALSE;
 		}

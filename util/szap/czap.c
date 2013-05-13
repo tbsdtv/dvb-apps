@@ -182,11 +182,18 @@ int parse(const char *fname, int list_channels, int chan_no, const char *channel
 
 static int setup_frontend(int fe_fd, struct dvb_frontend_parameters *frontend)
 {
-	if (check_frontend(fe_fd, FE_QAM) < 0) {
+	int ret;
+	uint32_t mstd;
+
+	if (check_frontend(fe_fd, FE_QAM, &mstd) < 0) {
 		close(fe_fd);
 		return -1;
 	}
-	/* TODO! Some frontends need to be explicit delivery system */
+	ret = dvbfe_set_delsys(fe_fd, SYS_DVBC_ANNEX_A);
+	if (ret) {
+		PERROR("SET Delsys failed");
+		return -1;
+	}
 	if (ioctl(fe_fd, FE_SET_FRONTEND, frontend) < 0) {
 		PERROR ("ioctl FE_SET_FRONTEND failed");
 		return -1;
