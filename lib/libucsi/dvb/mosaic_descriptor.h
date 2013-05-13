@@ -129,7 +129,6 @@ static inline struct dvb_mosaic_descriptor*
 		struct dvb_mosaic_info *e =
 			(struct dvb_mosaic_info*) (buf+pos);
 		struct dvb_mosaic_info_part2 *e2;
-		struct dvb_mosaic_linkage *linkage;
 
 		if ((pos + sizeof(struct dvb_mosaic_info)) > len)
 			return NULL;
@@ -148,8 +147,6 @@ static inline struct dvb_mosaic_descriptor*
 
 		if (pos > len)
 			return NULL;
-
-		linkage = (struct dvb_mosaic_linkage*) (buf+pos);
 
 		switch(e2->cell_linkage_info) {
 		case 0x01:
