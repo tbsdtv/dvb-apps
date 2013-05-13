@@ -1934,7 +1934,7 @@ static int __tune_to_transponder (int frontend_fd, struct transponder *t)
 	return -1;
 }
 
-static set_delivery_system(int fd, unsigned type)
+static int set_delivery_system(int fd, unsigned type)
 {
 	struct dtv_properties props;
 	struct dtv_property dvb_prop[1];
