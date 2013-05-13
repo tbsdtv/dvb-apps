@@ -451,7 +451,7 @@ int main(int argc, char *argv[])
 {
 	int opt;
 	int ret, fd, adapter=0, frontend=0, pos;
-	int simple;
+//	int simple;
 	struct lnb_types_st lnb;
 	struct sec_params sec;
 
@@ -486,7 +486,7 @@ int main(int argc, char *argv[])
 			}
 			break;
 		case 'H':
-			simple = 1; /* human readable */
+//			simple = 1; /* human readable */
 			break;
 		}
 	}

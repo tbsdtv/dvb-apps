@@ -199,7 +199,7 @@ int main(int argc, char *argv[]) {
 		struct esg_namespace_prefix *namespace_prefix = NULL;
 		struct esg_xml_fragment_type *xml_fragment_type = NULL;
 		struct esg_bim_encoding_parameters *bim_encoding_parameters = NULL;
-		struct esg_bim_decoder_init *bim_decoder_init = NULL;
+//		struct esg_bim_decoder_init *bim_decoder_init = NULL;
 		struct esg_session_partition_declaration *partition = NULL;
 		struct esg_session_field *field = NULL;
 		struct esg_session_ip_stream *ip_stream = NULL;

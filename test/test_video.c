@@ -229,7 +229,7 @@ void play_file_video(int filefd, int fd)
 	int count;
 	int written;
 	struct pollfd pfd[NFD];
-	int stopped = 0;
+//	int stopped = 0;
 
 	pfd[0].fd = STDIN_FILENO;
 	pfd[0].events = POLLIN;
@@ -258,37 +258,37 @@ void play_file_video(int filefd, int fd)
 					case 'z':
 						videoFreeze(fd);
 						printf("playback frozen\n");
-						stopped = 1;
+//						stopped = 1;
 						break;
 
 					case 's':
 						videoStop(fd);
 						printf("playback stopped\n");
-						stopped = 1;
+//						stopped = 1;
 						break;
 
 					case 'c':
 						videoContinue(fd);
 						printf("playback continued\n");
-						stopped = 0;
+//						stopped = 0;
 						break;
 
 					case 'p':
 						videoPlay(fd);
 						printf("playback started\n");
-						stopped = 0;
+//						stopped = 0;
 						break;
 
 					case 'f':
 						videoFastForward(fd,0);
 						printf("fastforward\n");
-						stopped = 0;
+//						stopped = 0;
 						break;
 
 					case 'm':
 						videoSlowMotion(fd,2);
 						printf("slowmotion\n");
-						stopped = 0;
+//						stopped = 0;
 						break;
 
 					case 'q':

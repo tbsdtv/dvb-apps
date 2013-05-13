@@ -2022,9 +2022,8 @@ void parse_dvb_descriptor(struct descriptor *d, int indent, int data_type)
 			int network_id = dvb_linkage_data_08_network_id(dx, d08);
 			int initial_service_id = dvb_linkage_data_08_initial_service_id(dx, d08);
 			int length = 0;
-			uint8_t *data;
 
-			data = dvb_linkage_data_08_data(dx, d08, &length);
+			dvb_linkage_data_08_data(dx, d08, &length);
 			iprintf(indent, "DSC hand_over_type:%i origin_type:%i\n",
 				d08->hand_over_type, d08->origin_type);
 			if (network_id != -1) {
