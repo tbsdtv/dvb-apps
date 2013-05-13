@@ -245,7 +245,7 @@ static void copy_to_dvb(int vfd, int afd, int cfd, const uint8_t* ptr, const uns
 {
 	struct pollfd pfd[NFD];
 	unsigned short pos = 0;
-	int stopped = 0;
+//	int stopped = 0;
 
 	pfd[0].fd = STDIN_FILENO;
 	pfd[0].events = POLLIN;
@@ -284,7 +284,7 @@ static void copy_to_dvb(int vfd, int afd, int cfd, const uint8_t* ptr, const uns
 					}
 					deviceClear(afd, -1);
 					printf("playback frozen\n");
-					stopped = 1;
+//					stopped = 1;
 					break;
 
 				case 's':
@@ -296,7 +296,7 @@ static void copy_to_dvb(int vfd, int afd, int cfd, const uint8_t* ptr, const uns
 						deviceClear(afd, vfd);
 					}
 					printf("playback stopped\n");
-					stopped = 1;
+//					stopped = 1;
 					break;
 
 				case 'c':
@@ -310,7 +310,7 @@ static void copy_to_dvb(int vfd, int afd, int cfd, const uint8_t* ptr, const uns
 						videoContinue(vfd);
 					}
 					printf("playback continued\n");
-					stopped = 0;
+//					stopped = 0;
 					break;
 
 				case 'p':
@@ -326,7 +326,7 @@ static void copy_to_dvb(int vfd, int afd, int cfd, const uint8_t* ptr, const uns
 					}
 					audioSetMute(afd, 0);
 					printf("playback started\n");
-					stopped = 0;
+//					stopped = 0;
 					break;
 
 				case 'f':
@@ -336,21 +336,21 @@ static void copy_to_dvb(int vfd, int afd, int cfd, const uint8_t* ptr, const uns
 						videoFastForward(vfd,0);
 					}
 					printf("fastforward\n");
-					stopped = 0;
+//					stopped = 0;
 					break;
 
 				case 'm':
 					audioSetAVSync(afd, 0);
 					audioSetMute(afd, 1);
 					printf("mute\n");
-					stopped = 0;
+//					stopped = 0;
 					break;
 
 				case 'u':
 					audioSetAVSync(afd, 1);
 					audioSetMute(afd, 0);
 					printf("unmute\n");
-					stopped = 0;
+//					stopped = 0;
 					break;
 
 				case 'd':
@@ -367,7 +367,7 @@ static void copy_to_dvb(int vfd, int afd, int cfd, const uint8_t* ptr, const uns
 						videoSlowMotion(vfd,2);
 					}
 					printf("slowmotion\n");
-					stopped = 0;
+//					stopped = 0;
 					break;
 
 				case 'q':
