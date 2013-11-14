@@ -26,5 +26,5 @@
 
 void dvbscan_scan_dvb(struct dvbfe_handle *fe)
 {
-	// FIXME
+	(void)fe; // FIXME
 }

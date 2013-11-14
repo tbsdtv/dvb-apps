@@ -26,5 +26,5 @@
 
 void dvbscan_scan_atsc(struct dvbfe_handle *fe)
 {
-	// FIXME
+	(void)fe; // FIXME
 }
