@@ -319,7 +319,7 @@ void load_iframe(int filefd, int fd)
 		return;
 	}
 
-	printf("read: %d bytes\n",read(filefd,sp.iFrame,sp.size));
+	printf("read: %zd bytes\n",read(filefd,sp.iFrame,sp.size));
 	videoStillPicture(fd,&sp);
 
 	sleep(3);
