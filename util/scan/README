@@ -1,10 +1,12 @@
 This is a little channel scan utility to generate szap/tzap/czap/azap
 compatible channel lists. An atsc/dvbscan does not do a frequency scan, however,
 so you must manually provide the data for tuning to one or more start
-transponders. A number of initial-tuning-data files are provided for various
-dvb-c, dvb-s, dvb-t and atsc networks around the world. If you make a new one
-feel free to submit it to the linux-dvb mailing list
-http://www.linuxtv.org/lists.php.
+transponders. Up to date initial-tuning-data files can be obtained from
+linuxtv.org. Use git clone http://linuxtv.org/git/dtv-scan-tables.git or via
+github https://github.com/oliv3r/dtv-scan-tables.git if you prefer so.
+
+If you make a new one or improve uppon existing ones feel free to submit it to
+the linux-dvb mailing list http://www.linuxtv.org/lists.php.
 
 Basic usage: ./dvbscan dvb-s/Astra-19.2E | tee mychannels.conf
 or           ./atscscan atsc/us-NTSC-center-frequencies-8VSB
