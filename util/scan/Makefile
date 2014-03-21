@@ -28,14 +28,3 @@ atsc_psip_section.c atsc_psip_section.h:
 	perl section_generate.pl atsc_psip_section.pl
 
 include ../../Make.rules
-
-install::
-	@echo installing scan files
-	@mkdir -p $(DESTDIR)$(sharedir)/dvb/atsc
-	@mkdir -p $(DESTDIR)$(sharedir)/dvb/dvb-c
-	@mkdir -p $(DESTDIR)$(sharedir)/dvb/dvb-s
-	@mkdir -p $(DESTDIR)$(sharedir)/dvb/dvb-t
-	@install -m 664 atsc/* $(DESTDIR)$(sharedir)/dvb/atsc/
-	@install -m 664 dvb-c/* $(DESTDIR)$(sharedir)/dvb/dvb-c/
-	@install -m 664 dvb-s/* $(DESTDIR)$(sharedir)/dvb/dvb-s/
-	@install -m 664 dvb-t/* $(DESTDIR)$(sharedir)/dvb/dvb-t/
