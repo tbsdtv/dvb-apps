@@ -10,7 +10,6 @@ DVB_API_MINOR := $(word 3, $(shell grep -m1 "DVB_API_VERSION_MINOR" $(VERSION_FI
 
 all clean install:
 	$(MAKE) -C lib $@
-	$(MAKE) -C test $@
 	$(MAKE) -C util $@
 
 update:
