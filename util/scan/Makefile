@@ -14,7 +14,7 @@ inst_bin = $(binaries)
 
 removing = atsc_psip_section.c atsc_psip_section.h
 
-CPPFLAGS += -Wno-packed-bitfield-compat -D__KERNEL_STRICT_NAMES
+CPPFLAGS += -D__KERNEL_STRICT_NAMES
 
 .PHONY: all
 
