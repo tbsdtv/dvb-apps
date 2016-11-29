@@ -91,10 +91,16 @@ int main(int argc, char **argv)
 			fprintf(stderr,
 				"Error: couldn't add interface for pid %d: %d %m.\n",
 				pid, errno);
-		else
-			printf
-			    ("Status: device dvb%d_%d for pid %d created successfully.\n",
-			     adapter, ifnum, pid);
+		else {
+			if (netdev == 0)
+				printf
+				    ("Status: device dvb%d_%d for pid %d created successfully.\n",
+				     adapter, ifnum, pid);
+			else
+				printf
+				    ("Status: device dvb%d%d%d for pid %d created successfully.\n",
+				     adapter, netdev, ifnum, pid);
+		}
 		break;
 
 	case LST_INTERFACE:
@@ -132,11 +138,19 @@ void queryInterface(int fd_net)
 		case DVBNET_ENCAP_ULE:
 			encap = "ULE";
 			break;
+		case DVBNET_ENCAP_GSE:
+			encap = "GSE";
+			break;
 		}
 
-		printf("Found device %d: interface dvb%d_%d, "
-		       "listening on PID %d, encapsulation %s\n",
-		       IF, adapter, IF, _pid, encap);
+		if (netdev == 0)
+			printf("Found device %d: interface dvb%d_%d, "
+			       "listening on PID %d, encapsulation %s\n",
+			       IF, adapter, IF, _pid, encap);
+		else
+			printf("Found device %d: interface dvb%d%d%d, "
+			       "listening on PID %d, encapsulation %s\n",
+			       IF, netdev, adapter, IF, _pid, encap);
 
 		nIFaces++;
 	}
@@ -152,7 +166,7 @@ void parse_args(int argc, char **argv)
 	char *s;
 	op_mode = UNKNOWN;
 	encapsulation = DVBNET_ENCAP_MPE;
-	while ((c = getopt(argc, argv, "a:n:p:d:lUvh")) != EOF) {
+	while ((c = getopt(argc, argv, "a:n:p:d:lGUvh")) != EOF) {
 		switch (c) {
 		case 'a':
 			adapter = strtol(optarg, NULL, 0);
@@ -174,6 +188,9 @@ void parse_args(int argc, char **argv)
 		case 'U':
 			encapsulation = DVBNET_ENCAP_ULE;
 			break;
+		case 'G':
+			encapsulation = DVBNET_ENCAP_GSE;
+			break;
 		case 'v':
 			exit(OK);
 		case 'h':
@@ -194,8 +211,9 @@ void usage(char *prog_name)
 	fprintf(stderr, "\t-n DD  : Demux (default 0)\n");
 	fprintf(stderr, "\t-p PID : Add interface listening on PID\n");
 	fprintf(stderr, "\t-d NUM : Remove interface NUM\n");
-	fprintf(stderr,	"\t-l     : List currently available interfaces\n");
+	fprintf(stderr,	"\t-l     : List currently available interfaces on given adapter/demux (-a/-n)\n");
 	fprintf(stderr, "\t-U     : use ULE framing (default: MPE)\n" );
+	fprintf(stderr, "\t-G     : use GSE framing (default: MPE)\n" );
 	fprintf(stderr, "\t-v     : Print current version\n\n");
 }
 

@@ -34,6 +34,7 @@ extern "C"
 enum dvbnet_encap {
 	DVBNET_ENCAP_MPE,
 	DVBNET_ENCAP_ULE,
+	DVBNET_ENCAP_GSE,
 };
 
 /**

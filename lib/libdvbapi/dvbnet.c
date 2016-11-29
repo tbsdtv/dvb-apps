@@ -61,6 +61,10 @@ int dvbnet_add_interface(int fd, uint16_t pid, enum dvbnet_encap encapsulation)
 		params.feedtype = DVB_NET_FEEDTYPE_ULE;
 		break;
 
+	case DVBNET_ENCAP_GSE:
+		params.feedtype = DVB_NET_FEEDTYPE_GSE;
+		break;
+
 	default:
 		return -EINVAL;
 	}
@@ -90,6 +94,10 @@ int dvbnet_get_interface(int fd, int ifnum, uint16_t *pid, enum dvbnet_encap *en
 
 	case DVB_NET_FEEDTYPE_ULE:
 		*encapsulation = DVBNET_ENCAP_ULE;
+		break;
+
+	case DVB_NET_FEEDTYPE_GSE:
+		*encapsulation = DVBNET_ENCAP_GSE;
 		break;
 
 	default:
