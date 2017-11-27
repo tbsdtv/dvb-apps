@@ -111,6 +111,7 @@ static int dst_reset(int cafd)
 	return 0;
 }
 
+#if defined CA_SET_PID
 static int dst_set_pid(int cafd)
 {
 	if ((ioctl(cafd, CA_SET_PID)) < 0) {
@@ -120,6 +121,7 @@ static int dst_set_pid(int cafd)
 
 	return 0;
 }
+#endif
 
 static int dst_get_descr(int cafd)
 {
@@ -230,8 +232,12 @@ int main(int argc, char *argv[])
 				dst_reset(cafd);
 				break;
 			case 'p':
+#if defined CA_SET_PID
 				printf("%s: PID\n", __FUNCTION__);
 				dst_set_pid(cafd);
+#else
+				printf("%s: PID not supported\n", __FUNCTION__);
+#endif
 				break;
 			case 'g':
 				printf("%s: Get Desc\n", __FUNCTION__);
