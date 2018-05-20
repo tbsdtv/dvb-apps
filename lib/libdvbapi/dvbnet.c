@@ -29,6 +29,10 @@
 #include <errno.h>
 #include "dvbnet.h"
 
+#ifndef DVB_NET_FEEDTYPE_GSE
+#define DVB_NET_FEEDTYPE_GSE 2  /* generic stream  encapsulation */
+#endif
+
 int dvbnet_open(int adapter, int netdeviceid)
 {
 	char filename[PATH_MAX+1];

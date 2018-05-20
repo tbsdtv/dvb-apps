@@ -26,7 +26,6 @@
 #include <unistd.h>
 #include <sys/ioctl.h>
 #include <linux/types.h>
-#include <linux/dvb/video.h>
 #include <errno.h>
 #include "dvbvideo.h"
 
