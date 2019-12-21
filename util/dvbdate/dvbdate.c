@@ -309,7 +309,10 @@ int atsc_scan_date(time_t *rx_time, unsigned int to)
  */
 int set_time(time_t * new_time)
 {
-	if (stime(new_time)) {
+	struct timespec s = {0};
+	s.tv_sec = *new_time;
+
+	if (clock_settime(CLOCK_REALTIME, &s)) {
 		perror("Unable to set time");
 		return -1;
 	}
