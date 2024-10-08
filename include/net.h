@@ -33,6 +33,7 @@ struct dvb_net_if {
 	__u8  feedtype;
 #define DVB_NET_FEEDTYPE_MPE 0	/* multi protocol encapsulation */
 #define DVB_NET_FEEDTYPE_ULE 1	/* ultra lightweight encapsulation */
+#define DVB_NET_FEEDTYPE_GSE 2  /* generic stream  encapsulation */
 };
 
 
