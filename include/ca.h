@@ -24,6 +24,8 @@
 #ifndef _DVBCA_H_
 #define _DVBCA_H_
 
+#include <linux/version.h>
+
 /* slot interface types and info */
 
 typedef struct ca_slot_info {
@@ -85,6 +87,12 @@ typedef struct ca_pid {
 #define CA_GET_MSG        _IOR('o', 132, ca_msg_t)
 #define CA_SEND_MSG       _IOW('o', 133, ca_msg_t)
 #define CA_SET_DESCR      _IOW('o', 134, ca_descr_t)
+/* Removal of ca_pid_t and CA_GET_PID has been done since kernel 4.14
+ * so dont define CA_SET_PID as to match kernel header.
+ * https://github.com/torvalds/linux/commit/833ff5e7feda1a042b83e82208cef3d212ca0ef1
+ */
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(4, 14, 0)
 #define CA_SET_PID        _IOW('o', 135, ca_pid_t)
+#endif
 
 #endif
