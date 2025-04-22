@@ -18,7 +18,7 @@ echo "};" >> $1
 echo >> $1
 echo >> $1
 echo "static struct input_key_name key_name [] = {" >> $1
-for x in $(cat /usr/include/linux/input.h input_fake.h | \
+for x in $(cat ${CROSS_ROOT}/usr/include/linux/input.h input_fake.h | \
            egrep "#define[ \t]+KEY_" | grep -v KEY_MAX | \
            cut -f 1 | cut -f 2 -d " " | sort -u) ; do
     echo "        { \"$(echo $x | cut -b 5-)\", $x }," >> $1
@@ -26,7 +26,7 @@ done
 echo "};" >> $1
 echo >> $1
 echo "static struct input_key_name btn_name [] = {" >> $1
-for x in $(cat /usr/include/linux/input.h input_fake.h | \
+for x in $(cat ${CROSS_ROOT}/usr/include/linux/input.h input_fake.h | \
            egrep "#define[ \t]+BTN_" | \
            cut -f 1 | cut -f 2 -d " " | sort -u) ; do
      echo "        { \"$(echo $x | cut -b 5-)\", $x }," >> $1
