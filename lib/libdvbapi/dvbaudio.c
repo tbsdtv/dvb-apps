@@ -25,9 +25,12 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
-#include <linux/dvb/audio.h>
 #include <errno.h>
 #include "dvbaudio.h"
+
+#ifndef AUDIO_SET_BYPASS_MODE
+#define AUDIO_SET_BYPASS_MODE	_IO('o', 8)
+#endif
 
 int dvbaudio_open(int adapter, int audiodeviceid)
 {

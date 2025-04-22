@@ -46,7 +46,6 @@
 
 #include <linux/dvb/frontend.h>
 #include <linux/dvb/dmx.h>
-#include <linux/dvb/audio.h>
 #include "lnb.h"
 #include "util.h"
 
@@ -55,6 +54,10 @@
 #endif
 #ifndef FALSE
 #define FALSE (1==0)
+#endif
+
+#ifndef AUDIO_SET_BYPASS_MODE
+#define AUDIO_SET_BYPASS_MODE  _IO('o', 8)
 #endif
 
 /* location of channel list file */
