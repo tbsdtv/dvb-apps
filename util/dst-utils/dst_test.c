@@ -35,18 +35,7 @@
 #include <libdvben50221/en50221_app_tags.h>
 
 #define CA_NODE "/dev/dvb/adapter0/ca0"
-/*
- Quick hack around the removal of ca_pid_t and CA_GET_PID in recent kernels
-  https://github.com/torvalds/linux/commit/833ff5e7feda1a042b83e82208cef3d212ca0ef1
-*/
-#ifndef CA_SET_PID
-typedef struct ca_pid {
-	unsigned int pid;
-	int index;      /* -1 == disable*/
-} ca_pid_t;
-/* We should not be able to get it so a number that is unlikely to happen */
-#define CA_SET_PID 42424242
-#endif
+
 static int dst_comms(int cafd, uint32_t tag, uint32_t function, struct ca_msg *msg)
 {
 	if (tag) {
@@ -122,6 +111,7 @@ static int dst_reset(int cafd)
 	return 0;
 }
 
+#if defined CA_SET_PID
 static int dst_set_pid(int cafd)
 {
 	if ((ioctl(cafd, CA_SET_PID)) < 0) {
@@ -131,6 +121,7 @@ static int dst_set_pid(int cafd)
 
 	return 0;
 }
+#endif
 
 static int dst_get_descr(int cafd)
 {
@@ -241,8 +232,12 @@ int main(int argc, char *argv[])
 				dst_reset(cafd);
 				break;
 			case 'p':
+#if defined CA_SET_PID
 				printf("%s: PID\n", __FUNCTION__);
 				dst_set_pid(cafd);
+#else
+				printf("%s: PID not supported\n", __FUNCTION__);
+#endif
 				break;
 			case 'g':
 				printf("%s: Get Desc\n", __FUNCTION__);

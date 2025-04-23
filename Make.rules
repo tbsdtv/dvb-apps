@@ -9,7 +9,13 @@ ifneq ($(lib_name),)
 CFLAGS_LIB ?= -fPIC
 CFLAGS += $(CFLAGS_LIB)
 
-libraries = $(lib_name).so $(lib_name).a
+ifneq ($(enable_static),no)
+libraries += $(lib_name).a
+endif
+
+ifneq ($(enable_shared),no)
+libraries += $(lib_name).so
+endif
 
 .PHONY: library
 
@@ -23,7 +29,7 @@ prerequisites = $(subst .o,.d,$(objects)) $(addsuffix .d,$(binaries))
 
 .PHONY: clean install
 
-ifeq ($(static),1)
+ifneq ($(enable_static),no)
 LDFLAGS += -static
 endif
 

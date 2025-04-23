@@ -31,8 +31,6 @@
 #include <unistd.h>
 
 #include <linux/types.h>
-#include <linux/dvb/audio.h>
-#include <linux/dvb/video.h>
 
 int audioStop(int fd, char *arg)
 {
